@@ -517,7 +517,7 @@ void CrowdSim::scenario01(const size_t num_obst,
 {
 	DD_Agent* obst = ResSpace::getNewDD_Agent(res_ptr, obstacle01_id.str());
 	cbuff<128> temp;
-	temp.format("%s%s", MESH_DIR, "primitives/cylinder.ddm");
+	temp.format("%s%s", MESH_DIR, "primitives/cylinder_10.ddm");
 	wall_mdl_id = "wall_01";
 	DD_Model* mdl = ResSpace::loadModel_DDM(
 		res_ptr, wall_mdl_id.str(), temp.str());
@@ -549,7 +549,7 @@ void CrowdSim::scenario02(const size_t num_obst,
 {
 	DD_Agent* obst = ResSpace::getNewDD_Agent(res_ptr, obstacle01_id.str());
 	cbuff<128> temp;
-	temp.format("%s%s", MESH_DIR, "primitives/cylinder.ddm");
+	temp.format("%s%s", MESH_DIR, "primitives/cylinder_10.ddm");
 	wall_mdl_id = "wall_02";
 	DD_Model* mdl = ResSpace::loadModel_DDM(
 		res_ptr, wall_mdl_id.str(), temp.str());
@@ -587,7 +587,7 @@ void CrowdSim::scenario03(const float floor_x, const float floor_z)
 {
 	DD_Agent* obst = ResSpace::getNewDD_Agent(res_ptr, obstacle01_id.str());
 	cbuff<128> temp;
-	temp.format("%s%s", MESH_DIR, "primitives/cylinder.ddm");
+	temp.format("%s%s", MESH_DIR, "primitives/cylinder_10.ddm");
 	wall_mdl_id = "wall_03";
 	DD_Model* mdl = ResSpace::loadModel_DDM(
 		res_ptr, wall_mdl_id.str(), temp.str());
