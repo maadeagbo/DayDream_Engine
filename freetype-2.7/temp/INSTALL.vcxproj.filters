@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="D:\Docs\DayDream_Repo\freetype-2.7\temp\CMakeFiles\c68ac402841604bddd1aae67b1dd326f\INSTALL_force.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{1DCF7B3E-D416-332C-8B5B-E69A4911A86B}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

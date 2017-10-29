@@ -1,0 +1,171 @@
+#version 430
+#define M_PI 3.1415926535897932384626433832795
+
+layout (local_size_x = 1000) in;
+
+layout ( std430, binding = 0 ) buffer Pos { vec4 Position[]; };
+layout ( std430, binding = 1 ) buffer Vel { vec4 Velocity[]; };
+layout ( std430, binding = 2 ) buffer Col { vec4 Color[]; };
+layout ( std430, binding = 3 ) buffer Lif { float Life[]; };
+
+uniform mat4 direction;
+uniform vec3 CenterPos;
+uniform float forwardF;
+uniform int createEndIndex;
+uniform int createStartIndex;
+
+uniform float angle;
+uniform float radius;
+uniform float lifeTime;
+uniform float deltaTime;
+
+uniform bool Halo = false;
+uniform bool Fire = false;
+uniform bool Water = false;
+uniform bool Magic = false;
+
+float rand(vec2 co){
+    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+}
+
+float setRange( float a, float b, float r) {
+	return (b - a) * r + a;
+}
+
+void main() {
+	uint _x = gl_GlobalInvocationID.x;
+	float canActivate = step(_x, createEndIndex);
+	float canActivate2 = step(createStartIndex, _x);
+	float aliveFlag = step(Life[_x], 0.0000001);
+	float lifeFactor = 1.0;
+
+	// Activate born particles
+	
+	if (Halo) {
+		if( bool(canActivate * canActivate2 * aliveFlag) ) {
+			float currentAng = angle * _x * 50;
+			float _xpos = radius * cos( radians(currentAng) );
+			float _zpos = radius * sin( radians(currentAng) );
+			
+			Position[_x] = vec4( _xpos, 0.0, _zpos, 1.0);
+			Velocity[_x] = vec4( 1.0 );
+			Color[_x] = vec4( 1.0, 1.0, 1.0, 1.0 );
+		}
+	}
+	if (Fire) {
+		if( bool(canActivate * canActivate2 * aliveFlag) ) {
+			float num1 = rand(vec2(_x, cos(radians(_x))) );
+			float num2 = rand(vec2(-num1, cos(radians(num1))) );
+			float currentAng = angle * _x * 10;
+
+			// add some spin to 30% of the flames in the center
+			float spinChance = step(0.5, num2);
+			float spin = mix(1, sin( radians(currentAng) ), spinChance);
+			float r = radius * sqrt( num1 ); // uniform sample
+			//float r = radius *  num1 ; // non-uniform sample
+			float centerChance = step(r, radius * 0.5);
+			spin = mix(1, spin, centerChance);
+
+			float theta = 2 * M_PI * num2;
+			float _xpos = r * cos( theta ) * spin;
+			float _zpos = r * sin( theta ) * spin;
+
+			// vary speed between 70 --> 100%
+			float vF = step(0.7, num1);
+			vF = mix(1.0, num1, vF);
+
+			vec4 p = vec4( CenterPos.x + _xpos, 
+							CenterPos.y + num1 * 10.0, 
+							CenterPos.z + _zpos, 1.0);
+			Position[_x] = p;
+			Velocity[_x] = vec4( 0.0, forwardF * vF, 0.0, 0.0 );
+			Color[_x] = vec4( 1.0, 1.0, 0.0, 1.0 );
+
+			// kill off edge flames faster
+			float edgeChance = step(radius * 0.7, r); // far edges returns 1
+			lifeFactor = mix(1.0, 0.7, edgeChance);
+			if (bool(edgeChance)) {
+				Color[_x] = vec4( 1.0, 0.0, 0.0, 1.0 );
+			}
+			centerChance = step(r, radius * 0.3); // close to center returns 1
+			float midChance = step(edgeChance + centerChance, 0.1);
+			if (edgeChance == 0 && centerChance == 0) {
+				lifeFactor = mix(1.0, 0.8, midChance);
+			}
+		}
+	}
+	if (Water) {
+		if( bool(canActivate * canActivate2 * aliveFlag) ) {
+			float num1 = rand(vec2(_x, cos(radians(_x))) );
+			float num2 = rand(vec2(-num1, cos(radians(num1))) );
+			float num3 = rand(vec2( num2, _x ) );
+			float num4 = rand(vec2( num3, num2 ) );
+			float num5 = rand(vec2( num2, num4 ) );
+			float num6 = rand(vec2( _x, num5 ) );
+			
+			float r = radius * sqrt( num1 ); // uniform sample
+			float theta = 2 * M_PI * num2;
+			float _xpos = r * cos( theta );
+			float _zpos = r * sin( theta );
+
+			// vary speed from 50 --> 100%
+			float vF = step(0.3, num6);
+			vF = mix(forwardF, forwardF * num6, vF);
+
+			float num7 = setRange(0.5, 1.0, num6);
+			float num8 = setRange(0.5, 1.0, num3);
+			float num9 = setRange(0.01, 0.1, num4);
+			float num10 = setRange(0.01, 0.1, num5);
+			
+			vec4 p = vec4( CenterPos.x + _xpos, 
+							CenterPos.y + num1 * 10.0, 
+							CenterPos.z + _zpos, 1.0);
+			Position[_x] = p;
+			vec4 d = (direction * 
+				vec4(forwardF * num9, forwardF * num7, forwardF * num10, 0.0 ));
+			Velocity[_x] = d;
+
+			float num11 = setRange(0.1, 1.0, num7);
+			float num12 = setRange(0.1, 1.0, num8);
+			float num13 = setRange(0.1, 1.0, num5);
+
+			Color[_x] = vec4( num11, num12, num13, 1.0 );
+		}
+	}
+	if (Magic) {
+		if( bool(canActivate * canActivate2 * aliveFlag) ) {
+			float num1 = rand(vec2(_x, cos(radians(_x))) );
+			float num2 = rand(vec2(-num1, cos(radians(num1))) );
+			float num3 = rand(vec2( num2, _x ) );
+			float num4 = rand(vec2( num3, num2 ) );
+			float num5 = rand(vec2( num2, num4 ) );
+			float num6 = rand(vec2( _x, num5 ) );
+			
+			// uniform sample sphere
+			num4 = setRange(-1.0, 1.0, num4);
+			num5 = setRange(-1.0, 1.0, num5);
+			float x1 = pow(num4, 2.0);
+			float x2 = pow(num5, 2.0);
+
+			if (x1 + x2 < 1) {
+				float s_X = 2 * num4 * sqrt(1 - x1 - x2);
+				float s_Y = 2 * num5 * sqrt(1 - x1 - x2);
+				float s_Z = 1 - 2 * (x1 + x2);
+
+				// vary speed from 50 --> 100%
+				float vF = step(0.3, num6);
+				vF = mix(forwardF, forwardF * num6, vF);
+
+				vec4 newP = vec4(CenterPos, 1.0) + vec4( s_X * radius, 
+					s_Y * radius, s_Z * radius, 1.0);
+				Position[_x] = newP;
+
+				vec4 d = (direction * vec4( 0.0, forwardF * vF, 0.0, 0.0 ));
+				Velocity[_x] = d;
+				Color[_x] = vec4( 1.0, 1.0, 1.0, 0.9 );
+			}
+		}
+	}
+	Life[_x] = mix(Life[_x], lifeTime * lifeFactor, 
+		canActivate * canActivate2 * aliveFlag);
+}

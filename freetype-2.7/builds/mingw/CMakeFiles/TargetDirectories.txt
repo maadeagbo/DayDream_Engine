@@ -1,0 +1,10 @@
+D:/Docs/DayDream_Repo/freetype-2.7/builds/mingw/CMakeFiles/dist.dir
+D:/Docs/DayDream_Repo/freetype-2.7/builds/mingw/CMakeFiles/freetype.dir
+D:/Docs/DayDream_Repo/freetype-2.7/builds/mingw/CMakeFiles/edit_cache.dir
+D:/Docs/DayDream_Repo/freetype-2.7/builds/mingw/CMakeFiles/package_source.dir
+D:/Docs/DayDream_Repo/freetype-2.7/builds/mingw/CMakeFiles/package.dir
+D:/Docs/DayDream_Repo/freetype-2.7/builds/mingw/CMakeFiles/install.dir
+D:/Docs/DayDream_Repo/freetype-2.7/builds/mingw/CMakeFiles/rebuild_cache.dir
+D:/Docs/DayDream_Repo/freetype-2.7/builds/mingw/CMakeFiles/list_install_components.dir
+D:/Docs/DayDream_Repo/freetype-2.7/builds/mingw/CMakeFiles/install/strip.dir
+D:/Docs/DayDream_Repo/freetype-2.7/builds/mingw/CMakeFiles/install/local.dir

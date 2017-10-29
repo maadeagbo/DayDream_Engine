@@ -1,0 +1,80 @@
+<Model>
+ID nanosuit
+MTL nanosuit
+PATH nanosuit/nanosuit.obj
+LOD 0
+
+<Model>
+ID town_01
+MTL buildings01
+PATH town_2/buildings01.obj
+LOD 0
+
+<Model>
+ID town_02
+MTL buildings02
+PATH town_2/buildings02.obj
+LOD 0
+
+<Model>
+ID town_03
+MTL buildings03
+PATH town_2/buildings03.obj
+LOD 0
+
+<Model>
+ID town_04
+MTL buildings04
+PATH town_2/buildings04.obj
+LOD 0
+
+<Model>
+ID town_05
+MTL floor
+PATH town_2/floor.obj
+LOD 0
+
+<Model>
+ID cylinders4
+MTL cylinders
+PATH test/cylinders.obj
+LOD 0
+
+<Texture2D>
+ID gray
+EXT png
+PATH gray.png
+
+<Model>
+ID noModel
+MTL tempMesh
+PATH tempMesh.obj
+LOD 0
+
+<Light>
+ID lght01
+POS 1.0 1.0 1.0
+DIR 0.0 -1.0 -1.0
+TYPE 0
+COLOR 1.0 1.0 1.0
+LINEAR <>
+QUAD <>
+
+<Camera>
+ID cam01
+FAR <>
+NEAR <>
+FOVH <>
+ACTIVE 1
+POS 0.0 100.0 1000.0
+ROT 0.0 180.0 0.0
+
+<Skybox>
+ID sampleSB
+RT w_right.png
+LT w_left.png
+TP w_top.png
+BM w_bottom.png
+FT w_front.png
+BK w_back.png
+

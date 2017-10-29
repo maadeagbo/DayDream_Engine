@@ -1,0 +1,179 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="MinSizeRel|Win32">
+      <Configuration>MinSizeRel</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="RelWithDebInfo|Win32">
+      <Configuration>RelWithDebInfo</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGUID>{EB099D6C-7D26-3294-80F6-EF82307D578D}</ProjectGUID>
+    <WindowsTargetPlatformVersion>10.0.14393.0</WindowsTargetPlatformVersion>
+    <Keyword>Win32Proj</Keyword>
+    <Platform>Win32</Platform>
+    <ProjectName>ALL_BUILD</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+    <PropertyGroup>
+      <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+      <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+      <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+      <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+      <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Midl>
+      <AdditionalIncludeDirectories>D:\Docs\DayDream_Repo\freetype-2.7\temp\include;D:\Docs\DayDream_Repo\freetype-2.7\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Midl>
+      <AdditionalIncludeDirectories>D:\Docs\DayDream_Repo\freetype-2.7\temp\include;D:\Docs\DayDream_Repo\freetype-2.7\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">
+    <Midl>
+      <AdditionalIncludeDirectories>D:\Docs\DayDream_Repo\freetype-2.7\temp\include;D:\Docs\DayDream_Repo\freetype-2.7\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">
+    <Midl>
+      <AdditionalIncludeDirectories>D:\Docs\DayDream_Repo\freetype-2.7\temp\include;D:\Docs\DayDream_Repo\freetype-2.7\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="D:\Docs\DayDream_Repo\freetype-2.7\CMakeLists.txt">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Building Custom Rule D:/Docs/DayDream_Repo/freetype-2.7/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">setlocal
+"D:\Program Files\CMake\bin\cmake.exe" -HD:/Docs/DayDream_Repo/freetype-2.7 -BD:/Docs/DayDream_Repo/freetype-2.7/temp --check-stamp-file D:/Docs/DayDream_Repo/freetype-2.7/temp/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">D:/Docs/DayDream_Repo/freetype-2.7/CMakeLists.txt;D:\Docs\DayDream_Repo\freetype-2.7\CMakeLists.txt;D:\Program Files\CMake\share\cmake-3.8\Modules\CheckIncludeFile.cmake;D:\Docs\DayDream_Repo\freetype-2.7\temp\CMakeFiles\3.8.0\CMakeSystem.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeSystemSpecificInitialize.cmake;D:\Docs\DayDream_Repo\freetype-2.7\temp\CMakeFiles\3.8.0\CMakeCCompiler.cmake;D:\Docs\DayDream_Repo\freetype-2.7\temp\CMakeFiles\3.8.0\CMakeCXXCompiler.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeSystemSpecificInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeGenericSystem.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\Windows.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\WindowsPaths.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeCInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeLanguageInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\Windows-MSVC-C.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\Windows-MSVC.cmake;D:\Docs\DayDream_Repo\freetype-2.7\temp\CMakeFiles\3.8.0\CMakeRCCompiler.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeRCInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeCommonLanguageInclude.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeCXXInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeLanguageInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Compiler\MSVC-CXX.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\Windows-MSVC-CXX.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\Windows-MSVC.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeCommonLanguageInclude.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindZLIB.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\SelectLibraryConfigurations.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindBZip2.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\SelectLibraryConfigurations.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPNG.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindZLIB.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\SelectLibraryConfigurations.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Docs\DayDream_Repo\freetype-2.7\builds\cmake\FindHarfBuzz.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPkgConfig.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CPack.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CPackComponent.cmake;D:\Program Files\CMake\share\cmake-3.8\Templates\CPackConfig.cmake.in;D:\Program Files\CMake\share\cmake-3.8\Templates\CPackConfig.cmake.in;D:\Docs\DayDream_Repo\freetype-2.7\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">D:\Docs\DayDream_Repo\freetype-2.7\temp\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Building Custom Rule D:/Docs/DayDream_Repo/freetype-2.7/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">setlocal
+"D:\Program Files\CMake\bin\cmake.exe" -HD:/Docs/DayDream_Repo/freetype-2.7 -BD:/Docs/DayDream_Repo/freetype-2.7/temp --check-stamp-file D:/Docs/DayDream_Repo/freetype-2.7/temp/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">D:/Docs/DayDream_Repo/freetype-2.7/CMakeLists.txt;D:\Docs\DayDream_Repo\freetype-2.7\CMakeLists.txt;D:\Program Files\CMake\share\cmake-3.8\Modules\CheckIncludeFile.cmake;D:\Docs\DayDream_Repo\freetype-2.7\temp\CMakeFiles\3.8.0\CMakeSystem.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeSystemSpecificInitialize.cmake;D:\Docs\DayDream_Repo\freetype-2.7\temp\CMakeFiles\3.8.0\CMakeCCompiler.cmake;D:\Docs\DayDream_Repo\freetype-2.7\temp\CMakeFiles\3.8.0\CMakeCXXCompiler.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeSystemSpecificInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeGenericSystem.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\Windows.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\WindowsPaths.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeCInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeLanguageInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\Windows-MSVC-C.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\Windows-MSVC.cmake;D:\Docs\DayDream_Repo\freetype-2.7\temp\CMakeFiles\3.8.0\CMakeRCCompiler.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeRCInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeCommonLanguageInclude.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeCXXInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeLanguageInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Compiler\MSVC-CXX.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\Windows-MSVC-CXX.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\Windows-MSVC.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeCommonLanguageInclude.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindZLIB.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\SelectLibraryConfigurations.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindBZip2.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\SelectLibraryConfigurations.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPNG.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindZLIB.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\SelectLibraryConfigurations.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Docs\DayDream_Repo\freetype-2.7\builds\cmake\FindHarfBuzz.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPkgConfig.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CPack.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CPackComponent.cmake;D:\Program Files\CMake\share\cmake-3.8\Templates\CPackConfig.cmake.in;D:\Program Files\CMake\share\cmake-3.8\Templates\CPackConfig.cmake.in;D:\Docs\DayDream_Repo\freetype-2.7\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">D:\Docs\DayDream_Repo\freetype-2.7\temp\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Building Custom Rule D:/Docs/DayDream_Repo/freetype-2.7/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">setlocal
+"D:\Program Files\CMake\bin\cmake.exe" -HD:/Docs/DayDream_Repo/freetype-2.7 -BD:/Docs/DayDream_Repo/freetype-2.7/temp --check-stamp-file D:/Docs/DayDream_Repo/freetype-2.7/temp/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">D:/Docs/DayDream_Repo/freetype-2.7/CMakeLists.txt;D:\Docs\DayDream_Repo\freetype-2.7\CMakeLists.txt;D:\Program Files\CMake\share\cmake-3.8\Modules\CheckIncludeFile.cmake;D:\Docs\DayDream_Repo\freetype-2.7\temp\CMakeFiles\3.8.0\CMakeSystem.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeSystemSpecificInitialize.cmake;D:\Docs\DayDream_Repo\freetype-2.7\temp\CMakeFiles\3.8.0\CMakeCCompiler.cmake;D:\Docs\DayDream_Repo\freetype-2.7\temp\CMakeFiles\3.8.0\CMakeCXXCompiler.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeSystemSpecificInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeGenericSystem.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\Windows.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\WindowsPaths.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeCInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeLanguageInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\Windows-MSVC-C.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\Windows-MSVC.cmake;D:\Docs\DayDream_Repo\freetype-2.7\temp\CMakeFiles\3.8.0\CMakeRCCompiler.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeRCInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeCommonLanguageInclude.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeCXXInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeLanguageInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Compiler\MSVC-CXX.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\Windows-MSVC-CXX.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\Windows-MSVC.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeCommonLanguageInclude.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindZLIB.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\SelectLibraryConfigurations.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindBZip2.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\SelectLibraryConfigurations.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPNG.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindZLIB.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\SelectLibraryConfigurations.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Docs\DayDream_Repo\freetype-2.7\builds\cmake\FindHarfBuzz.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPkgConfig.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CPack.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CPackComponent.cmake;D:\Program Files\CMake\share\cmake-3.8\Templates\CPackConfig.cmake.in;D:\Program Files\CMake\share\cmake-3.8\Templates\CPackConfig.cmake.in;D:\Docs\DayDream_Repo\freetype-2.7\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">D:\Docs\DayDream_Repo\freetype-2.7\temp\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Building Custom Rule D:/Docs/DayDream_Repo/freetype-2.7/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">setlocal
+"D:\Program Files\CMake\bin\cmake.exe" -HD:/Docs/DayDream_Repo/freetype-2.7 -BD:/Docs/DayDream_Repo/freetype-2.7/temp --check-stamp-file D:/Docs/DayDream_Repo/freetype-2.7/temp/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">D:/Docs/DayDream_Repo/freetype-2.7/CMakeLists.txt;D:\Docs\DayDream_Repo\freetype-2.7\CMakeLists.txt;D:\Program Files\CMake\share\cmake-3.8\Modules\CheckIncludeFile.cmake;D:\Docs\DayDream_Repo\freetype-2.7\temp\CMakeFiles\3.8.0\CMakeSystem.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeSystemSpecificInitialize.cmake;D:\Docs\DayDream_Repo\freetype-2.7\temp\CMakeFiles\3.8.0\CMakeCCompiler.cmake;D:\Docs\DayDream_Repo\freetype-2.7\temp\CMakeFiles\3.8.0\CMakeCXXCompiler.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeSystemSpecificInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeGenericSystem.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\Windows.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\WindowsPaths.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeCInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeLanguageInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\Windows-MSVC-C.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\Windows-MSVC.cmake;D:\Docs\DayDream_Repo\freetype-2.7\temp\CMakeFiles\3.8.0\CMakeRCCompiler.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeRCInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeCommonLanguageInclude.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeCXXInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeLanguageInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Compiler\MSVC-CXX.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\Windows-MSVC-CXX.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\Windows-MSVC.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeCommonLanguageInclude.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindZLIB.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\SelectLibraryConfigurations.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindBZip2.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\SelectLibraryConfigurations.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPNG.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindZLIB.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\SelectLibraryConfigurations.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Docs\DayDream_Repo\freetype-2.7\builds\cmake\FindHarfBuzz.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPkgConfig.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CPack.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CPackComponent.cmake;D:\Program Files\CMake\share\cmake-3.8\Templates\CPackConfig.cmake.in;D:\Program Files\CMake\share\cmake-3.8\Templates\CPackConfig.cmake.in;D:\Docs\DayDream_Repo\freetype-2.7\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">D:\Docs\DayDream_Repo\freetype-2.7\temp\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="D:\Docs\DayDream_Repo\freetype-2.7\temp\ZERO_CHECK.vcxproj">
+      <Project>F09AE5C2-801A-32D0-AAB0-0336A66A1095</Project>
+      <Name>ZERO_CHECK</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\Docs\DayDream_Repo\freetype-2.7\temp\freetype.vcxproj">
+      <Project>1C8278F7-11AF-303D-AA33-C83CF21571F5</Project>
+      <Name>freetype</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -1,0 +1,163 @@
+#version 430
+layout (local_size_x = 10, local_size_y = 10) in;
+
+layout ( std430, binding = 0 ) buffer PosIn { vec4 PositionIn[]; };
+layout ( std430, binding = 1 ) buffer PosOut { vec4 PositionOut[]; };
+layout ( std430, binding = 2 ) buffer VelIn { vec4 VelocityIn[]; };
+layout ( std430, binding = 3 ) buffer VelOut { vec4 VelocityOut[]; };
+layout ( std430, binding = 4 ) buffer VelFac { vec4 VelFactor[]; };
+
+uniform vec3 WindSpeed = vec3(0.0); 
+
+uniform float Gravity;
+uniform float InvMassPtcl;
+uniform float SpringK;
+uniform float horzRest;
+uniform float vertRest;
+uniform float diagRest;
+uniform float deltaT;
+uniform float DampingC;
+uniform float aliveTime;
+
+uniform vec3 ballPos;
+uniform vec3 ballVel;
+uniform float ballMass;
+uniform float ballRadius;
+uniform bool ballFlag;
+
+void main() {
+	// Get number of particles and current index in particle array
+	uvec3 totalParticles = gl_NumWorkGroups * gl_WorkGroupSize;
+	uint currIndex = gl_GlobalInvocationID.y * totalParticles.x + gl_GlobalInvocationID.x;
+
+	// Get position and velocity
+	vec3 pos = PositionIn[currIndex].xyz;
+	vec3 vel = VelocityIn[currIndex].xyz;
+
+	// force of gravity
+	vec3 F = (1.0/InvMassPtcl) * vec3(0.0, Gravity, 0.0);
+
+	// drag const
+	float dConst = -0.5 * 1.27 * 1.0;
+	
+	vec3 springDir;
+	float deltaVel;
+	// force from above
+	if (gl_GlobalInvocationID.y < (totalParticles.y - 1)) {
+		springDir = PositionIn[currIndex + totalParticles.x].xyz - pos; 
+		vec3 nSpringDir = normalize(springDir);
+		vec3 vel2 = VelocityIn[currIndex + totalParticles.x].xyz;
+		deltaVel = (dot(nSpringDir, vel) - dot(nSpringDir, vel2)) * DampingC; 
+		F += (-SpringK * (vertRest - length(springDir))  - deltaVel) * nSpringDir;
+
+		// top right
+		if (gl_GlobalInvocationID.x < (totalParticles.x - 1)) {
+			springDir = PositionIn[currIndex + totalParticles.x + 1].xyz - pos; 
+			nSpringDir = normalize(springDir);
+			vel2 = VelocityIn[currIndex + totalParticles.x + 1].xyz;
+			deltaVel = (dot(nSpringDir, vel) - dot(nSpringDir, vel2)) * DampingC; 
+			F += (-SpringK * (diagRest - length(springDir)) - deltaVel) * nSpringDir;
+		}
+		// top left
+		if (gl_GlobalInvocationID.x > 0) {
+			springDir = PositionIn[currIndex + totalParticles.x - 1].xyz - pos; 
+			nSpringDir = normalize(springDir);
+			vel2 = VelocityIn[currIndex + totalParticles.x - 1].xyz;
+			deltaVel = (dot(nSpringDir, vel) - dot(nSpringDir, vel2)) * DampingC; 
+			F += (-SpringK * (diagRest - length(springDir)) - deltaVel) * nSpringDir;
+		}
+	}
+	// force from below
+	if (gl_GlobalInvocationID.y > 0) {
+		springDir = PositionIn[currIndex - totalParticles.x].xyz - pos; 
+		vec3 nSpringDir = normalize(springDir);
+		vec3 vel2 = VelocityIn[currIndex - totalParticles.x].xyz;
+		deltaVel = (dot(nSpringDir, vel) - dot(nSpringDir, vel2)) * DampingC; 
+		F += (-SpringK * (vertRest - length(springDir))  - deltaVel) * nSpringDir;
+
+		// bottom right
+		if (gl_GlobalInvocationID.x < (totalParticles.x - 1)) {
+			springDir = PositionIn[currIndex - totalParticles.x + 1].xyz - pos; 
+			nSpringDir = normalize(springDir);
+			vel2 = VelocityIn[currIndex - totalParticles.x + 1].xyz;
+			deltaVel = (dot(nSpringDir, vel) - dot(nSpringDir, vel2)) * DampingC; 
+			F += (-SpringK * (diagRest - length(springDir)) - deltaVel) * nSpringDir;
+		}
+		// bottom left
+		if (gl_GlobalInvocationID.x > 0) {
+			springDir = PositionIn[currIndex - totalParticles.x - 1].xyz - pos; 
+			nSpringDir = normalize(springDir);
+			vel2 = VelocityIn[currIndex - totalParticles.x - 1].xyz;
+			deltaVel = (dot(nSpringDir, vel) - dot(nSpringDir, vel2)) * DampingC; 
+			F += (-SpringK * (diagRest - length(springDir)) - deltaVel) * nSpringDir;
+		}
+	}
+	// force from left 
+	if (gl_GlobalInvocationID.x > 0) {
+		springDir = PositionIn[currIndex - 1].xyz - pos; 
+		vec3 nSpringDir = normalize(springDir);
+		vec3 vel2 = VelocityIn[currIndex - 1].xyz;
+		deltaVel = (dot(nSpringDir, vel) - dot(nSpringDir, vel2)) * DampingC; 
+		F += (-SpringK * (horzRest - length(springDir)) - deltaVel) * nSpringDir;
+	} 
+	// force from right
+	if (gl_GlobalInvocationID.x < (totalParticles.x - 1)) {
+		springDir = PositionIn[currIndex + 1].xyz - pos; 
+		vec3 nSpringDir = normalize(springDir);
+		vec3 vel2 = VelocityIn[currIndex + 1].xyz;
+		deltaVel = (dot(nSpringDir, vel) - dot(nSpringDir, vel2)) * DampingC; 
+		F += (-SpringK * (horzRest - length(springDir)) - deltaVel) * nSpringDir;
+	}
+
+	barrier();
+
+	// wind accel
+	F += (1.0/InvMassPtcl) * WindSpeed;
+
+	if (gl_GlobalInvocationID.y < (totalParticles.y - 1)) {
+		if (gl_GlobalInvocationID.x < (totalParticles.x - 1)) {
+			
+			// calc air drag
+			if (false) {
+				vec3 v1, v2, p1, p2, aero;
+				v1 = VelocityIn[currIndex + totalParticles.x].xyz;
+				v2 = VelocityIn[currIndex + 1].xyz;
+				vec3 vF = ((vel + v1 + v2) / 3) - WindSpeed * deltaT;
+				p1 = PositionIn[currIndex + totalParticles.x].xyz;
+				p2 = PositionIn[currIndex + 1].xyz;
+				vec3 nF = cross(p2 - pos, p1 - pos);
+				aero = dConst * ((length(vF) * dot(vF, nF)) / (2 * length(nF))) * nF;
+				F += aero/3;
+			}
+		}
+	}
+
+	// Euler equation
+	vec3 accel = F * InvMassPtcl;
+	PositionOut[currIndex] = vec4(pos + vel*deltaT + 0.5*accel*deltaT*deltaT, 
+		PositionIn[currIndex].w);
+	VelocityOut[currIndex] = vec4(vel + accel*deltaT, 0.0);
+
+	barrier();
+
+	// ball 
+	if (ballFlag) {
+		float pDist = length(PositionOut[currIndex].xyz - ballPos);
+		if(pDist <= ballRadius) {
+			vec3 sNorm = PositionOut[currIndex].xyz - ballPos;
+			sNorm = normalize(sNorm);
+			vec3 bounce = dot(VelocityOut[currIndex].xyz, sNorm) * sNorm;
+			vec3 gap = 	(ballRadius + 0.01 - pDist) * sNorm;
+
+			VelocityOut[currIndex] -= vec4(1 * bounce, 0.0);
+			PositionOut[currIndex] = vec4(PositionOut[currIndex].xyz + gap, 
+				PositionIn[currIndex].w);
+		}
+	}
+
+	// pinned points
+	if (currIndex == 0 || currIndex == 35 || currIndex == 74 || currIndex == 99) {
+		PositionOut[currIndex] = PositionIn[currIndex];
+		VelocityOut[currIndex] = vec4(0.0);
+	}
+}

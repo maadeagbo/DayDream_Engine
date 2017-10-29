@@ -1,0 +1,1 @@
+ffmpeg -r 30 -pattern_type glob -i '*.dds' -vf "transpose=1,transpose=1" -vcodec libx264 -b 5000k ../test.mp4

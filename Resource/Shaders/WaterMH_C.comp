@@ -1,0 +1,62 @@
+#version 430
+layout (local_size_x = 10, local_size_y = 10) in;
+
+
+layout ( std430, binding = 0 ) buffer MidXIn { vec4 MX_In[]; };
+layout ( std430, binding = 1 ) buffer MidZIn { vec4 MZ_In[]; };
+layout ( std430, binding = 2 ) buffer PosOut { vec4 P_Out[]; };
+layout ( std430, binding = 3 ) buffer VelOut { vec4 V_Out[]; };
+
+uniform float Gravity;
+uniform float deltaT;
+uniform float xDist;
+uniform float zDist;
+uniform float dampConst;
+
+float sqr(float val) { return val * val; }
+
+void main() {
+    // Get number of point and current index in point array
+	uvec3 total_p = gl_NumWorkGroups * gl_WorkGroupSize;
+    const uint _x = gl_GlobalInvocationID.x;
+    const uint _y = gl_GlobalInvocationID.y;
+
+	const uint idx = _y * total_p.x + _x;
+	uint i_x = (_y - 1) * total_p.x + _x;
+	uint i_z = idx - 1;
+    const float g = Gravity;
+
+    vec4 saved_p = P_Out[idx];
+    vec4 saved_v = V_Out[idx];
+
+    if (_x == 0 || _x == (total_p.x - 1)) { 
+        P_Out[idx] = saved_p;
+        V_Out[idx] = saved_v;
+    }
+    if (_x < (total_p.x - 1) && _x > 0) {
+        float hz_0 = MZ_In[idx].y;
+        float uz_0 = MZ_In[idx].z;
+        float hz_1 = MZ_In[i_z].y;
+        float uz_1 = MZ_In[i_z].z;
+
+        P_Out[idx].y += (deltaT/zDist) * (uz_0 - uz_1);
+        V_Out[idx].z -= (deltaT/zDist) * (dampConst * V_Out[idx].z + 
+                                    sqr(uz_0)/hz_0 + 0.5 * g * sqr(hz_0) - 
+                                    sqr(uz_1)/hz_1 - 0.5 * g * sqr(hz_1));
+    }
+    // if (_y == 0 || _y == (total_p.y - 1)) { 
+    //     P_Out[idx] = saved_p;
+    //     V_Out[idx] = saved_v;
+    // }
+    // if (_y < (total_p.y - 1) && _y > 0) {
+    //     float hx_0 = MX_In[idx].y;
+    //     float ux_0 = MX_In[idx].x;
+    //     float hx_1 = MX_In[i_x].y;
+    //     float ux_1 = MX_In[i_x].x;
+
+    //     P_Out[idx].y += (deltaT/xDist) * (ux_0 - ux_1);
+    //     V_Out[idx].x -= (deltaT/xDist) * (dampConst * V_Out[idx].x + 
+    //                                 sqr(ux_0)/hx_0 + 0.5 * g * sqr(hx_0) - 
+    //                                 sqr(ux_1)/hx_1 - 0.5 * g * sqr(hx_1));
+    // }
+}

@@ -1,0 +1,389 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="MinSizeRel|Win32">
+      <Configuration>MinSizeRel</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="RelWithDebInfo|Win32">
+      <Configuration>RelWithDebInfo</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGUID>{1C8278F7-11AF-303D-AA33-C83CF21571F5}</ProjectGUID>
+    <WindowsTargetPlatformVersion>10.0.14393.0</WindowsTargetPlatformVersion>
+    <Keyword>Win32Proj</Keyword>
+    <Platform>Win32</Platform>
+    <ProjectName>freetype</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+    <PropertyGroup>
+      <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+      <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">D:\Docs\DayDream_Repo\freetype-2.7\temp\Debug\</OutDir>
+      <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">freetype.dir\Debug\</IntDir>
+      <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">freetyped</TargetName>
+      <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.lib</TargetExt>
+      <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">D:\Docs\DayDream_Repo\freetype-2.7\temp\Release\</OutDir>
+      <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">freetype.dir\Release\</IntDir>
+      <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">freetype</TargetName>
+      <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.lib</TargetExt>
+      <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">D:\Docs\DayDream_Repo\freetype-2.7\temp\MinSizeRel\</OutDir>
+      <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">freetype.dir\MinSizeRel\</IntDir>
+      <TargetName Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">freetype</TargetName>
+      <TargetExt Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">.lib</TargetExt>
+      <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">D:\Docs\DayDream_Repo\freetype-2.7\temp\RelWithDebInfo\</OutDir>
+      <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">freetype.dir\RelWithDebInfo\</IntDir>
+      <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">freetype</TargetName>
+      <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">.lib</TargetExt>
+    </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>D:\Docs\DayDream_Repo\freetype-2.7\temp\include;D:\Docs\DayDream_Repo\freetype-2.7\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>Debug/</AssemblerListingLocation>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <CompileAs>CompileAsC</CompileAs>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;FT2_BUILD_LIBRARY;CMAKE_INTDIR="Debug";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;FT2_BUILD_LIBRARY;CMAKE_INTDIR=\"Debug\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>D:\Docs\DayDream_Repo\freetype-2.7\temp\include;D:\Docs\DayDream_Repo\freetype-2.7\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>D:\Docs\DayDream_Repo\freetype-2.7\temp\include;D:\Docs\DayDream_Repo\freetype-2.7\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions)  /machine:X86</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>D:\Docs\DayDream_Repo\freetype-2.7\temp\include;D:\Docs\DayDream_Repo\freetype-2.7\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>Release/</AssemblerListingLocation>
+      <CompileAs>CompileAsC</CompileAs>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;FT2_BUILD_LIBRARY;CMAKE_INTDIR="Release";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat></DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;FT2_BUILD_LIBRARY;CMAKE_INTDIR=\"Release\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>D:\Docs\DayDream_Repo\freetype-2.7\temp\include;D:\Docs\DayDream_Repo\freetype-2.7\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>D:\Docs\DayDream_Repo\freetype-2.7\temp\include;D:\Docs\DayDream_Repo\freetype-2.7\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions)  /machine:X86</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>D:\Docs\DayDream_Repo\freetype-2.7\temp\include;D:\Docs\DayDream_Repo\freetype-2.7\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>MinSizeRel/</AssemblerListingLocation>
+      <CompileAs>CompileAsC</CompileAs>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <Optimization>MinSpace</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;FT2_BUILD_LIBRARY;CMAKE_INTDIR="MinSizeRel";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat></DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;FT2_BUILD_LIBRARY;CMAKE_INTDIR=\"MinSizeRel\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>D:\Docs\DayDream_Repo\freetype-2.7\temp\include;D:\Docs\DayDream_Repo\freetype-2.7\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>D:\Docs\DayDream_Repo\freetype-2.7\temp\include;D:\Docs\DayDream_Repo\freetype-2.7\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions)  /machine:X86</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>D:\Docs\DayDream_Repo\freetype-2.7\temp\include;D:\Docs\DayDream_Repo\freetype-2.7\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>RelWithDebInfo/</AssemblerListingLocation>
+      <CompileAs>CompileAsC</CompileAs>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;FT2_BUILD_LIBRARY;CMAKE_INTDIR="RelWithDebInfo";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;FT2_BUILD_LIBRARY;CMAKE_INTDIR=\"RelWithDebInfo\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>D:\Docs\DayDream_Repo\freetype-2.7\temp\include;D:\Docs\DayDream_Repo\freetype-2.7\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>D:\Docs\DayDream_Repo\freetype-2.7\temp\include;D:\Docs\DayDream_Repo\freetype-2.7\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions)  /machine:X86</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="D:\Docs\DayDream_Repo\freetype-2.7\CMakeLists.txt">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Building Custom Rule D:/Docs/DayDream_Repo/freetype-2.7/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">setlocal
+"D:\Program Files\CMake\bin\cmake.exe" -HD:/Docs/DayDream_Repo/freetype-2.7 -BD:/Docs/DayDream_Repo/freetype-2.7/temp --check-stamp-file D:/Docs/DayDream_Repo/freetype-2.7/temp/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">D:/Docs/DayDream_Repo/freetype-2.7/CMakeLists.txt;D:\Docs\DayDream_Repo\freetype-2.7\CMakeLists.txt;D:\Program Files\CMake\share\cmake-3.8\Modules\CheckIncludeFile.cmake;D:\Docs\DayDream_Repo\freetype-2.7\temp\CMakeFiles\3.8.0\CMakeSystem.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeSystemSpecificInitialize.cmake;D:\Docs\DayDream_Repo\freetype-2.7\temp\CMakeFiles\3.8.0\CMakeCCompiler.cmake;D:\Docs\DayDream_Repo\freetype-2.7\temp\CMakeFiles\3.8.0\CMakeCXXCompiler.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeSystemSpecificInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeGenericSystem.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\Windows.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\WindowsPaths.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeCInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeLanguageInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\Windows-MSVC-C.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\Windows-MSVC.cmake;D:\Docs\DayDream_Repo\freetype-2.7\temp\CMakeFiles\3.8.0\CMakeRCCompiler.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeRCInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeCommonLanguageInclude.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeCXXInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeLanguageInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Compiler\MSVC-CXX.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\Windows-MSVC-CXX.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\Windows-MSVC.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeCommonLanguageInclude.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindZLIB.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\SelectLibraryConfigurations.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindBZip2.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\SelectLibraryConfigurations.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPNG.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindZLIB.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\SelectLibraryConfigurations.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Docs\DayDream_Repo\freetype-2.7\builds\cmake\FindHarfBuzz.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPkgConfig.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CPack.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CPackComponent.cmake;D:\Program Files\CMake\share\cmake-3.8\Templates\CPackConfig.cmake.in;D:\Program Files\CMake\share\cmake-3.8\Templates\CPackConfig.cmake.in;D:\Docs\DayDream_Repo\freetype-2.7\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">D:\Docs\DayDream_Repo\freetype-2.7\temp\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Building Custom Rule D:/Docs/DayDream_Repo/freetype-2.7/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">setlocal
+"D:\Program Files\CMake\bin\cmake.exe" -HD:/Docs/DayDream_Repo/freetype-2.7 -BD:/Docs/DayDream_Repo/freetype-2.7/temp --check-stamp-file D:/Docs/DayDream_Repo/freetype-2.7/temp/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">D:/Docs/DayDream_Repo/freetype-2.7/CMakeLists.txt;D:\Docs\DayDream_Repo\freetype-2.7\CMakeLists.txt;D:\Program Files\CMake\share\cmake-3.8\Modules\CheckIncludeFile.cmake;D:\Docs\DayDream_Repo\freetype-2.7\temp\CMakeFiles\3.8.0\CMakeSystem.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeSystemSpecificInitialize.cmake;D:\Docs\DayDream_Repo\freetype-2.7\temp\CMakeFiles\3.8.0\CMakeCCompiler.cmake;D:\Docs\DayDream_Repo\freetype-2.7\temp\CMakeFiles\3.8.0\CMakeCXXCompiler.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeSystemSpecificInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeGenericSystem.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\Windows.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\WindowsPaths.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeCInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeLanguageInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\Windows-MSVC-C.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\Windows-MSVC.cmake;D:\Docs\DayDream_Repo\freetype-2.7\temp\CMakeFiles\3.8.0\CMakeRCCompiler.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeRCInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeCommonLanguageInclude.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeCXXInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeLanguageInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Compiler\MSVC-CXX.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\Windows-MSVC-CXX.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\Windows-MSVC.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeCommonLanguageInclude.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindZLIB.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\SelectLibraryConfigurations.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindBZip2.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\SelectLibraryConfigurations.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPNG.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindZLIB.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\SelectLibraryConfigurations.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Docs\DayDream_Repo\freetype-2.7\builds\cmake\FindHarfBuzz.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPkgConfig.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CPack.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CPackComponent.cmake;D:\Program Files\CMake\share\cmake-3.8\Templates\CPackConfig.cmake.in;D:\Program Files\CMake\share\cmake-3.8\Templates\CPackConfig.cmake.in;D:\Docs\DayDream_Repo\freetype-2.7\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">D:\Docs\DayDream_Repo\freetype-2.7\temp\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Building Custom Rule D:/Docs/DayDream_Repo/freetype-2.7/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">setlocal
+"D:\Program Files\CMake\bin\cmake.exe" -HD:/Docs/DayDream_Repo/freetype-2.7 -BD:/Docs/DayDream_Repo/freetype-2.7/temp --check-stamp-file D:/Docs/DayDream_Repo/freetype-2.7/temp/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">D:/Docs/DayDream_Repo/freetype-2.7/CMakeLists.txt;D:\Docs\DayDream_Repo\freetype-2.7\CMakeLists.txt;D:\Program Files\CMake\share\cmake-3.8\Modules\CheckIncludeFile.cmake;D:\Docs\DayDream_Repo\freetype-2.7\temp\CMakeFiles\3.8.0\CMakeSystem.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeSystemSpecificInitialize.cmake;D:\Docs\DayDream_Repo\freetype-2.7\temp\CMakeFiles\3.8.0\CMakeCCompiler.cmake;D:\Docs\DayDream_Repo\freetype-2.7\temp\CMakeFiles\3.8.0\CMakeCXXCompiler.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeSystemSpecificInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeGenericSystem.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\Windows.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\WindowsPaths.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeCInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeLanguageInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\Windows-MSVC-C.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\Windows-MSVC.cmake;D:\Docs\DayDream_Repo\freetype-2.7\temp\CMakeFiles\3.8.0\CMakeRCCompiler.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeRCInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeCommonLanguageInclude.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeCXXInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeLanguageInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Compiler\MSVC-CXX.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\Windows-MSVC-CXX.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\Windows-MSVC.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeCommonLanguageInclude.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindZLIB.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\SelectLibraryConfigurations.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindBZip2.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\SelectLibraryConfigurations.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPNG.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindZLIB.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\SelectLibraryConfigurations.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Docs\DayDream_Repo\freetype-2.7\builds\cmake\FindHarfBuzz.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPkgConfig.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CPack.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CPackComponent.cmake;D:\Program Files\CMake\share\cmake-3.8\Templates\CPackConfig.cmake.in;D:\Program Files\CMake\share\cmake-3.8\Templates\CPackConfig.cmake.in;D:\Docs\DayDream_Repo\freetype-2.7\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">D:\Docs\DayDream_Repo\freetype-2.7\temp\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Building Custom Rule D:/Docs/DayDream_Repo/freetype-2.7/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">setlocal
+"D:\Program Files\CMake\bin\cmake.exe" -HD:/Docs/DayDream_Repo/freetype-2.7 -BD:/Docs/DayDream_Repo/freetype-2.7/temp --check-stamp-file D:/Docs/DayDream_Repo/freetype-2.7/temp/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">D:/Docs/DayDream_Repo/freetype-2.7/CMakeLists.txt;D:\Docs\DayDream_Repo\freetype-2.7\CMakeLists.txt;D:\Program Files\CMake\share\cmake-3.8\Modules\CheckIncludeFile.cmake;D:\Docs\DayDream_Repo\freetype-2.7\temp\CMakeFiles\3.8.0\CMakeSystem.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeSystemSpecificInitialize.cmake;D:\Docs\DayDream_Repo\freetype-2.7\temp\CMakeFiles\3.8.0\CMakeCCompiler.cmake;D:\Docs\DayDream_Repo\freetype-2.7\temp\CMakeFiles\3.8.0\CMakeCXXCompiler.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeSystemSpecificInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeGenericSystem.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\Windows.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\WindowsPaths.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeCInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeLanguageInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\Windows-MSVC-C.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\Windows-MSVC.cmake;D:\Docs\DayDream_Repo\freetype-2.7\temp\CMakeFiles\3.8.0\CMakeRCCompiler.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeRCInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeCommonLanguageInclude.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeCXXInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeLanguageInformation.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Compiler\MSVC-CXX.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\Windows-MSVC-CXX.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\Platform\Windows-MSVC.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CMakeCommonLanguageInclude.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindZLIB.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\SelectLibraryConfigurations.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindBZip2.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\SelectLibraryConfigurations.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPNG.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindZLIB.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\SelectLibraryConfigurations.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Docs\DayDream_Repo\freetype-2.7\builds\cmake\FindHarfBuzz.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPkgConfig.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\FindPackageMessage.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CPack.cmake;D:\Program Files\CMake\share\cmake-3.8\Modules\CPackComponent.cmake;D:\Program Files\CMake\share\cmake-3.8\Templates\CPackConfig.cmake.in;D:\Program Files\CMake\share\cmake-3.8\Templates\CPackConfig.cmake.in;D:\Docs\DayDream_Repo\freetype-2.7\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">D:\Docs\DayDream_Repo\freetype-2.7\temp\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\ft2build.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\freetype.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\ftadvanc.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\ftautoh.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\ftbbox.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\ftbdf.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\ftbitmap.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\ftbzip2.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\ftcache.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\ftcffdrv.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\ftchapters.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\ftcid.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\fterrdef.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\fterrors.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\ftfntfmt.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\ftgasp.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\ftglyph.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\ftgxval.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\ftgzip.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\ftimage.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\ftincrem.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\ftlcdfil.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\ftlist.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\ftlzw.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\ftmac.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\ftmm.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\ftmodapi.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\ftmoderr.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\ftotval.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\ftoutln.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\ftpfr.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\ftrender.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\ftsizes.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\ftsnames.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\ftstroke.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\ftsynth.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\ftsystem.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\fttrigon.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\ftttdrv.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\fttypes.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\ftwinfnt.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\t1tables.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\ttnameid.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\tttables.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\tttags.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\ttunpat.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\config\ftconfig.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\config\ftheader.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\config\ftmodule.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\config\ftoption.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\config\ftstdlib.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\internal\autohint.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\internal\ftcalc.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\internal\ftdebug.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\internal\ftdriver.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\internal\ftgloadr.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\internal\fthash.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\internal\ftmemory.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\internal\ftobjs.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\internal\ftpic.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\internal\ftrfork.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\internal\ftserv.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\internal\ftstream.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\internal\fttrace.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\internal\ftvalid.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\internal\internal.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\internal\psaux.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\internal\pshints.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\internal\sfnt.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\internal\t1types.h" />
+    <ClInclude Include="D:\Docs\DayDream_Repo\freetype-2.7\include\freetype\internal\tttypes.h" />
+    <ClCompile Include="D:\Docs\DayDream_Repo\freetype-2.7\src\autofit\autofit.c"  />
+    <ClCompile Include="D:\Docs\DayDream_Repo\freetype-2.7\src\base\ftbase.c"  />
+    <ClCompile Include="D:\Docs\DayDream_Repo\freetype-2.7\src\base\ftbbox.c"  />
+    <ClCompile Include="D:\Docs\DayDream_Repo\freetype-2.7\src\base\ftbdf.c"  />
+    <ClCompile Include="D:\Docs\DayDream_Repo\freetype-2.7\src\base\ftbitmap.c"  />
+    <ClCompile Include="D:\Docs\DayDream_Repo\freetype-2.7\src\base\ftcid.c"  />
+    <ClCompile Include="D:\Docs\DayDream_Repo\freetype-2.7\src\base\ftfntfmt.c"  />
+    <ClCompile Include="D:\Docs\DayDream_Repo\freetype-2.7\src\base\ftfstype.c"  />
+    <ClCompile Include="D:\Docs\DayDream_Repo\freetype-2.7\src\base\ftgasp.c"  />
+    <ClCompile Include="D:\Docs\DayDream_Repo\freetype-2.7\src\base\ftglyph.c"  />
+    <ClCompile Include="D:\Docs\DayDream_Repo\freetype-2.7\src\base\ftgxval.c"  />
+    <ClCompile Include="D:\Docs\DayDream_Repo\freetype-2.7\src\base\ftinit.c"  />
+    <ClCompile Include="D:\Docs\DayDream_Repo\freetype-2.7\src\base\ftlcdfil.c"  />
+    <ClCompile Include="D:\Docs\DayDream_Repo\freetype-2.7\src\base\ftmm.c"  />
+    <ClCompile Include="D:\Docs\DayDream_Repo\freetype-2.7\src\base\ftotval.c"  />
+    <ClCompile Include="D:\Docs\DayDream_Repo\freetype-2.7\src\base\ftpatent.c"  />
+    <ClCompile Include="D:\Docs\DayDream_Repo\freetype-2.7\src\base\ftpfr.c"  />
+    <ClCompile Include="D:\Docs\DayDream_Repo\freetype-2.7\src\base\ftstroke.c"  />
+    <ClCompile Include="D:\Docs\DayDream_Repo\freetype-2.7\src\base\ftsynth.c"  />
+    <ClCompile Include="D:\Docs\DayDream_Repo\freetype-2.7\src\base\ftsystem.c"  />
+    <ClCompile Include="D:\Docs\DayDream_Repo\freetype-2.7\src\base\fttype1.c"  />
+    <ClCompile Include="D:\Docs\DayDream_Repo\freetype-2.7\src\base\ftwinfnt.c"  />
+    <ClCompile Include="D:\Docs\DayDream_Repo\freetype-2.7\src\bdf\bdf.c"  />
+    <ClCompile Include="D:\Docs\DayDream_Repo\freetype-2.7\src\bzip2\ftbzip2.c"  />
+    <ClCompile Include="D:\Docs\DayDream_Repo\freetype-2.7\src\cache\ftcache.c"  />
+    <ClCompile Include="D:\Docs\DayDream_Repo\freetype-2.7\src\cff\cff.c"  />
+    <ClCompile Include="D:\Docs\DayDream_Repo\freetype-2.7\src\cid\type1cid.c"  />
+    <ClCompile Include="D:\Docs\DayDream_Repo\freetype-2.7\src\gzip\ftgzip.c"  />
+    <ClCompile Include="D:\Docs\DayDream_Repo\freetype-2.7\src\lzw\ftlzw.c"  />
+    <ClCompile Include="D:\Docs\DayDream_Repo\freetype-2.7\src\pcf\pcf.c"  />
+    <ClCompile Include="D:\Docs\DayDream_Repo\freetype-2.7\src\pfr\pfr.c"  />
+    <ClCompile Include="D:\Docs\DayDream_Repo\freetype-2.7\src\psaux\psaux.c"  />
+    <ClCompile Include="D:\Docs\DayDream_Repo\freetype-2.7\src\pshinter\pshinter.c"  />
+    <ClCompile Include="D:\Docs\DayDream_Repo\freetype-2.7\src\psnames\psnames.c"  />
+    <ClCompile Include="D:\Docs\DayDream_Repo\freetype-2.7\src\raster\raster.c"  />
+    <ClCompile Include="D:\Docs\DayDream_Repo\freetype-2.7\src\sfnt\sfnt.c"  />
+    <ClCompile Include="D:\Docs\DayDream_Repo\freetype-2.7\src\smooth\smooth.c"  />
+    <ClCompile Include="D:\Docs\DayDream_Repo\freetype-2.7\src\truetype\truetype.c"  />
+    <ClCompile Include="D:\Docs\DayDream_Repo\freetype-2.7\src\type1\type1.c"  />
+    <ClCompile Include="D:\Docs\DayDream_Repo\freetype-2.7\src\type42\type42.c"  />
+    <ClCompile Include="D:\Docs\DayDream_Repo\freetype-2.7\src\winfonts\winfnt.c"  />
+    <ClCompile Include="D:\Docs\DayDream_Repo\freetype-2.7\builds\windows\ftdebug.c"  />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="D:\Docs\DayDream_Repo\freetype-2.7\temp\ZERO_CHECK.vcxproj">
+      <Project>F09AE5C2-801A-32D0-AAB0-0336A66A1095</Project>
+      <Name>ZERO_CHECK</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

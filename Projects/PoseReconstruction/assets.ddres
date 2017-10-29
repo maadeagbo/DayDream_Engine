@@ -1,0 +1,9 @@
+<DD_Skybox>
+ID water
+RT w_right.png
+LT w_left.png
+TP w_top.png
+BM w_bottom.png
+FT w_front.png
+BK w_back.png
+

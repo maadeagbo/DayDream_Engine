@@ -1,0 +1,83 @@
+#version 430
+layout (local_size_x = 10, local_size_y = 10) in;
+
+layout ( std430, binding = 0 ) buffer PosIn { vec4 H_In[]; };
+layout ( std430, binding = 1 ) buffer PosOut { vec4 H_Out[]; };
+layout ( std430, binding = 2 ) buffer VelIn { vec4 V_In[]; };
+layout ( std430, binding = 3 ) buffer VelOut { vec4 V_Out[]; };
+layout ( std430, binding = 4 ) buffer MidPos { vec4 MidXZ[]; };
+layout ( std430, binding = 5 ) buffer MidVel { vec4 Mid_HZ[]; };
+
+uniform float Gravity;
+uniform float deltaT;
+uniform float xDist;
+uniform float yDist;
+uniform float dampConst;
+
+float sqr(float val) { return val * val; }
+
+void main() {
+    // Get number of point and current index in point array
+	uvec3 total_p = gl_NumWorkGroups * gl_WorkGroupSize;
+    const uint _x = gl_GlobalInvocationID.x;
+    const uint _y = gl_GlobalInvocationID.y;
+
+	const uint idx = _y * total_p.x + _x;
+	uint i_x = (_y + 1) * total_p.x + _x;
+    // save x and z positions
+    const vec3 posXZW = H_In[idx].xzw;
+
+    float g = Gravity;
+    float h0 = H_In[idx].y;
+    float u0 = V_In[idx].x;
+    float v0 = V_In[idx].z;
+    
+    // reflect
+    if (_y == 0) {
+        // H_Out[idx].y = H_In[i_x].y;
+        // V_Out[idx].x = V_In[i_x].x;
+    }
+    if (_y == (total_p.y - 1)) {
+        // H_Out[idx].y = H_In[(_y - 1) * total_p.x + _x].y;
+        // V_Out[idx].x = V_In[(_y - 1) * total_p.x + _x].x;
+    }
+
+    // calculate Lax-Wendroff midpoint integration
+    // Partial derivatives:
+    //      MidXZ.x --> velocity with respect to x
+    //      MidXZ.z --> velocity at z with respect to x
+    if (_y < (total_p.y - 1)) {
+        float h1x = H_In[i_x].y;
+        float u1x = V_In[i_x].x;
+        float v1x = V_In[i_x].z;
+        float ux, uz;
+        ux = (u0 + u1x) * 0.5 - (deltaT * 0.5) *
+             (sqr(u1x)/h1x + 0.5*g*sqr(h1x) - sqr(u0)/h0 - 0.5*g*sqr(h0))/xDist;
+
+        MidXZ[idx].x = ux;
+        MidXZ[idx].y = (h0 + h1x) * 0.5 - ((deltaT * 0.5) * (u1x - u0))/xDist;
+    }
+    barrier();
+    // calculate final position and velocity
+    // V_Out[i_x]:
+    //      X-axis --> stores partial x velocity
+    //      z-axis --> stores partial z velocity
+    if ( _y < (total_p.y - 2)) { 
+        //i_x = (gl_GlobalInvocationID.y - 1) * total_p.x + gl_GlobalInvocationID.x;
+        //i_y = idx - 1;
+
+        float hx_0 = MidXZ[idx].y;
+        float hx_1 = MidXZ[i_x].y;
+        float ux_0 = MidXZ[idx].x;
+        float ux_1 = MidXZ[i_x].x;
+
+        H_Out[i_x].y = H_Out[i_x].y - deltaT * (ux_1 - ux_0)/xDist;
+        //H_Out[idx].y = H_Out[idx].y - (deltaT/xDist) * (ux_0 - ux_1) - 
+        //                              (deltaT/yDist) * (vz_0 - vz_1);
+
+        V_Out[i_x].x = V_Out[i_x].x - deltaT * (sqr(ux_1)/hx_1 + 0.5*g*sqr(hx_1) 
+                                    - sqr(ux_0)/hx_0 - 0.5*g*sqr(hx_0))/xDist;
+        
+        H_Out[i_x].xzw = posXZW;
+    }
+}

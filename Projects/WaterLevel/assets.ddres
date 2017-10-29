@@ -1,0 +1,234 @@
+<Model>
+ID buddha
+MTL buddha
+PATH buddha.obj
+LOD 0
+
+<Model>
+ID Dillo
+MTL Dillo
+PATH Dillo.obj
+LOD 0
+
+<Model>
+ID simple_chamber
+MTL chamber
+PATH chamber/chamber.obj
+LOD 0
+
+<Model>
+ID column01
+MTL col_01
+PATH chamber/col_01.obj
+LOD 0
+
+<Model>
+ID column02
+MTL col_02
+PATH chamber/col_02.obj
+LOD 0
+
+<Model>
+ID column03
+MTL col_03
+PATH chamber/col_03.obj
+LOD 0
+
+<Model>
+ID column04
+MTL col_04
+PATH chamber/col_04.obj
+LOD 0
+
+<Agent>
+ID chamber
+INST 1
+MODEL simple_chamber
+N_F 0.0 10000.0
+POS 0.0 0.0 0.0
+ROT 0.0 0.0 0.0
+SCL 10.0 7.0 10.0
+
+//<Agent>
+ID col01
+INST 1
+MODEL column01
+N_F 0.0 10000.0
+POS 0.0 0.0 0.0
+ROT 0.0 0.0 0.0
+SCL 7.0 7.0 7.0
+
+//<Agent>
+ID col02
+INST 1
+MODEL column02
+N_F 0.0 10000.0
+POS 0.0 0.0 0.0
+ROT 0.0 0.0 0.0
+SCL 7.0 7.0 7.0
+
+//<Agent>
+ID col03
+INST 1
+MODEL column03
+N_F 0.0 10000.0
+POS 0.0 0.0 0.0
+ROT 0.0 0.0 0.0
+SCL 7.0 7.0 7.0
+
+//<Agent>
+ID col04
+INST 1
+MODEL column04
+N_F 0.0 10000.0
+POS 0.0 0.0 0.0
+ROT 0.0 0.0 0.0
+SCL 7.0 7.0 7.0
+
+//<Model>
+ID beach_br
+MTL b_right
+PATH beach/env/b_right.obj
+LOD 0
+
+//<Model>
+ID beach_bl
+MTL b_left
+PATH beach/env/b_left.obj
+LOD 0
+
+//<Model>
+ID beach_tr
+MTL t_right
+PATH beach/env/t_right.obj
+LOD 0
+
+//<Model>
+ID beach_tl
+MTL t_left
+PATH beach/env/t_left.obj
+LOD 0
+
+//<Model>
+ID house
+MTL 
+PATH beach/house.obj
+LOD 0
+
+//<Model>
+ID tree01
+MTL tree_02
+PATH beach/tree_02.obj
+LOD 0
+
+//<Agent>
+ID house_static
+INST 1
+MODEL house
+N_F 0.0 10000.0
+POS 0.0 200.0 0.0
+ROT 0.0 0.0 0.0
+SCL 1.0 1.0 1.0
+
+//<Agent>
+ID ground_br
+INST 1
+MODEL beach_br
+N_F 0.0 10000.0
+POS 0.0 200.0 0.0
+ROT 0.0 0.0 0.0
+SCL 1.0 1.0 1.0
+
+//<Agent>
+ID ground_bl
+INST 1
+MODEL beach_bl
+N_F 0.0 10000.0
+POS 0.0 200.0 0.0
+ROT 0.0 0.0 0.0
+SCL 1.0 1.0 1.0
+
+//<Agent>
+ID ground_tr
+INST 1
+MODEL beach_tr
+N_F 0.0 10000.0
+POS 0.0 200.0 0.0
+ROT 0.0 0.0 0.0
+SCL 1.0 1.0 1.0
+
+//<Agent>
+ID ground_tl
+INST 1
+MODEL beach_tl
+N_F 0.0 10000.0
+POS 0.0 200.0 0.0
+ROT 0.0 0.0 0.0
+SCL 1.0 1.0 1.0
+
+<Texture2D>
+ID simple_water
+EXT png
+PATH water_seamless.png
+
+<Texture2D>
+ID simple_water_n
+EXT png
+PATH water_normal.png
+
+<Texture2D>
+ID gray
+EXT png
+PATH gray.png
+
+<Texture2D>
+ID star
+EXT png
+PATH star.png
+
+<Texture2D>
+ID fire1
+EXT png
+PATH fire03.png
+
+<Texture2D>
+ID blueBall
+EXT png
+PATH blueBall.png
+
+<Texture2D>
+ID smoke
+EXT png
+PATH smoke01.png
+
+<Texture2D>
+ID fabric01
+EXT png
+PATH fabric01.png
+
+<DD_Skybox>
+ID water
+RT w_right.png
+LT w_left.png
+TP w_top.png
+BM w_bottom.png
+FT w_front.png
+BK w_back.png
+
+<DD_Skybox>
+ID sunset
+RT violentdays_rt.png
+LT violentdays_lf.png
+TP violentdays_up.png
+BM violentdays_dn.png
+FT violentdays_ft.png
+BK violentdays_bk.png
+
+<DD_Skybox>
+ID sky
+RT miramar_rt.png
+LT miramar_lf.png
+TP miramar_up.png
+BM miramar_dn.png
+FT miramar_ft.png
+BK miramar_bk.png

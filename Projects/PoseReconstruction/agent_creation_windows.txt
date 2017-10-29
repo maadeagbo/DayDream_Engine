@@ -1,0 +1,22 @@
+C:\Users\Moses\Documents\DayDream_Repo\Projects\PoseReconstruction\agent_creation_windows.txt
+
+load_sk sk0 C:\Users\Moses\Downloads\skele_t2.ddb
+load_anim an0 C:\Users\Moses\Downloads\clipped_dda\23_h10_f10_t11_xpd_sl.dda
+load_agent ag0 sk0
+add_anim ag0 an0 23_h10_f10_t11_xpd_sl
+edit_ag0
+
+load_anim an1 C:\Users\Moses\Downloads\clipped_dda\23_h10_f10_t11_xpd_st.dda
+load_agent ag1 sk0
+add_anim ag1 an1 23_h10_f10_t11_xpd_st
+edit_ag1
+
+load_anim an2 C:\Users\Moses\Downloads\clipped_dda\23_h10_f10_t14_hhd_sl.dda
+load_agent ag2 sk0
+add_anim ag2 an2 23_h10_f10_t14_hhd_sl
+edit_ag2
+
+load_anim an3 C:\Users\Moses\Downloads\clipped_dda\23_h10_f10_t14_hhd_st.dda
+load_agent ag3 sk0
+add_anim ag3 an3 23_h10_f10_t14_hhd_st
+edit_ag3

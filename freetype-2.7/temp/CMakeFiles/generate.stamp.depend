@@ -1,0 +1,49 @@
+# CMake generation dependency list for this directory.
+D:/Docs/DayDream_Repo/freetype-2.7/CMakeLists.txt
+D:/Program Files/CMake/share/cmake-3.8/Modules/CheckIncludeFile.cmake
+D:/Docs/DayDream_Repo/freetype-2.7/temp/CMakeFiles/3.8.0/CMakeSystem.cmake
+D:/Program Files/CMake/share/cmake-3.8/Modules/CMakeSystemSpecificInitialize.cmake
+D:/Docs/DayDream_Repo/freetype-2.7/temp/CMakeFiles/3.8.0/CMakeCCompiler.cmake
+D:/Docs/DayDream_Repo/freetype-2.7/temp/CMakeFiles/3.8.0/CMakeCXXCompiler.cmake
+D:/Program Files/CMake/share/cmake-3.8/Modules/CMakeSystemSpecificInformation.cmake
+D:/Program Files/CMake/share/cmake-3.8/Modules/CMakeGenericSystem.cmake
+D:/Program Files/CMake/share/cmake-3.8/Modules/Platform/Windows.cmake
+D:/Program Files/CMake/share/cmake-3.8/Modules/Platform/WindowsPaths.cmake
+D:/Program Files/CMake/share/cmake-3.8/Modules/CMakeCInformation.cmake
+D:/Program Files/CMake/share/cmake-3.8/Modules/CMakeLanguageInformation.cmake
+D:/Program Files/CMake/share/cmake-3.8/Modules/Platform/Windows-MSVC-C.cmake
+D:/Program Files/CMake/share/cmake-3.8/Modules/Platform/Windows-MSVC.cmake
+D:/Docs/DayDream_Repo/freetype-2.7/temp/CMakeFiles/3.8.0/CMakeRCCompiler.cmake
+D:/Program Files/CMake/share/cmake-3.8/Modules/CMakeRCInformation.cmake
+D:/Program Files/CMake/share/cmake-3.8/Modules/CMakeCommonLanguageInclude.cmake
+D:/Program Files/CMake/share/cmake-3.8/Modules/CMakeCXXInformation.cmake
+D:/Program Files/CMake/share/cmake-3.8/Modules/CMakeLanguageInformation.cmake
+D:/Program Files/CMake/share/cmake-3.8/Modules/Compiler/MSVC-CXX.cmake
+D:/Program Files/CMake/share/cmake-3.8/Modules/Platform/Windows-MSVC-CXX.cmake
+D:/Program Files/CMake/share/cmake-3.8/Modules/Platform/Windows-MSVC.cmake
+D:/Program Files/CMake/share/cmake-3.8/Modules/CMakeCommonLanguageInclude.cmake
+D:/Program Files/CMake/share/cmake-3.8/Modules/FindZLIB.cmake
+D:/Program Files/CMake/share/cmake-3.8/Modules/SelectLibraryConfigurations.cmake
+D:/Program Files/CMake/share/cmake-3.8/Modules/FindPackageHandleStandardArgs.cmake
+D:/Program Files/CMake/share/cmake-3.8/Modules/FindPackageMessage.cmake
+D:/Program Files/CMake/share/cmake-3.8/Modules/FindBZip2.cmake
+D:/Program Files/CMake/share/cmake-3.8/Modules/SelectLibraryConfigurations.cmake
+D:/Program Files/CMake/share/cmake-3.8/Modules/FindPackageHandleStandardArgs.cmake
+D:/Program Files/CMake/share/cmake-3.8/Modules/FindPackageMessage.cmake
+D:/Program Files/CMake/share/cmake-3.8/Modules/FindPNG.cmake
+D:/Program Files/CMake/share/cmake-3.8/Modules/FindZLIB.cmake
+D:/Program Files/CMake/share/cmake-3.8/Modules/SelectLibraryConfigurations.cmake
+D:/Program Files/CMake/share/cmake-3.8/Modules/FindPackageHandleStandardArgs.cmake
+D:/Program Files/CMake/share/cmake-3.8/Modules/FindPackageMessage.cmake
+D:/Program Files/CMake/share/cmake-3.8/Modules/FindPackageHandleStandardArgs.cmake
+D:/Program Files/CMake/share/cmake-3.8/Modules/FindPackageMessage.cmake
+D:/Docs/DayDream_Repo/freetype-2.7/builds/cmake/FindHarfBuzz.cmake
+D:/Program Files/CMake/share/cmake-3.8/Modules/FindPkgConfig.cmake
+D:/Program Files/CMake/share/cmake-3.8/Modules/FindPackageHandleStandardArgs.cmake
+D:/Program Files/CMake/share/cmake-3.8/Modules/FindPackageMessage.cmake
+D:/Program Files/CMake/share/cmake-3.8/Modules/FindPackageHandleStandardArgs.cmake
+D:/Program Files/CMake/share/cmake-3.8/Modules/FindPackageMessage.cmake
+D:/Program Files/CMake/share/cmake-3.8/Modules/CPack.cmake
+D:/Program Files/CMake/share/cmake-3.8/Modules/CPackComponent.cmake
+D:/Program Files/CMake/share/cmake-3.8/Templates/CPackConfig.cmake.in
+D:/Program Files/CMake/share/cmake-3.8/Templates/CPackConfig.cmake.in

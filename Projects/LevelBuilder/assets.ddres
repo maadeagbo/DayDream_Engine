@@ -1,0 +1,65 @@
+<Model>
+ID house
+MTL 
+PATH beach/house.obj
+LOD 0
+
+<Model>
+ID tree01
+MTL tree_01
+PATH beach/tree_01.obj
+LOD 0
+
+<Model>
+ID beach_br
+MTL b_right
+PATH beach/env/b_right.obj
+LOD 0
+
+<Model>
+ID beach_bl
+MTL b_left
+PATH beach/env/b_left.obj
+LOD 0
+
+<Model>
+ID beach_tr
+MTL t_right
+PATH beach/env/t_right.obj
+LOD 0
+
+<Model>
+ID beach_tl
+MTL t_left
+PATH beach/env/t_left.obj
+LOD 0
+
+<Texture2D>
+ID gray
+EXT png
+PATH gray.png
+
+<Texture2D>
+ID star
+EXT png
+PATH star.png
+
+<Texture2D>
+ID fire1
+EXT png
+PATH fire03.png
+
+<Texture2D>
+ID blueBall
+EXT png
+PATH blueBall.png
+
+<Texture2D>
+ID smoke
+EXT png
+PATH smoke01.png
+
+<Texture2D>
+ID fabric01
+EXT png
+PATH fabric01.png

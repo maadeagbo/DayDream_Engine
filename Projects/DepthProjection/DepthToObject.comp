@@ -1,0 +1,69 @@
+#version 430
+layout (local_size_x = 4, local_size_y = 4) in;
+
+layout (rgba16f, binding = 0) uniform image2D img_input;
+layout (rgba16f, binding = 1) uniform image2D img_input2;
+layout (std430, binding = 2) buffer Pos { vec4 Position[]; };
+layout (std430, binding = 3) buffer Deb { vec4 Debug[]; };
+
+uniform mat3 invdepthK = mat3(
+    0.002989879854668, 0.0, 0.0,
+    0.0, 0.002968574668559, 0.0,
+    -0.752066006979576, -0.621590740421894, 1.0
+);
+uniform mat4x3 colorKRT = mat4x3(
+    969.97049608000, 10.33259931000, 0.00660000000,
+    -4.55400488000, 972.64763118000, 0.00210000000,
+    945.57846118000, 577.35579511000, 1.00000000000,
+    -49703.81680447507, 1172.97384615694, 2.10059033000
+);
+
+uniform vec2 nose_pos;
+
+void main () {
+    // get x and y index of current pixel
+	ivec2 pixel_coords = ivec2(gl_GlobalInvocationID.xy);
+	vec4 depth_c = imageLoad(img_input, pixel_coords);
+    pixel_coords.x = 512-pixel_coords.x;    // flip depth
+    if (depth_c.x > 0.15) {
+        depth_c *= 1500;                        // limit highest range to 1500 mm
+        depth_c += 500;                         // limit lowest range to 500 mm
+        if (depth_c.x <= 501)  { depth_c.x = 0.0; } // remove values previously at 0,0
+        if (depth_c.x > 4095.0) { depth_c.x = 4095.0; }
+    }
+    else { depth_c.x = 0.0; }
+
+    // find index in array for pixel
+    ivec2 tex_dim = imageSize(img_input);
+    int index = (pixel_coords.y * tex_dim.x) + pixel_coords.x;
+
+    // calculate position
+    vec3 point = (invdepthK * vec3(pixel_coords.x + 1, pixel_coords.y + 1, 1.0)) *
+                depth_c.x;
+
+    // get uv coordinates for color
+    vec3 temp_uv = colorKRT * vec4(point, 1.0);
+    vec3 uv = temp_uv / temp_uv.z;
+
+    Position[index] = vec4(point.x, point.y, point.z, 1.f);
+    if (gl_GlobalInvocationID.x == 0 && gl_GlobalInvocationID.y == 0) { 
+        // Calculate nose position in only 1 invocation location
+        pixel_coords = ivec2(nose_pos);
+        depth_c = imageLoad(img_input, pixel_coords);
+        pixel_coords.x = 512-pixel_coords.x;    // flip depth
+        pixel_coords.y = 424-pixel_coords.y;    
+        depth_c *= 1500;                        // limit highest range to 1500 mm
+        depth_c += 500;                         // limit lowest range to 500 mm
+        if (depth_c.x <= 501) depth_c.x = 0;    // remove values previously at 0,0
+        if (depth_c.x > 4095.0) { depth_c.x = 4095.0; }
+        point = (invdepthK * vec3(pixel_coords.x + 1, pixel_coords.y + 1, 1.0)) *
+                depth_c.x;
+
+        Position[0].xyz = point;
+        Position[0].w = depth_c.x;
+    }
+    //Debug[index] = color;
+    //Debug[index] = vec4(uv, depth_c.x);
+    //mat4x3 t = colorK * colorR * colorT;
+    //Debug[index].xyz =  depth_c.xyz;
+}
