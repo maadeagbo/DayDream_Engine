@@ -1,0 +1,17 @@
+.vscode
+*.ddmesh
+.mayaSwatches
+*~
+x64
+SDL2-2.0.4
+bin
+lib
+build
+glm
+release
+debug
+*.tags*
+GPATH
+GRTAGS
+GSYMS
+GTAGS
