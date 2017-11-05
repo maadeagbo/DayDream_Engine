@@ -8,6 +8,7 @@
 #include "WaterLevel.h"
 #include "CrowdSim.h"
 #include "PoseView.h"
+#include "LightingLvl.h"
 
 int main(int argc, char * argv[])
 {
@@ -27,6 +28,9 @@ int main(int argc, char * argv[])
 	ddEngine.AddLevel(new WaterLevel(),
 					  "WaterLevel/assets",
 					  "Water Level");
+	ddEngine.AddLevel(new LightingLvl(),
+					  "LightingTests/assets",
+					  "Lighting Tests");
 	bool launch_engine = ddEngine.LevelSelect();
 
 	if( launch_engine ) {
