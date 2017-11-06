@@ -9,6 +9,11 @@ layout (location = 4) in mat4 InstanceMatrix;
 uniform mat4 MVP;
 uniform mat4 LightSpace;
 
+out VS_OUT {
+	vec4 FragPos;
+} vs_out;
+
 void main() {
     gl_Position = LightSpace * MVP * InstanceMatrix * vec4(VertexPosition, 1.0f);
+	vs_out.FragPos = gl_Position;
 }  

@@ -18,7 +18,8 @@ LightingLvlNav::LightingLvlNav(const char * ID,
 	b_esc(false),
 	b_ctrl_l(false),
 	b_alt_l(false),
-	b_shift_l(false)
+	b_shift_l(false),
+	ignore_controls(false)
 {
 	m_ID = ID;
 	// store function pointer
@@ -32,7 +33,8 @@ LightingLvlNav::LightingLvlNav(const char * ID,
 	override_inst_update();
 }
 
-DD_Event LightingLvlNav::Update(DD_Event event) {
+DD_Event LightingLvlNav::Update(DD_Event event) 
+{
 	// Parse throught events
 	if (event.m_type == "input") {
 
@@ -95,7 +97,8 @@ DD_Event LightingLvlNav::Update(DD_Event event) {
 	return DD_Event();
 }
 
-void LightingLvlNav::initRot(const float rad_pitch, const float rad_Yaw) {
+void LightingLvlNav::initRot(const float rad_pitch, const float rad_Yaw) 
+{
 	Pitch = rad_pitch;
 	Yaw = rad_Yaw;
 	glm::quat new_rot = glm::rotate(glm::quat(), Yaw, glm::vec3(0.f, 1.f, 0.f));

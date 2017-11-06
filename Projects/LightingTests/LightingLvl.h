@@ -13,6 +13,8 @@ public:
 	void Init();
 	void setInterface(const float dt);
 	DD_Event basePost(DD_Event& event);
+
+	bool edit_window;
 private:
 
 };

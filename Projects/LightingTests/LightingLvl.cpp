@@ -1,8 +1,9 @@
 #include "LightingLvl.h"
 #pragma GCC diagnostic ignored "-Wformat-security"
 
-namespace {
-	const char* ball_name = "spin_ball";
+namespace 
+{
+	const char* ball_name = "ball_agent";
 	LightingLvlNav* myControl;
 
 	DD_Light* light;
@@ -21,29 +22,33 @@ LightingLvl::~LightingLvl() {}
 
 void DeleteAgent_LB(DD_Resources* res, const size_t ID);
 
-void LightingLvl::Init() {
+void LightingLvl::Init() 
+{
+	edit_window = false;
+
 	// add mouse controller to level
 	myControl = new LightingLvlNav("avatar");
 	AddAgent(myControl);
 	myControl->UpdatePosition(glm::vec3(0.0f, 0.0f, 0.0f));
-	myControl->initRot(glm::radians(-30.f), glm::radians(45.f));
+	myControl->initRot(glm::radians(-30.f), 0.f);
 
 	// Add shadow light
 	light = ResSpace::getNewDD_Light(res_ptr, "main_light");
-	light->_position = glm::vec3(1000.0f, 1000.f, 2000.0f);
-	light->m_color = glm::vec3(0.1f);
+	light->_position = glm::vec3(10.0f, 200.f, 50.0f);
+	light->m_color = glm::vec3(1.f);
 	light->m_flagShadow = true;
 
 	// add generic camera
 	cam = ResSpace::getNewDD_Camera(res_ptr, "myCam");
 	cam->active = true;
-	cam->near_plane = 1.0f;
-	cam->far_plane = 10000.0f;
+	cam->near_plane = 1.f;
+	cam->far_plane = 2000.0f;
 	cam->SetParent(myControl->m_ID.c_str());
 
 	//  callbacks and posts
 	EventHandler a = std::bind(&LightingLvl::basePost, this, std::placeholders::_1);
 	AddCallback("post", a);
+	AddCallback("edit_cam", a);
 
 	// create some materials
 	DD_Material* mat_r = ResSpace::getNewDD_Material(res_ptr, "red");
@@ -53,14 +58,22 @@ void LightingLvl::Init() {
 
 	// create base agent
 	cbuff<256> mdl_path;
-	// ball
+	// balls
 	mdl_path.format("%sLightingTests/%s", PROJECT_DIR, "sphere_main.ddm");
 	DD_Model* mdl = ResSpace::loadModel_DDM(res_ptr, "spin_ball", mdl_path.str());
 	if (mdl) {
-		DD_Agent* ball = ResSpace::getNewDD_Agent(res_ptr, ball_name);
-		ball->AddModel("spin_ball", 0.f, 1000.f);
-		ball->UpdateScale(glm::vec3(100.f));
-		ball->SetMaterial(ResSpace::getDD_Material_idx(res_ptr, "red"));
+		cbuff<16> ball_id;
+		DD_Agent* ball = nullptr;
+		for (unsigned i = 0; i < 5; i++) {
+			ball_id.format("%s_%u", ball_name, i);
+			ball = ResSpace::getNewDD_Agent(res_ptr, ball_id.str());
+			if (ball) {
+				ball->AddModel("spin_ball", 0.f, 1000.f);
+				ball->UpdatePosition(glm::vec3(0.f, 0.f, -150.f * i));
+				ball->UpdateScale(glm::vec3(100.f));
+				ball->SetMaterial(ResSpace::getDD_Material_idx(res_ptr, "red"));
+			}
+		}
 	}
 	// base
 	mdl_path.format("%sLightingTests/%s", PROJECT_DIR, "base.ddm");
@@ -78,32 +91,80 @@ void LightingLvl::Init() {
 }
 
 // Setup imgui interface
-void LightingLvl::setInterface(const float dt) {
-	//const float debugY = m_screenH - 50.f;
-	//const float debugW = m_screenW - 10.f;
-	//ImGui::SetNextWindowPos(ImVec2(0.f, debugY));
-	//ImGui::SetNextWindowSize(ImVec2(debugW, 20.f));
+void LightingLvl::setInterface(const float dt) 
+{
+	// get io for mouse & keyboard management
+	ImGuiIO& imgui_io = ImGui::GetIO();
+	myControl->ignore_controls = imgui_io.WantCaptureMouse;
 
-	//ImGuiWindowFlags toolbar_flags = 0;
-	//toolbar_flags |= ImGuiWindowFlags_NoTitleBar;
-	//toolbar_flags |= ImGuiWindowFlags_NoResize;
-	//toolbar_flags |= ImGuiWindowFlags_NoMove;
+	// Manipulate camera and light
+	if (edit_window) {
+		cam = ResSpace::findDD_Camera(res_ptr, "myCam");
+		light = ResSpace::findDD_Light(res_ptr, "main_light");
+		if (!cam || !light) { 
+			DD_Terminal::post("[error] LightingLvl::Camera or Light nullptr");
+			return; 
+		}
+
+		ImGui::Begin("Lighting Control", &edit_window, 0);
+
+		// Camera controls
+		ImGui::Text("Camera");
+		ImGui::DragFloat("Near plane", &cam->near_plane, 0.1f, 1.f);
+		ImGui::DragFloat("Far plane", &cam->far_plane, 10.f, 1.f);
+		
+		// Light controls
+		ImGui::Separator();
+
+		// set light type
+		ImGui::Text("Light");
+		int light_type = (int)light->m_type;
+		ImGui::RadioButton("Directional", &light_type, LightType::DIRECTION_L);
+		ImGui::SameLine();
+		ImGui::RadioButton("Point", &light_type, LightType::POINT_L);
+		light->m_type = (LightType)light_type;
+		// fall off
+		ImGui::Text("Fall-off");
+		ImGui::DragFloat("Linear", 
+						 &light->m_linear, 
+						 0.00000001, 
+						 0.1,
+						 0.f,
+						 "%.9f");
+		ImGui::DragFloat("Quadratic", 
+						 &light->m_quadratic, 
+						 0.00000001, 
+						 0.1,
+						 0.f,
+						 "%.9f");
+
+		ImGui::End();
+	}
 }
 
-DD_Event LightingLvl::basePost(DD_Event& event) {
+DD_Event LightingLvl::basePost(DD_Event& event) 
+{
 	if (event.m_type.compare("post") == 0) {
-
 		setInterface(event.m_time);
 
-		// rotate sphere
-		DD_Agent* ball = ResSpace::findDD_Agent(res_ptr, ball_name);
-		if (ball) {
-			glm::quat rot = glm::rotate(
-				glm::quat(), event.m_total_runtime, glm::vec3(0.f, 1.f, 0.f));
-			ball->UpdateRotation(rot);
+		// rotate spheres
+		cbuff<16> ball_id;
+		DD_Agent* ball = nullptr;
+		for (unsigned i = 0; i < 5; i++) {
+			ball_id.format("%s_%u", ball_name, i);
+			ball = ResSpace::findDD_Agent(res_ptr, ball_id.str());
+			if (ball) {
+				glm::quat rot = glm::rotate(glm::quat(), 
+											event.m_total_runtime * (1.f + i), 
+											glm::vec3(0.f, 1.f, 0.f));
+				ball->UpdateRotation(rot);
+			}
 		}
 
 		return DD_Event();
+	}
+	if (event.m_type.compare("edit_cam") == 0) {
+		edit_window ^= 1;
 	}
 	return DD_Event();
 }
