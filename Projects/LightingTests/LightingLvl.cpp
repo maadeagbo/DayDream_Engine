@@ -34,7 +34,7 @@ void LightingLvl::Init()
 
 	// Add shadow light
 	light = ResSpace::getNewDD_Light(res_ptr, "main_light");
-	light->_position = glm::vec3(10.0f, 200.f, 50.0f);
+	light->_position = glm::vec3(10.0f, 1000.f, 50.0f);
 	light->m_color = glm::vec3(1.f);
 	light->m_flagShadow = true;
 
@@ -85,9 +85,15 @@ void LightingLvl::Init()
 		ball_base->SetMaterial(ResSpace::getDD_Material_idx(res_ptr, "green"));
 	}
 	// floor
-	DD_Agent* floor = ResSpace::getNewDD_Agent(res_ptr, "floor");
-	floor->AddModel("plane_prim", 0.f, 1000.f);
-	floor->UpdateScale(glm::vec3(100.f));
+	mdl_path.format("%s%s", MESH_DIR, "sponza.ddm");
+	mdl = ResSpace::loadModel_DDM(res_ptr, "sponza_mdl", mdl_path.str());
+	if (mdl) {
+		DD_Agent* floor = ResSpace::getNewDD_Agent(res_ptr, "sponza");
+		floor->AddModel("sponza_mdl", 0.f, 1000.f);
+		floor->UpdateScale(glm::vec3(100.f));
+		floor->UpdateRotation(glm::rotate(
+			glm::quat(), glm::radians(90.f), dir_up));
+	}
 }
 
 // Setup imgui interface
@@ -137,6 +143,8 @@ void LightingLvl::setInterface(const float dt)
 						 0.1,
 						 0.f,
 						 "%.9f");
+		ImGui::DragFloat3("Position", &light->_position[0]);
+		ImGui::DragFloat3("Direction", &light->m_direction[0]);
 
 		ImGui::End();
 	}
@@ -149,16 +157,21 @@ DD_Event LightingLvl::basePost(DD_Event& event)
 
 		// rotate spheres
 		cbuff<16> ball_id;
-		DD_Agent* ball = nullptr;
+		DD_Agent* ag = nullptr;
 		for (unsigned i = 0; i < 5; i++) {
 			ball_id.format("%s_%u", ball_name, i);
-			ball = ResSpace::findDD_Agent(res_ptr, ball_id.str());
-			if (ball) {
+			ag = ResSpace::findDD_Agent(res_ptr, ball_id.str());
+			if (ag) {
 				glm::quat rot = glm::rotate(glm::quat(), 
 											event.m_total_runtime * (1.f + i), 
 											glm::vec3(0.f, 1.f, 0.f));
-				ball->UpdateRotation(rot);
+				ag->UpdateRotation(rot);
 			}
+		}
+		// update location controller
+		ag = ResSpace::findDD_Agent(res_ptr, "ball_base");
+		if (ag) {
+			ag->UpdatePosition(myControl->pos());
 		}
 
 		return DD_Event();

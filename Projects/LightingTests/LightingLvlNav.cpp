@@ -4,7 +4,7 @@ namespace {
 	const size_t buff_size = 64;
 	char char_buff[buff_size];
 
-	float scroll_speed = 1000.0f, mouseSensitivity = 1.f, Pitch = 0.f, Yaw = 0.f,
+	float scroll_speed = 1000.0f, mouseSpeed = 50.f, Pitch = 0.f, Yaw = 0.f,
 		scroll_dist = 10.f;
 	glm::quat deltaR;
 }
@@ -51,6 +51,36 @@ DD_Event LightingLvlNav::Update(DD_Event event)
 		b_lmouse = input->mouseLMR[0];
 		b_rmouse = input->mouseLMR[2];
 
+		if (!ignore_controls) {
+			glm::vec3 right = RightDir();
+			right.y = 0.f;
+			glm::vec3 forward = ForwardDir();
+			forward.y = 0.f;
+			glm::vec3 up = glm::vec3(0.f, 1.f, 0.f);
+
+			if (input->rawInput[DD_Keys::W_Key]) {
+				if (b_shift_l) {
+					UpdatePosition(pos() + up * mouseSpeed);
+				}
+				else {
+					UpdatePosition(pos() + forward * mouseSpeed);
+				}
+			}
+			if (input->rawInput[DD_Keys::A_Key]) {
+				UpdatePosition(pos() - right * mouseSpeed);
+			}
+			if (input->rawInput[DD_Keys::S_Key]) {
+				if (b_shift_l) {
+					UpdatePosition(pos() - up * mouseSpeed);
+				}
+				else {
+					UpdatePosition(pos() - forward * mouseSpeed);
+				}
+			}
+			if (input->rawInput[DD_Keys::D_Key]) {
+				UpdatePosition(pos() + right * mouseSpeed);
+			}
+		}
 		if (input->mouseScroll > 0) {
 			scroll_dist -= scroll_speed * event.m_time;
 		}
@@ -58,8 +88,8 @@ DD_Event LightingLvlNav::Update(DD_Event event)
 			scroll_dist += scroll_speed * event.m_time;
 		}
 		if (b_rmouse) {
-			Pitch += input->mouseYDelta * mouseSensitivity * event.m_time;
-			Yaw += input->mouseXDelta * mouseSensitivity * event.m_time;
+			Pitch += input->mouseYDelta * event.m_time;
+			Yaw += input->mouseXDelta * event.m_time;
 
 			// constrain pitch to fps style camera (radians)
 			if (Pitch > 1.3f) {

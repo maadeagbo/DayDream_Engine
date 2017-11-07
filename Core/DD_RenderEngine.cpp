@@ -1429,8 +1429,10 @@ void DD_Renderer::ShadowPass(GLfloat dt, VR_Eye eye)
 		if( shadowL->m_type != LightType::SPOT_L ) { // is not in use for now
 			dir - glm::vec3();
 		}
-		if( shadowL->m_type != LightType::DIRECTION_L ) {
-			dir - glm::vec3();
+		if( shadowL->m_type == LightType::DIRECTION_L ) {
+			// set position based on the distance of the camera's far plane
+			// and the direction of the light
+			dir = shadowL->m_direction;
 		}
 		glm::mat4 lightView = glm::lookAt(glm::vec3(pos), dir,
 										  glm::vec3(m_active_cam->worldUp()));
