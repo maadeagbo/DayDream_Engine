@@ -1422,19 +1422,20 @@ void DD_Renderer::ShadowPass(GLfloat dt, VR_Eye eye)
 		// calculate lightspace matrix
 		glm::vec4 pos =
 			shadowL->parent_transform * glm::vec4(shadowL->_position, 1.0f);
-		glm::vec3 dir;
+		glm::vec3 center;
 		if( shadowL->m_type != LightType::POINT_L ) { // is not in use for now
-			dir - glm::vec3();
+			center - glm::vec3();
 		}
 		if( shadowL->m_type != LightType::SPOT_L ) { // is not in use for now
-			dir - glm::vec3();
+			center - glm::vec3();
 		}
 		if( shadowL->m_type == LightType::DIRECTION_L ) {
 			// set position based on the distance of the camera's far plane
 			// and the direction of the light
-			dir = shadowL->m_direction;
+			const float dist = glm::length(pos);
+			center = glm::normalize(shadowL->m_direction) * dist;
 		}
-		glm::mat4 lightView = glm::lookAt(glm::vec3(pos), dir,
+		glm::mat4 lightView = glm::lookAt(glm::vec3(pos), center,
 										  glm::vec3(m_active_cam->worldUp()));
 		// use camera's view frustum to calculate ortho boundaries
 		glm::vec4 corners[8];
