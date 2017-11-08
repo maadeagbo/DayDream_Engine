@@ -32,6 +32,7 @@ struct LightInfo {
 	float quadratic;
 	float attenuation;
 };
+
 uniform LightInfo Light;
 uniform mat4 LSM;
 uniform vec3 viewPos;
@@ -47,7 +48,7 @@ float ShadowCalculation(vec4 lightSpace, vec3 normal, vec3 lightDir) {
 	projCoords = projCoords * 0.5 + 0.5;
 	// index shadow map
 
-	/* variance shadow map (taken from Nvidia paper)
+	//* variance shadow map (taken from Nvidia paper)
 	// compares currentDepth value to a distibution of values using Chebyshev's
 	// inequality. Chebyshev's inequality gives a bound on that percentage of 
 	// of values given the average (expected value E(x)) and a variance
@@ -67,7 +68,7 @@ float ShadowCalculation(vec4 lightSpace, vec3 normal, vec3 lightDir) {
 	// cascaded shadow maps to control)
 	//*/
 
-	//*
+	/*
 	// PCF soft shadows
 	float closestDepth = texture(DepthTex, projCoords.xy).r;
 	float currentDepth = projCoords.z;

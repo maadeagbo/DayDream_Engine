@@ -85,12 +85,12 @@ void LightingLvl::Init()
 		ball_base->SetMaterial(ResSpace::getDD_Material_idx(res_ptr, "green"));
 	}
 	// floor
-	mdl_path.format("%s%s", MESH_DIR, "sponza.ddm");
+	mdl_path.format("%sLightingTests/%s", PROJECT_DIR, "sponza_383.ddm");
 	mdl = ResSpace::loadModel_DDM(res_ptr, "sponza_mdl", mdl_path.str());
 	if (mdl) {
 		DD_Agent* floor = ResSpace::getNewDD_Agent(res_ptr, "sponza");
 		floor->AddModel("sponza_mdl", 0.f, 1000.f);
-		floor->UpdateScale(glm::vec3(100.f));
+		//floor->UpdateScale(glm::vec3(100.f));
 		floor->UpdateRotation(glm::rotate(
 			glm::quat(), glm::radians(90.f), dir_up));
 	}

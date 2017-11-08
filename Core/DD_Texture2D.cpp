@@ -18,8 +18,9 @@ DD_Texture2D::~DD_Texture2D()
 bool DD_Texture2D::Generate(const char * full_path)
 {
 	path = full_path;
+	int channels = 0;
 	unsigned char* image = SOIL_load_image(
-		full_path, &(this->Width), &(this->Height), 0, SOIL_LOAD_RGBA
+		full_path, &(this->Width), &(this->Height), &channels, SOIL_LOAD_RGBA
 	);
 
 	if( image == NULL ) {
