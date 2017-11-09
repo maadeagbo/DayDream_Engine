@@ -3,17 +3,17 @@
 
 #include "DD_Engine.h"
 
-#include "LevelBuilder.h"
-#include "ReconstructScene.h"
-#include "WaterLevel.h"
-#include "CrowdSim.h"
-#include "PoseView.h"
-#include "LightingLvl.h"
+//#include "LevelBuilder.h"
+//#include "ReconstructScene.h"
+//#include "WaterLevel.h"
+//#include "CrowdSim.h"
+//#include "PoseView.h"
+//#include "LightingLvl.h"
 
 int main(int argc, char * argv[])
 {
 	DD_Engine ddEngine;
-	ddEngine.AddLevel(new PoseView(),
+	/*ddEngine.AddLevel(new PoseView(),
 					  "PoseReconstruction/assets",
 					  "Pose Reconstruction");
 	ddEngine.AddLevel(new LevelBuilder(), 
@@ -30,7 +30,7 @@ int main(int argc, char * argv[])
 					  "Water Level");
 	ddEngine.AddLevel(new LightingLvl(),
 					  "LightingTests/assets",
-					  "Lighting Tests");
+					  "Lighting Tests");*/
 	bool launch_engine = ddEngine.LevelSelect();
 
 	if( launch_engine ) {
