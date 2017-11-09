@@ -32,6 +32,7 @@ struct LightInfo {
 	float quadratic;
 	float attenuation;
 };
+
 uniform LightInfo Light;
 uniform mat4 LSM;
 uniform vec3 viewPos;
@@ -46,6 +47,29 @@ float ShadowCalculation(vec4 lightSpace, vec3 normal, vec3 lightDir) {
 	// Transform to [0,1] range
 	projCoords = projCoords * 0.5 + 0.5;
 	// index shadow map
+
+	//* variance shadow map (taken from Nvidia paper)
+	// compares currentDepth value to a distibution of values using Chebyshev's
+	// inequality. Chebyshev's inequality gives a bound on that percentage of 
+	// of values given the average (expected value E(x)) and a variance
+	float currentDepth = projCoords.z;
+	vec4 moments = texture(DepthTex, projCoords.xy);
+	float E_x2 = moments.y; // average squared value over region
+	float Ex_2 = moments.x * moments.x;	// average value over region (squared)
+	float var = E_x2 - Ex_2; // variance = E(x2) - (E(x) * E(x))
+	var = max(var, 0.00002);
+	float mD = currentDepth - moments.x;
+	float mD_2 = mD * mD;
+	float p_max = var / (var + mD_2); // probability of occlusion
+	// high variance occurs at silhouette edges. Use max to set shadow value
+	// for the shadow or light side of the variance boundary
+	float shadow = max(p_max, (currentDepth <= moments.x) ? 1.0 : 0.2);
+	// light bleed can occur at high depth / variance values (need to implement
+	// cascaded shadow maps to control)
+	//*/
+
+	/*
+	// PCF soft shadows
 	float closestDepth = texture(DepthTex, projCoords.xy).r;
 	float currentDepth = projCoords.z;
 	// Check whether current frag pos is in shadow
@@ -63,6 +87,8 @@ float ShadowCalculation(vec4 lightSpace, vec3 normal, vec3 lightDir) {
 		}    
 	}
 	shadow /= 9.0;
+	shadow = (1.0 - shadow);
+	//*/
 
 	// Keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
 	if(projCoords.z > 1.0) {
@@ -119,7 +145,7 @@ vec4 directionLightModel( vec3 lightDir, vec3 viewDir, vec3 norm, vec4 albedoSpe
 	float ks = pow(max(dot(norm, halfDir), 0.0), 40.0);
 	vec3 spec = color * ks * albedoSpec.a;
 
-	return vec4((ambient + (diffuse + spec) * (1.0 - shadow)), 1.0);
+	return vec4((ambient + (diffuse + spec) * shadow), 1.0);
 	//return vec4(vec3(shadow), 1.0);
 }
 
@@ -133,7 +159,7 @@ void main() {
 	vec3 norm = vec3( texture( NormalTex, tex_coord ) );
 	vec4 albedoSpec = texture( ColorTex, tex_coord );
 	//vec4 albedoSpec = vec4(0.5, 0.5, 0.5, 1.0);
-	vec3 viewDir = normalize(-pos);
+	vec3 viewDir = normalize(viewPos-pos);
 	vec3 lightDir = vec3(0.0);
 	// uniform braching to select light
 	vec4 finalColor = vec4(0.0);

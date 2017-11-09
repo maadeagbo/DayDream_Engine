@@ -364,13 +364,9 @@ void RendSpace::BindPassTexture(DD_Shader * shader,
 	if( lightPass ) {
 		glActiveTexture(GL_TEXTURE3);
 		shader->setUniform("DepthTex", 3);
-		glBindTexture(GL_TEXTURE_2D, sBuf->depthBuf);
+		glBindTexture(GL_TEXTURE_2D, sBuf->shadowTex);
 	}
-	else {
-		glActiveTexture(GL_TEXTURE0);
-		shader->setUniform("depthMap", 0);
-		glBindTexture(GL_TEXTURE_2D, sBuf->depthBuf);
-	}
+	else {}
 }
 
 // Create empty texture
@@ -474,22 +470,37 @@ ShadowBuffer RendSpace::CreateShadowBuffer(const int width, const int height)
 	glGenFramebuffers(1, &sBuf.depthMapFBO);
 	glBindFramebuffer(GL_FRAMEBUFFER, sBuf.depthMapFBO);
 
-	// depth buffer
-	glGenTextures(1, &sBuf.depthBuf);
-	glBindTexture(GL_TEXTURE_2D, sBuf.depthBuf);
-	glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH_COMPONENT32F, width, height);
+	// depth image
+	glGenTextures(1, &sBuf.shadowTex);
+	glBindTexture(GL_TEXTURE_2D, sBuf.shadowTex);
 	// texture paramenters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border);
 
-	// attach to framebuffer object
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,
-						   sBuf.depthBuf, 0);
-	glDrawBuffer(GL_NONE);
-	glReadBuffer(GL_NONE);
+	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA32F, width, height);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 4);
+	glGenerateMipmap(GL_TEXTURE_2D);
+
+	// depth buffer
+	glGenRenderbuffers(1, &sBuf.depthBuf);
+	glBindRenderbuffer(GL_RENDERBUFFER, sBuf.depthBuf);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32, width, height);
+
+	// attach images to framebuffer
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, 
+							  GL_DEPTH_ATTACHMENT,
+							  GL_RENDERBUFFER, 
+							  sBuf.depthBuf);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, 
+						   GL_COLOR_ATTACHMENT0, 
+						   GL_TEXTURE_2D,
+						   sBuf.shadowTex, 
+						   0);
+	GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0 };
+	glDrawBuffers(1, drawBuffers);
 
 	if( glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE ) {
 		DD_Terminal::post("ERROR::FRAMEBUFFER:: Shadow Framebuffer is not complete!\n");
@@ -1411,17 +1422,20 @@ void DD_Renderer::ShadowPass(GLfloat dt, VR_Eye eye)
 		// calculate lightspace matrix
 		glm::vec4 pos =
 			shadowL->parent_transform * glm::vec4(shadowL->_position, 1.0f);
-		glm::vec3 dir;
+		glm::vec3 center;
 		if( shadowL->m_type != LightType::POINT_L ) { // is not in use for now
-			dir - glm::vec3();
+			center - glm::vec3();
 		}
 		if( shadowL->m_type != LightType::SPOT_L ) { // is not in use for now
-			dir - glm::vec3();
+			center - glm::vec3();
 		}
-		if( shadowL->m_type != LightType::DIRECTION_L ) {
-			dir - glm::vec3();
+		if( shadowL->m_type == LightType::DIRECTION_L ) {
+			// set position based on the distance of the camera's far plane
+			// and the direction of the light
+			const float dist = glm::length(pos);
+			center = glm::normalize(shadowL->m_direction) * dist;
 		}
-		glm::mat4 lightView = glm::lookAt(glm::vec3(pos), dir,
+		glm::mat4 lightView = glm::lookAt(glm::vec3(pos), center,
 										  glm::vec3(m_active_cam->worldUp()));
 		// use camera's view frustum to calculate ortho boundaries
 		glm::vec4 corners[8];

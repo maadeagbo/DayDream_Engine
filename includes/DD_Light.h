@@ -36,18 +36,20 @@ struct DD_Light
 	float	m_spotExp;
 	glm::mat4 parent_transform;
 	bool	m_flagShadow;
+	bool	light_obj;
 
 	DD_Light() :
 		m_type(LightType::DIRECTION_L),
 		m_direction(glm::vec3(-1.0f)),
 		m_color(glm::vec3(1.0f)),
-		m_linear(0.007f),
-		m_quadratic(0.0002f),
+		m_linear(0.0007f),
+		m_quadratic(0.00002f),
 		m_cutoff_i(glm::cos(glm::radians(9.5f))),
 		m_cutoff_o(glm::cos(glm::radians(20.5f))),
 		m_spotExp(40.0f),
 		m_flagShadow(false),
-		_flag_parent(false)
+		_flag_parent(false),
+		light_obj(false)
 	{}
 
 	DD_Light(const char* ID) :
@@ -61,7 +63,8 @@ struct DD_Light
 		m_cutoff_o(glm::cos(glm::radians(20.5f))),
 		m_spotExp(40.0f),
 		m_flagShadow(false),
-		_flag_parent(false)
+		_flag_parent(false),
+		light_obj(false)
 	{}
 
 	inline void SetParent(const char* parentID)
