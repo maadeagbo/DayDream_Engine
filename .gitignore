@@ -2,15 +2,26 @@
 *.ddmesh
 .mayaSwatches
 *~
-x64
-bin
-lib
-build
-glm
-release
-debug
 *.tags*
 GPATH
 GRTAGS
 GSYMS
 GTAGS
+
+#**************** Folders to ignore if unzipped ***************************
+
+freetype-2.7
+vrpn_lib_files
+glm
+imgui
+SOIL
+SDL2-2.0.7
+
+#**************** General folders to always ignore ************************
+
+release
+debug
+x64
+bin
+lib
+build
