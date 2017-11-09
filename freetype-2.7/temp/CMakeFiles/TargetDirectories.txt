@@ -1,6 +1,0 @@
-D:/Docs/DayDream_Repo/freetype-2.7/temp/CMakeFiles/dist.dir
-D:/Docs/DayDream_Repo/freetype-2.7/temp/CMakeFiles/freetype.dir
-D:/Docs/DayDream_Repo/freetype-2.7/temp/CMakeFiles/PACKAGE.dir
-D:/Docs/DayDream_Repo/freetype-2.7/temp/CMakeFiles/INSTALL.dir
-D:/Docs/DayDream_Repo/freetype-2.7/temp/CMakeFiles/ALL_BUILD.dir
-D:/Docs/DayDream_Repo/freetype-2.7/temp/CMakeFiles/ZERO_CHECK.dir

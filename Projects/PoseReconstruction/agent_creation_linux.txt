@@ -1,6 +1,0 @@
-$load_sk sk0 /home/maadeagbo/Downloads/skele_t2.ddb
-$load_anim an0 /home/maadeagbo/Downloads/clipped_dda/23_h10_f10_t11_xpd_sl.dda
-$load_agent ag0 sk0 $add_anim ag0 an0 as0 $edit_ag0
-
-$load_anim an1 /home/maadeagbo/Downloads/clipped_dda/23_h10_f10_t11_xpd_st.dda
-$load_agent ag1 sk0 $add_anim ag1 an1 as0 $edit_ag1

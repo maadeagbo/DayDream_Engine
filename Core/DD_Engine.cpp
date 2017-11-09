@@ -278,8 +278,13 @@ bool DD_Engine::LevelSelect(const size_t w, const size_t h) {
 		ImGui::Dummy(ImVec2(0, 10));
 
 		// Set options for loading
-		ImGui::ListBox("<-- Select Scene", &current_lvl,
-					   &lvls_list[0], (int)lvls_list.size(), 4);
+		if (lvls_list.size() > 0) {
+			ImGui::ListBox("<-- Select Scene", &current_lvl,
+						   &lvls_list[0], (int)lvls_list.size(), 4);
+		}
+		else {
+			ImGui::Text("No levels present");
+		}
 
 		ImGui::DragInt2("<-- Resolution", resolution_set, 10.f, 100);
 		m_WIDTH = resolution_set[0];
@@ -291,8 +296,10 @@ bool DD_Engine::LevelSelect(const size_t w, const size_t h) {
 		ImGui::Checkbox("(Windows) Close Console", &engine_mode_flags[3]);
 
 		ImGui::Dummy(ImVec2(0, 10));
-		ImGui::Dummy(ImVec2(scrW/2 - 60/2 - 10, 20)); ImGui::SameLine();
-		launch = ImGui::Button("Launch", ImVec2(60, 20));
+		if (lvls_list.size() > 0) {
+			ImGui::Dummy(ImVec2(scrW / 2 - 60 / 2 - 10, 20)); ImGui::SameLine();
+			launch = ImGui::Button("Launch", ImVec2(60, 20));
+		}
 		ImGui::Dummy(ImVec2(scrW / 2 - 180 / 2 - 10, 20)); ImGui::SameLine();
 		if (ImGui::Button("Launch Asset Viewer", ImVec2(180, 20))) {
 			launch = true;
