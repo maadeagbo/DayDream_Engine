@@ -39,6 +39,7 @@ int main(int argc, char * argv[])
 		ddEngine.Launch();
 		ddEngine.Run();
 	}
+	ddEngine.cleanUp();
 
 	return 0;
 }

@@ -35,7 +35,8 @@ namespace DD_Terminal {
 	void dumpTerminalToImGuiText();
 	const char* pollBuffer();
 	DD_Event getInput(DD_Event& event);
-	void getTerminalHistory(char **&history, unsigned *&hist_size);
+	void inTerminalHistory();
+	void outTerminalHistory();
 
 	template<typename... Args>
 	void f_post(const char* format_str, const Args&... args)

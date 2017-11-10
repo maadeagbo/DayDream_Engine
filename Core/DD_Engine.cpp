@@ -13,7 +13,6 @@ namespace {
 	std::future<void> load_RES, load_RAM, load_LVL;
 	std::chrono::milliseconds timespan(10);
 	std::chrono::milliseconds chrono_msec(1);
-	std::string temp = "";
 
 	const bool UNLOCK_FRAMEPACE = true;
 	const size_t FRAME_CAP = 100;
@@ -241,6 +240,8 @@ void DD_Engine::Launch()
 	default:
 		break;
 	}
+	// load terminal history
+	DD_Terminal::inTerminalHistory();
 }
 
 /// \brief Select level and set parameters
@@ -629,12 +630,7 @@ void DD_Engine::gameLoop()
 /// \brief Clean up engine resources
 void DD_Engine::cleanUp() 
 {
-	// write out terminal history
-	DD_IOhandle hist;
-	cbuff<256> outfile;
-	//outfile.format("%s%s", RESOURCE_DIR, "termhist.txt");
-	//hist.open(outfile.str(), DD_IOflag::WRITE);
-
+	DD_Terminal::outTerminalHistory(); // save history
 	cleanUpContexts();
 	// shutdown SDL2
 	SDL_Quit();

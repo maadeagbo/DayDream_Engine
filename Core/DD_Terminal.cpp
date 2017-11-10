@@ -1,4 +1,5 @@
 #include "DD_Terminal.h"
+#include "DD_FileIO.h"
 #include <regex>
 #pragma GCC diagnostic ignored "-Wformat-security"
 
@@ -208,11 +209,56 @@ DD_Event DD_Terminal::getInput(DD_Event & event)
 	return DD_Event();
 }
 
-void DD_Terminal::getTerminalHistory(char **& history, unsigned *& hist_size)
+void DD_Terminal::inTerminalHistory()
 {
-	*hist_size = total_cmds_entered;
-	if (total_cmds_entered > CMD_HIST_SIZE) { *hist_size = CMD_HIST_SIZE; }	
-	history = (char**)cmd_history;
+	// read saved terminal history
+	DD_IOhandle io_handle;
+	cbuff<256> infile;
+	infile.format("%s%s", RESOURCE_DIR, "terminal_history.txt");
+	io_handle.open(infile.str(), DD_IOflag::READ);
+	const char* line = io_handle.readNextLine();
+
+	// save commands, update head and tail
+	while (line) {
+		snprintf(cmd_history[cmd_hist_tail], DEFAULT_ENTRY_SIZE, line);
+		total_cmds_entered += 1;
+		cmd_hist_tail = (cmd_hist_tail + 1) % CMD_HIST_SIZE;
+		cmd_hist_head = (cmd_hist_tail == cmd_hist_head) ?
+			(cmd_hist_head + 1) % CMD_HIST_SIZE : cmd_hist_head;
+
+		line = io_handle.readNextLine();
+	}
+}
+
+void DD_Terminal::outTerminalHistory()
+{
+	// write out terminal history
+	DD_IOhandle io_handle;
+	cbuff<256> outfile;
+	outfile.format("%s%s", RESOURCE_DIR, "terminal_history.txt");
+	io_handle.open(outfile.str(), DD_IOflag::WRITE);
+
+	// split history size in 2
+	// If head --> tail == max history size, need to scroll thru history twice
+	// to preserve ordering
+	unsigned history_size_0 = 0;
+	unsigned history_size_1 = 0;
+
+	history_size_0 = (total_cmds_entered >= CMD_HIST_SIZE) ?
+		CMD_HIST_SIZE - cmd_hist_head : total_cmds_entered;
+	history_size_1 = (total_cmds_entered >= CMD_HIST_SIZE) ?
+		cmd_hist_tail + 1 : 0;
+
+	// first loop (head to end/tail)
+	for (unsigned i = cmd_hist_head; i < (history_size_0 + cmd_hist_head); i++){
+		io_handle.writeLine(cmd_history[i]);
+		io_handle.writeLine("\n");
+	}
+	// second loop (only loops if total_cmds_entered >= CMD_HIST_SIZE)
+	for (unsigned i = 0; i < history_size_1; i++) {
+		io_handle.writeLine(cmd_history[i]);
+		io_handle.writeLine("\n");
+	}
 }
 
 ImColor colorCodeOutput(const char * entry)
