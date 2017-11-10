@@ -114,6 +114,9 @@ void DD_Input::UpdateKeyDown(SDL_Keysym & key)
 		case SDLK_DOWN:
 			Keys[(unsigned)DD_Keys::DOWN_KEY] = true;
 			break;
+		case SDLK_TAB:
+			Keys[(unsigned)DD_Keys::TAB_Key] = true;
+			break;
 		default:
 			break;
 	}
@@ -232,6 +235,9 @@ void DD_Input::UpdateKeyUp(SDL_Keysym & key)
 			break;
 		case SDLK_DOWN:
 			Keys[(unsigned)DD_Keys::DOWN_KEY] = false;
+			break;
+		case SDLK_TAB:
+			Keys[(unsigned)DD_Keys::TAB_Key] = false;
 			break;
 		default:
 			break;

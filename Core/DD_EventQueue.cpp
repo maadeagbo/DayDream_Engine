@@ -78,7 +78,7 @@ void DD_Queue::GetPosts(const char* postID, const float dt, const float totalTim
 
 		DD_Event newEvent = std::move(m_postHandlers[i].func(event));
 
-		push(newEvent);
+		if (newEvent.m_type.compare("") != 0) { push(newEvent); }
 	}
 }
 

@@ -1,4 +1,5 @@
 #include "DD_Terminal.h"
+#include <regex>
 #pragma GCC diagnostic ignored "-Wformat-security"
 
 #define TOTAL_ENTRIES 1000
@@ -10,6 +11,7 @@ typedef char buffEntry[DEFAULT_ENTRY_SIZE];
 
 ImColor colorCodeOutput(const char* entry);
 void execTerminalCommand(const char* command);
+int terminalCallback(ImGuiTextEditCallbackData* data);
 
 namespace {
 	bool filter_ON = false;
@@ -31,9 +33,17 @@ namespace {
 	unsigned total_cmds_entered = 0;
 	bool up_pressed = false;
 	bool down_pressed = false;
+	bool tab_pressed = false;
 
 	ImGuiTextFilter filter;
 	float last_button_press = 0.f;
+	
+	std::regex regex_str;
+	char regex_scratch[DEFAULT_ENTRY_SIZE];
+	bool restart_reg_search = true;
+	unsigned num_regex_matches = 0;
+	unsigned last_tabbed = 0;
+	unsigned matched_expr[CMD_HIST_SIZE];
 }
 
 void DD_Terminal::flipDebugFlag() { DEBUG_ON ^= 1; }
@@ -88,36 +98,20 @@ void DD_Terminal::display(const float scr_width, const float scr_height)
 			if (ImGui::InputText("Input ($<command>)",
 								 cmd_input,
 								 DEFAULT_ENTRY_SIZE,
-								 ImGuiInputTextFlags_EnterReturnsTrue)) {
-				//if (*cmd_input) { execTerminalCommand(cmd_input); }
-				execTerminalCommand(cmd_input);
+								 ImGuiInputTextFlags_EnterReturnsTrue |
+								 ImGuiInputTextFlags_CallbackCompletion |
+								 ImGuiInputTextFlags_CallbackHistory,
+								 &terminalCallback)) 
+			{
+				if (*cmd_input) { execTerminalCommand(cmd_input); }
 			}
-			if (up_pressed) {
-				if (total_cmds_entered >= CMD_HIST_SIZE) { // loop back to end
-					cmd_scroll_idx = (cmd_scroll_idx == 0) ?
-						CMD_HIST_SIZE - 1 : cmd_scroll_idx - 1;
-				}
-				else { // stop at head
-					cmd_scroll_idx = (cmd_scroll_idx == 0) ?
-						0 : cmd_scroll_idx - 1;
-				}
-				snprintf(cmd_input, DEFAULT_ENTRY_SIZE, cmd_history[cmd_scroll_idx]);
-				up_pressed = false;
-			}
-			if (down_pressed) {
-				if (total_cmds_entered >= CMD_HIST_SIZE) { // loop back to top
-					cmd_scroll_idx = (cmd_scroll_idx + 1) % CMD_HIST_SIZE;
-				}
-				else { // stop at head
-					cmd_scroll_idx += (cmd_scroll_idx == cmd_hist_tail) ?
-						0 : 1;
-				}
-				snprintf(cmd_input, DEFAULT_ENTRY_SIZE, cmd_history[cmd_scroll_idx]);
-				down_pressed = false;
-			}
-			// Keep auto focus on the input box
-			if (ImGui::IsItemHovered()) {
-				ImGui::SetKeyboardFocusHere(0); // Auto hovered widget
+			// keep focus on imgui
+			if (ImGui::IsItemHovered() ||
+				(ImGui::IsRootWindowOrAnyChildFocused() &&
+				 !ImGui::IsAnyItemActive() &&
+				 !ImGui::IsMouseClicked(0)))
+			{
+				ImGui::SetKeyboardFocusHere(-1); // Auto focus previous widget
 			}
 		}
 		ImGui::Separator();
@@ -206,8 +200,19 @@ DD_Event DD_Terminal::getInput(DD_Event & event)
 			down_pressed = true;
 			last_button_press = 0.f;
 		}
+		if (input->rawInput[DD_Keys::TAB_Key] && last_button_press > 0.15f) { 
+			tab_pressed = true;
+			last_button_press = 0.f;
+		}
 	}
 	return DD_Event();
+}
+
+void DD_Terminal::getTerminalHistory(char **& history, unsigned *& hist_size)
+{
+	*hist_size = total_cmds_entered;
+	if (total_cmds_entered > CMD_HIST_SIZE) { *hist_size = CMD_HIST_SIZE; }	
+	history = (char**)cmd_history;
 }
 
 ImColor colorCodeOutput(const char * entry)
@@ -249,4 +254,76 @@ void execTerminalCommand(const char * command)
 	cmd_scroll_idx = cmd_hist_tail;
 
 	*cmd_input = '\0'; // clear cmd line
+	restart_reg_search = true; // restart tab completion
+}
+
+int terminalCallback(ImGuiTextEditCallbackData * data)
+{
+	if (up_pressed) {
+		if (total_cmds_entered >= CMD_HIST_SIZE) { // loop back to end
+			cmd_scroll_idx = (cmd_scroll_idx == 0) ?
+				CMD_HIST_SIZE - 1 : cmd_scroll_idx - 1;
+		}
+		else { // stop at head
+			cmd_scroll_idx = (cmd_scroll_idx == 0) ?
+				0 : cmd_scroll_idx - 1;
+		}
+		up_pressed = false;
+	}
+	else if (down_pressed) {
+		if (total_cmds_entered >= CMD_HIST_SIZE) { // loop back to top
+			cmd_scroll_idx = (cmd_scroll_idx + 1) % CMD_HIST_SIZE;
+		}
+		else { // stop at head
+			cmd_scroll_idx += (cmd_scroll_idx == cmd_hist_tail) ?
+				0 : 1;
+		}
+		down_pressed = false;
+	}
+	else if (tab_pressed) {
+		tab_pressed = false;
+
+		if (restart_reg_search) {
+			num_regex_matches = 0;
+			last_tabbed = 0;
+			snprintf(regex_scratch, DEFAULT_ENTRY_SIZE, "^%s.*", data->Buf);
+			regex_str.assign(regex_scratch);
+
+			// log regex matches (can be done in parallel)
+			for (unsigned i = 0; i < CMD_HIST_SIZE; i++) {
+				if (std::regex_search(cmd_history[i], regex_str)) {
+					matched_expr[num_regex_matches] = i;
+					num_regex_matches += 1;
+				}
+			}
+			restart_reg_search = false;
+		}
+
+		if (num_regex_matches > 0) {
+			unsigned t_idx = 0;
+			if (last_tabbed < num_regex_matches - 1) { // set idx to the next one
+				last_tabbed += 1;
+				t_idx = matched_expr[last_tabbed];
+			}
+			else { // restart
+				last_tabbed = 0;
+				t_idx = matched_expr[last_tabbed];
+			}
+			// set tabbed text
+			data->BufTextLen = (int)snprintf(
+				data->Buf, data->BufSize, "%s", cmd_history[t_idx]);
+			data->CursorPos = data->SelectionStart = data->SelectionEnd =
+				data->BufTextLen;
+			data->BufDirty = true;
+		}
+		return 0; // exit after setting text
+	}
+	// set scrolled to text
+	data->BufTextLen = (int)snprintf(
+		data->Buf, data->BufSize, "%s", cmd_history[cmd_scroll_idx]);
+	data->CursorPos = data->SelectionStart = data->SelectionEnd =
+		data->BufTextLen;
+	data->BufDirty = true;
+
+	return 0;
 }

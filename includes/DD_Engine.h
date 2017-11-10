@@ -54,10 +54,8 @@ public:
 		load_assets(false),
 		flag_debug(false)
 	{}
-	~DD_Engine() {
-		// shutdown SDL2
-		SDL_Quit();
-	}
+	~DD_Engine() {}
+
 	bool InitGLLoadGen(const bool displayInfo = false);
 	void CleanUpSDLContext();
 	void cleanUpContexts();
@@ -79,6 +77,7 @@ public:
 	void InitCurrentLevel();
 	void updateSDL();
 	void gameLoop();
+	void cleanUp();
 
 	int m_WIDTH, m_HEIGHT;
 	GameState main_state;

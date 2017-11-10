@@ -230,6 +230,7 @@ void DD_Engine::Launch()
 	switch (init_flag)
 	{
 	case EngineState::VIEWER:
+		Load();
 		LoadViewer();
 		break;
 	case EngineState::WORLD_BUILDER:
@@ -403,19 +404,6 @@ void DD_Engine::Load()
 /// \brief Load engine compoenets for DD_AssetViewer
 void DD_Engine::LoadViewer()
 {
-	EngineMode init_options = EngineMode::DD_NOT_SET;
-	init_options = (engine_mode_flags[0]) ?
-		EngineMode(init_options | EngineMode::DD_VSYNC) : init_options;
-	init_options = (engine_mode_flags[1]) ?
-		EngineMode(init_options | EngineMode::DD_FULLSCREEN) : init_options;
-	init_options = (engine_mode_flags[2]) ?
-		EngineMode(init_options | EngineMode::DD_SECOND_DISPLAY) : init_options;
-
-	openWindow(m_WIDTH, m_HEIGHT, init_options);
-	// Set up resources
-	main_res.queue = &main_q;
-	// set up math/physics library
-	DD_MathLib::setResourceBin(&main_res);
 	// initialize Asset viewer
 	// log dimensions
 	main_viewer.m_screenH = m_HEIGHT;
@@ -427,45 +415,6 @@ void DD_Engine::LoadViewer()
 		std::placeholders::_1);
 	main_q.RegisterHandler(handlerV, "viewer");
 	main_q.RegisterPoster(handlerV);
-
-	// initialize Animation system and register handlers
-	main_animator.res_ptr = &main_res;
-	EventHandler handlerA = std::bind(&DD_AnimSystem::update, &main_animator,
-		std::placeholders::_1);
-	main_q.RegisterHandler(handlerA, "update_animation");
-
-	// Load Renderer
-	main_renderer.m_resourceBin = &main_res;
-	main_renderer.m_time = &main_timer;
-	main_renderer.LoadRendererEngine((GLfloat)m_WIDTH, (GLfloat)m_HEIGHT);
-	main_renderer.m_particleSys->m_resBin = &main_res;
-
-	// add draw handler
-	EventHandler handlerR = std::bind(&DD_Renderer::RenderHandler, 
-									  &main_renderer,
-		std::placeholders::_1);
-	main_q.RegisterHandler(handlerR, "render");
-	main_q.RegisterHandler(handlerR, "rendstat");
-	main_q.RegisterHandler(handlerR, "LineRend");
-
-	// add particle handler
-	EventHandler handlerP = std::bind(&DD_ParticleSys::Create,
-		main_renderer.m_particleSys, std::placeholders::_1);
-	EventHandler handlerP2 = std::bind(&DD_ParticleSys::AddJobToQueue,
-		main_renderer.m_particleSys, std::placeholders::_1);
-	main_q.RegisterHandler(handlerP, "generate_emitter");
-	main_q.RegisterHandler(handlerP, "create_cloth");
-	main_q.RegisterHandler(handlerP, "debug");
-	main_q.RegisterHandler(handlerP, "system_pause");
-	main_q.RegisterHandler(handlerP, "update_cloth");
-	main_q.RegisterHandler(handlerP2, "particle_jobA");
-	main_q.RegisterPoster(handlerP);
-
-	// add engine callback
-	EventHandler handlerE = std::bind(&DD_Engine::Update, 
-									  this, 
-									  std::placeholders::_1);
-	main_q.RegisterHandler(handlerE, "EXIT");
 }
 
 void DD_Engine::updateSDL()
@@ -583,8 +532,6 @@ void DD_Engine::Run()
 		}
 		else { std::this_thread::sleep_for(chrono_msec); }
 	}
-	// stop
-	cleanUpContexts();
 }
 
 void DD_Engine::gameLoop()
@@ -679,6 +626,20 @@ void DD_Engine::gameLoop()
 	}
 }
 
+/// \brief Clean up engine resources
+void DD_Engine::cleanUp() 
+{
+	// write out terminal history
+	DD_IOhandle hist;
+	cbuff<256> outfile;
+	//outfile.format("%s%s", RESOURCE_DIR, "termhist.txt");
+	//hist.open(outfile.str(), DD_IOflag::WRITE);
+
+	cleanUpContexts();
+	// shutdown SDL2
+	SDL_Quit();
+}
+
 void DD_Engine::AddLevel(DD_GameLevel * level,
 						 const char* assetLoc,
 						 const char* ID)
@@ -700,27 +661,27 @@ void DD_Engine::LoadQueue()
 	float frametime = main_timer.getFrameTime();
 	float gametime = main_timer.getTimeFloat();
 
-	DD_Event inputE = DD_Event();
+	DD_Event inputE;
 	inputE.m_time = frametime;
 	inputE.m_type = "input";
 	inputE.m_message = main_input.GetInput();
 	main_q.push(inputE);
 
-	DD_Event vrE = DD_Event();
+	DD_Event vrE;
 	vrE.m_time = frametime;
 	vrE.m_type = "VR";
 	main_q.push(vrE);
 
 	// update Viewer (if active)
 	if (init_flag == EngineState::VIEWER) {
-		DD_Event vrV = DD_Event();
+		DD_Event vrV;
 		vrE.m_time = frametime;
 		vrE.m_type = "viewer";
 		main_q.push(vrV);
 	}
 
 	// update AI
-	DD_Event aiE = DD_Event();
+	DD_Event aiE;
 	aiE.m_time = frametime;
 	aiE.m_type = "update_AI";
 	main_q.push(aiE);
@@ -737,7 +698,7 @@ void DD_Engine::LoadQueue()
 	}
 	
 	// update animation (last thing to update before rendering)
-	DD_Event animE = DD_Event();
+	DD_Event animE;
 	animE.m_time = frametime;
 	animE.m_total_runtime = gametime;
 

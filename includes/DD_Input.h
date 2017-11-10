@@ -59,6 +59,7 @@ enum DD_Keys
 	MOUSE_DOWN,
 	UP_KEY,
 	DOWN_KEY,
+	TAB_Key,
 	NUM_KEYS
 };
 

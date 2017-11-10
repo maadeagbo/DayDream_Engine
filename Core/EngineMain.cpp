@@ -13,9 +13,7 @@
 int main(int argc, char * argv[])
 {
 	DD_Engine ddEngine;
-	/*ddEngine.AddLevel(new PoseView(),
-					  "PoseReconstruction/assets",
-					  "Pose Reconstruction");
+	/*
 	ddEngine.AddLevel(new LevelBuilder(), 
 					  "LevelBuilder/assets", 
 					  "Level Builder");
@@ -28,9 +26,13 @@ int main(int argc, char * argv[])
 	ddEngine.AddLevel(new WaterLevel(),
 					  "WaterLevel/assets",
 					  "Water Level");
+	ddEngine.AddLevel(new PoseView(),
+					  "PoseReconstruction/assets",
+					  "Pose Reconstruction");
 	ddEngine.AddLevel(new LightingLvl(),
 					  "LightingTests/assets",
-					  "Lighting Tests");*/
+					  "Lighting Tests");
+	*/
 	bool launch_engine = ddEngine.LevelSelect();
 
 	if( launch_engine ) {
