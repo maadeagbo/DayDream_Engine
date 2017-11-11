@@ -96,6 +96,7 @@ void DD_Resources::LoadDefaults()
 {
 	obj_mat m = obj_mat();
 	m.ID = "default";
+	m.diffuseRaw = obj_vec3({0.5f, 0.5f, 0.5f});
 	materials[mtl_counter] = std::move(ResSpace::createMaterial(this, m));
 	mtl_counter += 1;
 
@@ -691,7 +692,6 @@ DD_ModelSK * loadSkinnedModel(DD_Resources * res,
 			return mdlsk;
 		}
 	}
-	
 	// load ddm or ddg file if provided
 	dd_array<MeshData> mesh;
 	if (*ddm_path) {
@@ -1480,13 +1480,14 @@ void loadAgent_ID(DD_Resources* res, const char* agentID, bool mem_flag)
 					// free space on system memory
 					model->meshes[j].data.resize(1);
 				}
+				// find and set material
 				size_t mat_index = (j >= model->materials.size()) ?
 					0 : model->materials[j];
 				DD_Material* mat = ResSpace::findDD_Material(res, mat_index);
 
 				mat->OpenGLBindMaterial();
 
-				if (agent->mat_buffer.isValid()) {
+				if (!agent->mat_buffer.isValid()) {
 					agent->mat_buffer.resize(model->materials.size());
 					agent->mat_buffer = model->materials;
 				}

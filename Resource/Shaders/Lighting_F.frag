@@ -159,7 +159,7 @@ void main() {
 	vec3 norm = vec3( texture( NormalTex, tex_coord ) );
 	vec4 albedoSpec = texture( ColorTex, tex_coord );
 	//vec4 albedoSpec = vec4(0.5, 0.5, 0.5, 1.0);
-	vec3 viewDir = normalize(viewPos-pos);
+	vec3 viewDir = normalize(viewPos - pos);
 	vec3 lightDir = vec3(0.0);
 	// uniform braching to select light
 	vec4 finalColor = vec4(0.0);

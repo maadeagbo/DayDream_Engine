@@ -18,6 +18,7 @@ namespace {
 	bool filter_ON = false;
 	bool DEBUG_ON = false;
 	bool set_buffer_pos = false;
+	bool write_out_history = false;
 
 	buffEntry history[TOTAL_ENTRIES];
 	unsigned logged_input[VISIBLE_ENTRIES];
@@ -211,6 +212,7 @@ DD_Event DD_Terminal::getInput(DD_Event & event)
 
 void DD_Terminal::inTerminalHistory()
 {
+	write_out_history = true; // prevents wiping terminal history on exit
 	// read saved terminal history
 	DD_IOhandle io_handle;
 	cbuff<256> infile;
@@ -219,19 +221,24 @@ void DD_Terminal::inTerminalHistory()
 	const char* line = io_handle.readNextLine();
 
 	// save commands, update head and tail
-	while (line) {
+	while (line && total_cmds_entered < CMD_HIST_SIZE) {
 		snprintf(cmd_history[cmd_hist_tail], DEFAULT_ENTRY_SIZE, line);
 		total_cmds_entered += 1;
-		cmd_hist_tail = (cmd_hist_tail + 1) % CMD_HIST_SIZE;
-		cmd_hist_head = (cmd_hist_tail == cmd_hist_head) ?
-			(cmd_hist_head + 1) % CMD_HIST_SIZE : cmd_hist_head;
+		cmd_hist_tail += 1;
 
 		line = io_handle.readNextLine();
 	}
+	cmd_hist_tail = (total_cmds_entered - 1) % CMD_HIST_SIZE;
+	cmd_scroll_idx = cmd_hist_tail;
+	cmd_hist_head = (cmd_hist_tail + 1) % CMD_HIST_SIZE;
 }
 
 void DD_Terminal::outTerminalHistory()
 {
+	// should only write out if history has been attempted to be read in
+	// prevents wiping history on engine exit
+	if (!write_out_history) { return; }
+
 	// write out terminal history
 	DD_IOhandle io_handle;
 	cbuff<256> outfile;
@@ -247,17 +254,17 @@ void DD_Terminal::outTerminalHistory()
 	history_size_0 = (total_cmds_entered >= CMD_HIST_SIZE) ?
 		CMD_HIST_SIZE - cmd_hist_head : total_cmds_entered;
 	history_size_1 = (total_cmds_entered >= CMD_HIST_SIZE) ?
-		cmd_hist_tail + 1 : 0;
+		cmd_hist_tail : 0;
 
 	// first loop (head to end/tail)
 	for (unsigned i = cmd_hist_head; i < (history_size_0 + cmd_hist_head); i++){
+		if (i != cmd_hist_head) { io_handle.writeLine("\n"); }
 		io_handle.writeLine(cmd_history[i]);
-		io_handle.writeLine("\n");
 	}
 	// second loop (only loops if total_cmds_entered >= CMD_HIST_SIZE)
 	for (unsigned i = 0; i < history_size_1; i++) {
-		io_handle.writeLine(cmd_history[i]);
 		io_handle.writeLine("\n");
+		io_handle.writeLine(cmd_history[i]);
 	}
 }
 
@@ -305,10 +312,13 @@ void execTerminalCommand(const char * command)
 
 int terminalCallback(ImGuiTextEditCallbackData * data)
 {
+	bool end_of_history = false;
 	if (up_pressed) {
 		if (total_cmds_entered >= CMD_HIST_SIZE) { // loop back to end
-			cmd_scroll_idx = (cmd_scroll_idx == 0) ?
-				CMD_HIST_SIZE - 1 : cmd_scroll_idx - 1;
+			if ((cmd_scroll_idx != cmd_hist_head)) {
+				cmd_scroll_idx = (cmd_scroll_idx == 0) ?
+					CMD_HIST_SIZE - 1 : cmd_scroll_idx - 1;
+			}
 		}
 		else { // stop at head
 			cmd_scroll_idx = (cmd_scroll_idx == 0) ?
@@ -318,7 +328,12 @@ int terminalCallback(ImGuiTextEditCallbackData * data)
 	}
 	else if (down_pressed) {
 		if (total_cmds_entered >= CMD_HIST_SIZE) { // loop back to top
-			cmd_scroll_idx = (cmd_scroll_idx + 1) % CMD_HIST_SIZE;
+			if ((cmd_scroll_idx != cmd_hist_tail)) {
+				cmd_scroll_idx = (cmd_scroll_idx + 1) % CMD_HIST_SIZE;
+			}
+			else {
+				end_of_history = true;
+			}
 		}
 		else { // stop at head
 			cmd_scroll_idx += (cmd_scroll_idx == cmd_hist_tail) ?
@@ -365,8 +380,8 @@ int terminalCallback(ImGuiTextEditCallbackData * data)
 		return 0; // exit after setting text
 	}
 	// set scrolled to text
-	data->BufTextLen = (int)snprintf(
-		data->Buf, data->BufSize, "%s", cmd_history[cmd_scroll_idx]);
+	char* text_ = (end_of_history) ? "" : cmd_history[cmd_scroll_idx];
+	data->BufTextLen = (int)snprintf(data->Buf, data->BufSize, "%s", text_);
 	data->CursorPos = data->SelectionStart = data->SelectionEnd =
 		data->BufTextLen;
 	data->BufDirty = true;

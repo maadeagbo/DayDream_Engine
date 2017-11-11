@@ -3,7 +3,10 @@ namespace fs = std::experimental::filesystem;
 
 DD_IOhandle::~DD_IOhandle()
 {
-	if(m_file.is_open()) { m_file.close(); }
+	if(m_file.is_open()) { 
+		m_file.flush();
+		m_file.close(); 
+	}
 }
 
 /// \brief Open a file or directory (based on DD_IOflag)

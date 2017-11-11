@@ -17,6 +17,8 @@ void DD_ModelSK::debugOff()
 namespace ModelSKSpace
 {
 
+	GLenum err;
+
 BoundingBox CalculateBBox(const DD_ModelSK & model)
 {
 	BoundingBox bbox;
@@ -111,10 +113,6 @@ void OpenGLBindMesh(const unsigned index,
 	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex),
 		                  (GLvoid*)offsetof(Vertex, joints));
 
-    GLenum err;
-    while( (err = glGetError()) != GL_NO_ERROR ) {
-        printf("DD_ModelSK <0> :: OpenGL error: %d\n", err);
-    }
     // instancing
     glBindVertexArray(model.VAO[index]);
     glGenBuffers(1, &(model.instVBO[index]));

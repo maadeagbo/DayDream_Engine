@@ -719,6 +719,13 @@ void DD_Renderer::LoadRendererEngine(const GLfloat _Width, const GLfloat _Height
 	m_shaders[Shaders::DEPTH].CreateFragShader(
 		(std::string(SHADER_DIR) + "Depth_F.frag").c_str());
 
+	// create skinned mesh depth shader
+	m_shaders[Shaders::DEPTH_SKINNED].init();
+	m_shaders[Shaders::DEPTH_SKINNED].CreateVertexShader(
+		(std::string(SHADER_DIR) + "SkinnedDepth_V.vert").c_str());
+	m_shaders[Shaders::DEPTH_SKINNED].CreateFragShader(
+		(std::string(SHADER_DIR) + "Depth_F.frag").c_str());
+
 	// create depth sampler shader
 	m_shaders[Shaders::DEPTH_SAMPLER].init();
 	m_shaders[Shaders::DEPTH_SAMPLER].CreateVertexShader(
@@ -884,7 +891,6 @@ void DD_Renderer::Draw(float dt)
 
 			// get standard shader
 			DD_Shader* shader = &m_shaders[Shaders::LIGHT];
-			shader->Use();
 			LightPass(shader, m_active_cam, viewMat, projMat);
 
 			// Draw skybox
@@ -967,16 +973,14 @@ void DD_Renderer::Draw(float dt)
 
 		// get standard shader
 		DD_Shader* shader = &m_shaders[Shaders::LIGHT];
-		shader->Use();
 		LightPass(shader, m_active_cam, viewMat, projMat);
 
 		// Draw skybox
-
 		shader = &m_shaders[Shaders::LIGHT];
-		shader->Use();
 		glDepthMask(GL_TRUE);
 		glDepthFunc(GL_LEQUAL);
 		if( m_flagCubeMap ) {
+			shader->Use();
 			shader->setUniform("DrawSky", (GLboolean)true);
 			glActiveTexture(GL_TEXTURE5);
 			shader->setUniform("skybox", 5);
@@ -1465,8 +1469,11 @@ void DD_Renderer::ShadowPass(GLfloat dt, VR_Eye eye)
 		glm::mat4 identity = glm::mat4();
 		for( size_t i = 0; i < m_resourceBin->m_num_agents; i++ ) {
 			DD_Agent* agent = m_resourceBin->agents[i];
-			if( (agent->flag_model || agent->flag_modelsk)  &&
-			   agent->flag_render ) {
+			bool mdl_exists = agent->flag_model || agent->flag_modelsk;
+
+			if(agent->flag_render && mdl_exists) {
+				DD_Shader* shader = (agent->flag_model) ? 
+					&m_shaders[Shaders::DEPTH] : &m_shaders[Shaders::DEPTH_SKINNED];
 				if( agent->inst_m4x4.size() > 1 ) {
 					// render with instance buffer
 					InstanceSetup(dt, identity, identity, agent, shader, true,
@@ -1533,9 +1540,8 @@ void DD_Renderer::InstanceSetup(float dt,
 			// (10 LOD levels supported)
 			if ( agent->flag_modelsk ) {
 				// render animated mesh
-				DD_Shader* sk_shader = &m_shaders[Shaders::SKINNED];
-				sk_shader->Use();
-				SkinnedMeshRender(sk_shader, agent, j, bufferOffset, proj, view,
+				shader = (shadow) ? shader : &m_shaders[Shaders::SKINNED];
+				SkinnedMeshRender(shader, agent, j, bufferOffset, proj, view,
 					shadow);
 			}
 			else {
@@ -1551,8 +1557,8 @@ void DD_Renderer::InstanceSetup(float dt,
 		m_LODBufferSize[m_idx] = 1;
 		if ( agent->flag_modelsk ) {
 			// render animated mesh
-			DD_Shader* sk_shader = &m_shaders[Shaders::SKINNED];
-			SkinnedMeshRender(sk_shader, agent, m_idx, bufferOffset, proj, view,
+			shader = (shadow) ? shader : &m_shaders[Shaders::SKINNED];
+			SkinnedMeshRender(shader, agent, m_idx, bufferOffset, proj, view,
 				shadow);
 		}
 		else {
@@ -1560,6 +1566,7 @@ void DD_Renderer::InstanceSetup(float dt,
 				shadow);
 		}
 	}
+
 }
 
 void DD_Renderer::StaticMeshRender(DD_Shader * shader,
@@ -1580,7 +1587,7 @@ void DD_Renderer::StaticMeshRender(DD_Shader * shader,
 			int mat_index =
 				(agent->mat_buffer.size() < model->meshes.size()) ? -1 : i;
 			// set to default if 0
-			mat = (mat_index == -1) ? 
+			mat = (mat_index < 0) ? 
 				ResSpace::findDD_Material(m_resourceBin, (unsigned)0) :
 				ResSpace::findDD_Material(m_resourceBin,
 												agent->mat_buffer[mat_index]);
@@ -1700,9 +1707,9 @@ void DD_Renderer::SkinnedMeshRender(DD_Shader * shader,
 
 		if( !shadow ) {
 			int mat_index =
-				(agent->mat_buffer.size() < modelsk->meshes.size()) ? 0 : i;
-			// set to default if 0
-			mat = (mat_index == 0) ?
+				(agent->mat_buffer.size() < modelsk->meshes.size()) ? -1 : i;
+			// set to default if -1
+			mat = (mat_index < 0) ?
 				ResSpace::findDD_Material(m_resourceBin, (unsigned)0) :
 				ResSpace::findDD_Material(m_resourceBin,
 										  agent->mat_buffer[mat_index]);
@@ -1851,7 +1858,8 @@ void DD_Renderer::LightPass(DD_Shader * shader,
 	glEnable(GL_BLEND);
 	glBlendEquation(GL_FUNC_ADD);
 
-	shader->setUniform("viewPos", cam->pos());
+	shader->Use();
+	shader->setUniform("viewPos", glm::vec3(cam->pos()));
 	shader->setUniform("DrawSky", GLboolean(false));
 	shader->setUniform("LightVolume", GLboolean(false));
 	RendSpace::BindPassTexture(shader, &m_gbuffer);
@@ -1897,6 +1905,7 @@ void DD_Renderer::LightPass(DD_Shader * shader,
 			// render quad
 			RendSpace::RenderQuad(shader, identity);
 			shader->setUniform("ShadowMap", false);
+
 		}
 		else if( lghtInfo->m_type == LightType::POINT_L ) {
 			GLfloat camDist = glm::distance(

@@ -415,7 +415,11 @@ void DD_Engine::LoadViewer()
 	EventHandler handlerV = std::bind(&DD_AssetViewer::Update, &main_viewer,
 		std::placeholders::_1);
 	main_q.RegisterHandler(handlerV, "viewer");
-	main_q.RegisterPoster(handlerV);
+	main_q.RegisterHandler(handlerV, "new_mdl");
+	main_q.RegisterHandler(handlerV, "new_sk");
+	main_q.RegisterHandler(handlerV, "new_mdlsk");
+	main_q.RegisterHandler(handlerV, "new_agent_sk");
+	main_q.RegisterHandler(handlerV, "new_anim");
 }
 
 void DD_Engine::updateSDL()
@@ -658,12 +662,14 @@ void DD_Engine::LoadQueue()
 	float gametime = main_timer.getTimeFloat();
 
 	DD_Event inputE;
+	inputE.m_total_runtime = gametime;
 	inputE.m_time = frametime;
 	inputE.m_type = "input";
 	inputE.m_message = main_input.GetInput();
 	main_q.push(inputE);
 
 	DD_Event vrE;
+	vrE.m_total_runtime = gametime;
 	vrE.m_time = frametime;
 	vrE.m_type = "VR";
 	main_q.push(vrE);
@@ -671,13 +677,15 @@ void DD_Engine::LoadQueue()
 	// update Viewer (if active)
 	if (init_flag == EngineState::VIEWER) {
 		DD_Event vrV;
-		vrE.m_time = frametime;
-		vrE.m_type = "viewer";
+		vrV.m_total_runtime = gametime;
+		vrV.m_time = frametime;
+		vrV.m_type = "viewer";
 		main_q.push(vrV);
 	}
 
 	// update AI
 	DD_Event aiE;
+	aiE.m_total_runtime = gametime;
 	aiE.m_time = frametime;
 	aiE.m_type = "update_AI";
 	main_q.push(aiE);
@@ -697,7 +705,6 @@ void DD_Engine::LoadQueue()
 	DD_Event animE;
 	animE.m_time = frametime;
 	animE.m_total_runtime = gametime;
-
 	animE.m_type = "update_animation";
 	main_q.push(animE);
 }

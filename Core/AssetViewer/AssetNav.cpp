@@ -23,7 +23,6 @@ AssetNav::AssetNav(const char * ID, const char * model, const char * parent) {
 	// implement my own update to movement
 	locked_rot = false;
 	ignore_controls = false;
-	default_inst_update();
 }
 
 DD_Event AssetNav::Update(DD_Event event) {
@@ -142,7 +141,7 @@ void AssetNav::lockRotMode(const bool set)
 		override_inst_update();
 	} 
 	else {
-		locked_rot = true;
+		locked_rot = false;
 		default_inst_update();
 	}
 }
