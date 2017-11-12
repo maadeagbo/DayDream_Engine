@@ -57,12 +57,12 @@ struct AI_Obstacle
 	size_t type = 0; // 0 for circle, 1 for box
 
 	inline void init(const glm::mat4 _transform, const BoundingBox bbox,
-					 const size_t type = 0)
+					 const size_t type_ = 0)
 	{
 		transform = _transform;
 		aabb_min = bbox.min;
 		aabb_max = bbox.max;
-		if( type == 0 ) {
+		if( type_ == 0 ) {
 			//glm::vec4 v = _transform[3];
 			radius = std::abs(aabb_max.x);
 		}

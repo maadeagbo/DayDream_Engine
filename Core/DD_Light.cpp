@@ -9,8 +9,8 @@ float LightSpace::CalculateLightVolumeRadius(const DD_Light * lght)
 		lght->m_color.b
 	);
 	LVR = (-lght->m_linear +
-		   std::sqrt(lght->m_linear * lght->m_linear - 4 * lght->m_quadratic *
-		   (constant - lightMax * (256.0 / 5.0)))) / (2 * lght->m_quadratic);
+		   std::sqrt(lght->m_linear * lght->m_linear - 4.f * lght->m_quadratic *
+		   (constant - lightMax * (256.0f / 5.0f)))) / (2.f * lght->m_quadratic);
 	return LVR;
 }
 

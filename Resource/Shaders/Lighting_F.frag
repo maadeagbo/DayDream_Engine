@@ -61,8 +61,8 @@ float ShadowCalculation(vec4 lightSpace, vec3 normal, vec3 lightDir) {
 	float mD = currentDepth - moments.x;
 	float mD_2 = mD * mD;
 	float p_max = var / (var + mD_2); // probability of occlusion
-	// high variance occurs at silhouette edges. Use max to set shadow value
-	// for the shadow or light side of the variance boundary
+	// high variance occurs at silhouette edges. Use p_max to drive the equation
+	// towards using the variance or using a "minimum" probability of 0.2
 	float shadow = max(p_max, (currentDepth <= moments.x) ? 1.0 : 0.2);
 	// light bleed can occur at high depth / variance values (need to implement
 	// cascaded shadow maps to control)

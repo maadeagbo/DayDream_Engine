@@ -2,6 +2,9 @@
 
 #include <string>
 #include <functional>
+#define GLM_FORCE_CXX98
+#define GLM_FORCE_CXX11 
+#define GLM_FORCE_CXX14 // removes non-standard extensions warnings in VS compiler
 #include <glm/glm.hpp>
 
 // abstract class for events

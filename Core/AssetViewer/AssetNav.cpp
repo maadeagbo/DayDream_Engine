@@ -9,7 +9,7 @@ namespace {
 	glm::quat deltaR;
 }
 
-AssetNav::AssetNav(const char * ID, const char * model, const char * parent) {
+AssetNav::AssetNav(const char * ID) {
 	m_ID = ID;
 	// store function pointer
 	EventHandler update =

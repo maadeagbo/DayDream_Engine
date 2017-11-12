@@ -1,6 +1,9 @@
 #include "AssetViewAvatar.h"
 #include "DD_Terminal.h"
+
+#ifdef __linux__
 #pragma GCC diagnostic ignored "-Wformat-security"
+#endif
 
 const float EPSILON = 0.001f;
 
@@ -75,7 +78,6 @@ DD_Event AssetViewAvatar::Update(DD_Event event)
 			}
 		}
 	}
-
 	return DD_Event();
 }
 
@@ -137,7 +139,7 @@ void AssetViewAvatar::appendAnimation(const char * animation_id,
 	}
 
 
-	unsigned idx = skinnedMdl->m_animStates.size();
+	unsigned idx = (unsigned)skinnedMdl->m_animStates.size();
 	bool added = ResSpace::addAnimationToModel(
 		res_ptr, skinnedMdl->m_ID.c_str(), animation_id, new_ref_id);
 
@@ -150,7 +152,7 @@ void AssetViewAvatar::appendAnimation(const char * animation_id,
 			skinnedMdl->m_animStates[idx].fscratch.resize(3);
 			skinnedMdl->m_animStates[idx].fscratch[0] = a_clip->step_size;
 			skinnedMdl->m_animStates[idx].fscratch[1] = a_clip->length;
-			skinnedMdl->m_animStates[idx].fscratch[2] = a_clip->num_frames;
+			skinnedMdl->m_animStates[idx].fscratch[2] = (float)a_clip->num_frames;
 		}
 	}
 	else {

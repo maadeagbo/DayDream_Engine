@@ -116,7 +116,7 @@ ObjAssetParser::ParseFlag ObjAssetParser::PreProcess(
 		}
 
 		// count number of meshes and get info
-		size_t oldIndex = -1;
+		int oldIndex = -1;
 		while( std::getline(analysisBuf, line) ) {
 			// remove whitespace
 			line = TrimWhiteSpace(line);
@@ -148,10 +148,10 @@ ObjAssetParser::ParseFlag ObjAssetParser::PreProcess(
 				obj.info.mesh_indices[obj.info.num_meshes - 1].tris +=
 					CountTrianglesFromFaceInfo(line.substr(2));
 				// set face style
-				if( obj.info.num_meshes != oldIndex ) {
+				if( obj.info.num_meshes != (size_t)oldIndex ) {
 					obj.info.f_style[obj.info.num_meshes - 1] =
 						GetFaceStyleFromFaceInfo(line.substr(2));
-					oldIndex = obj.info.num_meshes;
+					oldIndex = (int)obj.info.num_meshes;
 				}
 				obj.info.num_f += 1;
 			}
@@ -429,17 +429,17 @@ bool ObjAssetParser::FormatForOpenGL(ObjAsset & obj)
 					obj.meshes[mesh_index].data[element_index] =
 						triangles.verts[i * 3];
 					obj.meshes[mesh_index].indices[element_index] =
-						element_index;
+						(int)element_index;
 					element_index += 1;
 					obj.meshes[mesh_index].data[element_index] =
 						triangles.verts[i * 3 + 1];
 					obj.meshes[mesh_index].indices[element_index] =
-						element_index;
+						(int)element_index;
 					element_index += 1;
 					obj.meshes[mesh_index].data[element_index] =
 						triangles.verts[i * 3 + 2];
 					obj.meshes[mesh_index].indices[element_index] =
-						element_index;
+						(int)element_index;
 					element_index += 1;
 				}
 
@@ -528,8 +528,8 @@ void ObjAssetParser::CreateDDMesh(ObjAsset & obj)
 		// mesh info
 		outfile << "\nnum_ind " << m.indices.size() << "\n";
 		outfile << "num_vts " << m.data.size() << "\n";
-		for( size_t i = 0; i < m.data.size(); i++ ) {
-			Vertex& vert = m.data[i];
+		for( size_t j = 0; j < m.data.size(); j++ ) {
+			Vertex& vert = m.data[j];
 			outfile << "pos " << vert.position[0] << " " <<
 				vert.position[1] << " " << vert.position[2] << " " << "\n";
 			outfile << "norm " << vert.normal[0] << " " <<
@@ -695,7 +695,7 @@ bool ObjAssetParser::LoadDDMesh(ObjAsset & obj)
 				data[0].texCoords[1] = tempVec.y();
 				// loop thru remaining verts
 				for( size_t i = 1; i < data.size(); i++ ) {
-					obj.meshes[meshIndex].indices[i] = i;
+					obj.meshes[meshIndex].indices[i] = (int)i;
 					std::getline(analysisBuf, line);
 					line = TrimWhiteSpace(line);
 					tempVec = GetFloatData((line.substr(4)));
@@ -807,7 +807,7 @@ void ObjAssetParser::CalculateTangentSpace(ObjAsset & obj, const size_t meshInde
 
 	// average face normals across each vertex
 	for( size_t i = 0; i < range; ++i ) {
-		int face = i / 3;			// face index is a part of (3 per triangle)
+		int face = (int)i / 3;		// face index is a part of (3 per triangle)
 		int vert = indices[i];		// specific vertex
 		// add face normals to vert
 		vertices[vert].tangent[0] += faceTanSpace[face].x();

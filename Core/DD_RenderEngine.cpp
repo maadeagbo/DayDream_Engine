@@ -1,7 +1,10 @@
 #include "DD_RenderEngine.h"
 #include "DD_Terminal.h"
 #include <SOIL.h>
+
+#ifdef __linux__
 #pragma GCC diagnostic ignored "-Wformat-security"
+#endif
 
 namespace {
 	DD_Light* GetDirectionalShadowLight(DD_Resources* res)
@@ -237,7 +240,7 @@ void RendSpace::RenderLine(DD_Shader * shader,
 				 GL_DYNAMIC_DRAW);
 
 	glBindVertexArray(lineVAO);
-	glDrawArrays(GL_LINES, 0, bin.size());
+	glDrawArrays(GL_LINES, 0, (GLsizei)bin.size());
 	glBindVertexArray(0);
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -652,7 +655,7 @@ void DD_Renderer::LoadRendererEngine(const GLfloat _Width, const GLfloat _Height
 	m_Height = _Height;
 	m_gbuffer = RendSpace::CreateGBuffer((int)m_Width, (int)m_Height);
 	m_resourceBin->G_BUFFER = m_gbuffer.deferredFBO;
-	pixel_write_buffer.resize(m_Width * m_Height * 4);
+	pixel_write_buffer.resize((size_t)m_Width * (size_t)m_Height * 4);
 	GLenum err;
 
 	m_lbuffer = RendSpace::CreateLightBuffer((int)m_Width, (int)m_Height);
@@ -746,7 +749,7 @@ void DD_Renderer::LoadRendererEngine(const GLfloat _Width, const GLfloat _Height
 	m_particleSys->Load(_Width, _Height);
 
 	// hdr compute shader and outputs
-	int tex_w = m_Width, tex_h = m_Height;
+	int tex_w = (int)m_Width, tex_h = (int)m_Height;
 	int limit = std::min(tex_h, tex_w);
 	size_t index = 0;
 	while( limit > 4 ) {
@@ -764,7 +767,7 @@ void DD_Renderer::LoadRendererEngine(const GLfloat _Width, const GLfloat _Height
 	temp = m_lumiTexSizes;
 	m_lumiTexSizes = std::move(temp);
 	// use texture sizes for computing luminance
-	int count = index / 2;
+	int count = (int)index / 2;
 	m_luminOutput = dd_array<GLuint>(count);
 	m_luminValues = dd_array<GLfloat>(
 		m_lumiTexSizes[2 * count - 2] * m_lumiTexSizes[2 * count - 1] * 4);
@@ -787,7 +790,7 @@ void DD_Renderer::LoadRendererEngine(const GLfloat _Width, const GLfloat _Height
 	ModelSpace::OpenGLBindMesh(0, *m_volumeSphere, 1, 0);
 
 	// setup loading screen
-	if( LoadScrSpace::LoadTextures(_Width, _Height) ) {
+	if( LoadScrSpace::LoadTextures((int)_Width, (int)_Height) ) {
 		DD_Terminal::post("Load screen initialized...\n");
 	}
 }
@@ -920,7 +923,8 @@ void DD_Renderer::Draw(float dt)
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, m_gbuffer.deferredFBO);
 			// Write depth to framebuffer
 			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_pbuffer.particleFBO);
-			glBlitFramebuffer(0, 0, m_Width, m_Height, 0, 0, m_Width, m_Height,
+			glBlitFramebuffer(0, 0, (GLint)m_Width, (GLint)m_Height, 0, 0, 
+							  (GLint)m_Width, (GLint)m_Height, 
 							  GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 
 			m_particleSys->Draw(dt, viewMat, projMat, glm::vec3(m_active_cam->pos()),
@@ -1007,8 +1011,8 @@ void DD_Renderer::Draw(float dt)
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, m_gbuffer.deferredFBO);
 		// Write depth to framebuffer
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_pbuffer.particleFBO);
-		glBlitFramebuffer(0, 0, m_Width, m_Height, 0, 0, m_Width, m_Height,
-						  GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+		glBlitFramebuffer(0, 0, m_Width, m_Height, 0, 0, (GLint)m_Width, 
+						  (GLint)m_Height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 
 		m_particleSys->Draw(dt, viewMat, projMat, glm::vec3(m_active_cam->pos()),
 							m_pbuffer.particleFBO, m_gbuffer.deferredFBO);
@@ -1041,8 +1045,8 @@ void DD_Renderer::Draw(float dt)
 			fps60_tick = 0.f;
 			RendSpace::screenShot(screen_shot_name.str(),
 								  m_time->getTimeFloat(),
-								  m_Width,
-								  m_Height);
+								  (GLint)m_Width,
+								  (GLint)m_Height);
 		}
 
 		trisInFrame += 2;
@@ -1178,7 +1182,7 @@ void DD_Renderer::DrawDynamicCube(float dt)
 		shader->setUniform("uv_rotate", false);
 		shader->setUniform("flip_y_coord", false);
 		shader->setUniform("flip_x_coord", false);
-		glViewport(0, 0, m_Width, m_Height); // reset dimensions
+		glViewport(0, 0, (GLsizei)m_Width, (GLsizei)m_Height); // reset dimensions
 		// update info
 		trisInFrame += 2;
 		drawCallsInFrame += m_resourceBin->emitter_counter + 1;
@@ -1325,7 +1329,7 @@ void DD_Renderer::FrustumCull(DD_Agent& obj, FrustumBox& frust, glm::mat4& view)
 				obj.inst_sink_size += 1;
 				// LOD cull
 				if( obj.mesh_buffer.size() > 1 ) {
-					LevelOfDetail(obj, obj.inst_sink_size - 1, view);
+					LevelOfDetail(obj, (int)obj.inst_sink_size - 1, view);
 				}
 			}
 		}
@@ -1361,7 +1365,7 @@ void DD_Renderer::LevelOfDetail(DD_Agent & obj,
 	}
 	else {
 		// set lod flag
-		obj.flag_cull_inst[objInstIndex] = lodChoice;
+		obj.flag_cull_inst[objInstIndex] = (int)lodChoice;
 	}
 }
 
@@ -1390,7 +1394,7 @@ void DD_Renderer::GBufferPass(GLfloat dt,
 		if((agent->flag_model || agent->flag_modelsk) && agent->flag_render){
 			if( agent->inst_sink_size > 1 ) {
 				// Sort instances
-				const int size = agent->inst_sink_size - 1;
+				const int size = (int)agent->inst_sink_size - 1;
 				SortSpace::QuickSort(agent, 0, size, SortSpace::PartitionLOD);
 				// render with instance buffer
 				InstanceSetup(dt, view, proj, agent, shader, true);
@@ -1472,7 +1476,7 @@ void DD_Renderer::ShadowPass(GLfloat dt, VR_Eye eye)
 			bool mdl_exists = agent->flag_model || agent->flag_modelsk;
 
 			if(agent->flag_render && mdl_exists) {
-				DD_Shader* shader = (agent->flag_model) ? 
+				shader = (agent->flag_model) ? 
 					&m_shaders[Shaders::DEPTH] : &m_shaders[Shaders::DEPTH_SKINNED];
 				if( agent->inst_m4x4.size() > 1 ) {
 					// render with instance buffer
@@ -1486,7 +1490,7 @@ void DD_Renderer::ShadowPass(GLfloat dt, VR_Eye eye)
 				}
 			}
 		}
-		glViewport(0, 0, m_Width, m_Height); // reset dimensions
+		glViewport(0, 0, (GLsizei)m_Width, (GLsizei)m_Height); // reset dimensions
 	}
 }
 
@@ -1523,11 +1527,11 @@ void DD_Renderer::InstanceSetup(float dt,
 		int currentLOD = 0;
 		if( shadow ) {
 			// shadow mapping (no culling is enabled on instances)
-			calcBufferSize(agent->inst_m4x4.size(), currentLOD);
+			calcBufferSize((unsigned)agent->inst_m4x4.size(), currentLOD);
 		}
 		else {
 			// culling enabled
-			calcBufferSize(agent->inst_sink_size, currentLOD);
+			calcBufferSize((unsigned)agent->inst_sink_size, currentLOD);
 		}
 
 		size_t numModels = agent->mesh_buffer.size();
@@ -1585,12 +1589,12 @@ void DD_Renderer::StaticMeshRender(DD_Shader * shader,
 	for( size_t i = 0; i < model->meshes.size(); i++ ) {
 		if( !shadow ) {
 			int mat_index =
-				(agent->mat_buffer.size() < model->meshes.size()) ? -1 : i;
+				(agent->mat_buffer.size() < model->meshes.size()) ? -1 : (int)i;
 			// set to default if 0
 			mat = (mat_index < 0) ? 
 				ResSpace::findDD_Material(m_resourceBin, (unsigned)0) :
 				ResSpace::findDD_Material(m_resourceBin,
-												agent->mat_buffer[mat_index]);
+										(unsigned)agent->mat_buffer[mat_index]);
 
 			// render mesh's materials to gbuffer
 			shader->setUniform("albedoFlag", (GLboolean)mat->m_albedo);
@@ -1666,8 +1670,9 @@ void DD_Renderer::StaticMeshRender(DD_Shader * shader,
 
 		// bind mesh data
 		glBindVertexArray(model->VAO[i]);
-		glDrawElementsInstanced(GL_TRIANGLES, MD.indices.size(), GL_UNSIGNED_INT,
-								0, m_LODBufferSize[modelIndex]);
+		glDrawElementsInstanced(GL_TRIANGLES, (unsigned)MD.indices.size(),
+								GL_UNSIGNED_INT, 0, 
+								(GLsizei)m_LODBufferSize[modelIndex]);
 
 		// render bounding box if applicable
 
@@ -1707,12 +1712,12 @@ void DD_Renderer::SkinnedMeshRender(DD_Shader * shader,
 
 		if( !shadow ) {
 			int mat_index =
-				(agent->mat_buffer.size() < modelsk->meshes.size()) ? -1 : i;
+				(agent->mat_buffer.size() < modelsk->meshes.size()) ? -1 : (int)i;
 			// set to default if -1
 			mat = (mat_index < 0) ?
 				ResSpace::findDD_Material(m_resourceBin, (unsigned)0) :
 				ResSpace::findDD_Material(m_resourceBin,
-										  agent->mat_buffer[mat_index]);
+										  (unsigned)agent->mat_buffer[mat_index]);
 
 			// render mesh's materials to gbuffer
 			shader->setUniform("albedoFlag", (GLboolean)mat->m_albedo);
@@ -1790,8 +1795,8 @@ void DD_Renderer::SkinnedMeshRender(DD_Shader * shader,
 
 		// bind mesh data
 		glBindVertexArray(modelsk->VAO[i]);
-		glDrawElementsInstanced(GL_TRIANGLES, MD.indices.size(), GL_UNSIGNED_INT,
-								0, m_LODBufferSize[modelIndex]);
+		glDrawElementsInstanced(GL_TRIANGLES, (GLsizei)MD.indices.size(), 
+								GL_UNSIGNED_INT, 0, m_LODBufferSize[modelIndex]);
 
 		// render bounding box if applicable
 
@@ -1845,8 +1850,8 @@ void DD_Renderer::LightPass(DD_Shader * shader,
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, m_gbuffer.deferredFBO);
 	// Write to light framebuffer
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_lbuffer.lightFBO);
-	glBlitFramebuffer(0, 0, m_Width, m_Height, 0, 0, m_Width, m_Height,
-					  GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+	glBlitFramebuffer(0, 0, (GLint)m_Width, (GLint)m_Height, 0, 0, (GLint)m_Width, 
+					  (GLint)m_Height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 
 	// light pass using light framebuffer
 	glDepthMask(GL_FALSE);
@@ -1866,7 +1871,7 @@ void DD_Renderer::LightPass(DD_Shader * shader,
 
 	//bool insideVolume = false;
 	for( size_t i = 0; i < m_resourceBin->light_counter; i++ ) {
-		DD_Light* lghtInfo = ResSpace::findDD_Light(m_resourceBin, i);
+		DD_Light* lghtInfo = ResSpace::findDD_Light(m_resourceBin, (unsigned)i);
 
 		glm::vec3 lightPos = glm::vec3(
 			lghtInfo->parent_transform * glm::vec4(lghtInfo->_position, 1.0f));
@@ -1967,7 +1972,7 @@ void DD_Renderer::RenderLightSphere(DD_Shader * shader, const glm::mat4 MVP)
 
 	glBindVertexArray(m_volumeSphere->VAO[0]);
 	glDrawElements(GL_TRIANGLES,
-				   m_volumeSphere->meshes[0].indices.size(),
+				   (GLint)m_volumeSphere->meshes[0].indices.size(),
 				   GL_UNSIGNED_INT,
 				   0);
 	glBindVertexArray(0);
@@ -2002,7 +2007,7 @@ GLfloat DD_Renderer::ComputeLuminance()
 	shader->setUniform("computeLum", GLboolean(false));
 
 	// parallel reduction for loop
-	int count = (m_lumiTexSizes.size() / 2);
+	int count = ((int)m_lumiTexSizes.size() / 2);
 	GLint lastTex[2];
 	for( int i = 1; i < count; ++i ) {
 		glBindImageTexture(0, m_luminOutput[i - 1], 0, GL_FALSE, 0,
@@ -2068,8 +2073,8 @@ int SortSpace::PartitionLOD(DD_Agent * agent, const int p, const int r)
 	for( int j = p; j < r; j++ ) {
 		if( agent->flag_cull_inst[j] <= x ) {
 			i += 1;
-			int temp0 = agent->flag_cull_inst[i];
-			glm::mat4 temp1 = agent->f_inst_m4x4[i];
+			temp0 = agent->flag_cull_inst[i];
+			temp1 = agent->f_inst_m4x4[i];
 			agent->flag_cull_inst[i] = agent->flag_cull_inst[j];
 			agent->f_inst_m4x4[i] = agent->f_inst_m4x4[j];
 			agent->flag_cull_inst[j] = temp0;

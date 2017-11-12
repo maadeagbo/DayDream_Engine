@@ -11,7 +11,7 @@ float DD_MathLib::getHaltonValue(int index, const int base)
 	while( index > 0 ) {
 		_f = _f / base;
 		result = result + _f * (index % base);
-		index = floor((float)index / (float)base);
+		index = (int)floor((float)index / (float)base);
 	}
 	return result;
 }
@@ -92,7 +92,7 @@ raycastBuff DD_MathLib::rayCast(const int mouseX,
 	glm::mat4 view = CamSpace::GetViewMatrix(cam);
 	glm::mat4 proj = CamSpace::GetPerspecProjMatrix(cam);
 	glm::vec4 viewport = glm::vec4(0.f, 0.f, cam->scr_width, cam->scr_height);
-	const int _y = cam->scr_height - mouseY;
+	const int _y = (int)cam->scr_height - mouseY;
 	GLfloat _z;
 
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, res->G_BUFFER);
@@ -159,7 +159,7 @@ glm::vec3 DD_MathLib::rayCastW(const int mouseX, const int mouseY)
 	glm::mat4 view = CamSpace::GetViewMatrix(cam);
 	glm::mat4 proj = CamSpace::GetPerspecProjMatrix(cam);
 	glm::vec4 viewport = glm::vec4(0.f, 0.f, cam->scr_width, cam->scr_height);
-	const int _y = cam->scr_height - mouseY;
+	const int _y = (int)cam->scr_height - mouseY;
 	GLfloat _z;
 
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, res->G_BUFFER);
@@ -186,8 +186,8 @@ void DD_MathLib::randomSampleRect(const glm::vec3 center, glm::vec3 min,
 	float range_x = (max.x - min.x);
 	float range_z = (max.z - min.z);
 	for( size_t i = 0; i < points.size(); i++ ) {
-		float x_pos = (getHaltonValue(i, 2) * range_x) + min.x;
-		float z_pos = (getHaltonValue(i, 3) * range_z) + min.z;
+		float x_pos = (getHaltonValue((int)i, 2) * range_x) + min.x;
+		float z_pos = (getHaltonValue((int)i, 3) * range_z) + min.z;
 		float y_pos = center.y;
 		points[i] = glm::vec3(x_pos, y_pos, z_pos);
 		//printf("x: %f, y: %f, z: %f\n", x_pos, y_pos, z_pos);

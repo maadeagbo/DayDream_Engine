@@ -791,6 +791,11 @@ DD_Skeleton* loadDDB(DD_Resources* res, const char* path, const char* id)
 		DD_Terminal::f_post("loadDDB::<%s> already exists", id);
 		return skele;
 	}
+	cbuff<512> path_check(path);
+	if (!path_check.contains(".ddb")) {
+		DD_Terminal::f_post("[error] Not valid ddb file: %s", path);
+		return nullptr;
+	}
 
 	if (io_handle.open(path, DD_IOflag::READ)) {
 		skele = getNewDD_Skeleton(res, id);
@@ -825,7 +830,7 @@ DD_Skeleton* loadDDB(DD_Resources* res, const char* path, const char* id)
 				unsigned idx = strtoul(tkns[1].str(), nullptr, 10);
 				unsigned parent_idx = strtoul(tkns[2].str(), nullptr, 10);
 				skele->m_bones[idx].m_ID.set(tkns[0].str());
-				skele->m_bones[idx].m_parent = parent_idx;
+				skele->m_bones[idx].m_parent = (u8)parent_idx;
 				// get inverse bind pose matrix (object to joint space)
 				nxtLine = io_handle.readNextLine(); nxtLine += 2; // position
 				glm::vec3 pos = getVec3f(nxtLine);
@@ -863,6 +868,11 @@ DD_AnimClip * loadDDA(DD_Resources * res, const char * path, const char * id)
 	if (a_clip) {
 		DD_Terminal::f_post("loadDDA::<%s> already exists", id);
 		return a_clip;
+	}
+	cbuff<512> path_check(path);
+	if (!path_check.contains(".dda")) {
+		DD_Terminal::f_post("[error] Not valid dda file: %s", path);
+		return nullptr;
 	}
 
 	if (io_handle.open(path, DD_IOflag::READ)) {
@@ -1026,13 +1036,13 @@ dd_array<MeshData> loadDDG(const char * filename)
 				dd_array<MeshData> in_mesh = loadDDM(nxtLine);
 				if (in_mesh.size() != 0) {
 					if (meshes_added == 0) {
-						meshes_added += in_mesh.size();
+						meshes_added += (unsigned)in_mesh.size();
 						outmesh = std::move(in_mesh);
 					}
 					else {
 						// add to outmesh bin
 						unsigned idx = meshes_added;
-						meshes_added += in_mesh.size();
+						meshes_added += (unsigned)in_mesh.size();
 						dd_array<MeshData> temp = std::move(outmesh);
 						outmesh.resize(meshes_added);
 						outmesh = temp;
@@ -1074,7 +1084,7 @@ void initCameras(DD_Resources * res)
 void initShaders(DD_Resources * res)
 {
 	for (size_t i = 0; i < res->shader_counter; i++) {
-		DD_Shader* shader = ResSpace::findDD_Shader(res, i);
+		DD_Shader* shader = ResSpace::findDD_Shader(res, (unsigned)i);
 		shader->init();
 
 		// vertex
@@ -1114,7 +1124,7 @@ bool setAgentParent(const DD_Resources * res, DD_Agent * agent, const char * pID
 		agent->unParent(); // if name not found, remove parent
 		return false;
 	}
-	agent->SetParentIndex(index - 1); // name found, set index
+	agent->SetParentIndex((int)index - 1); // name found, set index
 	return true;
 }
 
@@ -1137,7 +1147,7 @@ bool setCamParent(const DD_Resources * res, DD_Camera * cam, const char * pID)
 		return false;
 	}
 	//cam->SetParent(pID);
-	cam->SetParentIndex(index - 1); // name found, set index
+	cam->SetParentIndex((int)index - 1); // name found, set index
 	return true;
 }
 
@@ -1159,7 +1169,7 @@ bool setLightParent(const DD_Resources * res, DD_Light * light, const char * pID
 		light->unParent(); // if name not found, remove parent
 		return false;
 	}
-	light->SetParentIndex(index - 1); // name found, set index
+	light->SetParentIndex((int)index - 1); // name found, set index
 	return true;
 }
 
@@ -1189,7 +1199,6 @@ DD_Model* checkModelExists(DD_Resources * res, const char* m_id)
 DD_Agent* AddAgent(DD_Resources * res, DD_Agent * agent)
 {
 	res->agents[res->m_num_agents] = agent;
-	DD_Agent* agent_p = res->agents[res->m_num_agents];
 	res->m_num_agents += 1;
 	return res->agents[res->m_num_agents - 1];
 }
@@ -1230,7 +1239,7 @@ bool addAnimationToModel(DD_Resources* res,
 
 	// add new state
 	dd_array<DD_AnimState> temp(m_sk->m_animStates.size() + 1);
-	unsigned new_idx = temp.size() - 1;
+	unsigned new_idx = (unsigned)temp.size() - 1;
 	if (new_idx > 0) { temp = m_sk->m_animStates; } // store old anim states
 
 	temp[new_idx].m_ID.set(reference_id);
@@ -1296,22 +1305,22 @@ bool loadAgentToGPU(DD_Resources * res, const size_t index)
 
 				if (res->agents[index]->flag_modelsk) {
 					ModelSKSpace::OpenGLBindMesh(
-						j,
+						(unsigned)j,
 						*(static_cast<DD_ModelSK*>(model)),
-						inst_size,
-						inst_c_size
+						(unsigned)inst_size,
+						(unsigned)inst_c_size
 					);
 				}
 				else {
 					ModelSpace::OpenGLBindMesh(
-						j, *model, inst_size, inst_c_size);
+						(unsigned)j, *model, (unsigned)inst_size, (unsigned)inst_c_size);
 				}
 				// free space on system memory
 				model->meshes[j].data.resize(1);
 			}
 			size_t mat_index = (j >= model->materials.size()) ?
 				0 : model->materials[j];
-			DD_Material* mat = ResSpace::findDD_Material(res, mat_index);
+			DD_Material* mat = ResSpace::findDD_Material(res, (unsigned)mat_index);
 
 			mat->OpenGLBindMaterial();
 
@@ -1342,22 +1351,26 @@ void loadAgentToGPU(DD_Resources * res, const char * agentID)
 
 						if (ag->flag_modelsk) {
 							ModelSKSpace::OpenGLBindMesh(
-								k,
+								(unsigned)k,
 								*(static_cast<DD_ModelSK*>(model)),
-								inst_size,
-								inst_c_size
+								(unsigned)inst_size,
+								(unsigned)inst_c_size
 							);
 						}
 						else {
 							ModelSpace::OpenGLBindMesh(
-								k, *model, inst_size, inst_c_size);
+								(unsigned)k, 
+								*model, 
+								(unsigned)inst_size, 
+								(unsigned)inst_c_size);
 						}
 						// free space on system memory
 						model->meshes[k].data.resize(1);
 					}
 					size_t mat_index = (j >= model->materials.size()) ?
 						0 : model->materials[j];
-					DD_Material* mat = ResSpace::findDD_Material(res, mat_index);
+					DD_Material* mat = ResSpace::findDD_Material(
+						res, (unsigned)mat_index);
 
 					mat->OpenGLBindMaterial();
 
@@ -1399,15 +1412,18 @@ void loadAgentToGPU_M(DD_Resources * res, const char * agentID)
 
 				if (agent->flag_modelsk) {
 					ModelSKSpace::OpenGLBindMesh(
-						j,
+						(unsigned)j,
 						*(static_cast<DD_ModelSK*>(model)),
-						inst_size,
-						inst_c_size
+						(unsigned)inst_size,
+						(unsigned)inst_c_size
 					);
 				}
 				else {
 					ModelSpace::OpenGLBindMesh(
-						j, *model, inst_size, inst_c_size);
+						(unsigned)j, 
+						*model, 
+						(unsigned)inst_size, 
+						(unsigned)inst_c_size);
 				}
 
 
@@ -1416,7 +1432,8 @@ void loadAgentToGPU_M(DD_Resources * res, const char * agentID)
 			}
 			size_t mat_index = (j >= model->materials.size()) ?
 				0 : model->materials[j];
-			DD_Material* mat = ResSpace::findDD_Material(res, mat_index);
+			DD_Material* mat = ResSpace::findDD_Material(
+				res, (unsigned)mat_index);
 
 			mat->OpenGLBindMaterial();
 
@@ -1467,23 +1484,25 @@ void loadAgent_ID(DD_Resources* res, const char* agentID, bool mem_flag)
 
 					if (agent->flag_modelsk) { // bind skinned mesh
 						ModelSKSpace::OpenGLBindMesh(
-							j,
+							(unsigned)j,
 							*(static_cast<DD_ModelSK*>(model)),
-							inst_size,
-							inst_c_size
+							(unsigned)inst_size,
+							(unsigned)inst_c_size
 						);
 					}
 					else {
 						ModelSpace::OpenGLBindMesh( // bind normal mesh
-							j, *model, inst_size, inst_c_size);
+							(unsigned)j, *model, (unsigned)inst_size, 
+							(unsigned)inst_c_size);
 					}
 					// free space on system memory
-					model->meshes[j].data.resize(1);
+					if (!mem_flag) { model->meshes[j].data.resize(1); }
 				}
 				// find and set material
 				size_t mat_index = (j >= model->materials.size()) ?
 					0 : model->materials[j];
-				DD_Material* mat = ResSpace::findDD_Material(res, mat_index);
+				DD_Material* mat = ResSpace::findDD_Material(
+					res, (unsigned)mat_index);
 
 				mat->OpenGLBindMaterial();
 
@@ -1591,7 +1610,7 @@ void deleteAgent(DD_Resources * res, const char * agent_id, bool free_gpu_memory
 			// remove from normal handlers
 			bool found = false;
 			callbackContainer *cc = &res->queue->handlers[agent->tickets[i]];
-			unsigned count = res->queue->m_counter[agent->tickets[i]];
+			unsigned count = (unsigned)res->queue->m_counter[agent->tickets[i]];
 			for (unsigned j = 0; j < count && !found; j++) {
 				// grab the signature of the function pointer and compare them
 				if ((*cc)[j].sig.compare(agent_id) == 0) {
@@ -1604,7 +1623,7 @@ void deleteAgent(DD_Resources * res, const char * agent_id, bool free_gpu_memory
 			// remove from post handler
 			found = false;
 			cc = &res->queue->m_postHandlers;
-			count = res->queue->m_postLimit;
+			count = (unsigned)res->queue->m_postLimit;
 			for (unsigned j = 0; j < count && !found; j++) {
 				if ((*cc)[j].sig.compare(agent_id) == 0) {
 					found = true;
@@ -1621,11 +1640,11 @@ void deleteAgent(DD_Resources * res, const char * agent_id, bool free_gpu_memory
 				DD_Model* model = checkModelExists(res, n.c_str());
 
 				if (model && agent->flag_model) {
-					ModelSpace::OpenGLUnBindMesh(i, *model);
+					ModelSpace::OpenGLUnBindMesh((int)i, *model);
 				}
 				else if (model && agent->flag_modelsk) {
 					ModelSKSpace::OpenGLUnBindMesh(
-						i, *(static_cast<DD_ModelSK*>(model)));
+						(int)i, *(static_cast<DD_ModelSK*>(model)));
 				}
 				model->m_loaded_to_GPU = false;
 			}
@@ -1640,7 +1659,7 @@ void deleteEmitter(DD_Resources * res, const char * emitterID)
 	int index = -1;
 	for (size_t i = 0; i < res->emitter_counter; i++) {
 		if (res->emitters[i].m_ID.compare(emitterID) == 0) {
-			index = i;
+			index = (int)i;
 		}
 	}
 	if (index != -1) {
@@ -1657,7 +1676,7 @@ void deleteWater(DD_Resources * res, const char * waterID)
 	int index = -1;
 	for (size_t i = 0; i < res->water_counter; i++) {
 		if (res->water[i].m_ID.compare(waterID) == 0) {
-			index = i;
+			index = (int)i;
 		}
 	}
 	if (index != -1) {

@@ -50,7 +50,6 @@ bool DD_Queue::RegisterHandler(EventHandler& handler,
 		m_counter[ticket] += 1;
 		return true;
 	}
-	return false;
 }
 
 // Registers function that post events into the queue

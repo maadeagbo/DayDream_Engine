@@ -27,7 +27,7 @@ void calculateHeuristics(AStarData& data, AI_Agent* agent);
 dd_array<glm::vec3> planA_Star(DD_AIObject* ai_obj, AI_Agent* agent);
 void removeFromPriorityQ(const int index, AStarData& data);
 void addToPriorityQ(DD_AINode* new_node,
-					const size_t parent,
+					const int parent,
 					const float this_cost,
 					const float this_hcost,
 					const dd_array<float> _hcosts,
@@ -143,7 +143,7 @@ void removeFromPriorityQ(const int index, AStarData& data)
 	\param data Container for current A* plan
 */
 void addToPriorityQ(DD_AINode* new_node,
-					const size_t parent,
+					const int parent,
 					const float this_cost,
 					const float this_hcost,
 					const dd_array<float> _hcosts,
@@ -151,7 +151,7 @@ void addToPriorityQ(DD_AINode* new_node,
 {
 	if( data.p_q_size == 0 ) {
 		new_node->cost_to_current = this_cost;
-		new_node->parent_index = parent;
+		new_node->parent_index = (int)parent;
 		data.p_queue[0].set(new_node);
 		data.p_q_size += 1;
 	}
@@ -174,7 +174,7 @@ void addToPriorityQ(DD_AINode* new_node,
 		if( duplicate ) {
 			float old_cost = data.p_queue[counter - 1].cost_to_current;
 			if( old_cost > _g ) {
-				removeFromPriorityQ(counter - 1, data); // remove then replace
+				removeFromPriorityQ((int)counter - 1, data); // remove then replace
 			}
 			else {
 				return; // older node has a lower G cost so skip new_node
@@ -182,10 +182,10 @@ void addToPriorityQ(DD_AINode* new_node,
 		}
 
 		// update score and place node in sorted order (bottom --> up loop)
-		new_node->parent_index = parent;
+		new_node->parent_index = (int)parent;
 		new_node->cost_to_current = _g;
 		bool placed_node = false;
-		for( int i = (data.p_q_size - 1); i >= 0 && !placed_node; i-- ) {
+		for( int i = ((int)data.p_q_size - 1); i >= 0 && !placed_node; i-- ) {
 			//printf("Index = %zd\n", i);
 			DD_AINode* p_node = &data.curr_nodes[data.p_queue[i].index];
 			size_t index = p_node->index;
@@ -279,7 +279,7 @@ DD_AINode generateLOS(DD_AIObject * ai_obj, AI_Agent * agent, const int index,
 void ConnectToGoalNode(DD_AINode& goal, AStarData& data)
 {
 	for( size_t i = 0; i < goal.costs.size(); i++ ) {
-		const size_t n_index = goal.costs[i].x;
+		const size_t n_index = (size_t)goal.costs[i].x;
 		DD_AINode& _node = data.curr_nodes[n_index];
 		// resize
 		const size_t new_size = _node.costs.size() + 1;
@@ -291,7 +291,7 @@ void ConnectToGoalNode(DD_AINode& goal, AStarData& data)
 		_node.connections = t_conn;
 
 		// add connections and costs to goal
-		_node.costs[new_size - 1].x = goal.index;
+		_node.costs[new_size - 1].x = (float)goal.index;
 		_node.costs[new_size - 1].y = goal.costs[i].y;
 		_node.connections[new_size - 1].pos01 = glm::vec4(
 			data.points[n_index], 1.f);
@@ -318,10 +318,10 @@ dd_array<glm::vec3> planA_Star(DD_AIObject* ai_obj, AI_Agent* agent)
 	// create nodes for start and end
 	data.points[start_index] = agent->current_pos;
 	data.curr_nodes[start_index] = generateLOS(
-		ai_obj, agent, start_index, data.points);
+		ai_obj, agent, (int)start_index, data.points);
 	data.points[end_index] = agent->goal;
 	data.curr_nodes[end_index] = generateLOS(
-		ai_obj, agent, end_index, data.points);
+		ai_obj, agent, (int)end_index, data.points);
 
 	if( agent->calc_heuristics ) {	// calculate heuristics
 		calculateHeuristics(data, agent);
@@ -343,12 +343,12 @@ dd_array<glm::vec3> planA_Star(DD_AIObject* ai_obj, AI_Agent* agent)
 		// send current node to the closed list
 		last_node = addToCLosedQ(data.p_queue[0].index, data);
 
-		expandNode(last_node, agent, data);
+		expandNode((int)last_node, agent, data);
 	}
 
 	dd_array<size_t> path = dd_array<size_t>(total_nodes);
 	// reconstruct optimal path
-	int next_node = end_index;
+	int next_node = (int)end_index;
 	while( next_node != (int)start_index ) {
 		//printf("Previous node: %d\n", next_node);
 		path[path_length] = next_node;
@@ -518,7 +518,7 @@ void DD_AISystem::moveAlongPath(DD_AIObject* ai_obj,
 	else {
 		bool no_intersect = true;
 		glm::vec3 pos = agent->current_pos;
-		int index = agent->path_index;
+		int index = (int)agent->path_index;
 		size_t num_obstacles = ai_obj->obstacles.size();
 		for( int i = index; i < (int)agent->path.size() && no_intersect; i++ ) {
 			glm::vec3 ray = agent->path[i] - pos;
@@ -558,12 +558,12 @@ void DD_AISystem::moveAlongPath(DD_AIObject* ai_obj,
 */
 glm::vec3 DD_AISystem::ObstacleAvoidance(AI_Agent * agent)
 {
-	srand(time(0));
+	srand((unsigned)time(0));
 	glm::vec3 F = glm::vec3(0.f);
 	DD_AIObject* ai = ResSpace::findDD_AIObject(
 		res_ptr, agent->aiobject_ID.c_str());
 	const size_t num_obst = ai->obstacles.size();
-	const size_t r = agent->radius;
+	const size_t r = (size_t)agent->radius;
 
 	// works w/ circles
 	for( size_t i = 0; i < num_obst; i++ ) {
@@ -645,7 +645,7 @@ void DD_AISystem::SimulateCrowd(AI_Agent * agent, const float dt)
 		direc = glm::normalize(direc);
 		float magn = 0;
 		if( ttc >= 0.f && ttc <= agent->sense_n_horizon[1] ) {
-			magn =  100.f / (sqrtf(ttc) + 0.001);
+			magn =  100.f / (sqrtf(ttc) + 0.001f);
 		}
 		if( magn > 10000.f ) { magn = 10000.f; }
 

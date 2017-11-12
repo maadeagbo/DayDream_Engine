@@ -26,8 +26,8 @@ void DD_Engine::openWindow(const size_t width,
 					  const size_t height,
 					  EngineMode mode)
 {
-	m_WIDTH = width;
-	m_HEIGHT = height;
+	m_WIDTH = (int)width;
+	m_HEIGHT = (int)height;
 
 	u32 flags = SDL_WINDOW_OPENGL;
 	int monitor_choice = 0, vsync_option = 0;
@@ -266,7 +266,7 @@ bool DD_Engine::LevelSelect(const size_t w, const size_t h) {
 		updateSDL();
 
 		// Query for level to load
-		float scrW = w/1.25;
+		float scrW = (float)w/1.25f;
 		float scrH = (float)h/1.1f;
 		ImGui::SetNextWindowPos(ImVec2(w/2 - scrW/2, h/2 - scrH/2));
 		ImGui::SetNextWindowSize(ImVec2(scrW, scrH));
@@ -483,7 +483,7 @@ void DD_Engine::Run()
 			main_timer.update();
 		}
 		else {
-			main_timer.update(frame_time);
+			main_timer.update((float)frame_time);
 		}
 
 		// fixed frame loop
@@ -712,11 +712,14 @@ void DD_Engine::LoadQueue()
 void DD_Engine::execScript(std::string script_file, float frametime)
 {
 	DD_IOhandle script;
-	script.open(script_file.c_str(), DD_IOflag::READ);
+	if (!script.open(script_file.c_str(), DD_IOflag::READ)) {
+		return;
+	}
 
-	const char * line;
-	while (line = script.readNextLine()) {
+	const char *line = script.readNextLine();
+	while (line) {
 		execTerminal(line, frametime);
+		line = script.readNextLine();
 	}
 }
 

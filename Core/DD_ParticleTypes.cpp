@@ -36,7 +36,7 @@ void DD_Emitter::Initialize(const char* ID,
 							const RenderTextureSets ts,
 							const float streamF)
 {
-	m_numPtcl = (float)_emitPerSec * lifetime;
+	m_numPtcl = (int)((float)_emitPerSec * lifetime);
 	m_ID = ID;
 	_parent_id = parent;
 	if( parent != std::string("") ) {
@@ -85,8 +85,8 @@ void DD_Cloth::Initialize(const char* ID,
 	glPrimitiveRestartIndex(PRIM_RESTART);
 
 	m_ID = std::string(ID);
-	m_rowS = rowSize;
-	m_colS = colSize;
+	m_rowS = (GLuint)rowSize;
+	m_colS = (GLuint)colSize;
 	m_horizDist = pointDist;
 	m_vertDist = pointDist;
 	m_diagDist = sqrtf(pointDist * pointDist + pointDist * pointDist);
@@ -107,7 +107,7 @@ void DD_Cloth::Initialize(const char* ID,
 	// fill in points, velocities, generate UVs
 	for( size_t i = 0; i < rowSize; i++ ) { // row
 		for( size_t j = 0; j < colSize; j++ ) { // column
-			const int index = i * colSize + j;
+			const int index = (int)(i * colSize + j);
 			m_points[index] = glm::vec4(0.f, 0.f, 0.f, 1.f) + glm::vec4(
 				j * pointDist, i * -pointDist, 0.f, 1.f);
 			m_points[index] = transf * m_points[index];
@@ -122,8 +122,10 @@ void DD_Cloth::Initialize(const char* ID,
 	size_t currIndex = 0;
 	for( size_t i = 0; i < rowSize - 1; i++ ) {
 		for( size_t j = 0; j < colSize; j++ ) {
-			m_indices[currIndex] = (i + 1) * colSize + j; currIndex += 1;
-			m_indices[currIndex] = (i)* colSize + j; currIndex += 1;
+			m_indices[currIndex] = (GLuint)((i + 1) * colSize + j); 
+			currIndex += 1;
+			m_indices[currIndex] = (GLuint)((i)* colSize + j);
+			currIndex += 1;
 		}
 		m_indices[currIndex] = PRIM_RESTART; currIndex += 1;
 	}
@@ -166,8 +168,8 @@ void DD_Water::initialize(const size_t rowSize,
 	glPrimitiveRestartIndex(PRIM_RESTART);
 	active = true;
 
-	m_rowS = rowSize;
-	m_colS = colSize;
+	m_rowS = (GLuint)rowSize;
+	m_colS = (GLuint)colSize;
 	m_xDist = x_pointDist;
 	m_yDist = y_pointDist;
 	m_waterHeight = firstPos.y;
@@ -187,7 +189,7 @@ void DD_Water::initialize(const size_t rowSize,
 	// fill in points, velocities, generate UVs
 	for( size_t i = 0; i < rowSize; i++ ) { // row
 		for( size_t j = 0; j < colSize; j++ ) { // column
-			const int index = i * colSize + j;
+			const int index = (int)(i * colSize + j);
 			glm::vec4 _p = glm::vec4(j * m_xDist, 0.f, i * m_yDist, 1.f);
 			_p = transf * _p;
 			m_pos[i][j] = _p;
@@ -211,8 +213,10 @@ void DD_Water::initialize(const size_t rowSize,
 	size_t currIndex = 0;
 	for( size_t i = 0; i < rowSize - 1; i++ ) {
 		for( size_t j = 0; j < colSize; j++ ) {
-			m_indices[currIndex] = (i)* colSize + j; currIndex += 1;
-			m_indices[currIndex] = (i + 1) * colSize + j; currIndex += 1;
+			m_indices[currIndex] = (GLuint)((i)* colSize + j);
+			currIndex += 1;
+			m_indices[currIndex] = (GLuint)((i + 1) * colSize + j);
+			currIndex += 1;
 		}
 		m_indices[currIndex] = PRIM_RESTART; currIndex += 1;
 	}
@@ -291,14 +295,14 @@ void DD_Water::update(const float dt)
 			const float vz_01 = m_vel[i + 1][j].y;
 
 			// main momentum in x
-			m_xhalf[i][j].x = (vx_00 + vx_01) * 0.5 - (dt * 0.5) * (
+			m_xhalf[i][j].x = (vx_00 + vx_01) * 0.5f - (dt * 0.5f) * (
 				sq_f(vx_01) / h_01 + hgrav * sq_f(h_01) -
 				sq_f(vx_00) / h_00 - hgrav * sq_f(h_00)) / m_xDist;
 			// height in y
-			m_xhalf[i][j].y = (h_00 + h_01) * 0.5 - (dt * 0.5) *
+			m_xhalf[i][j].y = (h_00 + h_01) * 0.5f - (dt * 0.5f) *
 				(vx_01 - vx_00) / m_xDist;
 			// momentum in z
-			m_xhalf[i][j].z = (vz_00 + vz_01) * 0.5 - (dt * 0.5) *
+			m_xhalf[i][j].z = (vz_00 + vz_01) * 0.5f - (dt * 0.5f) *
 				((vx_01 * vz_01) / h_01 - (vx_00 * vz_00) / h_00) / m_xDist;
 
 			scratch[i][j] = glm::vec4(m_xhalf[i][j], 1.0f);
@@ -316,14 +320,14 @@ void DD_Water::update(const float dt)
 			const float vx_01 = m_vel[i][j + 1].x;
 
 			// main momentum in z
-			m_zhalf[i][j].z = (vz_00 + vz_01) * 0.5 - (dt * 0.5) * (
+			m_zhalf[i][j].z = (vz_00 + vz_01) * 0.5f - (dt * 0.5f) * (
 				sq_f(vz_01) / h_01 + hgrav * sq_f(h_01) -
 				sq_f(vz_00) / h_00 - hgrav * sq_f(h_00)) / m_yDist;
 			// height in y
-			m_zhalf[i][j].y = (h_00 + h_01) * 0.5 - (dt * 0.5) *
+			m_zhalf[i][j].y = (h_00 + h_01) * 0.5f - (dt * 0.5f) *
 				(vz_01 + vz_00) / m_yDist;
 			// momentum in x
-			m_zhalf[i][j].x = (vx_01 + vx_00) * 0.5 - (dt * 0.5) *
+			m_zhalf[i][j].x = (vx_01 + vx_00) * 0.5f - (dt * 0.5f) *
 				((vz_01 * vx_01) / h_01 - (vz_00 * vx_00) / h_00) / m_yDist;
 
 			scratch[i][j] = glm::vec4(m_zhalf[i][j], 1.0f);

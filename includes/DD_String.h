@@ -7,6 +7,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <DD_Container.h>
+#define __STDC_WANT_LIB_EXT1__ 1
 #include <string.h>
 
 static size_t getCharHash(const char* s)
@@ -91,12 +92,24 @@ namespace StrSpace
 		numTkns += 1;
 		output.resize(numTkns);
 		// copy to array
-		char* nxt = strtok(buff, delim);
+		char **remains = nullptr;
+#if defined(__STDC_LIB_EXT1__) || defined(_WIN32)
+		char* nxt = strtok_s(buff, delim, remains);
+		
 		while (nxt && iter < output.size()) {
 			output[iter].set(nxt);
 			iter += 1;
-			nxt = strtok(nullptr, delim);
+			nxt = strtok_s(buff, delim, remains);
 		}
+#else
+		char* nxt = strtok_r(buff, delim, remains);
+		
+		while (nxt && iter < output.size()) {
+			output[iter].set(nxt);
+			iter += 1;
+			nxt = strtok_r(buff, delim, remains);
+		}
+#endif
 		return output;
 	}
 }

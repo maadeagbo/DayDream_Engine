@@ -33,6 +33,10 @@
 
 #include <gl_core_4_3.h>
 
+#include <glm/fwd.hpp> 
+#define GLM_FORCE_CXX98
+#define GLM_FORCE_CXX11 
+#define GLM_FORCE_CXX14 // removes non-standard extensions warnings in VS compiler
 #include <glm/glm.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtc/quaternion.hpp>

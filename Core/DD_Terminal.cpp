@@ -1,7 +1,10 @@
 #include "DD_Terminal.h"
 #include "DD_FileIO.h"
 #include <regex>
+
+#ifdef __linux__
 #pragma GCC diagnostic ignored "-Wformat-security"
+#endif
 
 #define TOTAL_ENTRIES 1000
 #define VISIBLE_ENTRIES 500
@@ -217,7 +220,9 @@ void DD_Terminal::inTerminalHistory()
 	DD_IOhandle io_handle;
 	cbuff<256> infile;
 	infile.format("%s%s", RESOURCE_DIR, "terminal_history.txt");
-	io_handle.open(infile.str(), DD_IOflag::READ);
+	if (!io_handle.open(infile.str(), DD_IOflag::READ)) {
+		return;
+	}
 	const char* line = io_handle.readNextLine();
 
 	// save commands, update head and tail
@@ -228,9 +233,10 @@ void DD_Terminal::inTerminalHistory()
 
 		line = io_handle.readNextLine();
 	}
-	cmd_hist_tail = (total_cmds_entered - 1) % CMD_HIST_SIZE;
+	cmd_hist_tail = (total_cmds_entered) % CMD_HIST_SIZE;
 	cmd_scroll_idx = cmd_hist_tail;
-	cmd_hist_head = (cmd_hist_tail + 1) % CMD_HIST_SIZE;
+	cmd_hist_head = (cmd_hist_head == cmd_hist_tail) ?
+		(cmd_hist_tail + 1) % CMD_HIST_SIZE : 0;
 }
 
 void DD_Terminal::outTerminalHistory()
@@ -243,7 +249,9 @@ void DD_Terminal::outTerminalHistory()
 	DD_IOhandle io_handle;
 	cbuff<256> outfile;
 	outfile.format("%s%s", RESOURCE_DIR, "terminal_history.txt");
-	io_handle.open(outfile.str(), DD_IOflag::WRITE);
+	if (!io_handle.open(outfile.str(), DD_IOflag::WRITE)) {
+		return;
+	}
 
 	// split history size in 2
 	// If head --> tail == max history size, need to scroll thru history twice
@@ -286,7 +294,7 @@ void execTerminalCommand(const char * command)
 	dd_array<cbuff<DEFAULT_ENTRY_SIZE>> cmds = 
 		StrSpace::tokenize512<DEFAULT_ENTRY_SIZE>(command, "$");
 
-	for (int i = (cmds.size() - 1); i >= 0; i--) {
+	for (int i = ((int)cmds.size() - 1); i >= 0; i--) {
 		if (*cmds[i].str()) {
 			if (cmd_buff_count < CMD_BUFFER_SIZE) {
 				char* cmd_arg = cmdBuffer[cmd_buff_count];

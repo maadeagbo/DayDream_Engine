@@ -37,8 +37,8 @@ bool remove##TYPE(DD_Resources* res, const char* id) \
 		return false; \
 	} \
 	else { \
-		unsigned range = (res->ITER - idx) - 1; \
-		for (size_t i = idx; i < (idx + range); i++) { \
+		unsigned range = ((unsigned)res->ITER - idx) - 1; \
+		for (unsigned i = idx; i < (idx + range); i++) { \
 			res->BNAME[i] = std::move(res->BNAME[i + 1]); \
 		} \
 		res->ITER -= 1; \
@@ -68,7 +68,7 @@ TYPE* getNew##TYPE(DD_Resources* res, const char* id) \
 } \
 int get##TYPE##_idx(const DD_Resources* res, const char* id) \
 { \
-	for (unsigned i = 0; i < res->ITER; i++) { \
+	for (unsigned i = 0; i < (unsigned)res->ITER; i++) { \
 		if (res->BNAME[i]->m_ID.compare(id) == 0) { return (int)i; } \
 	} \
 	return -1; \
@@ -81,8 +81,8 @@ bool remove##TYPE(DD_Resources* res, const char* id) \
 	} \
 	else { \
 		delete res->BNAME[idx]; \
-		unsigned range = (res->ITER - idx) - 1; \
-		for (size_t i = idx; i < (idx + range); i++) { \
+		unsigned range = ((unsigned)res->ITER - idx) - 1; \
+		for (unsigned i = idx; i < (idx + range); i++) { \
 			res->BNAME[i] = res->BNAME[i + 1]; \
 		} \
 		res->ITER -= 1; \
@@ -97,7 +97,7 @@ TYPE* find##TYPE(const DD_Resources* res, const char* id) \
 } \
 TYPE* find##TYPE(const DD_Resources* res, const unsigned idx) \
 { \
-	if (idx < res->ITER) { return res->BNAME[idx]; } \
+	if ((size_t)idx < res->ITER) { return res->BNAME[idx]; } \
 	return nullptr; \
 }
 

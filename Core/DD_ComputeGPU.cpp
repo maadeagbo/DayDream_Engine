@@ -51,12 +51,14 @@ DD_Event DD_Compute::Compute(DD_Event & event)
 			res_ptr, _ct->texture_ID.c_str());
 		DD_Shader* shader = ResSpace::findDD_Shader(
 			res_ptr, _ct->shader_ID.c_str());
-		int numX = 512 / _ct->data_info[0];
-		int numY = 424 / _ct->data_info[1];
+		int numX = 512 / (int)_ct->data_info[0];
+		int numY = 424 / (int)_ct->data_info[1];
 
 		bool second_buffer = false;
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_kinectDepthBuff[0]);
-		glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, _ct->byte_size01,
+		glBufferSubData(GL_SHADER_STORAGE_BUFFER, 
+						0, 
+			(GLsizeiptr)_ct->byte_size01,
 						_ct->data_01);
 		if( _ct->byte_size02 > 0 && _ct->data_02 ) { second_buffer = true; }
 
@@ -64,7 +66,9 @@ DD_Event DD_Compute::Compute(DD_Event & event)
 
 		if( second_buffer ) {
 			glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_kinectDepthBuff[1]);
-			glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, _ct->byte_size02,
+			glBufferSubData(GL_SHADER_STORAGE_BUFFER, 
+							0, 
+				(GLsizeiptr)_ct->byte_size02,
 							_ct->data_02);
 		}
 
@@ -99,11 +103,15 @@ DD_Event DD_Compute::Compute(DD_Event & event)
 
 		// save buffer to array
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_kinectDepthBuff[0]);
-		glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, _ct->byte_size01,
+		glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 
+						   0, 
+						   (GLsizeiptr)_ct->byte_size01,
 						   _ct->data_01);
 		if( second_buffer ) {
 			glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_kinectDepthBuff[1]);
-			glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, _ct->byte_size02,
+			glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 
+							   0, 
+							   (GLsizeiptr)_ct->byte_size02,
 							   _ct->data_02);
 		}
 

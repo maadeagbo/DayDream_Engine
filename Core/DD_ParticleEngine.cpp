@@ -107,27 +107,27 @@ bool DD_ParticleSys::Init()
 	// check star texture
 	DD_Texture2D* tex = ResSpace::getNewDD_Texture2D(m_resBin, "star");
 	tex->path = std::string(TEX_DIR) + "star.png";
-	m_texSetIndex[RenderTextureSets::STAR] = m_resBin->tex_counter - 1;
+	m_texSetIndex[RenderTextureSets::STAR] = (int)m_resBin->tex_counter - 1;
 
 	// check fire texture
 	tex = ResSpace::getNewDD_Texture2D(m_resBin, "fire1");
 	tex->path = std::string(TEX_DIR) + "fire03.png";
-	m_texSetIndex[RenderTextureSets::FIRE01] = m_resBin->tex_counter - 1;
+	m_texSetIndex[RenderTextureSets::FIRE01] = (int)m_resBin->tex_counter - 1;
 
 	// check blue ball texture
 	tex = ResSpace::getNewDD_Texture2D(m_resBin, "blueBall");
 	tex->path = std::string(TEX_DIR) + "blueBall.png";
-	m_texSetIndex[RenderTextureSets::B_BALL] = m_resBin->tex_counter - 1;
+	m_texSetIndex[RenderTextureSets::B_BALL] = (int)m_resBin->tex_counter - 1;
 
 	// check smoke texture
 	tex = ResSpace::getNewDD_Texture2D(m_resBin, "smoke");
 	tex->path = std::string(TEX_DIR) + "smoke01.png";
-	m_texSetIndex[RenderTextureSets::SMOG] = m_resBin->tex_counter - 1;
+	m_texSetIndex[RenderTextureSets::SMOG] = (int)m_resBin->tex_counter - 1;
 
 	// check fabric 01 texture
 	tex = ResSpace::getNewDD_Texture2D(m_resBin, "fabric01");
 	tex->path = std::string(TEX_DIR) + "fabric01.png";
-	m_texSetIndex[RenderTextureSets::FABRIC_1] = m_resBin->tex_counter - 1;
+	m_texSetIndex[RenderTextureSets::FABRIC_1] = (int)m_resBin->tex_counter - 1;
 
 	return false; // finished loading
 }
@@ -182,8 +182,8 @@ DD_Event DD_ParticleSys::Create(DD_Event & event)
 
 			m_clothes[m_activeClothes] = DD_Cloth();
 			m_clothes[m_activeClothes].Initialize(vars->ID.c_str(),
-												  vars->rowSize,
-												  vars->colSize,
+												  (size_t)vars->rowSize,
+												  (size_t)vars->colSize,
 												  vars->pointDist,
 												  vars->firstPoint,
 												  vars->pinnedPoints);
@@ -251,7 +251,7 @@ void DD_ParticleSys::Draw(const float dt,
 	glBlendEquation(GL_FUNC_ADD);
 
 	for( size_t i = 0; i < m_resBin->emitter_counter; i++ ) {
-		DD_Emitter* em = ResSpace::findDD_Emitter(m_resBin, i);
+		DD_Emitter* em = ResSpace::findDD_Emitter(m_resBin, (int)i);
 
 		if( em->isChild() ) {
 			DD_Agent* agent = m_resBin->agents[em->parentIndex()];
@@ -395,7 +395,7 @@ void DD_ParticleSys::Draw(const float dt,
 		shader->setUniform("upsideDown", rot);
 
 		glBindBuffer(GL_ARRAY_BUFFER, m_jobs_VBO);
-		glBufferSubData(GL_ARRAY_BUFFER, 0, m_jobsA[i].byte_size01,
+		glBufferSubData(GL_ARRAY_BUFFER, 0, (GLsizeiptr)m_jobsA[i].byte_size01,
 						m_jobsA[i].data_01);
 
 		// load texture
@@ -405,7 +405,7 @@ void DD_ParticleSys::Draw(const float dt,
 
 		// draw
 		glBindVertexArray(m_jobs_VAO);
-		glDrawArrays(GL_POINTS, 0, m_jobsA[i].data_info[0]);
+		glDrawArrays(GL_POINTS, 0, (GLsizei)m_jobsA[i].data_info[0]);
 		glBindVertexArray(0);
 	}
 	m_numJobsA = 0;
@@ -414,16 +414,16 @@ void DD_ParticleSys::Draw(const float dt,
 
 	// render water
 	for( size_t i = 0; i < m_resBin->water_counter; i++ ) {
-		DD_Water* _w = ResSpace::findDD_Water(m_resBin, i);
+		DD_Water* _w = ResSpace::findDD_Water(m_resBin, (int)i);
 		if( !_w->active ) { continue; }
 
-		int numX = _w->m_rowS / 10.f;
-		int numY = _w->m_colS / 10.f;
+		int numX = (int)(_w->m_rowS / 10.f);
+		int numY = (int)(_w->m_colS / 10.f);
 
 		const size_t numIterations = 1;
-		float dt = currentTime / (float)numIterations;
-		for( size_t i = 0; i < numIterations; i++ ) {
-			_w->update(dt); // cpu update func
+		float new_dt = currentTime / (float)numIterations;
+		for( size_t j = 0; j < numIterations; j++ ) {
+			_w->update(new_dt); // cpu update func
 		}
 		SendBufferDataToOpenGL<glm::vec4>(_w->m_posBuf[0], &_w->m_pos[0][0],
 										  _w->m_pos.sizeInBytes());
@@ -574,7 +574,9 @@ void DD_ParticleSys::Draw(const float dt,
 		//*/
 
 		glBindVertexArray(_w->m_VAO);
-		glDrawElements(GL_TRIANGLE_STRIP, _w->m_indices.size(), GL_UNSIGNED_INT,
+		glDrawElements(GL_TRIANGLE_STRIP, 
+					   (GLsizei)_w->m_indices.size(), 
+					   GL_UNSIGNED_INT,
 					   0);
 		glBindVertexArray(0);
 	}
@@ -607,8 +609,8 @@ void DD_ParticleSys::Draw(const float dt,
 		m_csimcp_sh.setUniform("ballRadius", ballColl.radius);
 
 		const size_t numIterations = 1000;
-		float dt = currentTime / (float)numIterations;
-		m_csimcp_sh.setUniform("deltaT", dt);
+		float new_dt = currentTime / (float)numIterations;
+		m_csimcp_sh.setUniform("deltaT", new_dt);
 		size_t currentBuf = 0;
 
 		for( size_t j = 0; j < numIterations; j++ ) {
@@ -652,7 +654,9 @@ void DD_ParticleSys::Draw(const float dt,
 		glBindTexture(GL_TEXTURE_2D, tex01->handle);
 
 		glBindVertexArray(cl->m_VAO);
-		glDrawElements(GL_TRIANGLE_STRIP, cl->m_indices.size(), GL_UNSIGNED_INT,
+		glDrawElements(GL_TRIANGLE_STRIP,
+					   (GLsizei)cl->m_indices.size(), 
+					   GL_UNSIGNED_INT,
 					   0);
 		glBindVertexArray(0);
 
@@ -900,6 +904,6 @@ bool DD_ParticleSys::SetEmitterParent(DD_Emitter * em, const char * pID)
 		em->unParent(); // if name not found, remove parent
 		return false;
 	}
-	em->SetParentIndex(index - 1); // name found, set index
+	em->SetParentIndex((int)index - 1); // name found, set index
 	return true;
 }

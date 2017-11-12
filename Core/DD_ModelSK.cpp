@@ -155,19 +155,19 @@ void OpenGLBindMesh(const unsigned index,
 void OpenGLUnBindMesh(const unsigned index, DD_ModelSK & model)
 {
     if( model.VBO.isValid() ) {
-        glDeleteBuffers(model.VBO.size(), &model.VBO[0]);
+        glDeleteBuffers((GLsizei)model.VBO.size(), &model.VBO[0]);
     }
     if( model.EBO.isValid() ) {
-        glDeleteBuffers(model.EBO.size(), &model.EBO[0]);
+        glDeleteBuffers((GLsizei)model.EBO.size(), &model.EBO[0]);
     }
     if( model.instVBO.isValid() ) {
-        glDeleteBuffers(model.instVBO.size(), &model.instVBO[0]);
+        glDeleteBuffers((GLsizei)model.instVBO.size(), &model.instVBO[0]);
     }
     if( model.instColorVBO.isValid() ) {
-        glDeleteBuffers(model.instColorVBO.size(), &model.instColorVBO[0]);
+        glDeleteBuffers((GLsizei)model.instColorVBO.size(), &model.instColorVBO[0]);
     }
     if( model.VAO.isValid() ) {
-        glDeleteVertexArrays(model.VAO.size(), &model.VAO[0]);
+        glDeleteVertexArrays((GLsizei)model.VAO.size(), &model.VAO[0]);
     }
 }
 

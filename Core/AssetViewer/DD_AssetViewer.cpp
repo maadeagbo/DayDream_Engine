@@ -271,6 +271,14 @@ void createNewAgentSk(DD_Resources * res_ptr,
 							"agent creation.", mdlsk_id);
 		return;
 	}
+	// check if agent already exists using id
+	DD_Agent *agent = nullptr;
+	agent = ResSpace::findDD_Agent(res_ptr, agent_id);
+	if (agent) {
+		DD_Terminal::f_post("[error] DD_Agent <%s> already exists. Aborting "
+							"agent creation.", agent_id);
+		return;
+	}
 	// create agent using AssetViewAvatar
 	AssetViewAvatar* avatar = new AssetViewAvatar(agent_id);
 	// maybe wrap in if statement if failure to allocate?
@@ -278,7 +286,7 @@ void createNewAgentSk(DD_Resources * res_ptr,
 	avatar->skinnedMdl_id = mdlsk_id;
 	avatar->AddModelSK(mdlsk_id, 0.f, 1000.f);
 	
-	DD_Agent *agent = ResSpace::AddAgent(res_ptr, avatar);
+	agent = ResSpace::AddAgent(res_ptr, avatar);
 	if (!agent) {
 		delete avatar;
 		DD_Terminal::post("[error] Failed to add agent to resources. Aborting");

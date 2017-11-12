@@ -14,7 +14,7 @@ enum class AssetNavUI {
 
 class AssetNav : public DD_Agent {
 public:
-	AssetNav(const char* ID, const char* model = "", const char* parent = "");
+	AssetNav(const char* ID);
 	~AssetNav() {}
 
 	DD_Event Update(DD_Event event);
@@ -22,7 +22,7 @@ public:
 	void lockRotMode(const bool set);
 
 	bool pressed[(u32)AssetNavUI::COUNT];
-	int mouseX = 0.f, mouseY = 0.f;
+	int mouseX = 0, mouseY = 0;
 	bool locked_rot;
 	bool ignore_controls;
 private:

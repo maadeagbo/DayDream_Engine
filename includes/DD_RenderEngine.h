@@ -222,7 +222,7 @@ namespace RendSpace {
 namespace SortSpace {
 	typedef int(*partition_func)(DD_Agent*, const int, const int);
 
-	inline void SetUp() { std::srand(time(NULL)); }
+	inline void SetUp() { std::srand((unsigned)time(NULL)); }
 	void QuickSort(DD_Agent* agent, const int p, const int r,
 				   partition_func partfunc);
 	int PartitionLOD(DD_Agent* agent, const int p, const int r);
