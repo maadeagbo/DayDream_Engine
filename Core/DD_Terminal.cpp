@@ -380,7 +380,7 @@ int terminalCallback(ImGuiTextEditCallbackData * data)
 		return 0; // exit after setting text
 	}
 	// set scrolled to text
-	char* text_ = (end_of_history) ? "" : cmd_history[cmd_scroll_idx];
+	const char* text_ = (end_of_history) ? "" : cmd_history[cmd_scroll_idx];
 	data->BufTextLen = (int)snprintf(data->Buf, data->BufSize, "%s", text_);
 	data->CursorPos = data->SelectionStart = data->SelectionEnd =
 		data->BufTextLen;

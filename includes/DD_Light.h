@@ -48,8 +48,8 @@ struct DD_Light
 		m_cutoff_o(glm::cos(glm::radians(20.5f))),
 		m_spotExp(40.0f),
 		m_flagShadow(false),
-		_flag_parent(false),
-		light_obj(false)
+		light_obj(false),
+		_flag_parent(false)
 	{}
 
 	DD_Light(const char* ID) :
@@ -63,8 +63,8 @@ struct DD_Light
 		m_cutoff_o(glm::cos(glm::radians(20.5f))),
 		m_spotExp(40.0f),
 		m_flagShadow(false),
-		_flag_parent(false),
-		light_obj(false)
+		light_obj(false),
+		_flag_parent(false)
 	{}
 
 	inline void SetParent(const char* parentID)
