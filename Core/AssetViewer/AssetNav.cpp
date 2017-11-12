@@ -1,9 +1,6 @@
 #include "AssetNav.h"
 
 namespace {
-	const size_t buff_size = 64;
-	char char_buff[buff_size];
-
 	float scroll_speed = 10000.0f, mouseSensitivity = 1.f, Pitch = 0.f, Yaw = 0.f,
 		scroll_dist = 1000.f, pan_speed = 100.f;
 	glm::quat deltaR;

@@ -336,7 +336,7 @@ void DD_Water::update(const float dt)
 
 	const float dampc = 0.2f;
 	const float dt_x = dt / m_xDist;
-	const float dt_y = dt / m_yDist;
+	//const float dt_y = dt / m_yDist;
 
 	// calculate complete
 //#pragma omp parallel for

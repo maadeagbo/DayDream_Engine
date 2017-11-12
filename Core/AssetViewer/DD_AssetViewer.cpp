@@ -130,8 +130,8 @@ void DD_AssetViewer::Load()
 /// \brief Manages ImGui Interface
 void DD_AssetViewer::setInterface(const float dt)
 {
-	const float debugY = m_screenH - 60.f;
-	const float debugW = m_screenW / 5.f;
+	//const float debugY = m_screenH - 60.f;
+	//const float debugW = m_screenW / 5.f;
 
 	// get io for mouse & keyboard management
 	ImGuiIO& imgui_io = ImGui::GetIO();
