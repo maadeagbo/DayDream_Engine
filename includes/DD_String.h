@@ -92,22 +92,22 @@ namespace StrSpace
 		numTkns += 1;
 		output.resize(numTkns);
 		// copy to array
-		char **remains = nullptr;
 #if defined(__STDC_LIB_EXT1__) || defined(_WIN32)
+		char **remains = nullptr;
 		char* nxt = strtok_s(buff, delim, remains);
 		
 		while (nxt && iter < output.size()) {
 			output[iter].set(nxt);
 			iter += 1;
-			nxt = strtok_s(buff, delim, remains);
+			nxt = strtok_s(nullptr, delim, remains);
 		}
 #else
-		char* nxt = strtok_r(buff, delim, remains);
+		char* nxt = strtok(buff, delim);
 		
 		while (nxt && iter < output.size()) {
 			output[iter].set(nxt);
 			iter += 1;
-			nxt = strtok_r(buff, delim, remains);
+			nxt = strtok(nullptr, delim);
 		}
 #endif
 		return output;
