@@ -99,11 +99,16 @@ void DD_AnimSystem::processAnimState(DD_ModelSK* mdlsk,
 
 		// set m_final pose
 		for (unsigned j = 0; j < localp.size(); j++) {
-			const glm::quat qa = a_clip->samples[idx_a].m_pose[j].m_rot;
-			const glm::quat qb = a_clip->samples[idx_b].m_pose[j].m_rot;
+			glm::quat iden;
+			const glm::quat qa = glm::slerp(
+				iden, a_clip->samples[idx_a].m_pose[j].m_rot, a_state.weight);
+			const glm::quat qb = glm::slerp(
+				iden, a_clip->samples[idx_b].m_pose[j].m_rot, a_state.weight);
 
-			const glm::vec3 ta = a_clip->samples[idx_a].m_pose[j].m_trans;
-			const glm::vec3 tb = a_clip->samples[idx_b].m_pose[j].m_trans;
+			const glm::vec3 ta = a_clip->samples[idx_a].m_pose[j].m_trans * 
+				a_state.weight;
+			const glm::vec3 tb = a_clip->samples[idx_b].m_pose[j].m_trans *
+				a_state.weight;
 
 			if (first_pass) { // reset local pose
 				if (a_state.interpolate) {
@@ -113,7 +118,7 @@ void DD_AnimSystem::processAnimState(DD_ModelSK* mdlsk,
 				else {
 					localp[j].m_rot = qa;
 					localp[j].m_trans = ta;
-				} 
+				}
 			}
 			else {
 				if (a_state.interpolate) {

@@ -114,13 +114,23 @@ void AssetViewAvatar::setInterface(const float dt)
 			strbuff.format("%s_%u", "Playback Speed", i);
 			ImGui::DragFloat(strbuff.str(), &a_state->play_back, EPSILON);
 			strbuff.format("%s_%u", "Active", i);
-			ImGui::Checkbox(strbuff.str(), &a_state->active);
+			if (ImGui::Checkbox(strbuff.str(), &a_state->active)) {
+				a_state->local_time = 0.f;
+			}
 			ImGui::SameLine();
 			strbuff.format("%s_%u", "Loop", i);
 			ImGui::Checkbox(strbuff.str(), &a_state->flag_loop);
 			ImGui::SameLine();
 			strbuff.format("%s_%u", "Interpolate", i);
 			ImGui::Checkbox(strbuff.str(), &a_state->interpolate);
+			strbuff.format("%s_%u", "Reset", i);
+			if (ImGui::Button(strbuff.str())) {
+				a_state->active = true;
+				a_state->local_time = 0.f;
+			}
+			ImGui::SameLine();
+			strbuff.format("%s_%u", "Weight", i);
+			ImGui::DragFloat(strbuff.str(), &a_state->weight, 0.1f, 0.f, 1.f);
 		}
 
 		ImGui::End();
@@ -144,7 +154,7 @@ void AssetViewAvatar::appendAnimation(const char * animation_id,
 		res_ptr, skinnedMdl->m_ID.c_str(), animation_id, new_ref_id);
 
 	if (added) {
-		skinnedMdl->m_animStates[idx].active = true;
+		//skinnedMdl->m_animStates[idx].active = true;
 		// get step size and clip length
 		DD_AnimClip* a_clip = ResSpace::findDD_AnimClip(res_ptr, animation_id);
 

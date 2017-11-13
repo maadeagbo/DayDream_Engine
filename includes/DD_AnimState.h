@@ -26,7 +26,7 @@ struct DD_AnimState
 {
     cbuff<64>   m_ID;
     cbuff<64>   clip_id;
-    float       weight;
+    float       weight = 1.f;
     float       local_time = 0.f;
     float       play_back = 1.f;
 	bool		interpolate = true;
