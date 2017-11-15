@@ -25,7 +25,6 @@ AssetNav::AssetNav(const char * ID) {
 DD_Event AssetNav::Update(DD_Event event) {
 	// Parse throught events
 	if (event.m_type == "input") {
-
 		inputBuff* input = (inputBuff*)event.m_message;
 		glm::vec3 f_d = ForwardDir() * pan_speed * event.m_time;
 		glm::vec3 r_d = RightDir() * pan_speed * event.m_time;

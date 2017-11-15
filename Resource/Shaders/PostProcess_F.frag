@@ -84,6 +84,7 @@ void main() {
     
 	// replace
 	FragColor = mix(finalColor, particleColor, bgTest * alphaTest * particleColor.a);
+	//FragColor = finalColor;
 	// additive
 	//FragColor = particleColor;
 	//FragColor = mix(particleColor, finalColor, test);

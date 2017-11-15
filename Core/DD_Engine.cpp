@@ -255,8 +255,10 @@ bool DD_Engine::LevelSelect(const size_t w, const size_t h) {
 	}
 
 	init_flag = EngineState::MAIN;
-	bool launch = false;
+	bool launch = false; 
 	glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+	int wh_idx[2] = { 8, 4 };
+
 	while(!windowShouldClose && !launch) {
 		glClear(GL_COLOR_BUFFER_BIT);
 		// start imgui window processing
@@ -288,9 +290,18 @@ bool DD_Engine::LevelSelect(const size_t w, const size_t h) {
 			ImGui::Text("No levels present");
 		}
 
-		ImGui::DragInt2("<-- Resolution", resolution_set, 10.f, 100);
-		m_WIDTH = resolution_set[0];
-		m_HEIGHT = resolution_set[1];
+		const int choices = 13;
+		const char* res_[choices] = { 
+			"320", "480", "620", "720", "800", "1024", "1080", "1280",
+			"1440", "1600", "1920", "2048", "3200"
+		};
+		ImGui::Combo("Width", &wh_idx[0], res_, choices); 
+		//ImGui::SameLine();
+		ImGui::Combo("Height", &wh_idx[1], res_, choices);
+
+		//ImGui::DragInt2("<-- Resolution", resolution_set, 10.f, 100);
+		m_WIDTH = (int)strtod(res_[wh_idx[0]], nullptr);
+		m_HEIGHT = (int)strtod(res_[wh_idx[1]], nullptr);
 
 		ImGui::Checkbox("VSYNC", &engine_mode_flags[0]); ImGui::SameLine();
 		ImGui::Checkbox("Full Screen", &engine_mode_flags[1]); ImGui::SameLine();
@@ -359,14 +370,13 @@ void DD_Engine::Load()
 									   std::placeholders::_1);
 	main_q.RegisterHandler(handlerAn, "update_animation");
 
-	// add draw handler
+	// add render engine handler
 	EventHandler handlerR = std::bind(&DD_Renderer::RenderHandler, 
 									  &main_renderer,
 									  std::placeholders::_1);
 	main_q.RegisterHandler(handlerR, "render");
 	main_q.RegisterHandler(handlerR, "toggle_screenshots");
 	main_q.RegisterHandler(handlerR, "rendstat");
-	main_q.RegisterHandler(handlerR, "LineRend");
 
 	// add particle handler
 	EventHandler handlerP = std::bind(&DD_ParticleSys::Create,
@@ -420,6 +430,11 @@ void DD_Engine::LoadViewer()
 	main_q.RegisterHandler(handlerV, "new_mdlsk");
 	main_q.RegisterHandler(handlerV, "new_agent_sk");
 	main_q.RegisterHandler(handlerV, "new_anim");
+	// background color
+	main_renderer.bgcol[0] = main_viewer.bgcolor[0];
+	main_renderer.bgcol[1] = main_viewer.bgcolor[1];
+	main_renderer.bgcol[2] = main_viewer.bgcolor[2];
+	main_renderer.bgcol[3] = main_viewer.bgcolor[3];
 }
 
 void DD_Engine::updateSDL()
@@ -474,7 +489,10 @@ void DD_Engine::Run()
 	u64 last_update_time = main_timer.getTime();
 	double unprocessed_time = 0.0;
 
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClearColor(main_renderer.bgcol[0], 
+				 main_renderer.bgcol[1], 
+				 main_renderer.bgcol[2], 
+				 main_renderer.bgcol[3]);
 	while( !windowShouldClose ) {
 		glClear(GL_COLOR_BUFFER_BIT);
 
@@ -798,4 +816,8 @@ void DD_Engine::InitCurrentLevel()
 	main_renderer.m_scrHorzDist = main_lvl[current_lvl]->m_scrHorzDist;
 	main_renderer.m_scrVertDist = main_lvl[current_lvl]->m_scrVertDist;
 	main_renderer.m_flagDCM = main_lvl[current_lvl]->m_flagDynamicCubeMap;
+	main_renderer.bgcol[0] = lvl->bgcolor[0];
+	main_renderer.bgcol[1] = lvl->bgcolor[1];
+	main_renderer.bgcol[2] = lvl->bgcolor[2];
+	main_renderer.bgcol[3] = lvl->bgcolor[3];
 }

@@ -69,6 +69,7 @@ public:
 
 	size_t m_num_callbacks, num_handlers, m_screenW, m_screenH;
 	float m_scrHorzDist, m_scrVertDist;
+	float bgcolor[4] = { 0.f, 0.f, 0.f, 1.f };
 	std::string m_cubeMapID, m_lvlID, m_assetFile;
 	bool m_flagHandler, m_flagDynamicCubeMap;
 };

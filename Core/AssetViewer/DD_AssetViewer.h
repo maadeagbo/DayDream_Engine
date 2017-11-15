@@ -7,7 +7,7 @@
 class DD_AssetViewer
 {
 public:
-	DD_AssetViewer() {};
+	DD_AssetViewer();
 	~DD_AssetViewer() {};
 
 	DD_Resources* res_ptr;
@@ -19,7 +19,6 @@ public:
 	size_t m_screenH;
 	float  m_scrHorzDist;
 	float m_scrVertDist;
+	float bgcolor[4] = { 0.f, 0.f, 0.f, 1.f };
 	std::string m_cubeMapID, m_assetfile;
-private:
-	void preLoad();
 };

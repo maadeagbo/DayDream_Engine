@@ -81,18 +81,7 @@ enum Shaders
 
 struct DD_Renderer
 {
-	DD_Renderer() :
-		m_lumiTexSizes(20),
-		m_objSink(1024),
-		m_lowDist(10),
-		m_highDist(10),
-		m_shaders(Shaders::NUM_SHADERS),
-		m_flagVR(false),
-		m_flagCubeMap(false),
-		m_flagShadow(true),
-		m_flagLineRend(true),
-		m_flagDCM(false)
-	{}
+	DD_Renderer();
 
 	~DD_Renderer()
 	{
@@ -169,25 +158,46 @@ struct DD_Renderer
 	std::string		m_lvl_cubMap;
 
 	glm::mat4		m_currentLSM;
-	GLfloat			m_Width, m_Height, cam_eye_dist, m_scrVertDist, m_scrHorzDist,
-		m_textW, m_textH;
-	dd_array<int>	m_lumiTexSizes, m_objSink;
-	dd_array<GLfloat> m_luminValues, m_lowDist, m_highDist;
-	dd_array<GLuint> m_luminOutput, m_renderable_objects;
-	size_t m_LODBufferSize[10];
-	GLuint m_cubeMapHandle, m_objectsInFrame;
-	DD_Camera *m_active_cam, *m_cube_cam;
+	GLfloat			m_Width;
+	GLfloat			m_Height;
+	GLfloat			cam_eye_dist;
+	GLfloat			m_scrVertDist;
+	GLfloat			m_scrHorzDist;
+	GLfloat			m_textW;
+	GLfloat			m_textH;
+	GLfloat			bgcol[4];
+	dd_array<int>	m_lumiTexSizes;
+	dd_array<int>	m_objSink;
+	dd_array<GLfloat> m_luminValues;
+	dd_array<GLfloat> m_lowDist;
+	dd_array<GLfloat> m_highDist;
+	dd_array<GLuint> m_luminOutput;
+	dd_array<GLuint> m_renderable_objects;
+	size_t			m_LODBufferSize[10];
+	GLuint			m_cubeMapHandle;
+	GLuint			m_objectsInFrame;
+	DD_Camera		*m_active_cam;
+	DD_Camera		*m_cube_cam;
 	dd_array<DD_Shader> m_shaders;
-	GLboolean m_flagVR, m_flagCubeMap, m_flagShadow, m_flagLineRend, m_flagDCM;
+	GLboolean		m_flagVR;
+	GLboolean		m_flagCubeMap;
+	GLboolean		m_flagShadow;
+	GLboolean		m_flagLineRend;
+	GLboolean		m_flagDCM;
 private:
 	GLuint m_jointVBO = 0;
 	bool m_debugOn = false;
 	bool screen_shot_on = false;
 	u64 last_frame_time = 0;
-	size_t framesPerSec = 0, drawCallsInFrame = 0, trisInFrame = 0, linesInFrame = 0;
-	float flagSecond = 0.0f, msPerFrameTotal = 0.0f, avgFT = 0.0f, avgFPS = 0.0f;
+	size_t framesPerSec = 0;
+	size_t drawCallsInFrame = 0;
+	size_t trisInFrame = 0;
+	size_t linesInFrame = 0;
+	float flagSecond = 0.0f;
+	float msPerFrameTotal = 0.0f;
+	float avgFT = 0.0f;
+	float avgFPS = 0.0f;
 	float fps60_tick = 0.f;
-	std::string runtimeInfo, frameInfo, strFormat, fpsInfo, drawInfo;
 	cbuff<64> screen_shot_name;
 };
 

@@ -33,7 +33,8 @@ bool LoadScrSpace::LoadTextures(const int _screenW, const int _screenH)
 
 void LoadScrSpace::DrawLoadScreen(float timeElasped, DD_Shader* shader)
 {
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClearColor(0.f, 0.f, 0.f, 1.f); // make black background for load screen
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	if( loadCircleVAO == 0 ) {
 		GLfloat quadVertices[] = {

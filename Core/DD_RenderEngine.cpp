@@ -600,6 +600,21 @@ void RendSpace::screenShot(const char* sig,
 					&pixel_write_buffer[0]);
 }
 
+DD_Renderer::DD_Renderer() :
+	m_lumiTexSizes(20),
+	m_objSink(1024),
+	m_lowDist(10),
+	m_highDist(10),
+	m_shaders(Shaders::NUM_SHADERS),
+	m_flagVR(false),
+	m_flagCubeMap(false),
+	m_flagShadow(true),
+	m_flagLineRend(true),
+	m_flagDCM(false)
+{
+	bgcol[0] = 0.f; bgcol[1] = 0.f; bgcol[2] = 0.f; bgcol[3] = 1.f;
+}
+
 DD_Event DD_Renderer::RenderHandler(DD_Event& event)
 {
 	float currTime = 0.0f, currFrameTime = 0.0f;
@@ -612,17 +627,6 @@ DD_Event DD_Renderer::RenderHandler(DD_Event& event)
 			// Debug
 			currTime = m_time->getTimeFloat();
 			currFrameTime = m_time->getFrameTime();
-
-			runtimeInfo = "Run time: " +
-				std::to_string(currTime) +
-				"s (time to render last frame: " +
-				std::to_string(currFrameTime) +
-				"s)";
-			avgFT = m_time->getAvgFrameTime();
-			frameInfo = "Avg ms per frame: " + std::to_string(avgFT * 1000.f);
-			strFormat = std::to_string(1.0 / avgFT);
-			fpsInfo = "(" + strFormat.erase(strFormat.length() - 3) + " FPS)";
-			drawInfo = "Triangles sent to GPU: " + std::to_string(trisInFrame);
 
 			ImGuiWindowFlags window_flags = 0;
 			ImGui::Begin("Render Stats Window", nullptr, window_flags);
@@ -1018,7 +1022,11 @@ void DD_Renderer::Draw(float dt)
 							m_pbuffer.particleFBO, m_gbuffer.deferredFBO);
 
 		// Perform post processing using default framebuffer
+		// restore backgound color
+		glClearColor(bgcol[0], bgcol[1], bgcol[2], bgcol[3]);
+		
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glClear(GL_COLOR_BUFFER_BIT);
 		glDisable(GL_DEPTH_TEST);
 
 		// hdri tone mapping
@@ -1038,7 +1046,9 @@ void DD_Renderer::Draw(float dt)
 		shader->setUniform("AveLum", avgLum);
 		shader->setUniform("Exposure", 0.75f); // control exposure
 		shader->setUniform("White", 0.97f); // control white value
-
+		
+		// needs black background for post process
+		//glClearColor(0.f, 0.f, 0.f, 1.f);
 		RendSpace::RenderQuad(shader, identity);
 		if (screen_shot_on) {
 			//screen_shot_on = false;
@@ -1425,7 +1435,7 @@ void DD_Renderer::ShadowPass(GLfloat dt, VR_Eye eye)
 		// cull front faces (peter panning due to shadow bias)
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_CULL_FACE);
-		glClear(GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// calculate lightspace matrix
 		glm::vec4 pos =
@@ -1856,6 +1866,7 @@ void DD_Renderer::LightPass(DD_Shader * shader,
 	// light pass using light framebuffer
 	glDepthMask(GL_FALSE);
 	glBindFramebuffer(GL_FRAMEBUFFER, m_lbuffer.lightFBO);
+	glClearColor(0.f, 0.f, 0.f, 1.f); // make black background for blending
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	// set uniforms and textures

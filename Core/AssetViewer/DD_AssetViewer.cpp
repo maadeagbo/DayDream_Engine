@@ -50,6 +50,15 @@ namespace AVGui
 	char buff03[buff_size];
 }
 
+DD_AssetViewer::DD_AssetViewer()
+{
+	// set background color
+	bgcolor[0] = 0.2;
+	bgcolor[1] = 0.2;
+	bgcolor[2] = 0.2;
+	bgcolor[3] = 1.f;
+}
+
 /// \brief Initialze controllers, camera, ui, etc... for AssetViewer
 void DD_AssetViewer::Load()
 {
@@ -93,7 +102,7 @@ void DD_AssetViewer::Load()
 		DD_Model* mdl = ResSpace::loadModel_DDM(res_ptr, "pl", plane_id.str());
 		if (mdl) {
 			temp_agent->AddModel("pl", 0.f, 1000.f);
-			temp_agent->UpdateScale(glm::vec3(10.f));
+			temp_agent->UpdateScale(glm::vec3(100.f));
 			temp_agent->UpdatePosition(glm::vec3(0.f, -0.1f, 0.f));
 		}
 	}

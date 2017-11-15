@@ -1,0 +1,25 @@
+#version 430
+layout (local_size_x = 8, local_size_y = 8) in;
+
+layout (rgba32f, binding = 0) uniform image2D img_input;
+
+const float kernel[] = float[21] (
+    0.000272337, 0.00089296, 0.002583865, 0.00659813, 0.014869116,
+    0.029570767, 0.051898313, 0.080381679, 0.109868729, 0.132526984, 
+    0.14107424,
+    0.132526984, 0.109868729, 0.080381679, 0.051898313, 0.029570767,
+    0.014869116, 0.00659813, 0.002583865, 0.00089296, 0.000272337
+);
+
+void main () {
+    ivec2 image_bounds = imageSize(img_input);
+	// get index in global work group i.e x,y position
+	ivec2 pixel_coords = ivec2 (gl_GlobalInvocationID.xy);
+
+    if(pixel_coords.x >= image_bounds.x || pixel_coords.y >= image_bounds.y) {
+        return; // skip if circumstance happens (shouldn't)
+    }
+    // for (i, j)
+    // (i - 10 + h) % h <--- negative
+    // (i + 10 ) % h <--- positive
+}
