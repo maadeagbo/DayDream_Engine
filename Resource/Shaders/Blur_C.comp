@@ -1,0 +1,75 @@
+#version 430
+layout (local_size_x = 8, local_size_y = 8) in;
+
+layout (rg32f, binding = 0) readonly uniform image2D img_input;
+layout (rg32f, binding = 1) writeonly uniform image2D img_output;
+
+uniform vec2 direction_flag;
+
+const int stride_11 = 5;
+const float kernel_11[] = float[11] (
+    0.000003, 0.000229, 0.005977, 0.060598, 0.24173,
+    0.382925,
+    0.24173, 0.060598, 0.005977, 0.000229, 0.000003
+);
+
+const int stride_21 = 10;
+const float kernel_21[] = float[21] (
+    0.000272337, 0.00089296, 0.002583865, 0.00659813, 0.014869116,
+    0.029570767, 0.051898313, 0.080381679, 0.109868729, 0.132526984, 
+    0.14107424,
+    0.132526984, 0.109868729, 0.080381679, 0.051898313, 0.029570767,
+    0.014869116, 0.00659813, 0.002583865, 0.00089296, 0.000272337
+);
+
+void main () {
+    const ivec2 image_bounds = imageSize(img_input);
+	// get index in global work group i.e x,y position
+	const ivec2 coords = ivec2 (gl_GlobalInvocationID.xy);
+    vec2 source_pixel = vec2(0.0);
+    vec4 out_pixel = vec4(0.0);
+
+    //if(coords.x >= image_bounds.x || coords.y >= image_bounds.y) {
+        //return; // skip just in case
+    //}
+    // for (i, j)
+    // (i - 10 + h) % h <--- negative
+    // (i + 10 ) % h <--- positive
+
+    // previous pixels
+    int idx = 0;
+    for (int i = -1 * stride_11; i < 0; i++) {
+        //*
+        const int offset_x = ((coords.x + i) * int(direction_flag.x));
+        const int offset_y = ((coords.y + i) * int(direction_flag.y));
+        const ivec2 coord_i = ivec2(offset_x, offset_y);
+        
+        source_pixel = imageLoad(img_input, coord_i).xy;
+        out_pixel.xy += kernel_11[idx] * source_pixel;
+        idx++;
+        //*/
+    }
+    // this pixel
+    source_pixel = imageLoad(img_input, coords).xy;
+    out_pixel.xy = source_pixel;
+    out_pixel.xy += kernel_11[idx] * source_pixel; 
+    //out_pixel.xy += 1.0 * source_pixel; 
+    idx++; 
+
+    // next pixels
+    for (int i = 1; i <= stride_11; i++) {
+        //*
+        const int offset_x = int((coords.x + i) * int(direction_flag.x));
+        const int offset_y = int((coords.y + i) * int(direction_flag.y));
+        const ivec2 coord_i = ivec2(offset_x, offset_y);
+        
+        source_pixel = imageLoad(img_input, coord_i).xy;
+        out_pixel.xy += kernel_11[idx] * source_pixel;
+        idx++;
+        //*/
+    }
+
+    source_pixel = imageLoad(img_input, coords).xy;
+    out_pixel.xy += 1.0 * source_pixel;
+    imageStore(img_output, coords, out_pixel);
+}

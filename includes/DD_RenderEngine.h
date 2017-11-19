@@ -37,7 +37,7 @@ struct GBuffer
 
 struct ShadowBuffer
 {
-	GLuint depthMapFBO, depthBuf, shadowTex, width, height;
+	GLuint depthMapFBO, depthBuf, shadowTex[2], width, height;
 };
 
 struct LightBuffer
@@ -74,8 +74,9 @@ enum Shaders
 	PRIMITIVE,
 	DEPTH,
 	DEPTH_SKINNED,
-	DEPTH_SAMPLER,
+	TEX_SAMPLER,
 	SKINNED,
+	BLUR,
 	NUM_SHADERS
 };
 
@@ -210,7 +211,8 @@ namespace RendSpace {
 					const glm::vec4 color);
 	void RenderBBox(DD_Shader* shader, const BoundingBox* bbox, glm::vec3 color);
 	void BindPassTexture(DD_Shader* shader, const GBuffer* gBuf);
-	void BindPassTexture(DD_Shader* shader, const LightBuffer* lBuf);
+	void BindPassTexture(DD_Shader* shader, 
+						 const LightBuffer* lBuf);
 	void BindPassTexture(DD_Shader* shader, const ParticleBuffer* pBuf);
 	void BindPassTexture(DD_Shader* shader, const CubeMapBuffer* cBuf,
 						 GLenum target, DD_Skybox* sb);

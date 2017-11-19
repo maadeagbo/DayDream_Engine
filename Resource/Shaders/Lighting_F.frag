@@ -46,14 +46,13 @@ float ShadowCalculation(vec4 lightSpace, vec3 normal, vec3 lightDir) {
 	vec3 projCoords = lightSpace.xyz / lightSpace.w;
 	// Transform to [0,1] range
 	projCoords = projCoords * 0.5 + 0.5;
-	// index shadow map
 
 	//* variance shadow map (taken from Nvidia paper)
 	// compares currentDepth value to a distibution of values using Chebyshev's
 	// inequality. Chebyshev's inequality gives a bound on that percentage of 
 	// of values given the average (expected value E(x)) and a variance
 	float currentDepth = projCoords.z;
-	vec4 moments = texture(DepthTex, projCoords.xy);
+	vec2 moments = texture(DepthTex, projCoords.xy).xy;
 	float E_x2 = moments.y; // average squared value over region
 	float Ex_2 = moments.x * moments.x;	// average value over region (squared)
 	float var = E_x2 - Ex_2; // variance = E(x2) - (E(x) * E(x))
@@ -62,7 +61,7 @@ float ShadowCalculation(vec4 lightSpace, vec3 normal, vec3 lightDir) {
 	float mD_2 = mD * mD;
 	float p_max = var / (var + mD_2); // probability of occlusion
 	// high variance occurs at silhouette edges. Use p_max to drive the equation
-	// towards using the variance or using a "minimum" probability of 0.2
+	// towards using the variance or using a "minimum" (o.2 for light bleed)
 	float shadow = max(p_max, (currentDepth <= moments.x) ? 1.0 : 0.2);
 	// light bleed can occur at high depth / variance values (need to implement
 	// cascaded shadow maps to control)
@@ -92,7 +91,7 @@ float ShadowCalculation(vec4 lightSpace, vec3 normal, vec3 lightDir) {
 
 	// Keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
 	if(projCoords.z > 1.0) {
-		shadow = 0.0;
+		shadow = 1.0;
 	}
 	
 	//return shadow;
@@ -176,20 +175,20 @@ void main() {
 	} else {
 		// general lighting
 		if ( Light.type == 0 ) {
-			lightDir = normalize( -Light.direction );
+			lightDir = -normalize( Light.direction );
 			// shadow calc
-			float shadow = 0.0f;
+			float shadow = 1.0f;
 			if (ShadowMap) {
 				vec4 PositionLS = LSM * vec4(pos, 1.0f);
 				shadow = ShadowCalculation(PositionLS, norm, lightDir);
 				//finalColor = vec4(texture( DepthTex, tex_coord ).r);
 			}
-			finalColor += directionLightModel( lightDir, viewDir, norm, 
+			finalColor = directionLightModel( lightDir, viewDir, norm, 
 				albedoSpec, Light.color, shadow);
 		} else {
 			vec3 _dist = Light.position - pos;
 			lightDir = normalize(_dist);
-			finalColor += pointSpotLightModel( lightDir, viewDir, norm, albedoSpec, 
+			finalColor = pointSpotLightModel( lightDir, viewDir, norm, albedoSpec, 
 				length(_dist) );
 		}
 

@@ -1,7 +1,7 @@
 #include "AssetNav.h"
 
 namespace {
-	float scroll_speed = 10000.0f, mouseSensitivity = 1.f, Pitch = 0.f, Yaw = 0.f,
+	float scroll_speed = 1000.0f, mouseSensitivity = 1.f, Pitch = 0.f, Yaw = 0.f,
 		scroll_dist = 1000.f, pan_speed = 100.f;
 	glm::quat deltaR;
 }
