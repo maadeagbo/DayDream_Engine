@@ -1581,6 +1581,9 @@ void DD_Renderer::ShadowPass(GLfloat dt, VR_Eye eye)
 				}
 			}
 		}
+		glViewport(0, 0, (GLsizei)m_Width, (GLsizei)m_Height); // reset dimensions
+		//glCullFace(GL_BACK);
+
 		// blur depth map w/ filter FBO
 		glBindFramebuffer(GL_FRAMEBUFFER, m_fbuffer.filterFBO);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -1603,17 +1606,12 @@ void DD_Renderer::ShadowPass(GLfloat dt, VR_Eye eye)
 		shader->setUniform("direction_flag", glm::vec2(1.f, 0.f));
 		RendSpace::RenderQuad(shader, identity);
 		// vertical
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, m_sbuffer.shadowTex);
 		shader->setUniform("direction_flag", glm::vec2(0.f, 1.f));
 		RendSpace::RenderQuad(shader, identity);
 
 		// reset uniforms
 		shader->setUniform("Blur", false);
 		shader->setUniform("output2D", false);
-
-		glViewport(0, 0, (GLsizei)m_Width, (GLsizei)m_Height); // reset dimensions
-		//glCullFace(GL_BACK);
 	}
 }
 

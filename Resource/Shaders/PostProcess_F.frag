@@ -78,14 +78,14 @@ vec4 BlurImage(const vec2 mask, const vec2 uv) {
 	vec2 delta = 1.0/textureSize(ColorTex, 0);
 	vec4 color_out = vec4(0.0);
 	int index = 0;
-	int stride = stride_11;
+	int stride = stride_21;
 
 	for (int i = -stride; i <= stride; i++) {
 		vec2 offset = vec2(i * delta.x * mask.x, i * delta.y * mask.y);
 		vec4 source = (output2D) ? 
-			vec4(texture(ColorTex, uv + offset).xy, 0.0, 0.0) : 
+			vec4(texture(ColorTex, uv + offset).xy, 0.0, 1.0) : 
 			texture(ColorTex, uv + offset);
-		color_out += kernel_11[index] * source;
+		color_out += kernel_21[index] * source;
 		index += 1;
 	}
 	return color_out;
