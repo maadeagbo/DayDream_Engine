@@ -366,11 +366,11 @@ void RendSpace::BindPassTexture(DD_Shader * shader,
 {
 	if( lightPass ) {
 		glActiveTexture(GL_TEXTURE3);
-		glBindTexture(GL_TEXTURE_2D, sBuf->shadowTex[1]);
+		glBindTexture(GL_TEXTURE_2D, sBuf->shadowTex);
 	}
 	else {
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, sBuf->shadowTex[0]);
+		glBindTexture(GL_TEXTURE_2D, sBuf->shadowTex);
 	}
 }
 
@@ -476,22 +476,8 @@ ShadowBuffer RendSpace::CreateShadowBuffer(const int width, const int height)
 	glBindFramebuffer(GL_FRAMEBUFFER, sBuf.depthMapFBO);
 
 	// depth image 1
-	glGenTextures(2, sBuf.shadowTex);
-	glBindTexture(GL_TEXTURE_2D, sBuf.shadowTex[0]);
-	// texture paramenters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border);
-
-	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RG32F, width, height);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 4);
-	glGenerateMipmap(GL_TEXTURE_2D);
-
-	// depth image 2
-	glBindTexture(GL_TEXTURE_2D, sBuf.shadowTex[1]);
+	glGenTextures(1, &sBuf.shadowTex);
+	glBindTexture(GL_TEXTURE_2D, sBuf.shadowTex);
 	// texture paramenters
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -517,7 +503,7 @@ ShadowBuffer RendSpace::CreateShadowBuffer(const int width, const int height)
 	glFramebufferTexture2D(GL_FRAMEBUFFER, 
 						   GL_COLOR_ATTACHMENT0, 
 						   GL_TEXTURE_2D,
-						   sBuf.shadowTex[0], 
+						   sBuf.shadowTex, 
 						   0);
 	GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0 };
 	glDrawBuffers(1, drawBuffers);
@@ -596,6 +582,53 @@ CubeMapBuffer RendSpace::CreateCubeMapBuffer(const int width, const int height,
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	return cBuf;
+}
+
+FilterBuffer RendSpace::CreateFilterBuffer(const int width, 
+										   const int height,
+										   ShadowBuffer* sbuf)
+{
+	FilterBuffer fBuf = FilterBuffer();
+
+	// create and bind fbo
+	glGenFramebuffers(1, &fBuf.filterFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, fBuf.filterFBO);
+
+	// color buffer
+	CreateTex(GL_TEXTURE0, GL_RGBA16F, fBuf.colorTex, width, height);
+	// depth map
+	GLfloat border[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	glGenTextures(1, &fBuf.depthTex);
+	glBindTexture(GL_TEXTURE_2D, fBuf.depthTex);
+	// texture paramenters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border);
+	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RG32F, sbuf->width, sbuf->height);
+
+	// attach images to framebuffer
+	glFramebufferTexture2D(GL_FRAMEBUFFER, 
+						   GL_COLOR_ATTACHMENT0, 
+						   GL_TEXTURE_2D,
+						   fBuf.colorTex, 
+						   0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER,
+						   GL_COLOR_ATTACHMENT1,
+						   GL_TEXTURE_2D,
+						   fBuf.depthTex,
+						   0);
+
+	GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+	glDrawBuffers(2, drawBuffers);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+		DD_Terminal::post("\nERROR::FRAMEBUFFER::Filter Framebuffer is not complete!\n");
+	}
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	return fBuf;
 }
 
 void RendSpace::screenShot(const char* sig, 
@@ -680,8 +713,10 @@ void DD_Renderer::LoadRendererEngine(const GLfloat _Width, const GLfloat _Height
 	GLenum err;
 
 	m_lbuffer = RendSpace::CreateLightBuffer((int)m_Width, (int)m_Height);
-	m_sbuffer = RendSpace::CreateShadowBuffer(512, 512);
+	m_sbuffer = RendSpace::CreateShadowBuffer(1024, 1024);
 	m_pbuffer = RendSpace::CreateParticleBuffer((int)m_Width, (int)m_Height);
+	m_fbuffer = RendSpace::CreateFilterBuffer(
+		(int)m_Width, (int)m_Height, &m_sbuffer);
 
 	// create VBO buffer for joint matrices
 	glGenBuffers(1, &m_jointVBO);
@@ -1044,8 +1079,10 @@ void DD_Renderer::Draw(float dt)
 		glBlitFramebuffer(0, 0, m_Width, m_Height, 0, 0, (GLint)m_Width, 
 						  (GLint)m_Height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 
-		m_particleSys->Draw(dt, viewMat, projMat, glm::vec3(m_active_cam->pos()),
-							m_pbuffer.particleFBO, m_gbuffer.deferredFBO);
+		bool blend_particle = m_particleSys->Draw(
+			dt, viewMat, projMat, glm::vec3(m_active_cam->pos()), 
+			m_pbuffer.particleFBO, m_gbuffer.deferredFBO
+		);
 
 		// Perform post processing using default framebuffer
 		// restore backgound color
@@ -1064,32 +1101,40 @@ void DD_Renderer::Draw(float dt)
 		}
 		//printf("Avg lum: %.3f\n", avgLum);
 
-		// reset shader
+		// reset shader and post process
 		shader = &m_shaders[Shaders::POST_PROCESS];
 		shader->Use();
 		RendSpace::BindPassTexture(shader, &m_lbuffer);
-		RendSpace::BindPassTexture(shader, &m_pbuffer);
+		if (blend_particle) {
+			RendSpace::BindPassTexture(shader, &m_pbuffer);
+			shader->setUniform("BlendParticle", blend_particle);
+		}
+		else {
+			shader->setUniform("BlendParticle", blend_particle);
+		}
+		shader->setUniform("GammaCorrect", true);
+		shader->setUniform("Blur", false);
+		shader->setUniform("output2D", false);
 		shader->setUniform("DoToneMap", doToneMap);
 		shader->setUniform("AveLum", avgLum);
+		shader->setUniform("SampleShadow", false);
 		shader->setUniform("Exposure", 0.75f); // control exposure
 		shader->setUniform("White", 0.97f); // control white value
-		
-		// sample a texture
+		// sample shadow
 		//*
-		shader = &m_shaders[Shaders::TEX_SAMPLER];
-		shader->Use();
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, m_sbuffer.shadowTex[0]);
+		glBindTexture(GL_TEXTURE_2D, m_fbuffer.depthTex);
+		//glBindTexture(GL_TEXTURE_2D, m_sbuffer.shadowTex);
+		shader->setUniform("SampleShadow", true);
 		//*/
 		
 		RendSpace::RenderQuad(shader, identity);
 		if (screen_shot_on) {
 			//screen_shot_on = false;
 			fps60_tick = 0.f;
-			RendSpace::screenShot(screen_shot_name.str(),
-								  m_time->getTimeFloat(),
-								  (GLint)m_Width,
-								  (GLint)m_Height);
+			RendSpace::screenShot(
+				screen_shot_name.str(), m_time->getTimeFloat(), (GLint)m_Width,
+				(GLint)m_Height);
 		}
 
 		trisInFrame += 2;
@@ -1536,28 +1581,36 @@ void DD_Renderer::ShadowPass(GLfloat dt, VR_Eye eye)
 				}
 			}
 		}
-		// blur depth map
-		//*
-		shader = &m_shaders[Shaders::BLUR];
-		shader->Use();
-		// vertical
-		shader->setUniform("direction_flag", glm::vec2(0.0, 1.0));
-		glBindImageTexture(
-			0, m_sbuffer.shadowTex[0], 0, GL_FALSE, 0, GL_READ_ONLY, GL_RG32F);
-		glBindImageTexture(
-			1, m_sbuffer.shadowTex[1], 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RG32F);
-		const int x_ = (int)m_sbuffer.width / 8;
-		const int h_ = (int)m_sbuffer.height / 8;
-		glDispatchCompute(x_, h_, 1);
-		// make sure writing to image has finished before reading from it
-		glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+		// blur depth map w/ filter FBO
+		glBindFramebuffer(GL_FRAMEBUFFER, m_fbuffer.filterFBO);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		shader = &m_shaders[Shaders::POST_PROCESS];
+		shader->Use();
+		shader->setUniform("BlendParticle", false);
+		shader->setUniform("GammaCorrect", false);
+		shader->setUniform("DoToneMap", false);
+		shader->setUniform("AveLum", 0.0f);
+		shader->setUniform("SampleShadow", false);
+		shader->setUniform("Exposure", 0.75f); // control exposure
+		shader->setUniform("White", 0.97f); // control white value
+		
+		shader->setUniform("Blur", true);
+		shader->setUniform("output2D", true);
 		// horizontal
-		shader->setUniform("direction_flag", glm::vec2(1.0, 0.0));
-		glDispatchCompute(x_, h_, 1);
-		// make sure writing to image has finished before reading from it
-		glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-		//*/
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, m_sbuffer.shadowTex); 
+		shader->setUniform("direction_flag", glm::vec2(1.f, 0.f));
+		RendSpace::RenderQuad(shader, identity);
+		// vertical
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, m_sbuffer.shadowTex);
+		shader->setUniform("direction_flag", glm::vec2(0.f, 1.f));
+		RendSpace::RenderQuad(shader, identity);
+
+		// reset uniforms
+		shader->setUniform("Blur", false);
+		shader->setUniform("output2D", false);
 
 		glViewport(0, 0, (GLsizei)m_Width, (GLsizei)m_Height); // reset dimensions
 		//glCullFace(GL_BACK);
@@ -1972,7 +2025,11 @@ void DD_Renderer::LightPass(DD_Shader * shader,
 			DD_Light* shadowL = GetDirectionalShadowLight(m_resourceBin);
 			if( m_flagShadow && shadowL ) {
 				RendSpace::BindPassTexture(shader, &m_gbuffer);
-				RendSpace::BindPassTexture(shader, &m_sbuffer, true);
+				//RendSpace::BindPassTexture(shader, &m_sbuffer, true);
+
+				glActiveTexture(GL_TEXTURE3);
+				glBindTexture(GL_TEXTURE_2D, m_fbuffer.depthTex);
+
 				shader->setUniform("ShadowMap", true);
 				shader->setUniform("LSM", shadowL->GetLSM());
 			}

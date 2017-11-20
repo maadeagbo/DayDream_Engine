@@ -37,7 +37,7 @@ struct GBuffer
 
 struct ShadowBuffer
 {
-	GLuint depthMapFBO, depthBuf, shadowTex[2], width, height;
+	GLuint depthMapFBO, depthBuf, shadowTex, width, height;
 };
 
 struct LightBuffer
@@ -53,6 +53,11 @@ struct ParticleBuffer
 struct CubeMapBuffer
 {
 	GLuint cubeFBO, depthBuf;
+};
+
+struct FilterBuffer
+{
+	GLuint filterFBO, colorTex, depthTex;
 };
 
 enum VR_Eye
@@ -151,6 +156,7 @@ struct DD_Renderer
 	LightBuffer		m_lbuffer;
 	ParticleBuffer	m_pbuffer;
 	CubeMapBuffer	m_cbuffer;
+	FilterBuffer	m_fbuffer;
 	DD_Resources*	m_resourceBin;
 	DD_Timer*		m_time;
 	DD_Camera		menuCam;
@@ -224,7 +230,12 @@ namespace RendSpace {
 	LightBuffer CreateLightBuffer(const int width, const int height);
 	ShadowBuffer CreateShadowBuffer(const int width, const int height);
 	ParticleBuffer CreateParticleBuffer(const int width, const int height);
-	CubeMapBuffer CreateCubeMapBuffer(const int width, const int height, DD_Skybox* sb);
+	CubeMapBuffer CreateCubeMapBuffer(const int width, 
+									  const int height, 
+									  DD_Skybox* sb);
+	FilterBuffer CreateFilterBuffer(const int width, 
+									const int height, 
+									ShadowBuffer* sbuf);
 	void screenShot(const char* sig, 
 					const float game_time,
 					const unsigned width,

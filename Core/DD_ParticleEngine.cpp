@@ -228,13 +228,14 @@ DD_Event DD_ParticleSys::Create(DD_Event & event)
 int repeats = 0;
 
 // called once per frame to iterate over alive emitters
-void DD_ParticleSys::Draw(const float dt,
+bool DD_ParticleSys::Draw(const float dt,
 						  glm::mat4 view,
 						  glm::mat4 proj,
 						  const glm::vec3 camP,
 						  const GLuint particleFBO,
 						  const GLuint gbufferFBO)
 {
+	bool particle_rendered = false;
 	time_accum += dt;
 	float currentTime = dt;
 	if( pause ) {
@@ -251,6 +252,8 @@ void DD_ParticleSys::Draw(const float dt,
 	glBlendEquation(GL_FUNC_ADD);
 
 	for( size_t i = 0; i < m_resBin->emitter_counter; i++ ) {
+		particle_rendered = true;
+
 		DD_Emitter* em = ResSpace::findDD_Emitter(m_resBin, (int)i);
 
 		if( em->isChild() ) {
@@ -380,6 +383,8 @@ void DD_ParticleSys::Draw(const float dt,
 
 	// render particle jobs A
 	for( size_t i = 0; i < m_numJobsA; i++ ) {
+		particle_rendered = true;
+
 		DD_Shader* shader = ResSpace::findDD_Shader(
 			m_resBin, m_jobsA[i].shader_ID.c_str());
 		DD_Texture2D* tex = ResSpace::findDD_Texture2D(
@@ -414,6 +419,8 @@ void DD_ParticleSys::Draw(const float dt,
 
 	// render water
 	for( size_t i = 0; i < m_resBin->water_counter; i++ ) {
+		particle_rendered = true;
+
 		DD_Water* _w = ResSpace::findDD_Water(m_resBin, (int)i);
 		if( !_w->active ) { continue; }
 
@@ -583,6 +590,8 @@ void DD_ParticleSys::Draw(const float dt,
 
 	// render clothing
 	for( size_t i = 0; i < m_activeClothes; i++ ) {
+		particle_rendered = true;
+
 		DD_Cloth* cl = &m_clothes[i];
 
 		int numX = cl->m_rowS / 10.f;
@@ -666,6 +675,7 @@ void DD_ParticleSys::Draw(const float dt,
 
 	glDisable(GL_DEPTH_TEST);
 	CleanEmitterBin(); // remove dead emitters
+	return particle_rendered;
 }
 
 DD_Event DD_ParticleSys::AddJobToQueue(DD_Event & event)

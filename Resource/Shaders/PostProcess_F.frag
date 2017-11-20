@@ -2,6 +2,7 @@
 
 // Frag output
 layout (location = 0) out vec4 FragColor;
+layout (location = 1) out vec2 FragColor2;
 
 in VS_OUT {
 	vec2 TexCoord;
@@ -25,7 +26,11 @@ uniform float AveLum;
 uniform float Exposure;
 uniform float White;
 uniform bool DoToneMap = true;
-uniform bool SampleShadow = false;
+uniform bool SampleShadow = false; 
+uniform bool Blur = false;
+uniform bool GammaCorrect = false;
+uniform bool BlendParticle = false;
+uniform bool output2D = false;
 
 vec4 ToneMap(vec4 gammaColor, float expos, float avgLuminance, float whiteCol) {
 	// Convert to XYZ
@@ -52,40 +57,95 @@ vec4 ToneMap(vec4 gammaColor, float expos, float avgLuminance, float whiteCol) {
 	return vec4( xyz2rgb * xyzCol, gammaColor.a );
 }
 
+uniform vec2 direction_flag;
+const int stride_11 = 5;
+const float kernel_11[] = float[11] (
+    0.000003, 0.000229, 0.005977, 0.060598, 0.24173,
+    0.382925,
+    0.24173, 0.060598, 0.005977, 0.000229, 0.000003
+);
+
+const int stride_21 = 10;
+const float kernel_21[] = float[21] (
+    0.000272337, 0.00089296, 0.002583865, 0.00659813, 0.014869116,
+    0.029570767, 0.051898313, 0.080381679, 0.109868729, 0.132526984, 
+    0.14107424,
+    0.132526984, 0.109868729, 0.080381679, 0.051898313, 0.029570767,
+    0.014869116, 0.00659813, 0.002583865, 0.00089296, 0.000272337
+);
+
+vec4 BlurImage(const vec2 mask, const vec2 uv) {
+	vec2 delta = 1.0/textureSize(ColorTex, 0);
+	vec4 color_out = vec4(0.0);
+	int index = 0;
+	int stride = stride_11;
+
+	for (int i = -stride; i <= stride; i++) {
+		vec2 offset = vec2(i * delta.x * mask.x, i * delta.y * mask.y);
+		vec4 source = (output2D) ? 
+			vec4(texture(ColorTex, uv + offset).xy, 0.0, 0.0) : 
+			texture(ColorTex, uv + offset);
+		color_out += kernel_11[index] * source;
+		index += 1;
+	}
+	return color_out;
+}
+
 void main() {
 	vec2 tex_coord = fs_in.TexCoord;
-	vec4 finalColor = texture( ColorTex, tex_coord );
-	vec4 particleColor = texture( ParticleTex, tex_coord );
-	 
-	// apply gamma correction
-    float gamma = 2.2;
-	finalColor.rgb = pow(finalColor.rgb, vec3(1.0/gamma));
-	//particleColor.rgb = pow(particleColor.rgb, vec3(1.0/gamma));
-
+	vec4 finalColor;
+	
+	finalColor = (output2D) ? 
+		vec4(texture( ColorTex, tex_coord ).xy, 0.0, 0.0) : 
+		texture( ColorTex, tex_coord );
+    
+	// apply tone mapping
 	if (DoToneMap) {
 		finalColor = ToneMap(finalColor, Exposure, AveLum, White);
-		//particleColor = ToneMap(particleColor, Exposure, AveLum, White);
+	}
+	 
+	// apply gamma correction
+	if (GammaCorrect) {
+		float gamma = 2.2;
+		finalColor.rgb = pow(finalColor.rgb, vec3(1.0/gamma));
+	}
+
+	// apply blur filter
+	if (Blur) {
+		finalColor = BlurImage(direction_flag, tex_coord);
 	}
 
 	if(SampleShadow) {
 		// perform perspective divide
-		vec3 projCoords = fs_in.LightSpaceCoord.xyz / fs_in.LightSpaceCoord.w;
+		//vec3 projCoords = fs_in.LightSpaceCoord.xyz / fs_in.LightSpaceCoord.w;
 		// Transform to [0,1] range
-		projCoords = projCoords * 0.5 + 0.5;
+		//projCoords = projCoords * 0.5 + 0.5;
 
-		float shadow = texture( ColorTex, projCoords.xy ).r;
+		float shadow = texture( ColorTex, tex_coord ).r;
 		finalColor = vec4( vec3(shadow), 1.0);
+		//finalColor = vec4( texture( ColorTex, tex_coord ).rg, 0.0, 1.0);
 	}
 
 	// replace particle colors if present (remove pure black background)
-	bvec4 bg = equal(vec4(vec3(0.0), 1.0), particleColor);
-	float alphaTest = step(0.01, particleColor.a);
-	float bgTest = 1.0 - float(bg.x && bg.y && bg.z && bg.w);
-    
-	// replace
-	FragColor = mix(finalColor, particleColor, bgTest * alphaTest * particleColor.a);
-	//FragColor = finalColor;
-	// additive
-	//FragColor = particleColor;
-	//FragColor = mix(particleColor, finalColor, test);
+	if (BlendParticle) {
+		vec4 particleColor = texture( ParticleTex, tex_coord );
+
+		bvec4 bg = equal(vec4(vec3(0.0), 1.0), particleColor);
+		float alphaTest = step(0.01, particleColor.a);
+		float bgTest = 1.0 - float(bg.x && bg.y && bg.z && bg.w);
+		// replace
+		FragColor = mix(
+			finalColor, particleColor, bgTest * alphaTest * particleColor.a);
+		// additive
+		//FragColor = particleColor;
+		//FragColor = mix(particleColor, finalColor, test);
+	}
+	else {
+		if (output2D) { // output to FragColor2
+			FragColor2 = finalColor.xy;
+		}
+		else { 			// output to FragColor
+			FragColor = finalColor;
+		}
+	}
 }
