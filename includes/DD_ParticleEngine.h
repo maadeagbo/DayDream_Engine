@@ -54,7 +54,7 @@ public:
 	void Load(const float Width, const float Height);
 	bool Init();
 	DD_Event Create(DD_Event& event);
-	void Draw(const float dt, glm::mat4 view, glm::mat4 proj, const glm::vec3
+	bool Draw(const float dt, glm::mat4 view, glm::mat4 proj, const glm::vec3
 			  camP, const GLuint particleFBO, const GLuint gbufferFBO);
 	DD_Event AddJobToQueue(DD_Event& event);
 	bool pause;

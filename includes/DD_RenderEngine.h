@@ -55,6 +55,11 @@ struct CubeMapBuffer
 	GLuint cubeFBO, depthBuf;
 };
 
+struct FilterBuffer
+{
+	GLuint filterFBO, filterDepthFBO, colorTex, depthTex;
+};
+
 enum VR_Eye
 {
 	LEFT,
@@ -74,8 +79,9 @@ enum Shaders
 	PRIMITIVE,
 	DEPTH,
 	DEPTH_SKINNED,
-	DEPTH_SAMPLER,
+	TEX_SAMPLER,
 	SKINNED,
+	BLUR,
 	NUM_SHADERS
 };
 
@@ -150,6 +156,7 @@ struct DD_Renderer
 	LightBuffer		m_lbuffer;
 	ParticleBuffer	m_pbuffer;
 	CubeMapBuffer	m_cbuffer;
+	FilterBuffer	m_fbuffer;
 	DD_Resources*	m_resourceBin;
 	DD_Timer*		m_time;
 	DD_Camera		menuCam;
@@ -210,7 +217,8 @@ namespace RendSpace {
 					const glm::vec4 color);
 	void RenderBBox(DD_Shader* shader, const BoundingBox* bbox, glm::vec3 color);
 	void BindPassTexture(DD_Shader* shader, const GBuffer* gBuf);
-	void BindPassTexture(DD_Shader* shader, const LightBuffer* lBuf);
+	void BindPassTexture(DD_Shader* shader, 
+						 const LightBuffer* lBuf);
 	void BindPassTexture(DD_Shader* shader, const ParticleBuffer* pBuf);
 	void BindPassTexture(DD_Shader* shader, const CubeMapBuffer* cBuf,
 						 GLenum target, DD_Skybox* sb);
@@ -222,7 +230,12 @@ namespace RendSpace {
 	LightBuffer CreateLightBuffer(const int width, const int height);
 	ShadowBuffer CreateShadowBuffer(const int width, const int height);
 	ParticleBuffer CreateParticleBuffer(const int width, const int height);
-	CubeMapBuffer CreateCubeMapBuffer(const int width, const int height, DD_Skybox* sb);
+	CubeMapBuffer CreateCubeMapBuffer(const int width, 
+									  const int height, 
+									  DD_Skybox* sb);
+	FilterBuffer CreateFilterBuffer(const int width, 
+									const int height, 
+									ShadowBuffer* sbuf);
 	void screenShot(const char* sig, 
 					const float game_time,
 					const unsigned width,

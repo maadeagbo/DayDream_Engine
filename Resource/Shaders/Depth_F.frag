@@ -1,6 +1,6 @@
 #version 430
 
-layout (location = 0) out vec4 FragColor;
+layout (location = 0) out vec2 FragColor;
 
 in VS_OUT {
 	vec4 FragPos;
@@ -16,5 +16,5 @@ void main()
 	float moment1 = depth;
 	float moment2 = depth * depth;
 	
-	FragColor = vec4(moment1, moment2, 0, 0);
+	FragColor = vec2(moment1, moment2);
 } 

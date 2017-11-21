@@ -53,10 +53,10 @@ namespace AVGui
 DD_AssetViewer::DD_AssetViewer()
 {
 	// set background color
-	bgcolor[0] = 0.2;
-	bgcolor[1] = 0.2;
-	bgcolor[2] = 0.2;
-	bgcolor[3] = 1.f;
+	bgcolor[0] = 0.5f;
+	bgcolor[1] = 0.5f;
+	bgcolor[2] = 0.5f;
+	bgcolor[3] = 0.f;
 }
 
 /// \brief Initialze controllers, camera, ui, etc... for AssetViewer
@@ -94,6 +94,7 @@ void DD_AssetViewer::Load()
 	grid_v->lines = std::move(v_lines);
 	//*/
 	
+	//*
 	// floor
 	DD_Agent* temp_agent = ResSpace::getNewDD_Agent(res_ptr, "Floor");
 	if (temp_agent) {
@@ -106,6 +107,7 @@ void DD_AssetViewer::Load()
 			temp_agent->UpdatePosition(glm::vec3(0.f, -0.1f, 0.f));
 		}
 	}
+	//*/
 
 	// controller
 	myControl = new AssetNav("avatar");
@@ -116,13 +118,13 @@ void DD_AssetViewer::Load()
 	// camera
 	cam = ResSpace::getNewDD_Camera(res_ptr, "myCam");
 	cam->active = true;
-	cam->near_plane = 1.0f;
-	cam->far_plane = 2000.0f;
+	cam->near_plane = 0.1f;
+	cam->far_plane = 2500.0f;
 	cam->SetParent(myControl->m_ID.c_str());
 
 	// Add shadow light
 	light = ResSpace::getNewDD_Light(res_ptr, "main_light");
-	light->_position = glm::vec3(0.0f, 500.f, 50.0f);
+	light->_position = glm::vec3(0.0f, 700.f, 500.0f);
 	light->m_color = glm::vec3(1.f);
 	light->m_flagShadow = true;
 
