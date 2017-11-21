@@ -594,8 +594,8 @@ bool DD_ParticleSys::Draw(const float dt,
 
 		DD_Cloth* cl = &m_clothes[i];
 
-		int numX = cl->m_rowS / 10.f;
-		int numY = cl->m_colS / 10.f;
+		int numX = int(cl->m_rowS / 10.f);
+		int numY = int(cl->m_colS / 10.f);
 
 		// compute shader
 		m_csimcp_sh.Use();

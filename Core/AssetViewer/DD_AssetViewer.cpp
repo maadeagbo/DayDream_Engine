@@ -66,28 +66,28 @@ void DD_AssetViewer::Load()
 	m_assetfile = std::string(ROOT_DIR) + "Core/AssetViewer/assets";
 	// Grid
 	//*
-	const float length = 90.f;
-	const float _w = 10.f;
+	const float length = 9.f;
+	const float _w = 1.f;
 	dd_array<LinePoint> h_lines = dd_array<LinePoint>(19);
 	dd_array<LinePoint> v_lines = dd_array<LinePoint>(19);
 	for (size_t i = 0; i < 10; i++) {
-		h_lines[i] = { glm::vec4(length, 0.f, _w * i, 1.f),
-			glm::vec4(-length, 0.f, _w * i, 1.f) };
+		h_lines[i] = { glm::vec4(length, 0.01f, _w * i, 1.f),
+			glm::vec4(-length, 0.01f, _w * i, 1.f) };
 	}
 	for (size_t i = 9; i > 0; i--) {
-		h_lines[h_lines.size() - i] = { glm::vec4(length, 0.f, -_w * i, 1.f),
-			glm::vec4(-length, 0.f, -_w * i, 1.f) };
+		h_lines[h_lines.size() - i] = { glm::vec4(length, 0.01f, -_w * i, 1.f),
+			glm::vec4(-length, 0.01f, -_w * i, 1.f) };
 	}
 	DD_LineAgent* grid_h = ResSpace::getNewDD_LineAgent(res_ptr, "grid_h");
 	grid_h->color = glm::vec4( 1.f);
 	grid_h->lines = std::move(h_lines);
 	for (size_t i = 0; i < 10; i++) {
-		v_lines[i] = { glm::vec4(_w * i, 0.f, length, 1.f),
-			glm::vec4(_w * i, 0.f, -length, 1.f) };
+		v_lines[i] = { glm::vec4(_w * i, 0.01f, length, 1.f),
+			glm::vec4(_w * i, 0.01f, -length, 1.f) };
 	}
 	for (size_t i = 9; i > 0; i--) {
-		v_lines[v_lines.size() - i] = { glm::vec4(-_w * i, 0.f, length, 1.f),
-			glm::vec4(-_w * i, 0.f, -length, 1.f) };
+		v_lines[v_lines.size() - i] = { glm::vec4(-_w * i, 0.01f, length, 1.f),
+			glm::vec4(-_w * i, 0.01f, -length, 1.f) };
 	}
 	DD_LineAgent* grid_v = ResSpace::getNewDD_LineAgent(res_ptr, "grid_v");
 	grid_v->color = glm::vec4(1.f);
@@ -104,7 +104,6 @@ void DD_AssetViewer::Load()
 		if (mdl) {
 			temp_agent->AddModel("pl", 0.f, 1000.f);
 			temp_agent->UpdateScale(glm::vec3(100.f));
-			temp_agent->UpdatePosition(glm::vec3(0.f, -0.1f, 0.f));
 		}
 	}
 	//*/
@@ -119,18 +118,19 @@ void DD_AssetViewer::Load()
 	cam = ResSpace::getNewDD_Camera(res_ptr, "myCam");
 	cam->active = true;
 	cam->near_plane = 0.1f;
-	cam->far_plane = 2500.0f;
+	cam->far_plane = 30.0f;
 	cam->SetParent(myControl->m_ID.c_str());
 
 	// Add shadow light
 	light = ResSpace::getNewDD_Light(res_ptr, "main_light");
-	light->_position = glm::vec3(0.0f, 700.f, 500.0f);
+	light->_position = glm::vec3(0.0f, 8.f, 2.0f);
+	light->m_direction = glm::vec3(0.3f, -1.f, -1.f);
 	light->m_color = glm::vec3(1.f);
 	light->m_flagShadow = true;
 
 	myControl->lockRotMode(true);
 	if (myControl->locked_rot) {
-		myControl->UpdatePosition(glm::vec3(0.0f, 50.0f, 0.0f));
+		myControl->UpdatePosition(glm::vec3(0.0f, 0.0f, 0.0f));
 	} 
 	else {
 		myControl->UpdatePosition(glm::vec3(110.0f, 110.0f, 110.0f));

@@ -27,7 +27,7 @@ bool LoadScrSpace::LoadTextures(const int _screenW, const int _screenH)
 
 	// Load Fonts
 	arialTTF = std::move(
-		TextSpace::InitFontLib("arial", 0, 48, _screenW, _screenH));
+		TextSpace::InitFontLib("arial", 0, 48, (float)_screenW, (float)_screenH));
 	return true;
 }
 

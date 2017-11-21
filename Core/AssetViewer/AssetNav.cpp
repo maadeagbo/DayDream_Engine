@@ -1,8 +1,8 @@
 #include "AssetNav.h"
 
 namespace {
-	float scroll_speed = 1000.0f, mouseSensitivity = 1.f, Pitch = 0.f, Yaw = 0.f,
-		scroll_dist = 1000.f, pan_speed = 100.f;
+	float scroll_speed = 10.0f, mouseSensitivity = 1.f, Pitch = 0.f, Yaw = 0.f,
+		scroll_dist = 10.f, pan_speed = 2.f;
 	glm::quat deltaR;
 }
 
@@ -28,18 +28,24 @@ DD_Event AssetNav::Update(DD_Event event) {
 		inputBuff* input = (inputBuff*)event.m_message;
 		glm::vec3 f_d = ForwardDir() * pan_speed * event.m_time;
 		glm::vec3 r_d = RightDir() * pan_speed * event.m_time;
+		glm::vec3 u_d = glm::vec3(0.f, 1.f, 0.f) * pan_speed * event.m_time;
 		mouseX = input->mouseX;
 		mouseY = input->mouseY;
 
-		if (locked_rot) {
+		if (locked_rot && !ignore_controls) {
 			if (input->mouseScroll > 0) {
 				scroll_dist -= scroll_speed * event.m_time;
 			}
 			if (input->mouseScroll < 0) {
 				scroll_dist += scroll_speed * event.m_time;
 			}
+			if (input->mouseLMR[1]) {
+				float dir = (input->mouseYDelta != 0) ?
+					input->mouseYDelta / (std::abs(input->mouseYDelta)) : 0;
+				UpdatePosition(pos() + u_d * dir);
+			}
 		}
-		else {
+		if (!locked_rot && !ignore_controls) {
 			if (!ignore_controls) { // when using imgui, if mouse is in window
 				if (input->rawInput[DD_Keys::W_Key]) {
 					UpdatePosition(pos() + f_d);

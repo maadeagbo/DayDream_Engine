@@ -31,7 +31,8 @@ DD_Material* DD_GameLevel::GetMaterial(const char* model_ID,
 	DD_Material* mat;
 	DD_Model* model = ResSpace::findDD_Model(res_ptr, model_ID);
 	if( LOD_lvl == 0 ) {
-		mat = ResSpace::findDD_Material(res_ptr, model->materials[mesh_index]);
+		mat = ResSpace::findDD_Material(res_ptr, 
+			(unsigned)model->materials[mesh_index]);
 		return mat;
 	}
 	// fix when lod's work

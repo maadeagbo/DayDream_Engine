@@ -26,6 +26,7 @@ class DD_Material
 public:
 	DD_Material(const char* id = "") :
 		m_base_color(glm::vec4(0.5f, 0.5f, 0.5f, 1.f)),
+		shininess(0.1f),
 		m_albedo(false),
 		m_specular(false),
 		m_normal(false),
@@ -48,6 +49,7 @@ public:
 
 	std::string m_ID;
 	glm::vec4 m_base_color;
+	float shininess;
 	// texture info for material
 	bool m_albedo, m_specular, m_normal, m_roughness, m_metalness,
 		m_emissive, m_ambient, m_loaded_to_GPU;

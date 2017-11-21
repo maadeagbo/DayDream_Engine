@@ -155,12 +155,12 @@ struct DD_Resources
 	GLuint G_BUFFER = 0;
 
 	DD_Resources() :
-		agents(100),
-		models(100),
-		materials(100),
+		agents(500),
+		models(500),
+		materials(500),
 		cameras(100),
 		lights(100),
-		textures(10000),
+		textures(1000),
 		skyboxes(100),
 		emitters(50),
 		clothes(50),

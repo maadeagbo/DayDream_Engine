@@ -725,7 +725,7 @@ void DD_Renderer::LoadRendererEngine(const GLfloat _Width, const GLfloat _Height
 	GLenum err;
 
 	m_lbuffer = RendSpace::CreateLightBuffer((int)m_Width, (int)m_Height);
-	m_sbuffer = RendSpace::CreateShadowBuffer(1024, 1024);
+	m_sbuffer = RendSpace::CreateShadowBuffer(2048, 2048);
 	m_pbuffer = RendSpace::CreateParticleBuffer((int)m_Width, (int)m_Height);
 	m_fbuffer = RendSpace::CreateFilterBuffer(
 		(int)m_Width, (int)m_Height, &m_sbuffer);
@@ -1047,8 +1047,10 @@ void DD_Renderer::Draw(float dt)
 		}
 
 		// shadow pass (for directional lights)
+		glClearColor(1.f, 1.f, 1.f, 1.f); // white background for shadow pass
 		ShadowPass(dt);
 
+		glClearColor(0.f, 0.f, 0.f, 1.f); // black blackground for light pass
 		// get standard shader
 		DD_Shader* shader = &m_shaders[Shaders::LIGHT];
 		LightPass(shader, m_active_cam, viewMat, projMat);
@@ -1538,7 +1540,9 @@ void DD_Renderer::ShadowPass(GLfloat dt, VR_Eye eye)
 		if( shadowL->m_type == LightType::DIRECTION_L ) {
 			// set position based on the distance of the camera's far plane
 			// and the direction of the light
-			const float dist = glm::length(pos);
+			//const float dist = glm::length(pos);
+			const float dist = m_active_cam->far_plane - m_active_cam->near_plane;
+			pos = glm::vec4(0.f, dist, 0.f, 1.f);
 			center = shadowL->m_direction + glm::vec3(pos);
 		}
 		glm::mat4 lightView = glm::lookAt(glm::vec3(pos), center,
@@ -1750,7 +1754,7 @@ void DD_Renderer::StaticMeshRender(DD_Shader * shader,
 				glBindTexture(GL_TEXTURE_2D, texID);
 			}
 			shader->setUniform("diffuse", glm::vec3(mat->m_base_color));
-			shader->setUniform("shininess", 0.0f);
+			shader->setUniform("shininess", mat->shininess);
 
 			// find way to calculate normal matrix for all instances
 			glm::mat4 norm = glm::transpose(glm::inverse(
@@ -1873,7 +1877,7 @@ void DD_Renderer::SkinnedMeshRender(DD_Shader * shader,
 				glBindTexture(GL_TEXTURE_2D, texID);
 			}
 			shader->setUniform("diffuse", glm::vec3(mat->m_base_color));
-			shader->setUniform("shininess", 0.0f);
+			shader->setUniform("shininess", mat->shininess);
 
 			// find way to calculate normal matrix for all instances
 			glm::mat4 norm = glm::transpose(glm::inverse(
