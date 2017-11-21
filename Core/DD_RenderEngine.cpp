@@ -469,7 +469,7 @@ ShadowBuffer RendSpace::CreateShadowBuffer(const int width, const int height)
 	ShadowBuffer sBuf;
 	sBuf.width = width;
 	sBuf.height = height;
-	GLfloat border[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	GLfloat border[] = { 1.0f, 1.0f, 1.0f, 0.0f };
 
 	// create and bind fbo
 	glGenFramebuffers(1, &sBuf.depthMapFBO);
@@ -590,14 +590,30 @@ FilterBuffer RendSpace::CreateFilterBuffer(const int width,
 {
 	FilterBuffer fBuf = FilterBuffer();
 
-	// create and bind fbo
+	// create and bind fbo 0
 	glGenFramebuffers(1, &fBuf.filterFBO);
 	glBindFramebuffer(GL_FRAMEBUFFER, fBuf.filterFBO);
+	GLfloat border[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 
 	// color buffer
 	CreateTex(GL_TEXTURE0, GL_RGBA16F, fBuf.colorTex, width, height);
+	// attach images to framebuffer
+	glFramebufferTexture2D(GL_FRAMEBUFFER,
+						   GL_COLOR_ATTACHMENT0,
+						   GL_TEXTURE_2D,
+						   fBuf.colorTex,
+						   0);
+	GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0 };
+	glDrawBuffers(1, drawBuffers);
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+		DD_Terminal::post("\nERROR::FRAMEBUFFER::Filter Framebuffer 0 "
+						  "is not complete!\n");
+	}
+
+	// create and bind fbo 1
+	glGenFramebuffers(1, &fBuf.filterDepthFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, fBuf.filterDepthFBO);
 	// depth map
-	GLfloat border[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 	glGenTextures(1, &fBuf.depthTex);
 	glBindTexture(GL_TEXTURE_2D, fBuf.depthTex);
 	// texture paramenters
@@ -609,22 +625,18 @@ FilterBuffer RendSpace::CreateFilterBuffer(const int width,
 	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RG32F, sbuf->width, sbuf->height);
 
 	// attach images to framebuffer
-	glFramebufferTexture2D(GL_FRAMEBUFFER, 
-						   GL_COLOR_ATTACHMENT0, 
-						   GL_TEXTURE_2D,
-						   fBuf.colorTex, 
-						   0);
 	glFramebufferTexture2D(GL_FRAMEBUFFER,
 						   GL_COLOR_ATTACHMENT1,
 						   GL_TEXTURE_2D,
 						   fBuf.depthTex,
 						   0);
 
-	GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
-	glDrawBuffers(2, drawBuffers);
+	GLenum drawBuffers2[] = { GL_NONE, GL_COLOR_ATTACHMENT1 };
+	glDrawBuffers(2, drawBuffers2);
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-		DD_Terminal::post("\nERROR::FRAMEBUFFER::Filter Framebuffer is not complete!\n");
+		DD_Terminal::post("\nERROR::FRAMEBUFFER::Filter Framebuffer 1 "
+						  "is not complete!\n");
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -684,9 +696,9 @@ DD_Event DD_Renderer::RenderHandler(DD_Event& event)
 				"Run Time: %.3fs (time to render last frame: %.3fs)",
 				currTime, currFrameTime);
 			ImGui::Text(debug_cbuff.str());
-			debug_cbuff.format("Avg ms per frame: %.3f", avgFT * 1000.f);
+			debug_cbuff.format("Avg ms per frame: %.3f", currFrameTime * 1000.f);
 			ImGui::Text(debug_cbuff.str());
-			debug_cbuff.format("(%.3f FPS)", 1.0f / avgFT);
+			debug_cbuff.format("(%.3f FPS)", 1.0f / currFrameTime);
 			ImGui::Text(debug_cbuff.str());
 			debug_cbuff.format("Triangles sent to GPU: %u", trisInFrame);
 			ImGui::Text(debug_cbuff.str());
@@ -713,7 +725,7 @@ void DD_Renderer::LoadRendererEngine(const GLfloat _Width, const GLfloat _Height
 	GLenum err;
 
 	m_lbuffer = RendSpace::CreateLightBuffer((int)m_Width, (int)m_Height);
-	m_sbuffer = RendSpace::CreateShadowBuffer(1024, 1024);
+	m_sbuffer = RendSpace::CreateShadowBuffer(2048, 2048);
 	m_pbuffer = RendSpace::CreateParticleBuffer((int)m_Width, (int)m_Height);
 	m_fbuffer = RendSpace::CreateFilterBuffer(
 		(int)m_Width, (int)m_Height, &m_sbuffer);
@@ -980,7 +992,7 @@ void DD_Renderer::Draw(float dt)
 
 			// Render particles
 			glBindFramebuffer(GL_FRAMEBUFFER, m_pbuffer.particleFBO);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			glClear(GL_COLOR_BUFFER_BIT);
 
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, m_gbuffer.deferredFBO);
 			// Write depth to framebuffer
@@ -1035,12 +1047,10 @@ void DD_Renderer::Draw(float dt)
 		}
 
 		// shadow pass (for directional lights)
-		glClearColor(1.f, 1.f, 1.f, 0.f); // make white background for shadow
 		ShadowPass(dt);
 
 		// get standard shader
 		DD_Shader* shader = &m_shaders[Shaders::LIGHT];
-		glClearColor(0.f, 0.f, 0.f, 0.f); // make black background for blending
 		LightPass(shader, m_active_cam, viewMat, projMat);
 
 		// Draw skybox
@@ -1088,9 +1098,7 @@ void DD_Renderer::Draw(float dt)
 		// restore backgound color
 
 		// base background color
-		glClearColor(bgcol[0], bgcol[1], bgcol[2], bgcol[3]);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glClear(GL_COLOR_BUFFER_BIT);
 		glDisable(GL_DEPTH_TEST);
 
 		// hdri tone mapping
@@ -1121,7 +1129,7 @@ void DD_Renderer::Draw(float dt)
 		shader->setUniform("Exposure", 0.75f); // control exposure
 		shader->setUniform("White", 0.97f); // control white value
 		// sample shadow
-		//*
+		/*
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, m_fbuffer.depthTex);
 		//glBindTexture(GL_TEXTURE_2D, m_sbuffer.shadowTex);
@@ -1505,11 +1513,11 @@ void DD_Renderer::ShadowPass(GLfloat dt, VR_Eye eye)
 	DD_Light* shadowL = GetDirectionalShadowLight(m_resourceBin);
 
 	if( shadowL ) {
+		// sbuffer pass
+		glBindFramebuffer(GL_FRAMEBUFFER, m_sbuffer.depthMapFBO);
+		glViewport(0, 0, m_sbuffer.width, m_sbuffer.height); // render shadow dimensions
 		DD_Shader* shader = &m_shaders[Shaders::DEPTH];
 		shader->Use();
-		// sbuffer pass
-		glViewport(0, 0, m_sbuffer.width, m_sbuffer.height); // render shadow dimensions
-		glBindFramebuffer(GL_FRAMEBUFFER, m_sbuffer.depthMapFBO);
 		// cull front faces (peter panning due to shadow bias)
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_CULL_FACE);
@@ -1581,12 +1589,10 @@ void DD_Renderer::ShadowPass(GLfloat dt, VR_Eye eye)
 				}
 			}
 		}
-		glViewport(0, 0, (GLsizei)m_Width, (GLsizei)m_Height); // reset dimensions
-		//glCullFace(GL_BACK);
 
 		// blur depth map w/ filter FBO
-		glBindFramebuffer(GL_FRAMEBUFFER, m_fbuffer.filterFBO);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glBindFramebuffer(GL_FRAMEBUFFER, m_fbuffer.filterDepthFBO);
+		glClear(GL_COLOR_BUFFER_BIT);
 
 		shader = &m_shaders[Shaders::POST_PROCESS];
 		shader->Use();
@@ -1612,6 +1618,10 @@ void DD_Renderer::ShadowPass(GLfloat dt, VR_Eye eye)
 		// reset uniforms
 		shader->setUniform("Blur", false);
 		shader->setUniform("output2D", false);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		glViewport(0, 0, (GLsizei)m_Width, (GLsizei)m_Height); // reset dimensions
+		//glCullFace(GL_BACK);
 	}
 }
 

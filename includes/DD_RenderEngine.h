@@ -57,7 +57,7 @@ struct CubeMapBuffer
 
 struct FilterBuffer
 {
-	GLuint filterFBO, colorTex, depthTex;
+	GLuint filterFBO, filterDepthFBO, colorTex, depthTex;
 };
 
 enum VR_Eye

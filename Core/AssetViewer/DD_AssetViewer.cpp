@@ -53,9 +53,9 @@ namespace AVGui
 DD_AssetViewer::DD_AssetViewer()
 {
 	// set background color
-	bgcolor[0] = 0.f;
-	bgcolor[1] = 0.f;
-	bgcolor[2] = 0.f;
+	bgcolor[0] = 0.5f;
+	bgcolor[1] = 0.5f;
+	bgcolor[2] = 0.5f;
 	bgcolor[3] = 0.f;
 }
 
@@ -119,7 +119,7 @@ void DD_AssetViewer::Load()
 	cam = ResSpace::getNewDD_Camera(res_ptr, "myCam");
 	cam->active = true;
 	cam->near_plane = 1.0f;
-	cam->far_plane = 2000.0f;
+	cam->far_plane = 3000.0f;
 	cam->SetParent(myControl->m_ID.c_str());
 
 	// Add shadow light

@@ -430,11 +430,6 @@ void DD_Engine::LoadViewer()
 	main_q.RegisterHandler(handlerV, "new_mdlsk");
 	main_q.RegisterHandler(handlerV, "new_agent_sk");
 	main_q.RegisterHandler(handlerV, "new_anim");
-	// background color
-	main_renderer.bgcol[0] = main_viewer.bgcolor[0];
-	main_renderer.bgcol[1] = main_viewer.bgcolor[1];
-	main_renderer.bgcol[2] = main_viewer.bgcolor[2];
-	main_renderer.bgcol[3] = main_viewer.bgcolor[3];
 }
 
 void DD_Engine::updateSDL()
@@ -816,8 +811,4 @@ void DD_Engine::InitCurrentLevel()
 	main_renderer.m_scrHorzDist = main_lvl[current_lvl]->m_scrHorzDist;
 	main_renderer.m_scrVertDist = main_lvl[current_lvl]->m_scrVertDist;
 	main_renderer.m_flagDCM = main_lvl[current_lvl]->m_flagDynamicCubeMap;
-	main_renderer.bgcol[0] = lvl->bgcolor[0];
-	main_renderer.bgcol[1] = lvl->bgcolor[1];
-	main_renderer.bgcol[2] = lvl->bgcolor[2];
-	main_renderer.bgcol[3] = lvl->bgcolor[3];
 }

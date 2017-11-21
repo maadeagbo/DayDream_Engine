@@ -123,7 +123,7 @@ void main() {
 
 		float shadow = texture( ColorTex, tex_coord ).r;
 		finalColor = vec4( vec3(shadow), 1.0);
-		//finalColor = vec4( texture( ColorTex, tex_coord ).rg, 0.0, 1.0);
+		//finalColor = vec4( texture( ColorTex, tex_coord ).rgb, 1.0);
 	}
 
 	// replace particle colors if present (remove pure black background)

@@ -99,7 +99,10 @@ void DD_Queue::ProcessQueue()
 			size_t count = m_counter[current.m_type];
 
 			for( size_t j = 0; j < count; j++ ) {
-				pool[j].func(current);	// process event
+				DD_Event new_event = pool[j].func(current);	// process event
+				if (new_event.m_type.compare("") != 0) {	// push new event
+					push(new_event);
+				}
 			}
 		}
 
