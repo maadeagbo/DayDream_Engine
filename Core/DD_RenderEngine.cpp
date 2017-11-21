@@ -725,7 +725,7 @@ void DD_Renderer::LoadRendererEngine(const GLfloat _Width, const GLfloat _Height
 	GLenum err;
 
 	m_lbuffer = RendSpace::CreateLightBuffer((int)m_Width, (int)m_Height);
-	m_sbuffer = RendSpace::CreateShadowBuffer(2048, 2048);
+	m_sbuffer = RendSpace::CreateShadowBuffer(1024, 1024);
 	m_pbuffer = RendSpace::CreateParticleBuffer((int)m_Width, (int)m_Height);
 	m_fbuffer = RendSpace::CreateFilterBuffer(
 		(int)m_Width, (int)m_Height, &m_sbuffer);

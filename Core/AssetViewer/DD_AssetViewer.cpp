@@ -118,8 +118,8 @@ void DD_AssetViewer::Load()
 	// camera
 	cam = ResSpace::getNewDD_Camera(res_ptr, "myCam");
 	cam->active = true;
-	cam->near_plane = 1.0f;
-	cam->far_plane = 3000.0f;
+	cam->near_plane = 0.1f;
+	cam->far_plane = 2500.0f;
 	cam->SetParent(myControl->m_ID.c_str());
 
 	// Add shadow light
