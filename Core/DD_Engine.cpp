@@ -343,12 +343,11 @@ void DD_Engine::Load()
 		EngineMode(init_options | EngineMode::DD_NO_CONSOLE) : init_options;
 
 	openWindow( m_WIDTH, m_HEIGHT, init_options );
-	// Load resources
+	// Load resources and attach queue
 	main_res.queue = &main_q;
 	// set up math/physics library
 	DD_MathLib::setResourceBin(&main_res);
 	// Load Renderer
-	//main_renderer = new DD_Renderer();
 	main_renderer.m_resourceBin = &main_res;
 	main_renderer.m_time = &main_timer;
 	main_renderer.LoadRendererEngine((GLfloat)m_WIDTH, (GLfloat)m_HEIGHT);

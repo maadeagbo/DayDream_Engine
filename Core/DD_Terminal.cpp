@@ -379,6 +379,7 @@ int terminalCallback(ImGuiTextEditCallbackData * data)
 				t_idx = matched_expr[last_tabbed];
 			}
 			// set tabbed text
+
 			data->BufTextLen = (int)snprintf(
 				data->Buf, data->BufSize, "%s", cmd_history[t_idx]);
 			data->CursorPos = data->SelectionStart = data->SelectionEnd =

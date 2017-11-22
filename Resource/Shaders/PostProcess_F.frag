@@ -26,7 +26,8 @@ uniform float AveLum;
 uniform float Exposure;
 uniform float White;
 uniform bool DoToneMap = true;
-uniform bool SampleShadow = false; 
+uniform bool SampleShadow = false;
+uniform bool SampleMap = false;
 uniform bool Blur = false;
 uniform bool GammaCorrect = false;
 uniform bool BlendParticle = false;
@@ -116,14 +117,12 @@ void main() {
 	}
 
 	if(SampleShadow) {
-		// perform perspective divide
-		//vec3 projCoords = fs_in.LightSpaceCoord.xyz / fs_in.LightSpaceCoord.w;
-		// Transform to [0,1] range
-		//projCoords = projCoords * 0.5 + 0.5;
-
 		float shadow = texture( ColorTex, tex_coord ).r;
 		finalColor = vec4( vec3(shadow), 1.0);
-		//finalColor = vec4( texture( ColorTex, tex_coord ).rgb, 1.0);
+	}
+
+	if(SampleMap) {
+		finalColor = vec4(texture( ColorTex, tex_coord ).rgb, 1.0);
 	}
 
 	// replace particle colors if present (remove pure black background)

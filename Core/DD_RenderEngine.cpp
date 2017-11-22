@@ -725,7 +725,7 @@ void DD_Renderer::LoadRendererEngine(const GLfloat _Width, const GLfloat _Height
 	GLenum err;
 
 	m_lbuffer = RendSpace::CreateLightBuffer((int)m_Width, (int)m_Height);
-	m_sbuffer = RendSpace::CreateShadowBuffer(2048, 2048);
+	m_sbuffer = RendSpace::CreateShadowBuffer(1024, 1024);
 	m_pbuffer = RendSpace::CreateParticleBuffer((int)m_Width, (int)m_Height);
 	m_fbuffer = RendSpace::CreateFilterBuffer(
 		(int)m_Width, (int)m_Height, &m_sbuffer);
@@ -1133,9 +1133,10 @@ void DD_Renderer::Draw(float dt)
 		// sample shadow
 		/*
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, m_fbuffer.depthTex);
-		//glBindTexture(GL_TEXTURE_2D, m_sbuffer.shadowTex);
-		shader->setUniform("SampleShadow", true);
+		//glBindTexture(GL_TEXTURE_2D, m_fbuffer.depthTex);
+		glBindTexture(GL_TEXTURE_2D, m_gbuffer.colorTex);
+		//shader->setUniform("SampleShadow", true);
+		shader->setUniform("SampleMap", true);
 		//*/
 		
 		RendSpace::RenderQuad(shader, identity);
@@ -1808,10 +1809,6 @@ void DD_Renderer::StaticMeshRender(DD_Shader * shader,
 		glDrawElementsInstanced(GL_TRIANGLES, (unsigned)MD.indices.size(),
 								GL_UNSIGNED_INT, 0, 
 								(GLsizei)m_LODBufferSize[modelIndex]);
-
-		// render bounding box if applicable
-
-		//glDrawElements(GL_TRIANGLES, meshes[i].indices.size(), GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
 	}
 }
