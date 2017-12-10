@@ -11,11 +11,16 @@ if(CMAKE_CONFIGURATION_TYPES)
 #SET(CMAKE_BUILD_TYPE "Debug")
 set(CMAKE_CXX_STANDARD 11)
 
-# set(CMAKE_BUILD_TYPE Release)
-if(MINGW)
-	set(MY_GCC_LIB
-		"D:/mingw-w64/i686-7.1.0-posix-dwarf-rt_v5-rev0/mingw32/lib/gcc/i686-w64-mingw32/7.1.0")
-endif(MINGW)
+# clang-format
+if (UNIX)
+	add_custom_target(
+		clangformat
+		COMMAND /usr/bin/clang-format
+		-style=google
+		-i
+		${SOURCES}
+	)
+endif()
 
 # set output directories
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
@@ -56,6 +61,7 @@ if(HAS_CNEW)
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -std=c++11")
 endif()
 
+
 # add paths to freetype lib and sdl2
 if(NOT UNIX)
 	set(ENV{SDL2DIR} ${CMAKE_CURRENT_SOURCE_DIR}/SDL2-2.0.7)
@@ -93,10 +99,18 @@ if(NOT UNIX)
 	if(NOT SOIL_PATH)
 		message(FATAL_ERROR "SOIL includes not found")
 	endif()
+	find_path(LUA_PATH lua.hpp PATHS ${CMAKE_SOURCE_DIR}/lua53_Win64_lib/include)
+	if(NOT LUA_PATH)
+		message(FATAL_ERROR "Lua includes not found")
+	endif()
 else()
 	find_path(SOIL_PATH SOIL.h PATHS /usr/include/SOIL)
 	if(NOT SOIL_PATH)
 		message(FATAL_ERROR "SOIL unix includes not found")
+	endif()
+	find_path(LUA_PATH lua.hpp PATHS /usr/include/lua5.3)
+	if(NOT LUA_PATH)
+		message(FATAL_ERROR "Lua includes not found")
 	endif()
 endif()
 
@@ -182,15 +196,32 @@ foreach(_proj_source IN ITEMS ${SHADER_SOURCES})
 	source_group("${_source_path_rel}" FILES "${_proj_source}")
 endforeach()
 
+# add lua scripts
+file(GLOB_RECURSE SCRIPTS 
+	LIST_DIRECTORIES false
+	"${CMAKE_SOURCE_DIR}/scripts/*.lua*")
+
+foreach(_proj_source IN ITEMS ${SCRIPTS})
+	get_filename_component(_source_path "${_proj_source}" PATH)
+	file(RELATIVE_PATH _source_path_rel "${CMAKE_SOURCE_DIR}" "${_source_path}")
+	source_group("${_source_path_rel}" FILES "${_proj_source}")
+endforeach()
+
 include_directories(${CMAKE_SOURCE_DIR}/includes
 	${CMAKE_SOURCE_DIR}/glm/
 	${SOIL_PATH}
 	${PROJ_HEADERS}
 	${IMGUI_PATH}
+	${LUA_PATH}
 	${VRPN_PATH})
 
 add_executable(DayDream_Engine
 				${SOURCES} ${PROJECT_SOURCES} ${SHADER_SOURCES} ${IMGUI_SRC})
+
+if(MSVC)
+	# set stack size
+	set_property(TARGET DayDream_Engine APPEND PROPERTY LINK_FLAGS /STACK:2000000)
+endif()
 
 # set visual studio startup project
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
@@ -214,7 +245,11 @@ if(UNIX)
 	if(NOT FS_LIB)
 		message(FATAL_ERROR "C++17 File System library not found")
 	endif()
-else()
+	find_library(LUA_LIB NAMES lua53 lua5.3 PATHS /usr/lib/x86_64-linux-gnu)
+	if(NOT LUA_LIB)
+		message(FATAL_ERROR "Lua library not found")
+	endif()
+elseif(MSVC)
 	find_library(SOIL_LIB SOIL ${CMAKE_CURRENT_SOURCE_DIR}/SOIL/lib)
 	if(NOT SOIL_LIB)
 		message(FATAL_ERROR "SOIL library not found")
@@ -222,6 +257,10 @@ else()
 	find_library(TTF_LIB freetype ${CMAKE_CURRENT_SOURCE_DIR}/freetype-2.7/lib)
 	if(NOT TTF_LIB)
 		message(FATAL_ERROR "Freetype Release library not found")
+	endif()
+	find_library(LUA_LIB lua53 ${CMAKE_CURRENT_SOURCE_DIR}/lua53_Win64_lib)
+	if(NOT LUA_LIB)
+		message(FATAL_ERROR "Lua library not found")
 	endif()
 endif()
 if(MINGW)
@@ -250,8 +289,8 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -lstdc++fs")
 
 if(NOT WIN32)
 	target_link_libraries(DayDream_Engine ${SOIL_LIB} ${OPENGL_gl_LIBRARY}
-	${SDL2_LIBRARY} ${VRPN_LIB} ${FREETYPE_LIBRARIES} ${FS_LIB})
+	${SDL2_LIBRARY} ${VRPN_LIB} ${FREETYPE_LIBRARIES} ${FS_LIB} ${LUA_LIB})
 else()
 	target_link_libraries(DayDream_Engine ${SOIL_LIB} ${OPENGL_gl_LIBRARY}
-	${SDL2_LIBRARY} ${VRPN_LIB} ${FREETYPE_LIBRARIES})
+	${SDL2_LIBRARY} ${VRPN_LIB} ${FREETYPE_LIBRARIES} ${LUA_LIB})
 endif()

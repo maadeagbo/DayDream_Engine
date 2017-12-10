@@ -17,6 +17,7 @@ glm
 imgui
 SOIL
 SDL2-2.0.7
+lua53_Win64_lib
 
 #**************** General folders to always ignore ************************
 
