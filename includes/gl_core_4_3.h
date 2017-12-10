@@ -27,47 +27,44 @@
 #define __gl_ATI_h_
 
 #ifndef APIENTRY
-	#if defined(__MINGW32__)
-		#ifndef WIN32_LEAN_AND_MEAN
-			#define WIN32_LEAN_AND_MEAN 1
-		#endif
-		#ifndef NOMINMAX
-			#define NOMINMAX
-		#endif
-		#include <windows.h>
-	#elif (_MSC_VER >= 800) || defined(_STDCALL_SUPPORTED) || defined(__BORLANDC__)
-		#ifndef WIN32_LEAN_AND_MEAN
-			#define WIN32_LEAN_AND_MEAN 1
-		#endif
-		#ifndef NOMINMAX
-			#define NOMINMAX
-		#endif
-		#include <windows.h>
-	#else
-		#define APIENTRY
-	#endif
+#if defined(__MINGW32__)
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN 1
+#endif
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+#elif (_MSC_VER >= 800) || defined(_STDCALL_SUPPORTED) || defined(__BORLANDC__)
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN 1
+#endif
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+#else
+#define APIENTRY
+#endif
 #endif /*APIENTRY*/
 
 #ifndef CODEGEN_FUNCPTR
-	#define CODEGEN_REMOVE_FUNCPTR
-	#if defined(_WIN32)
-		#define CODEGEN_FUNCPTR APIENTRY
-	#else
-		#define CODEGEN_FUNCPTR
-	#endif
+#define CODEGEN_REMOVE_FUNCPTR
+#if defined(_WIN32)
+#define CODEGEN_FUNCPTR APIENTRY
+#else
+#define CODEGEN_FUNCPTR
+#endif
 #endif /*CODEGEN_FUNCPTR*/
 
 #ifndef GLAPI
-	#define GLAPI extern
+#define GLAPI extern
 #endif
-
 
 #ifndef GL_LOAD_GEN_BASIC_OPENGL_TYPEDEFS
 #define GL_LOAD_GEN_BASIC_OPENGL_TYPEDEFS
 
-
 #endif /*GL_LOAD_GEN_BASIC_OPENGL_TYPEDEFS*/
-
 
 #include <stddef.h>
 #ifndef GLEXT_64_TYPES_DEFINED
@@ -88,7 +85,7 @@ typedef long long int int64_t;
 typedef unsigned long long int uint64_t;
 #endif /* __arch64__ */
 #endif /* __STDC__ */
-#elif defined( __VMS ) || defined(__sgi)
+#elif defined(__VMS) || defined(__sgi)
 #include <inttypes.h>
 #elif defined(__SCO__) || defined(__USLC__)
 #include <stdint.h>
@@ -107,47 +104,55 @@ typedef unsigned __int64 uint64_t;
 #include <inttypes.h>
 #endif
 #endif
-	typedef unsigned int GLenum;
-	typedef unsigned char GLboolean;
-	typedef unsigned int GLbitfield;
-	typedef void GLvoid;
-	typedef signed char GLbyte;
-	typedef short GLshort;
-	typedef int GLint;
-	typedef unsigned char GLubyte;
-	typedef unsigned short GLushort;
-	typedef unsigned int GLuint;
-	typedef int GLsizei;
-	typedef float GLfloat;
-	typedef float GLclampf;
-	typedef double GLdouble;
-	typedef double GLclampd;
-	typedef char GLchar;
-	typedef char GLcharARB;
-	#ifdef __APPLE__
+typedef unsigned int GLenum;
+typedef unsigned char GLboolean;
+typedef unsigned int GLbitfield;
+typedef void GLvoid;
+typedef signed char GLbyte;
+typedef short GLshort;
+typedef int GLint;
+typedef unsigned char GLubyte;
+typedef unsigned short GLushort;
+typedef unsigned int GLuint;
+typedef int GLsizei;
+typedef float GLfloat;
+typedef float GLclampf;
+typedef double GLdouble;
+typedef double GLclampd;
+typedef char GLchar;
+typedef char GLcharARB;
+#ifdef __APPLE__
 typedef void *GLhandleARB;
 #else
 typedef unsigned int GLhandleARB;
 #endif
-		typedef unsigned short GLhalfARB;
-		typedef unsigned short GLhalf;
-		typedef GLint GLfixed;
-		typedef ptrdiff_t GLintptr;
-		typedef ptrdiff_t GLsizeiptr;
-		typedef int64_t GLint64;
-		typedef uint64_t GLuint64;
-		typedef ptrdiff_t GLintptrARB;
-		typedef ptrdiff_t GLsizeiptrARB;
-		typedef int64_t GLint64EXT;
-		typedef uint64_t GLuint64EXT;
-		typedef struct __GLsync *GLsync;
-		struct _cl_context;
-		struct _cl_event;
-		typedef void (APIENTRY *GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const void *userParam);
-		typedef void (APIENTRY *GLDEBUGPROCARB)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const void *userParam);
-		typedef void (APIENTRY *GLDEBUGPROCAMD)(GLuint id,GLenum category,GLenum severity,GLsizei length,const GLchar *message,void *userParam);
-		typedef unsigned short GLhalfNV;
-		typedef GLintptr GLvdpauSurfaceNV;
+typedef unsigned short GLhalfARB;
+typedef unsigned short GLhalf;
+typedef GLint GLfixed;
+typedef ptrdiff_t GLintptr;
+typedef ptrdiff_t GLsizeiptr;
+typedef int64_t GLint64;
+typedef uint64_t GLuint64;
+typedef ptrdiff_t GLintptrARB;
+typedef ptrdiff_t GLsizeiptrARB;
+typedef int64_t GLint64EXT;
+typedef uint64_t GLuint64EXT;
+typedef struct __GLsync *GLsync;
+struct _cl_context;
+struct _cl_event;
+typedef void(APIENTRY *GLDEBUGPROC)(GLenum source, GLenum type, GLuint id,
+                                    GLenum severity, GLsizei length,
+                                    const GLchar *message,
+                                    const void *userParam);
+typedef void(APIENTRY *GLDEBUGPROCARB)(GLenum source, GLenum type, GLuint id,
+                                       GLenum severity, GLsizei length,
+                                       const GLchar *message,
+                                       const void *userParam);
+typedef void(APIENTRY *GLDEBUGPROCAMD)(GLuint id, GLenum category,
+                                       GLenum severity, GLsizei length,
+                                       const GLchar *message, void *userParam);
+typedef unsigned short GLhalfNV;
+typedef GLintptr GLvdpauSurfaceNV;
 
 #ifdef __cplusplus
 extern "C" {
@@ -1471,1094 +1476,1913 @@ extern "C" {
 #define GL_VIEW_CLASS_S3TC_DXT5_RGBA 0x82CF
 #define GL_VIEW_COMPATIBILITY_CLASS 0x82B6
 
-extern void (CODEGEN_FUNCPTR *_ptrc_glBlendFunc)(GLenum sfactor, GLenum dfactor);
+extern void(CODEGEN_FUNCPTR *_ptrc_glBlendFunc)(GLenum sfactor, GLenum dfactor);
 #define glBlendFunc _ptrc_glBlendFunc
-extern void (CODEGEN_FUNCPTR *_ptrc_glClear)(GLbitfield mask);
+extern void(CODEGEN_FUNCPTR *_ptrc_glClear)(GLbitfield mask);
 #define glClear _ptrc_glClear
-extern void (CODEGEN_FUNCPTR *_ptrc_glClearColor)(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha);
+extern void(CODEGEN_FUNCPTR *_ptrc_glClearColor)(GLfloat red, GLfloat green,
+                                                 GLfloat blue, GLfloat alpha);
 #define glClearColor _ptrc_glClearColor
-extern void (CODEGEN_FUNCPTR *_ptrc_glClearDepth)(GLdouble depth);
+extern void(CODEGEN_FUNCPTR *_ptrc_glClearDepth)(GLdouble depth);
 #define glClearDepth _ptrc_glClearDepth
-extern void (CODEGEN_FUNCPTR *_ptrc_glClearStencil)(GLint s);
+extern void(CODEGEN_FUNCPTR *_ptrc_glClearStencil)(GLint s);
 #define glClearStencil _ptrc_glClearStencil
-extern void (CODEGEN_FUNCPTR *_ptrc_glColorMask)(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha);
+extern void(CODEGEN_FUNCPTR *_ptrc_glColorMask)(GLboolean red, GLboolean green,
+                                                GLboolean blue,
+                                                GLboolean alpha);
 #define glColorMask _ptrc_glColorMask
-extern void (CODEGEN_FUNCPTR *_ptrc_glCullFace)(GLenum mode);
+extern void(CODEGEN_FUNCPTR *_ptrc_glCullFace)(GLenum mode);
 #define glCullFace _ptrc_glCullFace
-extern void (CODEGEN_FUNCPTR *_ptrc_glDepthFunc)(GLenum func);
+extern void(CODEGEN_FUNCPTR *_ptrc_glDepthFunc)(GLenum func);
 #define glDepthFunc _ptrc_glDepthFunc
-extern void (CODEGEN_FUNCPTR *_ptrc_glDepthMask)(GLboolean flag);
+extern void(CODEGEN_FUNCPTR *_ptrc_glDepthMask)(GLboolean flag);
 #define glDepthMask _ptrc_glDepthMask
-extern void (CODEGEN_FUNCPTR *_ptrc_glDepthRange)(GLdouble ren_near, GLdouble ren_far);
+extern void(CODEGEN_FUNCPTR *_ptrc_glDepthRange)(GLdouble ren_near,
+                                                 GLdouble ren_far);
 #define glDepthRange _ptrc_glDepthRange
-extern void (CODEGEN_FUNCPTR *_ptrc_glDisable)(GLenum cap);
+extern void(CODEGEN_FUNCPTR *_ptrc_glDisable)(GLenum cap);
 #define glDisable _ptrc_glDisable
-extern void (CODEGEN_FUNCPTR *_ptrc_glDrawBuffer)(GLenum buf);
+extern void(CODEGEN_FUNCPTR *_ptrc_glDrawBuffer)(GLenum buf);
 #define glDrawBuffer _ptrc_glDrawBuffer
-extern void (CODEGEN_FUNCPTR *_ptrc_glEnable)(GLenum cap);
+extern void(CODEGEN_FUNCPTR *_ptrc_glEnable)(GLenum cap);
 #define glEnable _ptrc_glEnable
-extern void (CODEGEN_FUNCPTR *_ptrc_glFinish)(void);
+extern void(CODEGEN_FUNCPTR *_ptrc_glFinish)(void);
 #define glFinish _ptrc_glFinish
-extern void (CODEGEN_FUNCPTR *_ptrc_glFlush)(void);
+extern void(CODEGEN_FUNCPTR *_ptrc_glFlush)(void);
 #define glFlush _ptrc_glFlush
-extern void (CODEGEN_FUNCPTR *_ptrc_glFrontFace)(GLenum mode);
+extern void(CODEGEN_FUNCPTR *_ptrc_glFrontFace)(GLenum mode);
 #define glFrontFace _ptrc_glFrontFace
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetBooleanv)(GLenum pname, GLboolean * data);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetBooleanv)(GLenum pname,
+                                                  GLboolean *data);
 #define glGetBooleanv _ptrc_glGetBooleanv
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetDoublev)(GLenum pname, GLdouble * data);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetDoublev)(GLenum pname, GLdouble *data);
 #define glGetDoublev _ptrc_glGetDoublev
-extern GLenum (CODEGEN_FUNCPTR *_ptrc_glGetError)(void);
+extern GLenum(CODEGEN_FUNCPTR *_ptrc_glGetError)(void);
 #define glGetError _ptrc_glGetError
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetFloatv)(GLenum pname, GLfloat * data);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetFloatv)(GLenum pname, GLfloat *data);
 #define glGetFloatv _ptrc_glGetFloatv
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetIntegerv)(GLenum pname, GLint * data);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetIntegerv)(GLenum pname, GLint *data);
 #define glGetIntegerv _ptrc_glGetIntegerv
-extern const GLubyte * (CODEGEN_FUNCPTR *_ptrc_glGetString)(GLenum name);
+extern const GLubyte *(CODEGEN_FUNCPTR *_ptrc_glGetString)(GLenum name);
 #define glGetString _ptrc_glGetString
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetTexImage)(GLenum target, GLint level, GLenum format, GLenum type, void * pixels);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetTexImage)(GLenum target, GLint level,
+                                                  GLenum format, GLenum type,
+                                                  void *pixels);
 #define glGetTexImage _ptrc_glGetTexImage
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetTexLevelParameterfv)(GLenum target, GLint level, GLenum pname, GLfloat * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetTexLevelParameterfv)(GLenum target,
+                                                             GLint level,
+                                                             GLenum pname,
+                                                             GLfloat *params);
 #define glGetTexLevelParameterfv _ptrc_glGetTexLevelParameterfv
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetTexLevelParameteriv)(GLenum target, GLint level, GLenum pname, GLint * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetTexLevelParameteriv)(GLenum target,
+                                                             GLint level,
+                                                             GLenum pname,
+                                                             GLint *params);
 #define glGetTexLevelParameteriv _ptrc_glGetTexLevelParameteriv
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetTexParameterfv)(GLenum target, GLenum pname, GLfloat * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetTexParameterfv)(GLenum target,
+                                                        GLenum pname,
+                                                        GLfloat *params);
 #define glGetTexParameterfv _ptrc_glGetTexParameterfv
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetTexParameteriv)(GLenum target, GLenum pname, GLint * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetTexParameteriv)(GLenum target,
+                                                        GLenum pname,
+                                                        GLint *params);
 #define glGetTexParameteriv _ptrc_glGetTexParameteriv
-extern void (CODEGEN_FUNCPTR *_ptrc_glHint)(GLenum target, GLenum mode);
+extern void(CODEGEN_FUNCPTR *_ptrc_glHint)(GLenum target, GLenum mode);
 #define glHint _ptrc_glHint
-extern GLboolean (CODEGEN_FUNCPTR *_ptrc_glIsEnabled)(GLenum cap);
+extern GLboolean(CODEGEN_FUNCPTR *_ptrc_glIsEnabled)(GLenum cap);
 #define glIsEnabled _ptrc_glIsEnabled
-extern void (CODEGEN_FUNCPTR *_ptrc_glLineWidth)(GLfloat width);
+extern void(CODEGEN_FUNCPTR *_ptrc_glLineWidth)(GLfloat width);
 #define glLineWidth _ptrc_glLineWidth
-extern void (CODEGEN_FUNCPTR *_ptrc_glLogicOp)(GLenum opcode);
+extern void(CODEGEN_FUNCPTR *_ptrc_glLogicOp)(GLenum opcode);
 #define glLogicOp _ptrc_glLogicOp
-extern void (CODEGEN_FUNCPTR *_ptrc_glPixelStoref)(GLenum pname, GLfloat param);
+extern void(CODEGEN_FUNCPTR *_ptrc_glPixelStoref)(GLenum pname, GLfloat param);
 #define glPixelStoref _ptrc_glPixelStoref
-extern void (CODEGEN_FUNCPTR *_ptrc_glPixelStorei)(GLenum pname, GLint param);
+extern void(CODEGEN_FUNCPTR *_ptrc_glPixelStorei)(GLenum pname, GLint param);
 #define glPixelStorei _ptrc_glPixelStorei
-extern void (CODEGEN_FUNCPTR *_ptrc_glPointSize)(GLfloat size);
+extern void(CODEGEN_FUNCPTR *_ptrc_glPointSize)(GLfloat size);
 #define glPointSize _ptrc_glPointSize
-extern void (CODEGEN_FUNCPTR *_ptrc_glPolygonMode)(GLenum face, GLenum mode);
+extern void(CODEGEN_FUNCPTR *_ptrc_glPolygonMode)(GLenum face, GLenum mode);
 #define glPolygonMode _ptrc_glPolygonMode
-extern void (CODEGEN_FUNCPTR *_ptrc_glReadBuffer)(GLenum src);
+extern void(CODEGEN_FUNCPTR *_ptrc_glReadBuffer)(GLenum src);
 #define glReadBuffer _ptrc_glReadBuffer
-extern void (CODEGEN_FUNCPTR *_ptrc_glReadPixels)(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, void * pixels);
+extern void(CODEGEN_FUNCPTR *_ptrc_glReadPixels)(GLint x, GLint y,
+                                                 GLsizei width, GLsizei height,
+                                                 GLenum format, GLenum type,
+                                                 void *pixels);
 #define glReadPixels _ptrc_glReadPixels
-extern void (CODEGEN_FUNCPTR *_ptrc_glScissor)(GLint x, GLint y, GLsizei width, GLsizei height);
+extern void(CODEGEN_FUNCPTR *_ptrc_glScissor)(GLint x, GLint y, GLsizei width,
+                                              GLsizei height);
 #define glScissor _ptrc_glScissor
-extern void (CODEGEN_FUNCPTR *_ptrc_glStencilFunc)(GLenum func, GLint ref, GLuint mask);
+extern void(CODEGEN_FUNCPTR *_ptrc_glStencilFunc)(GLenum func, GLint ref,
+                                                  GLuint mask);
 #define glStencilFunc _ptrc_glStencilFunc
-extern void (CODEGEN_FUNCPTR *_ptrc_glStencilMask)(GLuint mask);
+extern void(CODEGEN_FUNCPTR *_ptrc_glStencilMask)(GLuint mask);
 #define glStencilMask _ptrc_glStencilMask
-extern void (CODEGEN_FUNCPTR *_ptrc_glStencilOp)(GLenum fail, GLenum zfail, GLenum zpass);
+extern void(CODEGEN_FUNCPTR *_ptrc_glStencilOp)(GLenum fail, GLenum zfail,
+                                                GLenum zpass);
 #define glStencilOp _ptrc_glStencilOp
-extern void (CODEGEN_FUNCPTR *_ptrc_glTexImage1D)(GLenum target, GLint level, GLint internalformat, GLsizei width, GLint border, GLenum format, GLenum type, const void * pixels);
+extern void(CODEGEN_FUNCPTR *_ptrc_glTexImage1D)(GLenum target, GLint level,
+                                                 GLint internalformat,
+                                                 GLsizei width, GLint border,
+                                                 GLenum format, GLenum type,
+                                                 const void *pixels);
 #define glTexImage1D _ptrc_glTexImage1D
-extern void (CODEGEN_FUNCPTR *_ptrc_glTexImage2D)(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const void * pixels);
+extern void(CODEGEN_FUNCPTR *_ptrc_glTexImage2D)(GLenum target, GLint level,
+                                                 GLint internalformat,
+                                                 GLsizei width, GLsizei height,
+                                                 GLint border, GLenum format,
+                                                 GLenum type,
+                                                 const void *pixels);
 #define glTexImage2D _ptrc_glTexImage2D
-extern void (CODEGEN_FUNCPTR *_ptrc_glTexParameterf)(GLenum target, GLenum pname, GLfloat param);
+extern void(CODEGEN_FUNCPTR *_ptrc_glTexParameterf)(GLenum target, GLenum pname,
+                                                    GLfloat param);
 #define glTexParameterf _ptrc_glTexParameterf
-extern void (CODEGEN_FUNCPTR *_ptrc_glTexParameterfv)(GLenum target, GLenum pname, const GLfloat * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glTexParameterfv)(GLenum target,
+                                                     GLenum pname,
+                                                     const GLfloat *params);
 #define glTexParameterfv _ptrc_glTexParameterfv
-extern void (CODEGEN_FUNCPTR *_ptrc_glTexParameteri)(GLenum target, GLenum pname, GLint param);
+extern void(CODEGEN_FUNCPTR *_ptrc_glTexParameteri)(GLenum target, GLenum pname,
+                                                    GLint param);
 #define glTexParameteri _ptrc_glTexParameteri
-extern void (CODEGEN_FUNCPTR *_ptrc_glTexParameteriv)(GLenum target, GLenum pname, const GLint * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glTexParameteriv)(GLenum target,
+                                                     GLenum pname,
+                                                     const GLint *params);
 #define glTexParameteriv _ptrc_glTexParameteriv
-extern void (CODEGEN_FUNCPTR *_ptrc_glViewport)(GLint x, GLint y, GLsizei width, GLsizei height);
+extern void(CODEGEN_FUNCPTR *_ptrc_glViewport)(GLint x, GLint y, GLsizei width,
+                                               GLsizei height);
 #define glViewport _ptrc_glViewport
 
-extern void (CODEGEN_FUNCPTR *_ptrc_glBindTexture)(GLenum target, GLuint texture);
+extern void(CODEGEN_FUNCPTR *_ptrc_glBindTexture)(GLenum target,
+                                                  GLuint texture);
 #define glBindTexture _ptrc_glBindTexture
-extern void (CODEGEN_FUNCPTR *_ptrc_glCopyTexImage1D)(GLenum target, GLint level, GLenum internalformat, GLint x, GLint y, GLsizei width, GLint border);
+extern void(CODEGEN_FUNCPTR *_ptrc_glCopyTexImage1D)(GLenum target, GLint level,
+                                                     GLenum internalformat,
+                                                     GLint x, GLint y,
+                                                     GLsizei width,
+                                                     GLint border);
 #define glCopyTexImage1D _ptrc_glCopyTexImage1D
-extern void (CODEGEN_FUNCPTR *_ptrc_glCopyTexImage2D)(GLenum target, GLint level, GLenum internalformat, GLint x, GLint y, GLsizei width, GLsizei height, GLint border);
+extern void(CODEGEN_FUNCPTR *_ptrc_glCopyTexImage2D)(
+    GLenum target, GLint level, GLenum internalformat, GLint x, GLint y,
+    GLsizei width, GLsizei height, GLint border);
 #define glCopyTexImage2D _ptrc_glCopyTexImage2D
-extern void (CODEGEN_FUNCPTR *_ptrc_glCopyTexSubImage1D)(GLenum target, GLint level, GLint xoffset, GLint x, GLint y, GLsizei width);
+extern void(CODEGEN_FUNCPTR *_ptrc_glCopyTexSubImage1D)(GLenum target,
+                                                        GLint level,
+                                                        GLint xoffset, GLint x,
+                                                        GLint y, GLsizei width);
 #define glCopyTexSubImage1D _ptrc_glCopyTexSubImage1D
-extern void (CODEGEN_FUNCPTR *_ptrc_glCopyTexSubImage2D)(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height);
+extern void(CODEGEN_FUNCPTR *_ptrc_glCopyTexSubImage2D)(
+    GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y,
+    GLsizei width, GLsizei height);
 #define glCopyTexSubImage2D _ptrc_glCopyTexSubImage2D
-extern void (CODEGEN_FUNCPTR *_ptrc_glDeleteTextures)(GLsizei n, const GLuint * textures);
+extern void(CODEGEN_FUNCPTR *_ptrc_glDeleteTextures)(GLsizei n,
+                                                     const GLuint *textures);
 #define glDeleteTextures _ptrc_glDeleteTextures
-extern void (CODEGEN_FUNCPTR *_ptrc_glDrawArrays)(GLenum mode, GLint first, GLsizei count);
+extern void(CODEGEN_FUNCPTR *_ptrc_glDrawArrays)(GLenum mode, GLint first,
+                                                 GLsizei count);
 #define glDrawArrays _ptrc_glDrawArrays
-extern void (CODEGEN_FUNCPTR *_ptrc_glDrawElements)(GLenum mode, GLsizei count, GLenum type, const void * indices);
+extern void(CODEGEN_FUNCPTR *_ptrc_glDrawElements)(GLenum mode, GLsizei count,
+                                                   GLenum type,
+                                                   const void *indices);
 #define glDrawElements _ptrc_glDrawElements
-extern void (CODEGEN_FUNCPTR *_ptrc_glGenTextures)(GLsizei n, GLuint * textures);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGenTextures)(GLsizei n, GLuint *textures);
 #define glGenTextures _ptrc_glGenTextures
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetPointerv)(GLenum pname, void ** params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetPointerv)(GLenum pname, void **params);
 #define glGetPointerv _ptrc_glGetPointerv
-extern GLboolean (CODEGEN_FUNCPTR *_ptrc_glIsTexture)(GLuint texture);
+extern GLboolean(CODEGEN_FUNCPTR *_ptrc_glIsTexture)(GLuint texture);
 #define glIsTexture _ptrc_glIsTexture
-extern void (CODEGEN_FUNCPTR *_ptrc_glPolygonOffset)(GLfloat factor, GLfloat units);
+extern void(CODEGEN_FUNCPTR *_ptrc_glPolygonOffset)(GLfloat factor,
+                                                    GLfloat units);
 #define glPolygonOffset _ptrc_glPolygonOffset
-extern void (CODEGEN_FUNCPTR *_ptrc_glTexSubImage1D)(GLenum target, GLint level, GLint xoffset, GLsizei width, GLenum format, GLenum type, const void * pixels);
+extern void(CODEGEN_FUNCPTR *_ptrc_glTexSubImage1D)(GLenum target, GLint level,
+                                                    GLint xoffset,
+                                                    GLsizei width,
+                                                    GLenum format, GLenum type,
+                                                    const void *pixels);
 #define glTexSubImage1D _ptrc_glTexSubImage1D
-extern void (CODEGEN_FUNCPTR *_ptrc_glTexSubImage2D)(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const void * pixels);
+extern void(CODEGEN_FUNCPTR *_ptrc_glTexSubImage2D)(
+    GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
+    GLsizei height, GLenum format, GLenum type, const void *pixels);
 #define glTexSubImage2D _ptrc_glTexSubImage2D
 
-extern void (CODEGEN_FUNCPTR *_ptrc_glCopyTexSubImage3D)(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLint x, GLint y, GLsizei width, GLsizei height);
+extern void(CODEGEN_FUNCPTR *_ptrc_glCopyTexSubImage3D)(
+    GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset,
+    GLint x, GLint y, GLsizei width, GLsizei height);
 #define glCopyTexSubImage3D _ptrc_glCopyTexSubImage3D
-extern void (CODEGEN_FUNCPTR *_ptrc_glDrawRangeElements)(GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const void * indices);
+extern void(CODEGEN_FUNCPTR *_ptrc_glDrawRangeElements)(
+    GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type,
+    const void *indices);
 #define glDrawRangeElements _ptrc_glDrawRangeElements
-extern void (CODEGEN_FUNCPTR *_ptrc_glTexImage3D)(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLenum format, GLenum type, const void * pixels);
+extern void(CODEGEN_FUNCPTR *_ptrc_glTexImage3D)(GLenum target, GLint level,
+                                                 GLint internalformat,
+                                                 GLsizei width, GLsizei height,
+                                                 GLsizei depth, GLint border,
+                                                 GLenum format, GLenum type,
+                                                 const void *pixels);
 #define glTexImage3D _ptrc_glTexImage3D
-extern void (CODEGEN_FUNCPTR *_ptrc_glTexSubImage3D)(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const void * pixels);
+extern void(CODEGEN_FUNCPTR *_ptrc_glTexSubImage3D)(
+    GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset,
+    GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type,
+    const void *pixels);
 #define glTexSubImage3D _ptrc_glTexSubImage3D
 
-extern void (CODEGEN_FUNCPTR *_ptrc_glActiveTexture)(GLenum texture);
+extern void(CODEGEN_FUNCPTR *_ptrc_glActiveTexture)(GLenum texture);
 #define glActiveTexture _ptrc_glActiveTexture
-extern void (CODEGEN_FUNCPTR *_ptrc_glCompressedTexImage1D)(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLint border, GLsizei imageSize, const void * data);
+extern void(CODEGEN_FUNCPTR *_ptrc_glCompressedTexImage1D)(
+    GLenum target, GLint level, GLenum internalformat, GLsizei width,
+    GLint border, GLsizei imageSize, const void *data);
 #define glCompressedTexImage1D _ptrc_glCompressedTexImage1D
-extern void (CODEGEN_FUNCPTR *_ptrc_glCompressedTexImage2D)(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLsizei imageSize, const void * data);
+extern void(CODEGEN_FUNCPTR *_ptrc_glCompressedTexImage2D)(
+    GLenum target, GLint level, GLenum internalformat, GLsizei width,
+    GLsizei height, GLint border, GLsizei imageSize, const void *data);
 #define glCompressedTexImage2D _ptrc_glCompressedTexImage2D
-extern void (CODEGEN_FUNCPTR *_ptrc_glCompressedTexImage3D)(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLint border, GLsizei imageSize, const void * data);
+extern void(CODEGEN_FUNCPTR *_ptrc_glCompressedTexImage3D)(
+    GLenum target, GLint level, GLenum internalformat, GLsizei width,
+    GLsizei height, GLsizei depth, GLint border, GLsizei imageSize,
+    const void *data);
 #define glCompressedTexImage3D _ptrc_glCompressedTexImage3D
-extern void (CODEGEN_FUNCPTR *_ptrc_glCompressedTexSubImage1D)(GLenum target, GLint level, GLint xoffset, GLsizei width, GLenum format, GLsizei imageSize, const void * data);
+extern void(CODEGEN_FUNCPTR *_ptrc_glCompressedTexSubImage1D)(
+    GLenum target, GLint level, GLint xoffset, GLsizei width, GLenum format,
+    GLsizei imageSize, const void *data);
 #define glCompressedTexSubImage1D _ptrc_glCompressedTexSubImage1D
-extern void (CODEGEN_FUNCPTR *_ptrc_glCompressedTexSubImage2D)(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLsizei imageSize, const void * data);
+extern void(CODEGEN_FUNCPTR *_ptrc_glCompressedTexSubImage2D)(
+    GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
+    GLsizei height, GLenum format, GLsizei imageSize, const void *data);
 #define glCompressedTexSubImage2D _ptrc_glCompressedTexSubImage2D
-extern void (CODEGEN_FUNCPTR *_ptrc_glCompressedTexSubImage3D)(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLsizei imageSize, const void * data);
+extern void(CODEGEN_FUNCPTR *_ptrc_glCompressedTexSubImage3D)(
+    GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset,
+    GLsizei width, GLsizei height, GLsizei depth, GLenum format,
+    GLsizei imageSize, const void *data);
 #define glCompressedTexSubImage3D _ptrc_glCompressedTexSubImage3D
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetCompressedTexImage)(GLenum target, GLint level, void * img);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetCompressedTexImage)(GLenum target,
+                                                            GLint level,
+                                                            void *img);
 #define glGetCompressedTexImage _ptrc_glGetCompressedTexImage
-extern void (CODEGEN_FUNCPTR *_ptrc_glSampleCoverage)(GLfloat value, GLboolean invert);
+extern void(CODEGEN_FUNCPTR *_ptrc_glSampleCoverage)(GLfloat value,
+                                                     GLboolean invert);
 #define glSampleCoverage _ptrc_glSampleCoverage
 
-extern void (CODEGEN_FUNCPTR *_ptrc_glBlendColor)(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha);
+extern void(CODEGEN_FUNCPTR *_ptrc_glBlendColor)(GLfloat red, GLfloat green,
+                                                 GLfloat blue, GLfloat alpha);
 #define glBlendColor _ptrc_glBlendColor
-extern void (CODEGEN_FUNCPTR *_ptrc_glBlendEquation)(GLenum mode);
+extern void(CODEGEN_FUNCPTR *_ptrc_glBlendEquation)(GLenum mode);
 #define glBlendEquation _ptrc_glBlendEquation
-extern void (CODEGEN_FUNCPTR *_ptrc_glBlendFuncSeparate)(GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha);
+extern void(CODEGEN_FUNCPTR *_ptrc_glBlendFuncSeparate)(GLenum sfactorRGB,
+                                                        GLenum dfactorRGB,
+                                                        GLenum sfactorAlpha,
+                                                        GLenum dfactorAlpha);
 #define glBlendFuncSeparate _ptrc_glBlendFuncSeparate
-extern void (CODEGEN_FUNCPTR *_ptrc_glMultiDrawArrays)(GLenum mode, const GLint * first, const GLsizei * count, GLsizei drawcount);
+extern void(CODEGEN_FUNCPTR *_ptrc_glMultiDrawArrays)(GLenum mode,
+                                                      const GLint *first,
+                                                      const GLsizei *count,
+                                                      GLsizei drawcount);
 #define glMultiDrawArrays _ptrc_glMultiDrawArrays
-extern void (CODEGEN_FUNCPTR *_ptrc_glMultiDrawElements)(GLenum mode, const GLsizei * count, GLenum type, const void *const* indices, GLsizei drawcount);
+extern void(CODEGEN_FUNCPTR *_ptrc_glMultiDrawElements)(
+    GLenum mode, const GLsizei *count, GLenum type, const void *const *indices,
+    GLsizei drawcount);
 #define glMultiDrawElements _ptrc_glMultiDrawElements
-extern void (CODEGEN_FUNCPTR *_ptrc_glPointParameterf)(GLenum pname, GLfloat param);
+extern void(CODEGEN_FUNCPTR *_ptrc_glPointParameterf)(GLenum pname,
+                                                      GLfloat param);
 #define glPointParameterf _ptrc_glPointParameterf
-extern void (CODEGEN_FUNCPTR *_ptrc_glPointParameterfv)(GLenum pname, const GLfloat * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glPointParameterfv)(GLenum pname,
+                                                       const GLfloat *params);
 #define glPointParameterfv _ptrc_glPointParameterfv
-extern void (CODEGEN_FUNCPTR *_ptrc_glPointParameteri)(GLenum pname, GLint param);
+extern void(CODEGEN_FUNCPTR *_ptrc_glPointParameteri)(GLenum pname,
+                                                      GLint param);
 #define glPointParameteri _ptrc_glPointParameteri
-extern void (CODEGEN_FUNCPTR *_ptrc_glPointParameteriv)(GLenum pname, const GLint * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glPointParameteriv)(GLenum pname,
+                                                       const GLint *params);
 #define glPointParameteriv _ptrc_glPointParameteriv
 
-extern void (CODEGEN_FUNCPTR *_ptrc_glBeginQuery)(GLenum target, GLuint id);
+extern void(CODEGEN_FUNCPTR *_ptrc_glBeginQuery)(GLenum target, GLuint id);
 #define glBeginQuery _ptrc_glBeginQuery
-extern void (CODEGEN_FUNCPTR *_ptrc_glBindBuffer)(GLenum target, GLuint buffer);
+extern void(CODEGEN_FUNCPTR *_ptrc_glBindBuffer)(GLenum target, GLuint buffer);
 #define glBindBuffer _ptrc_glBindBuffer
-extern void (CODEGEN_FUNCPTR *_ptrc_glBufferData)(GLenum target, GLsizeiptr size, const void * data, GLenum usage);
+extern void(CODEGEN_FUNCPTR *_ptrc_glBufferData)(GLenum target, GLsizeiptr size,
+                                                 const void *data,
+                                                 GLenum usage);
 #define glBufferData _ptrc_glBufferData
-extern void (CODEGEN_FUNCPTR *_ptrc_glBufferSubData)(GLenum target, GLintptr offset, GLsizeiptr size, const void * data);
+extern void(CODEGEN_FUNCPTR *_ptrc_glBufferSubData)(GLenum target,
+                                                    GLintptr offset,
+                                                    GLsizeiptr size,
+                                                    const void *data);
 #define glBufferSubData _ptrc_glBufferSubData
-extern void (CODEGEN_FUNCPTR *_ptrc_glDeleteBuffers)(GLsizei n, const GLuint * buffers);
+extern void(CODEGEN_FUNCPTR *_ptrc_glDeleteBuffers)(GLsizei n,
+                                                    const GLuint *buffers);
 #define glDeleteBuffers _ptrc_glDeleteBuffers
-extern void (CODEGEN_FUNCPTR *_ptrc_glDeleteQueries)(GLsizei n, const GLuint * ids);
+extern void(CODEGEN_FUNCPTR *_ptrc_glDeleteQueries)(GLsizei n,
+                                                    const GLuint *ids);
 #define glDeleteQueries _ptrc_glDeleteQueries
-extern void (CODEGEN_FUNCPTR *_ptrc_glEndQuery)(GLenum target);
+extern void(CODEGEN_FUNCPTR *_ptrc_glEndQuery)(GLenum target);
 #define glEndQuery _ptrc_glEndQuery
-extern void (CODEGEN_FUNCPTR *_ptrc_glGenBuffers)(GLsizei n, GLuint * buffers);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGenBuffers)(GLsizei n, GLuint *buffers);
 #define glGenBuffers _ptrc_glGenBuffers
-extern void (CODEGEN_FUNCPTR *_ptrc_glGenQueries)(GLsizei n, GLuint * ids);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGenQueries)(GLsizei n, GLuint *ids);
 #define glGenQueries _ptrc_glGenQueries
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetBufferParameteriv)(GLenum target, GLenum pname, GLint * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetBufferParameteriv)(GLenum target,
+                                                           GLenum pname,
+                                                           GLint *params);
 #define glGetBufferParameteriv _ptrc_glGetBufferParameteriv
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetBufferPointerv)(GLenum target, GLenum pname, void ** params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetBufferPointerv)(GLenum target,
+                                                        GLenum pname,
+                                                        void **params);
 #define glGetBufferPointerv _ptrc_glGetBufferPointerv
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetBufferSubData)(GLenum target, GLintptr offset, GLsizeiptr size, void * data);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetBufferSubData)(GLenum target,
+                                                       GLintptr offset,
+                                                       GLsizeiptr size,
+                                                       void *data);
 #define glGetBufferSubData _ptrc_glGetBufferSubData
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetQueryObjectiv)(GLuint id, GLenum pname, GLint * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetQueryObjectiv)(GLuint id, GLenum pname,
+                                                       GLint *params);
 #define glGetQueryObjectiv _ptrc_glGetQueryObjectiv
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetQueryObjectuiv)(GLuint id, GLenum pname, GLuint * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetQueryObjectuiv)(GLuint id, GLenum pname,
+                                                        GLuint *params);
 #define glGetQueryObjectuiv _ptrc_glGetQueryObjectuiv
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetQueryiv)(GLenum target, GLenum pname, GLint * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetQueryiv)(GLenum target, GLenum pname,
+                                                 GLint *params);
 #define glGetQueryiv _ptrc_glGetQueryiv
-extern GLboolean (CODEGEN_FUNCPTR *_ptrc_glIsBuffer)(GLuint buffer);
+extern GLboolean(CODEGEN_FUNCPTR *_ptrc_glIsBuffer)(GLuint buffer);
 #define glIsBuffer _ptrc_glIsBuffer
-extern GLboolean (CODEGEN_FUNCPTR *_ptrc_glIsQuery)(GLuint id);
+extern GLboolean(CODEGEN_FUNCPTR *_ptrc_glIsQuery)(GLuint id);
 #define glIsQuery _ptrc_glIsQuery
-extern void * (CODEGEN_FUNCPTR *_ptrc_glMapBuffer)(GLenum target, GLenum access);
+extern void *(CODEGEN_FUNCPTR *_ptrc_glMapBuffer)(GLenum target, GLenum access);
 #define glMapBuffer _ptrc_glMapBuffer
-extern GLboolean (CODEGEN_FUNCPTR *_ptrc_glUnmapBuffer)(GLenum target);
+extern GLboolean(CODEGEN_FUNCPTR *_ptrc_glUnmapBuffer)(GLenum target);
 #define glUnmapBuffer _ptrc_glUnmapBuffer
 
-extern void (CODEGEN_FUNCPTR *_ptrc_glAttachShader)(GLuint program, GLuint shader);
+extern void(CODEGEN_FUNCPTR *_ptrc_glAttachShader)(GLuint program,
+                                                   GLuint shader);
 #define glAttachShader _ptrc_glAttachShader
-extern void (CODEGEN_FUNCPTR *_ptrc_glBindAttribLocation)(GLuint program, GLuint index, const GLchar * name);
+extern void(CODEGEN_FUNCPTR *_ptrc_glBindAttribLocation)(GLuint program,
+                                                         GLuint index,
+                                                         const GLchar *name);
 #define glBindAttribLocation _ptrc_glBindAttribLocation
-extern void (CODEGEN_FUNCPTR *_ptrc_glBlendEquationSeparate)(GLenum modeRGB, GLenum modeAlpha);
+extern void(CODEGEN_FUNCPTR *_ptrc_glBlendEquationSeparate)(GLenum modeRGB,
+                                                            GLenum modeAlpha);
 #define glBlendEquationSeparate _ptrc_glBlendEquationSeparate
-extern void (CODEGEN_FUNCPTR *_ptrc_glCompileShader)(GLuint shader);
+extern void(CODEGEN_FUNCPTR *_ptrc_glCompileShader)(GLuint shader);
 #define glCompileShader _ptrc_glCompileShader
-extern GLuint (CODEGEN_FUNCPTR *_ptrc_glCreateProgram)(void);
+extern GLuint(CODEGEN_FUNCPTR *_ptrc_glCreateProgram)(void);
 #define glCreateProgram _ptrc_glCreateProgram
-extern GLuint (CODEGEN_FUNCPTR *_ptrc_glCreateShader)(GLenum type);
+extern GLuint(CODEGEN_FUNCPTR *_ptrc_glCreateShader)(GLenum type);
 #define glCreateShader _ptrc_glCreateShader
-extern void (CODEGEN_FUNCPTR *_ptrc_glDeleteProgram)(GLuint program);
+extern void(CODEGEN_FUNCPTR *_ptrc_glDeleteProgram)(GLuint program);
 #define glDeleteProgram _ptrc_glDeleteProgram
-extern void (CODEGEN_FUNCPTR *_ptrc_glDeleteShader)(GLuint shader);
+extern void(CODEGEN_FUNCPTR *_ptrc_glDeleteShader)(GLuint shader);
 #define glDeleteShader _ptrc_glDeleteShader
-extern void (CODEGEN_FUNCPTR *_ptrc_glDetachShader)(GLuint program, GLuint shader);
+extern void(CODEGEN_FUNCPTR *_ptrc_glDetachShader)(GLuint program,
+                                                   GLuint shader);
 #define glDetachShader _ptrc_glDetachShader
-extern void (CODEGEN_FUNCPTR *_ptrc_glDisableVertexAttribArray)(GLuint index);
+extern void(CODEGEN_FUNCPTR *_ptrc_glDisableVertexAttribArray)(GLuint index);
 #define glDisableVertexAttribArray _ptrc_glDisableVertexAttribArray
-extern void (CODEGEN_FUNCPTR *_ptrc_glDrawBuffers)(GLsizei n, const GLenum * bufs);
+extern void(CODEGEN_FUNCPTR *_ptrc_glDrawBuffers)(GLsizei n,
+                                                  const GLenum *bufs);
 #define glDrawBuffers _ptrc_glDrawBuffers
-extern void (CODEGEN_FUNCPTR *_ptrc_glEnableVertexAttribArray)(GLuint index);
+extern void(CODEGEN_FUNCPTR *_ptrc_glEnableVertexAttribArray)(GLuint index);
 #define glEnableVertexAttribArray _ptrc_glEnableVertexAttribArray
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetActiveAttrib)(GLuint program, GLuint index, GLsizei bufSize, GLsizei * length, GLint * size, GLenum * type, GLchar * name);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetActiveAttrib)(
+    GLuint program, GLuint index, GLsizei bufSize, GLsizei *length, GLint *size,
+    GLenum *type, GLchar *name);
 #define glGetActiveAttrib _ptrc_glGetActiveAttrib
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetActiveUniform)(GLuint program, GLuint index, GLsizei bufSize, GLsizei * length, GLint * size, GLenum * type, GLchar * name);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetActiveUniform)(
+    GLuint program, GLuint index, GLsizei bufSize, GLsizei *length, GLint *size,
+    GLenum *type, GLchar *name);
 #define glGetActiveUniform _ptrc_glGetActiveUniform
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetAttachedShaders)(GLuint program, GLsizei maxCount, GLsizei * count, GLuint * shaders);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetAttachedShaders)(GLuint program,
+                                                         GLsizei maxCount,
+                                                         GLsizei *count,
+                                                         GLuint *shaders);
 #define glGetAttachedShaders _ptrc_glGetAttachedShaders
-extern GLint (CODEGEN_FUNCPTR *_ptrc_glGetAttribLocation)(GLuint program, const GLchar * name);
+extern GLint(CODEGEN_FUNCPTR *_ptrc_glGetAttribLocation)(GLuint program,
+                                                         const GLchar *name);
 #define glGetAttribLocation _ptrc_glGetAttribLocation
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetProgramInfoLog)(GLuint program, GLsizei bufSize, GLsizei * length, GLchar * infoLog);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetProgramInfoLog)(GLuint program,
+                                                        GLsizei bufSize,
+                                                        GLsizei *length,
+                                                        GLchar *infoLog);
 #define glGetProgramInfoLog _ptrc_glGetProgramInfoLog
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetProgramiv)(GLuint program, GLenum pname, GLint * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetProgramiv)(GLuint program, GLenum pname,
+                                                   GLint *params);
 #define glGetProgramiv _ptrc_glGetProgramiv
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetShaderInfoLog)(GLuint shader, GLsizei bufSize, GLsizei * length, GLchar * infoLog);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetShaderInfoLog)(GLuint shader,
+                                                       GLsizei bufSize,
+                                                       GLsizei *length,
+                                                       GLchar *infoLog);
 #define glGetShaderInfoLog _ptrc_glGetShaderInfoLog
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetShaderSource)(GLuint shader, GLsizei bufSize, GLsizei * length, GLchar * source);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetShaderSource)(GLuint shader,
+                                                      GLsizei bufSize,
+                                                      GLsizei *length,
+                                                      GLchar *source);
 #define glGetShaderSource _ptrc_glGetShaderSource
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetShaderiv)(GLuint shader, GLenum pname, GLint * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetShaderiv)(GLuint shader, GLenum pname,
+                                                  GLint *params);
 #define glGetShaderiv _ptrc_glGetShaderiv
-extern GLint (CODEGEN_FUNCPTR *_ptrc_glGetUniformLocation)(GLuint program, const GLchar * name);
+extern GLint(CODEGEN_FUNCPTR *_ptrc_glGetUniformLocation)(GLuint program,
+                                                          const GLchar *name);
 #define glGetUniformLocation _ptrc_glGetUniformLocation
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetUniformfv)(GLuint program, GLint location, GLfloat * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetUniformfv)(GLuint program,
+                                                   GLint location,
+                                                   GLfloat *params);
 #define glGetUniformfv _ptrc_glGetUniformfv
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetUniformiv)(GLuint program, GLint location, GLint * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetUniformiv)(GLuint program,
+                                                   GLint location,
+                                                   GLint *params);
 #define glGetUniformiv _ptrc_glGetUniformiv
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetVertexAttribPointerv)(GLuint index, GLenum pname, void ** pointer);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetVertexAttribPointerv)(GLuint index,
+                                                              GLenum pname,
+                                                              void **pointer);
 #define glGetVertexAttribPointerv _ptrc_glGetVertexAttribPointerv
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetVertexAttribdv)(GLuint index, GLenum pname, GLdouble * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetVertexAttribdv)(GLuint index,
+                                                        GLenum pname,
+                                                        GLdouble *params);
 #define glGetVertexAttribdv _ptrc_glGetVertexAttribdv
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetVertexAttribfv)(GLuint index, GLenum pname, GLfloat * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetVertexAttribfv)(GLuint index,
+                                                        GLenum pname,
+                                                        GLfloat *params);
 #define glGetVertexAttribfv _ptrc_glGetVertexAttribfv
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetVertexAttribiv)(GLuint index, GLenum pname, GLint * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetVertexAttribiv)(GLuint index,
+                                                        GLenum pname,
+                                                        GLint *params);
 #define glGetVertexAttribiv _ptrc_glGetVertexAttribiv
-extern GLboolean (CODEGEN_FUNCPTR *_ptrc_glIsProgram)(GLuint program);
+extern GLboolean(CODEGEN_FUNCPTR *_ptrc_glIsProgram)(GLuint program);
 #define glIsProgram _ptrc_glIsProgram
-extern GLboolean (CODEGEN_FUNCPTR *_ptrc_glIsShader)(GLuint shader);
+extern GLboolean(CODEGEN_FUNCPTR *_ptrc_glIsShader)(GLuint shader);
 #define glIsShader _ptrc_glIsShader
-extern void (CODEGEN_FUNCPTR *_ptrc_glLinkProgram)(GLuint program);
+extern void(CODEGEN_FUNCPTR *_ptrc_glLinkProgram)(GLuint program);
 #define glLinkProgram _ptrc_glLinkProgram
-extern void (CODEGEN_FUNCPTR *_ptrc_glShaderSource)(GLuint shader, GLsizei count, const GLchar *const* string, const GLint * length);
+extern void(CODEGEN_FUNCPTR *_ptrc_glShaderSource)(GLuint shader, GLsizei count,
+                                                   const GLchar *const *string,
+                                                   const GLint *length);
 #define glShaderSource _ptrc_glShaderSource
-extern void (CODEGEN_FUNCPTR *_ptrc_glStencilFuncSeparate)(GLenum face, GLenum func, GLint ref, GLuint mask);
+extern void(CODEGEN_FUNCPTR *_ptrc_glStencilFuncSeparate)(GLenum face,
+                                                          GLenum func,
+                                                          GLint ref,
+                                                          GLuint mask);
 #define glStencilFuncSeparate _ptrc_glStencilFuncSeparate
-extern void (CODEGEN_FUNCPTR *_ptrc_glStencilMaskSeparate)(GLenum face, GLuint mask);
+extern void(CODEGEN_FUNCPTR *_ptrc_glStencilMaskSeparate)(GLenum face,
+                                                          GLuint mask);
 #define glStencilMaskSeparate _ptrc_glStencilMaskSeparate
-extern void (CODEGEN_FUNCPTR *_ptrc_glStencilOpSeparate)(GLenum face, GLenum sfail, GLenum dpfail, GLenum dppass);
+extern void(CODEGEN_FUNCPTR *_ptrc_glStencilOpSeparate)(GLenum face,
+                                                        GLenum sfail,
+                                                        GLenum dpfail,
+                                                        GLenum dppass);
 #define glStencilOpSeparate _ptrc_glStencilOpSeparate
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniform1f)(GLint location, GLfloat v0);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniform1f)(GLint location, GLfloat v0);
 #define glUniform1f _ptrc_glUniform1f
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniform1fv)(GLint location, GLsizei count, const GLfloat * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniform1fv)(GLint location, GLsizei count,
+                                                 const GLfloat *value);
 #define glUniform1fv _ptrc_glUniform1fv
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniform1i)(GLint location, GLint v0);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniform1i)(GLint location, GLint v0);
 #define glUniform1i _ptrc_glUniform1i
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniform1iv)(GLint location, GLsizei count, const GLint * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniform1iv)(GLint location, GLsizei count,
+                                                 const GLint *value);
 #define glUniform1iv _ptrc_glUniform1iv
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniform2f)(GLint location, GLfloat v0, GLfloat v1);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniform2f)(GLint location, GLfloat v0,
+                                                GLfloat v1);
 #define glUniform2f _ptrc_glUniform2f
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniform2fv)(GLint location, GLsizei count, const GLfloat * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniform2fv)(GLint location, GLsizei count,
+                                                 const GLfloat *value);
 #define glUniform2fv _ptrc_glUniform2fv
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniform2i)(GLint location, GLint v0, GLint v1);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniform2i)(GLint location, GLint v0,
+                                                GLint v1);
 #define glUniform2i _ptrc_glUniform2i
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniform2iv)(GLint location, GLsizei count, const GLint * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniform2iv)(GLint location, GLsizei count,
+                                                 const GLint *value);
 #define glUniform2iv _ptrc_glUniform2iv
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniform3f)(GLint location, GLfloat v0, GLfloat v1, GLfloat v2);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniform3f)(GLint location, GLfloat v0,
+                                                GLfloat v1, GLfloat v2);
 #define glUniform3f _ptrc_glUniform3f
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniform3fv)(GLint location, GLsizei count, const GLfloat * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniform3fv)(GLint location, GLsizei count,
+                                                 const GLfloat *value);
 #define glUniform3fv _ptrc_glUniform3fv
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniform3i)(GLint location, GLint v0, GLint v1, GLint v2);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniform3i)(GLint location, GLint v0,
+                                                GLint v1, GLint v2);
 #define glUniform3i _ptrc_glUniform3i
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniform3iv)(GLint location, GLsizei count, const GLint * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniform3iv)(GLint location, GLsizei count,
+                                                 const GLint *value);
 #define glUniform3iv _ptrc_glUniform3iv
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniform4f)(GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniform4f)(GLint location, GLfloat v0,
+                                                GLfloat v1, GLfloat v2,
+                                                GLfloat v3);
 #define glUniform4f _ptrc_glUniform4f
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniform4fv)(GLint location, GLsizei count, const GLfloat * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniform4fv)(GLint location, GLsizei count,
+                                                 const GLfloat *value);
 #define glUniform4fv _ptrc_glUniform4fv
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniform4i)(GLint location, GLint v0, GLint v1, GLint v2, GLint v3);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniform4i)(GLint location, GLint v0,
+                                                GLint v1, GLint v2, GLint v3);
 #define glUniform4i _ptrc_glUniform4i
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniform4iv)(GLint location, GLsizei count, const GLint * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniform4iv)(GLint location, GLsizei count,
+                                                 const GLint *value);
 #define glUniform4iv _ptrc_glUniform4iv
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniformMatrix2fv)(GLint location, GLsizei count, GLboolean transpose, const GLfloat * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniformMatrix2fv)(GLint location,
+                                                       GLsizei count,
+                                                       GLboolean transpose,
+                                                       const GLfloat *value);
 #define glUniformMatrix2fv _ptrc_glUniformMatrix2fv
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniformMatrix3fv)(GLint location, GLsizei count, GLboolean transpose, const GLfloat * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniformMatrix3fv)(GLint location,
+                                                       GLsizei count,
+                                                       GLboolean transpose,
+                                                       const GLfloat *value);
 #define glUniformMatrix3fv _ptrc_glUniformMatrix3fv
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniformMatrix4fv)(GLint location, GLsizei count, GLboolean transpose, const GLfloat * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniformMatrix4fv)(GLint location,
+                                                       GLsizei count,
+                                                       GLboolean transpose,
+                                                       const GLfloat *value);
 #define glUniformMatrix4fv _ptrc_glUniformMatrix4fv
-extern void (CODEGEN_FUNCPTR *_ptrc_glUseProgram)(GLuint program);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUseProgram)(GLuint program);
 #define glUseProgram _ptrc_glUseProgram
-extern void (CODEGEN_FUNCPTR *_ptrc_glValidateProgram)(GLuint program);
+extern void(CODEGEN_FUNCPTR *_ptrc_glValidateProgram)(GLuint program);
 #define glValidateProgram _ptrc_glValidateProgram
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttrib1d)(GLuint index, GLdouble x);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttrib1d)(GLuint index, GLdouble x);
 #define glVertexAttrib1d _ptrc_glVertexAttrib1d
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttrib1dv)(GLuint index, const GLdouble * v);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttrib1dv)(GLuint index,
+                                                      const GLdouble *v);
 #define glVertexAttrib1dv _ptrc_glVertexAttrib1dv
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttrib1f)(GLuint index, GLfloat x);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttrib1f)(GLuint index, GLfloat x);
 #define glVertexAttrib1f _ptrc_glVertexAttrib1f
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttrib1fv)(GLuint index, const GLfloat * v);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttrib1fv)(GLuint index,
+                                                      const GLfloat *v);
 #define glVertexAttrib1fv _ptrc_glVertexAttrib1fv
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttrib1s)(GLuint index, GLshort x);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttrib1s)(GLuint index, GLshort x);
 #define glVertexAttrib1s _ptrc_glVertexAttrib1s
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttrib1sv)(GLuint index, const GLshort * v);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttrib1sv)(GLuint index,
+                                                      const GLshort *v);
 #define glVertexAttrib1sv _ptrc_glVertexAttrib1sv
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttrib2d)(GLuint index, GLdouble x, GLdouble y);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttrib2d)(GLuint index, GLdouble x,
+                                                     GLdouble y);
 #define glVertexAttrib2d _ptrc_glVertexAttrib2d
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttrib2dv)(GLuint index, const GLdouble * v);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttrib2dv)(GLuint index,
+                                                      const GLdouble *v);
 #define glVertexAttrib2dv _ptrc_glVertexAttrib2dv
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttrib2f)(GLuint index, GLfloat x, GLfloat y);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttrib2f)(GLuint index, GLfloat x,
+                                                     GLfloat y);
 #define glVertexAttrib2f _ptrc_glVertexAttrib2f
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttrib2fv)(GLuint index, const GLfloat * v);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttrib2fv)(GLuint index,
+                                                      const GLfloat *v);
 #define glVertexAttrib2fv _ptrc_glVertexAttrib2fv
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttrib2s)(GLuint index, GLshort x, GLshort y);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttrib2s)(GLuint index, GLshort x,
+                                                     GLshort y);
 #define glVertexAttrib2s _ptrc_glVertexAttrib2s
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttrib2sv)(GLuint index, const GLshort * v);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttrib2sv)(GLuint index,
+                                                      const GLshort *v);
 #define glVertexAttrib2sv _ptrc_glVertexAttrib2sv
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttrib3d)(GLuint index, GLdouble x, GLdouble y, GLdouble z);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttrib3d)(GLuint index, GLdouble x,
+                                                     GLdouble y, GLdouble z);
 #define glVertexAttrib3d _ptrc_glVertexAttrib3d
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttrib3dv)(GLuint index, const GLdouble * v);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttrib3dv)(GLuint index,
+                                                      const GLdouble *v);
 #define glVertexAttrib3dv _ptrc_glVertexAttrib3dv
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttrib3f)(GLuint index, GLfloat x, GLfloat y, GLfloat z);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttrib3f)(GLuint index, GLfloat x,
+                                                     GLfloat y, GLfloat z);
 #define glVertexAttrib3f _ptrc_glVertexAttrib3f
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttrib3fv)(GLuint index, const GLfloat * v);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttrib3fv)(GLuint index,
+                                                      const GLfloat *v);
 #define glVertexAttrib3fv _ptrc_glVertexAttrib3fv
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttrib3s)(GLuint index, GLshort x, GLshort y, GLshort z);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttrib3s)(GLuint index, GLshort x,
+                                                     GLshort y, GLshort z);
 #define glVertexAttrib3s _ptrc_glVertexAttrib3s
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttrib3sv)(GLuint index, const GLshort * v);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttrib3sv)(GLuint index,
+                                                      const GLshort *v);
 #define glVertexAttrib3sv _ptrc_glVertexAttrib3sv
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttrib4Nbv)(GLuint index, const GLbyte * v);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttrib4Nbv)(GLuint index,
+                                                       const GLbyte *v);
 #define glVertexAttrib4Nbv _ptrc_glVertexAttrib4Nbv
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttrib4Niv)(GLuint index, const GLint * v);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttrib4Niv)(GLuint index,
+                                                       const GLint *v);
 #define glVertexAttrib4Niv _ptrc_glVertexAttrib4Niv
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttrib4Nsv)(GLuint index, const GLshort * v);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttrib4Nsv)(GLuint index,
+                                                       const GLshort *v);
 #define glVertexAttrib4Nsv _ptrc_glVertexAttrib4Nsv
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttrib4Nub)(GLuint index, GLubyte x, GLubyte y, GLubyte z, GLubyte w);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttrib4Nub)(GLuint index, GLubyte x,
+                                                       GLubyte y, GLubyte z,
+                                                       GLubyte w);
 #define glVertexAttrib4Nub _ptrc_glVertexAttrib4Nub
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttrib4Nubv)(GLuint index, const GLubyte * v);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttrib4Nubv)(GLuint index,
+                                                        const GLubyte *v);
 #define glVertexAttrib4Nubv _ptrc_glVertexAttrib4Nubv
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttrib4Nuiv)(GLuint index, const GLuint * v);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttrib4Nuiv)(GLuint index,
+                                                        const GLuint *v);
 #define glVertexAttrib4Nuiv _ptrc_glVertexAttrib4Nuiv
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttrib4Nusv)(GLuint index, const GLushort * v);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttrib4Nusv)(GLuint index,
+                                                        const GLushort *v);
 #define glVertexAttrib4Nusv _ptrc_glVertexAttrib4Nusv
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttrib4bv)(GLuint index, const GLbyte * v);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttrib4bv)(GLuint index,
+                                                      const GLbyte *v);
 #define glVertexAttrib4bv _ptrc_glVertexAttrib4bv
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttrib4d)(GLuint index, GLdouble x, GLdouble y, GLdouble z, GLdouble w);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttrib4d)(GLuint index, GLdouble x,
+                                                     GLdouble y, GLdouble z,
+                                                     GLdouble w);
 #define glVertexAttrib4d _ptrc_glVertexAttrib4d
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttrib4dv)(GLuint index, const GLdouble * v);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttrib4dv)(GLuint index,
+                                                      const GLdouble *v);
 #define glVertexAttrib4dv _ptrc_glVertexAttrib4dv
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttrib4f)(GLuint index, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttrib4f)(GLuint index, GLfloat x,
+                                                     GLfloat y, GLfloat z,
+                                                     GLfloat w);
 #define glVertexAttrib4f _ptrc_glVertexAttrib4f
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttrib4fv)(GLuint index, const GLfloat * v);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttrib4fv)(GLuint index,
+                                                      const GLfloat *v);
 #define glVertexAttrib4fv _ptrc_glVertexAttrib4fv
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttrib4iv)(GLuint index, const GLint * v);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttrib4iv)(GLuint index,
+                                                      const GLint *v);
 #define glVertexAttrib4iv _ptrc_glVertexAttrib4iv
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttrib4s)(GLuint index, GLshort x, GLshort y, GLshort z, GLshort w);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttrib4s)(GLuint index, GLshort x,
+                                                     GLshort y, GLshort z,
+                                                     GLshort w);
 #define glVertexAttrib4s _ptrc_glVertexAttrib4s
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttrib4sv)(GLuint index, const GLshort * v);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttrib4sv)(GLuint index,
+                                                      const GLshort *v);
 #define glVertexAttrib4sv _ptrc_glVertexAttrib4sv
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttrib4ubv)(GLuint index, const GLubyte * v);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttrib4ubv)(GLuint index,
+                                                       const GLubyte *v);
 #define glVertexAttrib4ubv _ptrc_glVertexAttrib4ubv
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttrib4uiv)(GLuint index, const GLuint * v);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttrib4uiv)(GLuint index,
+                                                       const GLuint *v);
 #define glVertexAttrib4uiv _ptrc_glVertexAttrib4uiv
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttrib4usv)(GLuint index, const GLushort * v);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttrib4usv)(GLuint index,
+                                                       const GLushort *v);
 #define glVertexAttrib4usv _ptrc_glVertexAttrib4usv
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttribPointer)(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void * pointer);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttribPointer)(
+    GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride,
+    const void *pointer);
 #define glVertexAttribPointer _ptrc_glVertexAttribPointer
 
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniformMatrix2x3fv)(GLint location, GLsizei count, GLboolean transpose, const GLfloat * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniformMatrix2x3fv)(GLint location,
+                                                         GLsizei count,
+                                                         GLboolean transpose,
+                                                         const GLfloat *value);
 #define glUniformMatrix2x3fv _ptrc_glUniformMatrix2x3fv
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniformMatrix2x4fv)(GLint location, GLsizei count, GLboolean transpose, const GLfloat * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniformMatrix2x4fv)(GLint location,
+                                                         GLsizei count,
+                                                         GLboolean transpose,
+                                                         const GLfloat *value);
 #define glUniformMatrix2x4fv _ptrc_glUniformMatrix2x4fv
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniformMatrix3x2fv)(GLint location, GLsizei count, GLboolean transpose, const GLfloat * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniformMatrix3x2fv)(GLint location,
+                                                         GLsizei count,
+                                                         GLboolean transpose,
+                                                         const GLfloat *value);
 #define glUniformMatrix3x2fv _ptrc_glUniformMatrix3x2fv
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniformMatrix3x4fv)(GLint location, GLsizei count, GLboolean transpose, const GLfloat * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniformMatrix3x4fv)(GLint location,
+                                                         GLsizei count,
+                                                         GLboolean transpose,
+                                                         const GLfloat *value);
 #define glUniformMatrix3x4fv _ptrc_glUniformMatrix3x4fv
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniformMatrix4x2fv)(GLint location, GLsizei count, GLboolean transpose, const GLfloat * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniformMatrix4x2fv)(GLint location,
+                                                         GLsizei count,
+                                                         GLboolean transpose,
+                                                         const GLfloat *value);
 #define glUniformMatrix4x2fv _ptrc_glUniformMatrix4x2fv
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniformMatrix4x3fv)(GLint location, GLsizei count, GLboolean transpose, const GLfloat * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniformMatrix4x3fv)(GLint location,
+                                                         GLsizei count,
+                                                         GLboolean transpose,
+                                                         const GLfloat *value);
 #define glUniformMatrix4x3fv _ptrc_glUniformMatrix4x3fv
 
-extern void (CODEGEN_FUNCPTR *_ptrc_glBeginConditionalRender)(GLuint id, GLenum mode);
+extern void(CODEGEN_FUNCPTR *_ptrc_glBeginConditionalRender)(GLuint id,
+                                                             GLenum mode);
 #define glBeginConditionalRender _ptrc_glBeginConditionalRender
-extern void (CODEGEN_FUNCPTR *_ptrc_glBeginTransformFeedback)(GLenum primitiveMode);
+extern void(CODEGEN_FUNCPTR *_ptrc_glBeginTransformFeedback)(
+    GLenum primitiveMode);
 #define glBeginTransformFeedback _ptrc_glBeginTransformFeedback
-extern void (CODEGEN_FUNCPTR *_ptrc_glBindBufferBase)(GLenum target, GLuint index, GLuint buffer);
+extern void(CODEGEN_FUNCPTR *_ptrc_glBindBufferBase)(GLenum target,
+                                                     GLuint index,
+                                                     GLuint buffer);
 #define glBindBufferBase _ptrc_glBindBufferBase
-extern void (CODEGEN_FUNCPTR *_ptrc_glBindBufferRange)(GLenum target, GLuint index, GLuint buffer, GLintptr offset, GLsizeiptr size);
+extern void(CODEGEN_FUNCPTR *_ptrc_glBindBufferRange)(GLenum target,
+                                                      GLuint index,
+                                                      GLuint buffer,
+                                                      GLintptr offset,
+                                                      GLsizeiptr size);
 #define glBindBufferRange _ptrc_glBindBufferRange
-extern void (CODEGEN_FUNCPTR *_ptrc_glBindFragDataLocation)(GLuint program, GLuint color, const GLchar * name);
+extern void(CODEGEN_FUNCPTR *_ptrc_glBindFragDataLocation)(GLuint program,
+                                                           GLuint color,
+                                                           const GLchar *name);
 #define glBindFragDataLocation _ptrc_glBindFragDataLocation
-extern void (CODEGEN_FUNCPTR *_ptrc_glBindFramebuffer)(GLenum target, GLuint framebuffer);
+extern void(CODEGEN_FUNCPTR *_ptrc_glBindFramebuffer)(GLenum target,
+                                                      GLuint framebuffer);
 #define glBindFramebuffer _ptrc_glBindFramebuffer
-extern void (CODEGEN_FUNCPTR *_ptrc_glBindRenderbuffer)(GLenum target, GLuint renderbuffer);
+extern void(CODEGEN_FUNCPTR *_ptrc_glBindRenderbuffer)(GLenum target,
+                                                       GLuint renderbuffer);
 #define glBindRenderbuffer _ptrc_glBindRenderbuffer
-extern void (CODEGEN_FUNCPTR *_ptrc_glBindVertexArray)(GLuint ren_array);
+extern void(CODEGEN_FUNCPTR *_ptrc_glBindVertexArray)(GLuint ren_array);
 #define glBindVertexArray _ptrc_glBindVertexArray
-extern void (CODEGEN_FUNCPTR *_ptrc_glBlitFramebuffer)(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter);
+extern void(CODEGEN_FUNCPTR *_ptrc_glBlitFramebuffer)(
+    GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0,
+    GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter);
 #define glBlitFramebuffer _ptrc_glBlitFramebuffer
-extern GLenum (CODEGEN_FUNCPTR *_ptrc_glCheckFramebufferStatus)(GLenum target);
+extern GLenum(CODEGEN_FUNCPTR *_ptrc_glCheckFramebufferStatus)(GLenum target);
 #define glCheckFramebufferStatus _ptrc_glCheckFramebufferStatus
-extern void (CODEGEN_FUNCPTR *_ptrc_glClampColor)(GLenum target, GLenum clamp);
+extern void(CODEGEN_FUNCPTR *_ptrc_glClampColor)(GLenum target, GLenum clamp);
 #define glClampColor _ptrc_glClampColor
-extern void (CODEGEN_FUNCPTR *_ptrc_glClearBufferfi)(GLenum buffer, GLint drawbuffer, GLfloat depth, GLint stencil);
+extern void(CODEGEN_FUNCPTR *_ptrc_glClearBufferfi)(GLenum buffer,
+                                                    GLint drawbuffer,
+                                                    GLfloat depth,
+                                                    GLint stencil);
 #define glClearBufferfi _ptrc_glClearBufferfi
-extern void (CODEGEN_FUNCPTR *_ptrc_glClearBufferfv)(GLenum buffer, GLint drawbuffer, const GLfloat * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glClearBufferfv)(GLenum buffer,
+                                                    GLint drawbuffer,
+                                                    const GLfloat *value);
 #define glClearBufferfv _ptrc_glClearBufferfv
-extern void (CODEGEN_FUNCPTR *_ptrc_glClearBufferiv)(GLenum buffer, GLint drawbuffer, const GLint * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glClearBufferiv)(GLenum buffer,
+                                                    GLint drawbuffer,
+                                                    const GLint *value);
 #define glClearBufferiv _ptrc_glClearBufferiv
-extern void (CODEGEN_FUNCPTR *_ptrc_glClearBufferuiv)(GLenum buffer, GLint drawbuffer, const GLuint * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glClearBufferuiv)(GLenum buffer,
+                                                     GLint drawbuffer,
+                                                     const GLuint *value);
 #define glClearBufferuiv _ptrc_glClearBufferuiv
-extern void (CODEGEN_FUNCPTR *_ptrc_glColorMaski)(GLuint index, GLboolean r, GLboolean g, GLboolean b, GLboolean a);
+extern void(CODEGEN_FUNCPTR *_ptrc_glColorMaski)(GLuint index, GLboolean r,
+                                                 GLboolean g, GLboolean b,
+                                                 GLboolean a);
 #define glColorMaski _ptrc_glColorMaski
-extern void (CODEGEN_FUNCPTR *_ptrc_glDeleteFramebuffers)(GLsizei n, const GLuint * framebuffers);
+extern void(CODEGEN_FUNCPTR *_ptrc_glDeleteFramebuffers)(
+    GLsizei n, const GLuint *framebuffers);
 #define glDeleteFramebuffers _ptrc_glDeleteFramebuffers
-extern void (CODEGEN_FUNCPTR *_ptrc_glDeleteRenderbuffers)(GLsizei n, const GLuint * renderbuffers);
+extern void(CODEGEN_FUNCPTR *_ptrc_glDeleteRenderbuffers)(
+    GLsizei n, const GLuint *renderbuffers);
 #define glDeleteRenderbuffers _ptrc_glDeleteRenderbuffers
-extern void (CODEGEN_FUNCPTR *_ptrc_glDeleteVertexArrays)(GLsizei n, const GLuint * arrays);
+extern void(CODEGEN_FUNCPTR *_ptrc_glDeleteVertexArrays)(GLsizei n,
+                                                         const GLuint *arrays);
 #define glDeleteVertexArrays _ptrc_glDeleteVertexArrays
-extern void (CODEGEN_FUNCPTR *_ptrc_glDisablei)(GLenum target, GLuint index);
+extern void(CODEGEN_FUNCPTR *_ptrc_glDisablei)(GLenum target, GLuint index);
 #define glDisablei _ptrc_glDisablei
-extern void (CODEGEN_FUNCPTR *_ptrc_glEnablei)(GLenum target, GLuint index);
+extern void(CODEGEN_FUNCPTR *_ptrc_glEnablei)(GLenum target, GLuint index);
 #define glEnablei _ptrc_glEnablei
-extern void (CODEGEN_FUNCPTR *_ptrc_glEndConditionalRender)(void);
+extern void(CODEGEN_FUNCPTR *_ptrc_glEndConditionalRender)(void);
 #define glEndConditionalRender _ptrc_glEndConditionalRender
-extern void (CODEGEN_FUNCPTR *_ptrc_glEndTransformFeedback)(void);
+extern void(CODEGEN_FUNCPTR *_ptrc_glEndTransformFeedback)(void);
 #define glEndTransformFeedback _ptrc_glEndTransformFeedback
-extern void (CODEGEN_FUNCPTR *_ptrc_glFlushMappedBufferRange)(GLenum target, GLintptr offset, GLsizeiptr length);
+extern void(CODEGEN_FUNCPTR *_ptrc_glFlushMappedBufferRange)(GLenum target,
+                                                             GLintptr offset,
+                                                             GLsizeiptr length);
 #define glFlushMappedBufferRange _ptrc_glFlushMappedBufferRange
-extern void (CODEGEN_FUNCPTR *_ptrc_glFramebufferRenderbuffer)(GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer);
+extern void(CODEGEN_FUNCPTR *_ptrc_glFramebufferRenderbuffer)(
+    GLenum target, GLenum attachment, GLenum renderbuffertarget,
+    GLuint renderbuffer);
 #define glFramebufferRenderbuffer _ptrc_glFramebufferRenderbuffer
-extern void (CODEGEN_FUNCPTR *_ptrc_glFramebufferTexture1D)(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
+extern void(CODEGEN_FUNCPTR *_ptrc_glFramebufferTexture1D)(GLenum target,
+                                                           GLenum attachment,
+                                                           GLenum textarget,
+                                                           GLuint texture,
+                                                           GLint level);
 #define glFramebufferTexture1D _ptrc_glFramebufferTexture1D
-extern void (CODEGEN_FUNCPTR *_ptrc_glFramebufferTexture2D)(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
+extern void(CODEGEN_FUNCPTR *_ptrc_glFramebufferTexture2D)(GLenum target,
+                                                           GLenum attachment,
+                                                           GLenum textarget,
+                                                           GLuint texture,
+                                                           GLint level);
 #define glFramebufferTexture2D _ptrc_glFramebufferTexture2D
-extern void (CODEGEN_FUNCPTR *_ptrc_glFramebufferTexture3D)(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level, GLint zoffset);
+extern void(CODEGEN_FUNCPTR *_ptrc_glFramebufferTexture3D)(
+    GLenum target, GLenum attachment, GLenum textarget, GLuint texture,
+    GLint level, GLint zoffset);
 #define glFramebufferTexture3D _ptrc_glFramebufferTexture3D
-extern void (CODEGEN_FUNCPTR *_ptrc_glFramebufferTextureLayer)(GLenum target, GLenum attachment, GLuint texture, GLint level, GLint layer);
+extern void(CODEGEN_FUNCPTR *_ptrc_glFramebufferTextureLayer)(
+    GLenum target, GLenum attachment, GLuint texture, GLint level, GLint layer);
 #define glFramebufferTextureLayer _ptrc_glFramebufferTextureLayer
-extern void (CODEGEN_FUNCPTR *_ptrc_glGenFramebuffers)(GLsizei n, GLuint * framebuffers);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGenFramebuffers)(GLsizei n,
+                                                      GLuint *framebuffers);
 #define glGenFramebuffers _ptrc_glGenFramebuffers
-extern void (CODEGEN_FUNCPTR *_ptrc_glGenRenderbuffers)(GLsizei n, GLuint * renderbuffers);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGenRenderbuffers)(GLsizei n,
+                                                       GLuint *renderbuffers);
 #define glGenRenderbuffers _ptrc_glGenRenderbuffers
-extern void (CODEGEN_FUNCPTR *_ptrc_glGenVertexArrays)(GLsizei n, GLuint * arrays);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGenVertexArrays)(GLsizei n,
+                                                      GLuint *arrays);
 #define glGenVertexArrays _ptrc_glGenVertexArrays
-extern void (CODEGEN_FUNCPTR *_ptrc_glGenerateMipmap)(GLenum target);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGenerateMipmap)(GLenum target);
 #define glGenerateMipmap _ptrc_glGenerateMipmap
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetBooleani_v)(GLenum target, GLuint index, GLboolean * data);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetBooleani_v)(GLenum target, GLuint index,
+                                                    GLboolean *data);
 #define glGetBooleani_v _ptrc_glGetBooleani_v
-extern GLint (CODEGEN_FUNCPTR *_ptrc_glGetFragDataLocation)(GLuint program, const GLchar * name);
+extern GLint(CODEGEN_FUNCPTR *_ptrc_glGetFragDataLocation)(GLuint program,
+                                                           const GLchar *name);
 #define glGetFragDataLocation _ptrc_glGetFragDataLocation
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetFramebufferAttachmentParameteriv)(GLenum target, GLenum attachment, GLenum pname, GLint * params);
-#define glGetFramebufferAttachmentParameteriv _ptrc_glGetFramebufferAttachmentParameteriv
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetIntegeri_v)(GLenum target, GLuint index, GLint * data);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetFramebufferAttachmentParameteriv)(
+    GLenum target, GLenum attachment, GLenum pname, GLint *params);
+#define glGetFramebufferAttachmentParameteriv \
+  _ptrc_glGetFramebufferAttachmentParameteriv
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetIntegeri_v)(GLenum target, GLuint index,
+                                                    GLint *data);
 #define glGetIntegeri_v _ptrc_glGetIntegeri_v
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetRenderbufferParameteriv)(GLenum target, GLenum pname, GLint * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetRenderbufferParameteriv)(GLenum target,
+                                                                 GLenum pname,
+                                                                 GLint *params);
 #define glGetRenderbufferParameteriv _ptrc_glGetRenderbufferParameteriv
-extern const GLubyte * (CODEGEN_FUNCPTR *_ptrc_glGetStringi)(GLenum name, GLuint index);
+extern const GLubyte *(CODEGEN_FUNCPTR *_ptrc_glGetStringi)(GLenum name,
+                                                            GLuint index);
 #define glGetStringi _ptrc_glGetStringi
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetTexParameterIiv)(GLenum target, GLenum pname, GLint * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetTexParameterIiv)(GLenum target,
+                                                         GLenum pname,
+                                                         GLint *params);
 #define glGetTexParameterIiv _ptrc_glGetTexParameterIiv
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetTexParameterIuiv)(GLenum target, GLenum pname, GLuint * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetTexParameterIuiv)(GLenum target,
+                                                          GLenum pname,
+                                                          GLuint *params);
 #define glGetTexParameterIuiv _ptrc_glGetTexParameterIuiv
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetTransformFeedbackVarying)(GLuint program, GLuint index, GLsizei bufSize, GLsizei * length, GLsizei * size, GLenum * type, GLchar * name);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetTransformFeedbackVarying)(
+    GLuint program, GLuint index, GLsizei bufSize, GLsizei *length,
+    GLsizei *size, GLenum *type, GLchar *name);
 #define glGetTransformFeedbackVarying _ptrc_glGetTransformFeedbackVarying
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetUniformuiv)(GLuint program, GLint location, GLuint * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetUniformuiv)(GLuint program,
+                                                    GLint location,
+                                                    GLuint *params);
 #define glGetUniformuiv _ptrc_glGetUniformuiv
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetVertexAttribIiv)(GLuint index, GLenum pname, GLint * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetVertexAttribIiv)(GLuint index,
+                                                         GLenum pname,
+                                                         GLint *params);
 #define glGetVertexAttribIiv _ptrc_glGetVertexAttribIiv
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetVertexAttribIuiv)(GLuint index, GLenum pname, GLuint * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetVertexAttribIuiv)(GLuint index,
+                                                          GLenum pname,
+                                                          GLuint *params);
 #define glGetVertexAttribIuiv _ptrc_glGetVertexAttribIuiv
-extern GLboolean (CODEGEN_FUNCPTR *_ptrc_glIsEnabledi)(GLenum target, GLuint index);
+extern GLboolean(CODEGEN_FUNCPTR *_ptrc_glIsEnabledi)(GLenum target,
+                                                      GLuint index);
 #define glIsEnabledi _ptrc_glIsEnabledi
-extern GLboolean (CODEGEN_FUNCPTR *_ptrc_glIsFramebuffer)(GLuint framebuffer);
+extern GLboolean(CODEGEN_FUNCPTR *_ptrc_glIsFramebuffer)(GLuint framebuffer);
 #define glIsFramebuffer _ptrc_glIsFramebuffer
-extern GLboolean (CODEGEN_FUNCPTR *_ptrc_glIsRenderbuffer)(GLuint renderbuffer);
+extern GLboolean(CODEGEN_FUNCPTR *_ptrc_glIsRenderbuffer)(GLuint renderbuffer);
 #define glIsRenderbuffer _ptrc_glIsRenderbuffer
-extern GLboolean (CODEGEN_FUNCPTR *_ptrc_glIsVertexArray)(GLuint ren_array);
+extern GLboolean(CODEGEN_FUNCPTR *_ptrc_glIsVertexArray)(GLuint ren_array);
 #define glIsVertexArray _ptrc_glIsVertexArray
-extern void * (CODEGEN_FUNCPTR *_ptrc_glMapBufferRange)(GLenum target, GLintptr offset, GLsizeiptr length, GLbitfield access);
+extern void *(CODEGEN_FUNCPTR *_ptrc_glMapBufferRange)(GLenum target,
+                                                       GLintptr offset,
+                                                       GLsizeiptr length,
+                                                       GLbitfield access);
 #define glMapBufferRange _ptrc_glMapBufferRange
-extern void (CODEGEN_FUNCPTR *_ptrc_glRenderbufferStorage)(GLenum target, GLenum internalformat, GLsizei width, GLsizei height);
+extern void(CODEGEN_FUNCPTR *_ptrc_glRenderbufferStorage)(GLenum target,
+                                                          GLenum internalformat,
+                                                          GLsizei width,
+                                                          GLsizei height);
 #define glRenderbufferStorage _ptrc_glRenderbufferStorage
-extern void (CODEGEN_FUNCPTR *_ptrc_glRenderbufferStorageMultisample)(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height);
+extern void(CODEGEN_FUNCPTR *_ptrc_glRenderbufferStorageMultisample)(
+    GLenum target, GLsizei samples, GLenum internalformat, GLsizei width,
+    GLsizei height);
 #define glRenderbufferStorageMultisample _ptrc_glRenderbufferStorageMultisample
-extern void (CODEGEN_FUNCPTR *_ptrc_glTexParameterIiv)(GLenum target, GLenum pname, const GLint * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glTexParameterIiv)(GLenum target,
+                                                      GLenum pname,
+                                                      const GLint *params);
 #define glTexParameterIiv _ptrc_glTexParameterIiv
-extern void (CODEGEN_FUNCPTR *_ptrc_glTexParameterIuiv)(GLenum target, GLenum pname, const GLuint * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glTexParameterIuiv)(GLenum target,
+                                                       GLenum pname,
+                                                       const GLuint *params);
 #define glTexParameterIuiv _ptrc_glTexParameterIuiv
-extern void (CODEGEN_FUNCPTR *_ptrc_glTransformFeedbackVaryings)(GLuint program, GLsizei count, const GLchar *const* varyings, GLenum bufferMode);
+extern void(CODEGEN_FUNCPTR *_ptrc_glTransformFeedbackVaryings)(
+    GLuint program, GLsizei count, const GLchar *const *varyings,
+    GLenum bufferMode);
 #define glTransformFeedbackVaryings _ptrc_glTransformFeedbackVaryings
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniform1ui)(GLint location, GLuint v0);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniform1ui)(GLint location, GLuint v0);
 #define glUniform1ui _ptrc_glUniform1ui
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniform1uiv)(GLint location, GLsizei count, const GLuint * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniform1uiv)(GLint location, GLsizei count,
+                                                  const GLuint *value);
 #define glUniform1uiv _ptrc_glUniform1uiv
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniform2ui)(GLint location, GLuint v0, GLuint v1);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniform2ui)(GLint location, GLuint v0,
+                                                 GLuint v1);
 #define glUniform2ui _ptrc_glUniform2ui
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniform2uiv)(GLint location, GLsizei count, const GLuint * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniform2uiv)(GLint location, GLsizei count,
+                                                  const GLuint *value);
 #define glUniform2uiv _ptrc_glUniform2uiv
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniform3ui)(GLint location, GLuint v0, GLuint v1, GLuint v2);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniform3ui)(GLint location, GLuint v0,
+                                                 GLuint v1, GLuint v2);
 #define glUniform3ui _ptrc_glUniform3ui
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniform3uiv)(GLint location, GLsizei count, const GLuint * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniform3uiv)(GLint location, GLsizei count,
+                                                  const GLuint *value);
 #define glUniform3uiv _ptrc_glUniform3uiv
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniform4ui)(GLint location, GLuint v0, GLuint v1, GLuint v2, GLuint v3);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniform4ui)(GLint location, GLuint v0,
+                                                 GLuint v1, GLuint v2,
+                                                 GLuint v3);
 #define glUniform4ui _ptrc_glUniform4ui
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniform4uiv)(GLint location, GLsizei count, const GLuint * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniform4uiv)(GLint location, GLsizei count,
+                                                  const GLuint *value);
 #define glUniform4uiv _ptrc_glUniform4uiv
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttribI1i)(GLuint index, GLint x);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttribI1i)(GLuint index, GLint x);
 #define glVertexAttribI1i _ptrc_glVertexAttribI1i
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttribI1iv)(GLuint index, const GLint * v);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttribI1iv)(GLuint index,
+                                                       const GLint *v);
 #define glVertexAttribI1iv _ptrc_glVertexAttribI1iv
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttribI1ui)(GLuint index, GLuint x);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttribI1ui)(GLuint index, GLuint x);
 #define glVertexAttribI1ui _ptrc_glVertexAttribI1ui
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttribI1uiv)(GLuint index, const GLuint * v);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttribI1uiv)(GLuint index,
+                                                        const GLuint *v);
 #define glVertexAttribI1uiv _ptrc_glVertexAttribI1uiv
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttribI2i)(GLuint index, GLint x, GLint y);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttribI2i)(GLuint index, GLint x,
+                                                      GLint y);
 #define glVertexAttribI2i _ptrc_glVertexAttribI2i
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttribI2iv)(GLuint index, const GLint * v);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttribI2iv)(GLuint index,
+                                                       const GLint *v);
 #define glVertexAttribI2iv _ptrc_glVertexAttribI2iv
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttribI2ui)(GLuint index, GLuint x, GLuint y);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttribI2ui)(GLuint index, GLuint x,
+                                                       GLuint y);
 #define glVertexAttribI2ui _ptrc_glVertexAttribI2ui
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttribI2uiv)(GLuint index, const GLuint * v);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttribI2uiv)(GLuint index,
+                                                        const GLuint *v);
 #define glVertexAttribI2uiv _ptrc_glVertexAttribI2uiv
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttribI3i)(GLuint index, GLint x, GLint y, GLint z);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttribI3i)(GLuint index, GLint x,
+                                                      GLint y, GLint z);
 #define glVertexAttribI3i _ptrc_glVertexAttribI3i
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttribI3iv)(GLuint index, const GLint * v);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttribI3iv)(GLuint index,
+                                                       const GLint *v);
 #define glVertexAttribI3iv _ptrc_glVertexAttribI3iv
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttribI3ui)(GLuint index, GLuint x, GLuint y, GLuint z);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttribI3ui)(GLuint index, GLuint x,
+                                                       GLuint y, GLuint z);
 #define glVertexAttribI3ui _ptrc_glVertexAttribI3ui
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttribI3uiv)(GLuint index, const GLuint * v);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttribI3uiv)(GLuint index,
+                                                        const GLuint *v);
 #define glVertexAttribI3uiv _ptrc_glVertexAttribI3uiv
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttribI4bv)(GLuint index, const GLbyte * v);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttribI4bv)(GLuint index,
+                                                       const GLbyte *v);
 #define glVertexAttribI4bv _ptrc_glVertexAttribI4bv
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttribI4i)(GLuint index, GLint x, GLint y, GLint z, GLint w);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttribI4i)(GLuint index, GLint x,
+                                                      GLint y, GLint z,
+                                                      GLint w);
 #define glVertexAttribI4i _ptrc_glVertexAttribI4i
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttribI4iv)(GLuint index, const GLint * v);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttribI4iv)(GLuint index,
+                                                       const GLint *v);
 #define glVertexAttribI4iv _ptrc_glVertexAttribI4iv
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttribI4sv)(GLuint index, const GLshort * v);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttribI4sv)(GLuint index,
+                                                       const GLshort *v);
 #define glVertexAttribI4sv _ptrc_glVertexAttribI4sv
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttribI4ubv)(GLuint index, const GLubyte * v);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttribI4ubv)(GLuint index,
+                                                        const GLubyte *v);
 #define glVertexAttribI4ubv _ptrc_glVertexAttribI4ubv
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttribI4ui)(GLuint index, GLuint x, GLuint y, GLuint z, GLuint w);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttribI4ui)(GLuint index, GLuint x,
+                                                       GLuint y, GLuint z,
+                                                       GLuint w);
 #define glVertexAttribI4ui _ptrc_glVertexAttribI4ui
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttribI4uiv)(GLuint index, const GLuint * v);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttribI4uiv)(GLuint index,
+                                                        const GLuint *v);
 #define glVertexAttribI4uiv _ptrc_glVertexAttribI4uiv
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttribI4usv)(GLuint index, const GLushort * v);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttribI4usv)(GLuint index,
+                                                        const GLushort *v);
 #define glVertexAttribI4usv _ptrc_glVertexAttribI4usv
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttribIPointer)(GLuint index, GLint size, GLenum type, GLsizei stride, const void * pointer);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttribIPointer)(
+    GLuint index, GLint size, GLenum type, GLsizei stride, const void *pointer);
 #define glVertexAttribIPointer _ptrc_glVertexAttribIPointer
 
-extern void (CODEGEN_FUNCPTR *_ptrc_glCopyBufferSubData)(GLenum readTarget, GLenum writeTarget, GLintptr readOffset, GLintptr writeOffset, GLsizeiptr size);
+extern void(CODEGEN_FUNCPTR *_ptrc_glCopyBufferSubData)(GLenum readTarget,
+                                                        GLenum writeTarget,
+                                                        GLintptr readOffset,
+                                                        GLintptr writeOffset,
+                                                        GLsizeiptr size);
 #define glCopyBufferSubData _ptrc_glCopyBufferSubData
-extern void (CODEGEN_FUNCPTR *_ptrc_glDrawArraysInstanced)(GLenum mode, GLint first, GLsizei count, GLsizei instancecount);
+extern void(CODEGEN_FUNCPTR *_ptrc_glDrawArraysInstanced)(
+    GLenum mode, GLint first, GLsizei count, GLsizei instancecount);
 #define glDrawArraysInstanced _ptrc_glDrawArraysInstanced
-extern void (CODEGEN_FUNCPTR *_ptrc_glDrawElementsInstanced)(GLenum mode, GLsizei count, GLenum type, const void * indices, GLsizei instancecount);
+extern void(CODEGEN_FUNCPTR *_ptrc_glDrawElementsInstanced)(
+    GLenum mode, GLsizei count, GLenum type, const void *indices,
+    GLsizei instancecount);
 #define glDrawElementsInstanced _ptrc_glDrawElementsInstanced
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetActiveUniformBlockName)(GLuint program, GLuint uniformBlockIndex, GLsizei bufSize, GLsizei * length, GLchar * uniformBlockName);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetActiveUniformBlockName)(
+    GLuint program, GLuint uniformBlockIndex, GLsizei bufSize, GLsizei *length,
+    GLchar *uniformBlockName);
 #define glGetActiveUniformBlockName _ptrc_glGetActiveUniformBlockName
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetActiveUniformBlockiv)(GLuint program, GLuint uniformBlockIndex, GLenum pname, GLint * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetActiveUniformBlockiv)(
+    GLuint program, GLuint uniformBlockIndex, GLenum pname, GLint *params);
 #define glGetActiveUniformBlockiv _ptrc_glGetActiveUniformBlockiv
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetActiveUniformName)(GLuint program, GLuint uniformIndex, GLsizei bufSize, GLsizei * length, GLchar * uniformName);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetActiveUniformName)(GLuint program,
+                                                           GLuint uniformIndex,
+                                                           GLsizei bufSize,
+                                                           GLsizei *length,
+                                                           GLchar *uniformName);
 #define glGetActiveUniformName _ptrc_glGetActiveUniformName
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetActiveUniformsiv)(GLuint program, GLsizei uniformCount, const GLuint * uniformIndices, GLenum pname, GLint * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetActiveUniformsiv)(
+    GLuint program, GLsizei uniformCount, const GLuint *uniformIndices,
+    GLenum pname, GLint *params);
 #define glGetActiveUniformsiv _ptrc_glGetActiveUniformsiv
-extern GLuint (CODEGEN_FUNCPTR *_ptrc_glGetUniformBlockIndex)(GLuint program, const GLchar * uniformBlockName);
+extern GLuint(CODEGEN_FUNCPTR *_ptrc_glGetUniformBlockIndex)(
+    GLuint program, const GLchar *uniformBlockName);
 #define glGetUniformBlockIndex _ptrc_glGetUniformBlockIndex
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetUniformIndices)(GLuint program, GLsizei uniformCount, const GLchar *const* uniformNames, GLuint * uniformIndices);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetUniformIndices)(
+    GLuint program, GLsizei uniformCount, const GLchar *const *uniformNames,
+    GLuint *uniformIndices);
 #define glGetUniformIndices _ptrc_glGetUniformIndices
-extern void (CODEGEN_FUNCPTR *_ptrc_glPrimitiveRestartIndex)(GLuint index);
+extern void(CODEGEN_FUNCPTR *_ptrc_glPrimitiveRestartIndex)(GLuint index);
 #define glPrimitiveRestartIndex _ptrc_glPrimitiveRestartIndex
-extern void (CODEGEN_FUNCPTR *_ptrc_glTexBuffer)(GLenum target, GLenum internalformat, GLuint buffer);
+extern void(CODEGEN_FUNCPTR *_ptrc_glTexBuffer)(GLenum target,
+                                                GLenum internalformat,
+                                                GLuint buffer);
 #define glTexBuffer _ptrc_glTexBuffer
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniformBlockBinding)(GLuint program, GLuint uniformBlockIndex, GLuint uniformBlockBinding);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniformBlockBinding)(
+    GLuint program, GLuint uniformBlockIndex, GLuint uniformBlockBinding);
 #define glUniformBlockBinding _ptrc_glUniformBlockBinding
 
-extern GLenum (CODEGEN_FUNCPTR *_ptrc_glClientWaitSync)(GLsync sync, GLbitfield flags, GLuint64 timeout);
+extern GLenum(CODEGEN_FUNCPTR *_ptrc_glClientWaitSync)(GLsync sync,
+                                                       GLbitfield flags,
+                                                       GLuint64 timeout);
 #define glClientWaitSync _ptrc_glClientWaitSync
-extern void (CODEGEN_FUNCPTR *_ptrc_glDeleteSync)(GLsync sync);
+extern void(CODEGEN_FUNCPTR *_ptrc_glDeleteSync)(GLsync sync);
 #define glDeleteSync _ptrc_glDeleteSync
-extern void (CODEGEN_FUNCPTR *_ptrc_glDrawElementsBaseVertex)(GLenum mode, GLsizei count, GLenum type, const void * indices, GLint basevertex);
+extern void(CODEGEN_FUNCPTR *_ptrc_glDrawElementsBaseVertex)(
+    GLenum mode, GLsizei count, GLenum type, const void *indices,
+    GLint basevertex);
 #define glDrawElementsBaseVertex _ptrc_glDrawElementsBaseVertex
-extern void (CODEGEN_FUNCPTR *_ptrc_glDrawElementsInstancedBaseVertex)(GLenum mode, GLsizei count, GLenum type, const void * indices, GLsizei instancecount, GLint basevertex);
-#define glDrawElementsInstancedBaseVertex _ptrc_glDrawElementsInstancedBaseVertex
-extern void (CODEGEN_FUNCPTR *_ptrc_glDrawRangeElementsBaseVertex)(GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const void * indices, GLint basevertex);
+extern void(CODEGEN_FUNCPTR *_ptrc_glDrawElementsInstancedBaseVertex)(
+    GLenum mode, GLsizei count, GLenum type, const void *indices,
+    GLsizei instancecount, GLint basevertex);
+#define glDrawElementsInstancedBaseVertex \
+  _ptrc_glDrawElementsInstancedBaseVertex
+extern void(CODEGEN_FUNCPTR *_ptrc_glDrawRangeElementsBaseVertex)(
+    GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type,
+    const void *indices, GLint basevertex);
 #define glDrawRangeElementsBaseVertex _ptrc_glDrawRangeElementsBaseVertex
-extern GLsync (CODEGEN_FUNCPTR *_ptrc_glFenceSync)(GLenum condition, GLbitfield flags);
+extern GLsync(CODEGEN_FUNCPTR *_ptrc_glFenceSync)(GLenum condition,
+                                                  GLbitfield flags);
 #define glFenceSync _ptrc_glFenceSync
-extern void (CODEGEN_FUNCPTR *_ptrc_glFramebufferTexture)(GLenum target, GLenum attachment, GLuint texture, GLint level);
+extern void(CODEGEN_FUNCPTR *_ptrc_glFramebufferTexture)(GLenum target,
+                                                         GLenum attachment,
+                                                         GLuint texture,
+                                                         GLint level);
 #define glFramebufferTexture _ptrc_glFramebufferTexture
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetBufferParameteri64v)(GLenum target, GLenum pname, GLint64 * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetBufferParameteri64v)(GLenum target,
+                                                             GLenum pname,
+                                                             GLint64 *params);
 #define glGetBufferParameteri64v _ptrc_glGetBufferParameteri64v
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetInteger64i_v)(GLenum target, GLuint index, GLint64 * data);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetInteger64i_v)(GLenum target,
+                                                      GLuint index,
+                                                      GLint64 *data);
 #define glGetInteger64i_v _ptrc_glGetInteger64i_v
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetInteger64v)(GLenum pname, GLint64 * data);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetInteger64v)(GLenum pname,
+                                                    GLint64 *data);
 #define glGetInteger64v _ptrc_glGetInteger64v
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetMultisamplefv)(GLenum pname, GLuint index, GLfloat * val);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetMultisamplefv)(GLenum pname,
+                                                       GLuint index,
+                                                       GLfloat *val);
 #define glGetMultisamplefv _ptrc_glGetMultisamplefv
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetSynciv)(GLsync sync, GLenum pname, GLsizei bufSize, GLsizei * length, GLint * values);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetSynciv)(GLsync sync, GLenum pname,
+                                                GLsizei bufSize,
+                                                GLsizei *length, GLint *values);
 #define glGetSynciv _ptrc_glGetSynciv
-extern GLboolean (CODEGEN_FUNCPTR *_ptrc_glIsSync)(GLsync sync);
+extern GLboolean(CODEGEN_FUNCPTR *_ptrc_glIsSync)(GLsync sync);
 #define glIsSync _ptrc_glIsSync
-extern void (CODEGEN_FUNCPTR *_ptrc_glMultiDrawElementsBaseVertex)(GLenum mode, const GLsizei * count, GLenum type, const void *const* indices, GLsizei drawcount, const GLint * basevertex);
+extern void(CODEGEN_FUNCPTR *_ptrc_glMultiDrawElementsBaseVertex)(
+    GLenum mode, const GLsizei *count, GLenum type, const void *const *indices,
+    GLsizei drawcount, const GLint *basevertex);
 #define glMultiDrawElementsBaseVertex _ptrc_glMultiDrawElementsBaseVertex
-extern void (CODEGEN_FUNCPTR *_ptrc_glProvokingVertex)(GLenum mode);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProvokingVertex)(GLenum mode);
 #define glProvokingVertex _ptrc_glProvokingVertex
-extern void (CODEGEN_FUNCPTR *_ptrc_glSampleMaski)(GLuint maskNumber, GLbitfield mask);
+extern void(CODEGEN_FUNCPTR *_ptrc_glSampleMaski)(GLuint maskNumber,
+                                                  GLbitfield mask);
 #define glSampleMaski _ptrc_glSampleMaski
-extern void (CODEGEN_FUNCPTR *_ptrc_glTexImage2DMultisample)(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height, GLboolean fixedsamplelocations);
+extern void(CODEGEN_FUNCPTR *_ptrc_glTexImage2DMultisample)(
+    GLenum target, GLsizei samples, GLenum internalformat, GLsizei width,
+    GLsizei height, GLboolean fixedsamplelocations);
 #define glTexImage2DMultisample _ptrc_glTexImage2DMultisample
-extern void (CODEGEN_FUNCPTR *_ptrc_glTexImage3DMultisample)(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLboolean fixedsamplelocations);
+extern void(CODEGEN_FUNCPTR *_ptrc_glTexImage3DMultisample)(
+    GLenum target, GLsizei samples, GLenum internalformat, GLsizei width,
+    GLsizei height, GLsizei depth, GLboolean fixedsamplelocations);
 #define glTexImage3DMultisample _ptrc_glTexImage3DMultisample
-extern void (CODEGEN_FUNCPTR *_ptrc_glWaitSync)(GLsync sync, GLbitfield flags, GLuint64 timeout);
+extern void(CODEGEN_FUNCPTR *_ptrc_glWaitSync)(GLsync sync, GLbitfield flags,
+                                               GLuint64 timeout);
 #define glWaitSync _ptrc_glWaitSync
 
-extern void (CODEGEN_FUNCPTR *_ptrc_glBindFragDataLocationIndexed)(GLuint program, GLuint colorNumber, GLuint index, const GLchar * name);
+extern void(CODEGEN_FUNCPTR *_ptrc_glBindFragDataLocationIndexed)(
+    GLuint program, GLuint colorNumber, GLuint index, const GLchar *name);
 #define glBindFragDataLocationIndexed _ptrc_glBindFragDataLocationIndexed
-extern void (CODEGEN_FUNCPTR *_ptrc_glBindSampler)(GLuint unit, GLuint sampler);
+extern void(CODEGEN_FUNCPTR *_ptrc_glBindSampler)(GLuint unit, GLuint sampler);
 #define glBindSampler _ptrc_glBindSampler
-extern void (CODEGEN_FUNCPTR *_ptrc_glDeleteSamplers)(GLsizei count, const GLuint * samplers);
+extern void(CODEGEN_FUNCPTR *_ptrc_glDeleteSamplers)(GLsizei count,
+                                                     const GLuint *samplers);
 #define glDeleteSamplers _ptrc_glDeleteSamplers
-extern void (CODEGEN_FUNCPTR *_ptrc_glGenSamplers)(GLsizei count, GLuint * samplers);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGenSamplers)(GLsizei count,
+                                                  GLuint *samplers);
 #define glGenSamplers _ptrc_glGenSamplers
-extern GLint (CODEGEN_FUNCPTR *_ptrc_glGetFragDataIndex)(GLuint program, const GLchar * name);
+extern GLint(CODEGEN_FUNCPTR *_ptrc_glGetFragDataIndex)(GLuint program,
+                                                        const GLchar *name);
 #define glGetFragDataIndex _ptrc_glGetFragDataIndex
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetQueryObjecti64v)(GLuint id, GLenum pname, GLint64 * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetQueryObjecti64v)(GLuint id,
+                                                         GLenum pname,
+                                                         GLint64 *params);
 #define glGetQueryObjecti64v _ptrc_glGetQueryObjecti64v
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetQueryObjectui64v)(GLuint id, GLenum pname, GLuint64 * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetQueryObjectui64v)(GLuint id,
+                                                          GLenum pname,
+                                                          GLuint64 *params);
 #define glGetQueryObjectui64v _ptrc_glGetQueryObjectui64v
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetSamplerParameterIiv)(GLuint sampler, GLenum pname, GLint * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetSamplerParameterIiv)(GLuint sampler,
+                                                             GLenum pname,
+                                                             GLint *params);
 #define glGetSamplerParameterIiv _ptrc_glGetSamplerParameterIiv
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetSamplerParameterIuiv)(GLuint sampler, GLenum pname, GLuint * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetSamplerParameterIuiv)(GLuint sampler,
+                                                              GLenum pname,
+                                                              GLuint *params);
 #define glGetSamplerParameterIuiv _ptrc_glGetSamplerParameterIuiv
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetSamplerParameterfv)(GLuint sampler, GLenum pname, GLfloat * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetSamplerParameterfv)(GLuint sampler,
+                                                            GLenum pname,
+                                                            GLfloat *params);
 #define glGetSamplerParameterfv _ptrc_glGetSamplerParameterfv
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetSamplerParameteriv)(GLuint sampler, GLenum pname, GLint * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetSamplerParameteriv)(GLuint sampler,
+                                                            GLenum pname,
+                                                            GLint *params);
 #define glGetSamplerParameteriv _ptrc_glGetSamplerParameteriv
-extern GLboolean (CODEGEN_FUNCPTR *_ptrc_glIsSampler)(GLuint sampler);
+extern GLboolean(CODEGEN_FUNCPTR *_ptrc_glIsSampler)(GLuint sampler);
 #define glIsSampler _ptrc_glIsSampler
-extern void (CODEGEN_FUNCPTR *_ptrc_glQueryCounter)(GLuint id, GLenum target);
+extern void(CODEGEN_FUNCPTR *_ptrc_glQueryCounter)(GLuint id, GLenum target);
 #define glQueryCounter _ptrc_glQueryCounter
-extern void (CODEGEN_FUNCPTR *_ptrc_glSamplerParameterIiv)(GLuint sampler, GLenum pname, const GLint * param);
+extern void(CODEGEN_FUNCPTR *_ptrc_glSamplerParameterIiv)(GLuint sampler,
+                                                          GLenum pname,
+                                                          const GLint *param);
 #define glSamplerParameterIiv _ptrc_glSamplerParameterIiv
-extern void (CODEGEN_FUNCPTR *_ptrc_glSamplerParameterIuiv)(GLuint sampler, GLenum pname, const GLuint * param);
+extern void(CODEGEN_FUNCPTR *_ptrc_glSamplerParameterIuiv)(GLuint sampler,
+                                                           GLenum pname,
+                                                           const GLuint *param);
 #define glSamplerParameterIuiv _ptrc_glSamplerParameterIuiv
-extern void (CODEGEN_FUNCPTR *_ptrc_glSamplerParameterf)(GLuint sampler, GLenum pname, GLfloat param);
+extern void(CODEGEN_FUNCPTR *_ptrc_glSamplerParameterf)(GLuint sampler,
+                                                        GLenum pname,
+                                                        GLfloat param);
 #define glSamplerParameterf _ptrc_glSamplerParameterf
-extern void (CODEGEN_FUNCPTR *_ptrc_glSamplerParameterfv)(GLuint sampler, GLenum pname, const GLfloat * param);
+extern void(CODEGEN_FUNCPTR *_ptrc_glSamplerParameterfv)(GLuint sampler,
+                                                         GLenum pname,
+                                                         const GLfloat *param);
 #define glSamplerParameterfv _ptrc_glSamplerParameterfv
-extern void (CODEGEN_FUNCPTR *_ptrc_glSamplerParameteri)(GLuint sampler, GLenum pname, GLint param);
+extern void(CODEGEN_FUNCPTR *_ptrc_glSamplerParameteri)(GLuint sampler,
+                                                        GLenum pname,
+                                                        GLint param);
 #define glSamplerParameteri _ptrc_glSamplerParameteri
-extern void (CODEGEN_FUNCPTR *_ptrc_glSamplerParameteriv)(GLuint sampler, GLenum pname, const GLint * param);
+extern void(CODEGEN_FUNCPTR *_ptrc_glSamplerParameteriv)(GLuint sampler,
+                                                         GLenum pname,
+                                                         const GLint *param);
 #define glSamplerParameteriv _ptrc_glSamplerParameteriv
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttribDivisor)(GLuint index, GLuint divisor);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttribDivisor)(GLuint index,
+                                                          GLuint divisor);
 #define glVertexAttribDivisor _ptrc_glVertexAttribDivisor
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttribP1ui)(GLuint index, GLenum type, GLboolean normalized, GLuint value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttribP1ui)(GLuint index,
+                                                       GLenum type,
+                                                       GLboolean normalized,
+                                                       GLuint value);
 #define glVertexAttribP1ui _ptrc_glVertexAttribP1ui
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttribP1uiv)(GLuint index, GLenum type, GLboolean normalized, const GLuint * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttribP1uiv)(GLuint index,
+                                                        GLenum type,
+                                                        GLboolean normalized,
+                                                        const GLuint *value);
 #define glVertexAttribP1uiv _ptrc_glVertexAttribP1uiv
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttribP2ui)(GLuint index, GLenum type, GLboolean normalized, GLuint value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttribP2ui)(GLuint index,
+                                                       GLenum type,
+                                                       GLboolean normalized,
+                                                       GLuint value);
 #define glVertexAttribP2ui _ptrc_glVertexAttribP2ui
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttribP2uiv)(GLuint index, GLenum type, GLboolean normalized, const GLuint * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttribP2uiv)(GLuint index,
+                                                        GLenum type,
+                                                        GLboolean normalized,
+                                                        const GLuint *value);
 #define glVertexAttribP2uiv _ptrc_glVertexAttribP2uiv
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttribP3ui)(GLuint index, GLenum type, GLboolean normalized, GLuint value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttribP3ui)(GLuint index,
+                                                       GLenum type,
+                                                       GLboolean normalized,
+                                                       GLuint value);
 #define glVertexAttribP3ui _ptrc_glVertexAttribP3ui
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttribP3uiv)(GLuint index, GLenum type, GLboolean normalized, const GLuint * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttribP3uiv)(GLuint index,
+                                                        GLenum type,
+                                                        GLboolean normalized,
+                                                        const GLuint *value);
 #define glVertexAttribP3uiv _ptrc_glVertexAttribP3uiv
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttribP4ui)(GLuint index, GLenum type, GLboolean normalized, GLuint value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttribP4ui)(GLuint index,
+                                                       GLenum type,
+                                                       GLboolean normalized,
+                                                       GLuint value);
 #define glVertexAttribP4ui _ptrc_glVertexAttribP4ui
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttribP4uiv)(GLuint index, GLenum type, GLboolean normalized, const GLuint * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttribP4uiv)(GLuint index,
+                                                        GLenum type,
+                                                        GLboolean normalized,
+                                                        const GLuint *value);
 #define glVertexAttribP4uiv _ptrc_glVertexAttribP4uiv
 
-extern void (CODEGEN_FUNCPTR *_ptrc_glBeginQueryIndexed)(GLenum target, GLuint index, GLuint id);
+extern void(CODEGEN_FUNCPTR *_ptrc_glBeginQueryIndexed)(GLenum target,
+                                                        GLuint index,
+                                                        GLuint id);
 #define glBeginQueryIndexed _ptrc_glBeginQueryIndexed
-extern void (CODEGEN_FUNCPTR *_ptrc_glBindTransformFeedback)(GLenum target, GLuint id);
+extern void(CODEGEN_FUNCPTR *_ptrc_glBindTransformFeedback)(GLenum target,
+                                                            GLuint id);
 #define glBindTransformFeedback _ptrc_glBindTransformFeedback
-extern void (CODEGEN_FUNCPTR *_ptrc_glBlendEquationSeparatei)(GLuint buf, GLenum modeRGB, GLenum modeAlpha);
+extern void(CODEGEN_FUNCPTR *_ptrc_glBlendEquationSeparatei)(GLuint buf,
+                                                             GLenum modeRGB,
+                                                             GLenum modeAlpha);
 #define glBlendEquationSeparatei _ptrc_glBlendEquationSeparatei
-extern void (CODEGEN_FUNCPTR *_ptrc_glBlendEquationi)(GLuint buf, GLenum mode);
+extern void(CODEGEN_FUNCPTR *_ptrc_glBlendEquationi)(GLuint buf, GLenum mode);
 #define glBlendEquationi _ptrc_glBlendEquationi
-extern void (CODEGEN_FUNCPTR *_ptrc_glBlendFuncSeparatei)(GLuint buf, GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha, GLenum dstAlpha);
+extern void(CODEGEN_FUNCPTR *_ptrc_glBlendFuncSeparatei)(
+    GLuint buf, GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha, GLenum dstAlpha);
 #define glBlendFuncSeparatei _ptrc_glBlendFuncSeparatei
-extern void (CODEGEN_FUNCPTR *_ptrc_glBlendFunci)(GLuint buf, GLenum src, GLenum dst);
+extern void(CODEGEN_FUNCPTR *_ptrc_glBlendFunci)(GLuint buf, GLenum src,
+                                                 GLenum dst);
 #define glBlendFunci _ptrc_glBlendFunci
-extern void (CODEGEN_FUNCPTR *_ptrc_glDeleteTransformFeedbacks)(GLsizei n, const GLuint * ids);
+extern void(CODEGEN_FUNCPTR *_ptrc_glDeleteTransformFeedbacks)(
+    GLsizei n, const GLuint *ids);
 #define glDeleteTransformFeedbacks _ptrc_glDeleteTransformFeedbacks
-extern void (CODEGEN_FUNCPTR *_ptrc_glDrawArraysIndirect)(GLenum mode, const void * indirect);
+extern void(CODEGEN_FUNCPTR *_ptrc_glDrawArraysIndirect)(GLenum mode,
+                                                         const void *indirect);
 #define glDrawArraysIndirect _ptrc_glDrawArraysIndirect
-extern void (CODEGEN_FUNCPTR *_ptrc_glDrawElementsIndirect)(GLenum mode, GLenum type, const void * indirect);
+extern void(CODEGEN_FUNCPTR *_ptrc_glDrawElementsIndirect)(
+    GLenum mode, GLenum type, const void *indirect);
 #define glDrawElementsIndirect _ptrc_glDrawElementsIndirect
-extern void (CODEGEN_FUNCPTR *_ptrc_glDrawTransformFeedback)(GLenum mode, GLuint id);
+extern void(CODEGEN_FUNCPTR *_ptrc_glDrawTransformFeedback)(GLenum mode,
+                                                            GLuint id);
 #define glDrawTransformFeedback _ptrc_glDrawTransformFeedback
-extern void (CODEGEN_FUNCPTR *_ptrc_glDrawTransformFeedbackStream)(GLenum mode, GLuint id, GLuint stream);
+extern void(CODEGEN_FUNCPTR *_ptrc_glDrawTransformFeedbackStream)(
+    GLenum mode, GLuint id, GLuint stream);
 #define glDrawTransformFeedbackStream _ptrc_glDrawTransformFeedbackStream
-extern void (CODEGEN_FUNCPTR *_ptrc_glEndQueryIndexed)(GLenum target, GLuint index);
+extern void(CODEGEN_FUNCPTR *_ptrc_glEndQueryIndexed)(GLenum target,
+                                                      GLuint index);
 #define glEndQueryIndexed _ptrc_glEndQueryIndexed
-extern void (CODEGEN_FUNCPTR *_ptrc_glGenTransformFeedbacks)(GLsizei n, GLuint * ids);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGenTransformFeedbacks)(GLsizei n,
+                                                            GLuint *ids);
 #define glGenTransformFeedbacks _ptrc_glGenTransformFeedbacks
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetActiveSubroutineName)(GLuint program, GLenum shadertype, GLuint index, GLsizei bufsize, GLsizei * length, GLchar * name);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetActiveSubroutineName)(
+    GLuint program, GLenum shadertype, GLuint index, GLsizei bufsize,
+    GLsizei *length, GLchar *name);
 #define glGetActiveSubroutineName _ptrc_glGetActiveSubroutineName
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetActiveSubroutineUniformName)(GLuint program, GLenum shadertype, GLuint index, GLsizei bufsize, GLsizei * length, GLchar * name);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetActiveSubroutineUniformName)(
+    GLuint program, GLenum shadertype, GLuint index, GLsizei bufsize,
+    GLsizei *length, GLchar *name);
 #define glGetActiveSubroutineUniformName _ptrc_glGetActiveSubroutineUniformName
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetActiveSubroutineUniformiv)(GLuint program, GLenum shadertype, GLuint index, GLenum pname, GLint * values);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetActiveSubroutineUniformiv)(
+    GLuint program, GLenum shadertype, GLuint index, GLenum pname,
+    GLint *values);
 #define glGetActiveSubroutineUniformiv _ptrc_glGetActiveSubroutineUniformiv
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetProgramStageiv)(GLuint program, GLenum shadertype, GLenum pname, GLint * values);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetProgramStageiv)(GLuint program,
+                                                        GLenum shadertype,
+                                                        GLenum pname,
+                                                        GLint *values);
 #define glGetProgramStageiv _ptrc_glGetProgramStageiv
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetQueryIndexediv)(GLenum target, GLuint index, GLenum pname, GLint * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetQueryIndexediv)(GLenum target,
+                                                        GLuint index,
+                                                        GLenum pname,
+                                                        GLint *params);
 #define glGetQueryIndexediv _ptrc_glGetQueryIndexediv
-extern GLuint (CODEGEN_FUNCPTR *_ptrc_glGetSubroutineIndex)(GLuint program, GLenum shadertype, const GLchar * name);
+extern GLuint(CODEGEN_FUNCPTR *_ptrc_glGetSubroutineIndex)(GLuint program,
+                                                           GLenum shadertype,
+                                                           const GLchar *name);
 #define glGetSubroutineIndex _ptrc_glGetSubroutineIndex
-extern GLint (CODEGEN_FUNCPTR *_ptrc_glGetSubroutineUniformLocation)(GLuint program, GLenum shadertype, const GLchar * name);
+extern GLint(CODEGEN_FUNCPTR *_ptrc_glGetSubroutineUniformLocation)(
+    GLuint program, GLenum shadertype, const GLchar *name);
 #define glGetSubroutineUniformLocation _ptrc_glGetSubroutineUniformLocation
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetUniformSubroutineuiv)(GLenum shadertype, GLint location, GLuint * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetUniformSubroutineuiv)(GLenum shadertype,
+                                                              GLint location,
+                                                              GLuint *params);
 #define glGetUniformSubroutineuiv _ptrc_glGetUniformSubroutineuiv
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetUniformdv)(GLuint program, GLint location, GLdouble * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetUniformdv)(GLuint program,
+                                                   GLint location,
+                                                   GLdouble *params);
 #define glGetUniformdv _ptrc_glGetUniformdv
-extern GLboolean (CODEGEN_FUNCPTR *_ptrc_glIsTransformFeedback)(GLuint id);
+extern GLboolean(CODEGEN_FUNCPTR *_ptrc_glIsTransformFeedback)(GLuint id);
 #define glIsTransformFeedback _ptrc_glIsTransformFeedback
-extern void (CODEGEN_FUNCPTR *_ptrc_glMinSampleShading)(GLfloat value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glMinSampleShading)(GLfloat value);
 #define glMinSampleShading _ptrc_glMinSampleShading
-extern void (CODEGEN_FUNCPTR *_ptrc_glPatchParameterfv)(GLenum pname, const GLfloat * values);
+extern void(CODEGEN_FUNCPTR *_ptrc_glPatchParameterfv)(GLenum pname,
+                                                       const GLfloat *values);
 #define glPatchParameterfv _ptrc_glPatchParameterfv
-extern void (CODEGEN_FUNCPTR *_ptrc_glPatchParameteri)(GLenum pname, GLint value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glPatchParameteri)(GLenum pname,
+                                                      GLint value);
 #define glPatchParameteri _ptrc_glPatchParameteri
-extern void (CODEGEN_FUNCPTR *_ptrc_glPauseTransformFeedback)(void);
+extern void(CODEGEN_FUNCPTR *_ptrc_glPauseTransformFeedback)(void);
 #define glPauseTransformFeedback _ptrc_glPauseTransformFeedback
-extern void (CODEGEN_FUNCPTR *_ptrc_glResumeTransformFeedback)(void);
+extern void(CODEGEN_FUNCPTR *_ptrc_glResumeTransformFeedback)(void);
 #define glResumeTransformFeedback _ptrc_glResumeTransformFeedback
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniform1d)(GLint location, GLdouble x);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniform1d)(GLint location, GLdouble x);
 #define glUniform1d _ptrc_glUniform1d
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniform1dv)(GLint location, GLsizei count, const GLdouble * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniform1dv)(GLint location, GLsizei count,
+                                                 const GLdouble *value);
 #define glUniform1dv _ptrc_glUniform1dv
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniform2d)(GLint location, GLdouble x, GLdouble y);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniform2d)(GLint location, GLdouble x,
+                                                GLdouble y);
 #define glUniform2d _ptrc_glUniform2d
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniform2dv)(GLint location, GLsizei count, const GLdouble * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniform2dv)(GLint location, GLsizei count,
+                                                 const GLdouble *value);
 #define glUniform2dv _ptrc_glUniform2dv
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniform3d)(GLint location, GLdouble x, GLdouble y, GLdouble z);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniform3d)(GLint location, GLdouble x,
+                                                GLdouble y, GLdouble z);
 #define glUniform3d _ptrc_glUniform3d
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniform3dv)(GLint location, GLsizei count, const GLdouble * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniform3dv)(GLint location, GLsizei count,
+                                                 const GLdouble *value);
 #define glUniform3dv _ptrc_glUniform3dv
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniform4d)(GLint location, GLdouble x, GLdouble y, GLdouble z, GLdouble w);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniform4d)(GLint location, GLdouble x,
+                                                GLdouble y, GLdouble z,
+                                                GLdouble w);
 #define glUniform4d _ptrc_glUniform4d
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniform4dv)(GLint location, GLsizei count, const GLdouble * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniform4dv)(GLint location, GLsizei count,
+                                                 const GLdouble *value);
 #define glUniform4dv _ptrc_glUniform4dv
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniformMatrix2dv)(GLint location, GLsizei count, GLboolean transpose, const GLdouble * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniformMatrix2dv)(GLint location,
+                                                       GLsizei count,
+                                                       GLboolean transpose,
+                                                       const GLdouble *value);
 #define glUniformMatrix2dv _ptrc_glUniformMatrix2dv
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniformMatrix2x3dv)(GLint location, GLsizei count, GLboolean transpose, const GLdouble * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniformMatrix2x3dv)(GLint location,
+                                                         GLsizei count,
+                                                         GLboolean transpose,
+                                                         const GLdouble *value);
 #define glUniformMatrix2x3dv _ptrc_glUniformMatrix2x3dv
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniformMatrix2x4dv)(GLint location, GLsizei count, GLboolean transpose, const GLdouble * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniformMatrix2x4dv)(GLint location,
+                                                         GLsizei count,
+                                                         GLboolean transpose,
+                                                         const GLdouble *value);
 #define glUniformMatrix2x4dv _ptrc_glUniformMatrix2x4dv
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniformMatrix3dv)(GLint location, GLsizei count, GLboolean transpose, const GLdouble * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniformMatrix3dv)(GLint location,
+                                                       GLsizei count,
+                                                       GLboolean transpose,
+                                                       const GLdouble *value);
 #define glUniformMatrix3dv _ptrc_glUniformMatrix3dv
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniformMatrix3x2dv)(GLint location, GLsizei count, GLboolean transpose, const GLdouble * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniformMatrix3x2dv)(GLint location,
+                                                         GLsizei count,
+                                                         GLboolean transpose,
+                                                         const GLdouble *value);
 #define glUniformMatrix3x2dv _ptrc_glUniformMatrix3x2dv
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniformMatrix3x4dv)(GLint location, GLsizei count, GLboolean transpose, const GLdouble * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniformMatrix3x4dv)(GLint location,
+                                                         GLsizei count,
+                                                         GLboolean transpose,
+                                                         const GLdouble *value);
 #define glUniformMatrix3x4dv _ptrc_glUniformMatrix3x4dv
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniformMatrix4dv)(GLint location, GLsizei count, GLboolean transpose, const GLdouble * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniformMatrix4dv)(GLint location,
+                                                       GLsizei count,
+                                                       GLboolean transpose,
+                                                       const GLdouble *value);
 #define glUniformMatrix4dv _ptrc_glUniformMatrix4dv
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniformMatrix4x2dv)(GLint location, GLsizei count, GLboolean transpose, const GLdouble * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniformMatrix4x2dv)(GLint location,
+                                                         GLsizei count,
+                                                         GLboolean transpose,
+                                                         const GLdouble *value);
 #define glUniformMatrix4x2dv _ptrc_glUniformMatrix4x2dv
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniformMatrix4x3dv)(GLint location, GLsizei count, GLboolean transpose, const GLdouble * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniformMatrix4x3dv)(GLint location,
+                                                         GLsizei count,
+                                                         GLboolean transpose,
+                                                         const GLdouble *value);
 #define glUniformMatrix4x3dv _ptrc_glUniformMatrix4x3dv
-extern void (CODEGEN_FUNCPTR *_ptrc_glUniformSubroutinesuiv)(GLenum shadertype, GLsizei count, const GLuint * indices);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUniformSubroutinesuiv)(
+    GLenum shadertype, GLsizei count, const GLuint *indices);
 #define glUniformSubroutinesuiv _ptrc_glUniformSubroutinesuiv
 
-extern void (CODEGEN_FUNCPTR *_ptrc_glActiveShaderProgram)(GLuint pipeline, GLuint program);
+extern void(CODEGEN_FUNCPTR *_ptrc_glActiveShaderProgram)(GLuint pipeline,
+                                                          GLuint program);
 #define glActiveShaderProgram _ptrc_glActiveShaderProgram
-extern void (CODEGEN_FUNCPTR *_ptrc_glBindProgramPipeline)(GLuint pipeline);
+extern void(CODEGEN_FUNCPTR *_ptrc_glBindProgramPipeline)(GLuint pipeline);
 #define glBindProgramPipeline _ptrc_glBindProgramPipeline
-extern void (CODEGEN_FUNCPTR *_ptrc_glClearDepthf)(GLfloat d);
+extern void(CODEGEN_FUNCPTR *_ptrc_glClearDepthf)(GLfloat d);
 #define glClearDepthf _ptrc_glClearDepthf
-extern GLuint (CODEGEN_FUNCPTR *_ptrc_glCreateShaderProgramv)(GLenum type, GLsizei count, const GLchar *const* strings);
+extern GLuint(CODEGEN_FUNCPTR *_ptrc_glCreateShaderProgramv)(
+    GLenum type, GLsizei count, const GLchar *const *strings);
 #define glCreateShaderProgramv _ptrc_glCreateShaderProgramv
-extern void (CODEGEN_FUNCPTR *_ptrc_glDeleteProgramPipelines)(GLsizei n, const GLuint * pipelines);
+extern void(CODEGEN_FUNCPTR *_ptrc_glDeleteProgramPipelines)(
+    GLsizei n, const GLuint *pipelines);
 #define glDeleteProgramPipelines _ptrc_glDeleteProgramPipelines
-extern void (CODEGEN_FUNCPTR *_ptrc_glDepthRangeArrayv)(GLuint first, GLsizei count, const GLdouble * v);
+extern void(CODEGEN_FUNCPTR *_ptrc_glDepthRangeArrayv)(GLuint first,
+                                                       GLsizei count,
+                                                       const GLdouble *v);
 #define glDepthRangeArrayv _ptrc_glDepthRangeArrayv
-extern void (CODEGEN_FUNCPTR *_ptrc_glDepthRangeIndexed)(GLuint index, GLdouble n, GLdouble f);
+extern void(CODEGEN_FUNCPTR *_ptrc_glDepthRangeIndexed)(GLuint index,
+                                                        GLdouble n, GLdouble f);
 #define glDepthRangeIndexed _ptrc_glDepthRangeIndexed
-extern void (CODEGEN_FUNCPTR *_ptrc_glDepthRangef)(GLfloat n, GLfloat f);
+extern void(CODEGEN_FUNCPTR *_ptrc_glDepthRangef)(GLfloat n, GLfloat f);
 #define glDepthRangef _ptrc_glDepthRangef
-extern void (CODEGEN_FUNCPTR *_ptrc_glGenProgramPipelines)(GLsizei n, GLuint * pipelines);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGenProgramPipelines)(GLsizei n,
+                                                          GLuint *pipelines);
 #define glGenProgramPipelines _ptrc_glGenProgramPipelines
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetDoublei_v)(GLenum target, GLuint index, GLdouble * data);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetDoublei_v)(GLenum target, GLuint index,
+                                                   GLdouble *data);
 #define glGetDoublei_v _ptrc_glGetDoublei_v
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetFloati_v)(GLenum target, GLuint index, GLfloat * data);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetFloati_v)(GLenum target, GLuint index,
+                                                  GLfloat *data);
 #define glGetFloati_v _ptrc_glGetFloati_v
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetProgramBinary)(GLuint program, GLsizei bufSize, GLsizei * length, GLenum * binaryFormat, void * binary);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetProgramBinary)(GLuint program,
+                                                       GLsizei bufSize,
+                                                       GLsizei *length,
+                                                       GLenum *binaryFormat,
+                                                       void *binary);
 #define glGetProgramBinary _ptrc_glGetProgramBinary
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetProgramPipelineInfoLog)(GLuint pipeline, GLsizei bufSize, GLsizei * length, GLchar * infoLog);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetProgramPipelineInfoLog)(
+    GLuint pipeline, GLsizei bufSize, GLsizei *length, GLchar *infoLog);
 #define glGetProgramPipelineInfoLog _ptrc_glGetProgramPipelineInfoLog
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetProgramPipelineiv)(GLuint pipeline, GLenum pname, GLint * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetProgramPipelineiv)(GLuint pipeline,
+                                                           GLenum pname,
+                                                           GLint *params);
 #define glGetProgramPipelineiv _ptrc_glGetProgramPipelineiv
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetShaderPrecisionFormat)(GLenum shadertype, GLenum precisiontype, GLint * range, GLint * precision);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetShaderPrecisionFormat)(
+    GLenum shadertype, GLenum precisiontype, GLint *range, GLint *precision);
 #define glGetShaderPrecisionFormat _ptrc_glGetShaderPrecisionFormat
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetVertexAttribLdv)(GLuint index, GLenum pname, GLdouble * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetVertexAttribLdv)(GLuint index,
+                                                         GLenum pname,
+                                                         GLdouble *params);
 #define glGetVertexAttribLdv _ptrc_glGetVertexAttribLdv
-extern GLboolean (CODEGEN_FUNCPTR *_ptrc_glIsProgramPipeline)(GLuint pipeline);
+extern GLboolean(CODEGEN_FUNCPTR *_ptrc_glIsProgramPipeline)(GLuint pipeline);
 #define glIsProgramPipeline _ptrc_glIsProgramPipeline
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramBinary)(GLuint program, GLenum binaryFormat, const void * binary, GLsizei length);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramBinary)(GLuint program,
+                                                    GLenum binaryFormat,
+                                                    const void *binary,
+                                                    GLsizei length);
 #define glProgramBinary _ptrc_glProgramBinary
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramParameteri)(GLuint program, GLenum pname, GLint value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramParameteri)(GLuint program,
+                                                        GLenum pname,
+                                                        GLint value);
 #define glProgramParameteri _ptrc_glProgramParameteri
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniform1d)(GLuint program, GLint location, GLdouble v0);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniform1d)(GLuint program,
+                                                       GLint location,
+                                                       GLdouble v0);
 #define glProgramUniform1d _ptrc_glProgramUniform1d
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniform1dv)(GLuint program, GLint location, GLsizei count, const GLdouble * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniform1dv)(GLuint program,
+                                                        GLint location,
+                                                        GLsizei count,
+                                                        const GLdouble *value);
 #define glProgramUniform1dv _ptrc_glProgramUniform1dv
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniform1f)(GLuint program, GLint location, GLfloat v0);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniform1f)(GLuint program,
+                                                       GLint location,
+                                                       GLfloat v0);
 #define glProgramUniform1f _ptrc_glProgramUniform1f
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniform1fv)(GLuint program, GLint location, GLsizei count, const GLfloat * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniform1fv)(GLuint program,
+                                                        GLint location,
+                                                        GLsizei count,
+                                                        const GLfloat *value);
 #define glProgramUniform1fv _ptrc_glProgramUniform1fv
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniform1i)(GLuint program, GLint location, GLint v0);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniform1i)(GLuint program,
+                                                       GLint location,
+                                                       GLint v0);
 #define glProgramUniform1i _ptrc_glProgramUniform1i
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniform1iv)(GLuint program, GLint location, GLsizei count, const GLint * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniform1iv)(GLuint program,
+                                                        GLint location,
+                                                        GLsizei count,
+                                                        const GLint *value);
 #define glProgramUniform1iv _ptrc_glProgramUniform1iv
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniform1ui)(GLuint program, GLint location, GLuint v0);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniform1ui)(GLuint program,
+                                                        GLint location,
+                                                        GLuint v0);
 #define glProgramUniform1ui _ptrc_glProgramUniform1ui
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniform1uiv)(GLuint program, GLint location, GLsizei count, const GLuint * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniform1uiv)(GLuint program,
+                                                         GLint location,
+                                                         GLsizei count,
+                                                         const GLuint *value);
 #define glProgramUniform1uiv _ptrc_glProgramUniform1uiv
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniform2d)(GLuint program, GLint location, GLdouble v0, GLdouble v1);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniform2d)(GLuint program,
+                                                       GLint location,
+                                                       GLdouble v0,
+                                                       GLdouble v1);
 #define glProgramUniform2d _ptrc_glProgramUniform2d
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniform2dv)(GLuint program, GLint location, GLsizei count, const GLdouble * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniform2dv)(GLuint program,
+                                                        GLint location,
+                                                        GLsizei count,
+                                                        const GLdouble *value);
 #define glProgramUniform2dv _ptrc_glProgramUniform2dv
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniform2f)(GLuint program, GLint location, GLfloat v0, GLfloat v1);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniform2f)(GLuint program,
+                                                       GLint location,
+                                                       GLfloat v0, GLfloat v1);
 #define glProgramUniform2f _ptrc_glProgramUniform2f
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniform2fv)(GLuint program, GLint location, GLsizei count, const GLfloat * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniform2fv)(GLuint program,
+                                                        GLint location,
+                                                        GLsizei count,
+                                                        const GLfloat *value);
 #define glProgramUniform2fv _ptrc_glProgramUniform2fv
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniform2i)(GLuint program, GLint location, GLint v0, GLint v1);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniform2i)(GLuint program,
+                                                       GLint location, GLint v0,
+                                                       GLint v1);
 #define glProgramUniform2i _ptrc_glProgramUniform2i
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniform2iv)(GLuint program, GLint location, GLsizei count, const GLint * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniform2iv)(GLuint program,
+                                                        GLint location,
+                                                        GLsizei count,
+                                                        const GLint *value);
 #define glProgramUniform2iv _ptrc_glProgramUniform2iv
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniform2ui)(GLuint program, GLint location, GLuint v0, GLuint v1);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniform2ui)(GLuint program,
+                                                        GLint location,
+                                                        GLuint v0, GLuint v1);
 #define glProgramUniform2ui _ptrc_glProgramUniform2ui
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniform2uiv)(GLuint program, GLint location, GLsizei count, const GLuint * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniform2uiv)(GLuint program,
+                                                         GLint location,
+                                                         GLsizei count,
+                                                         const GLuint *value);
 #define glProgramUniform2uiv _ptrc_glProgramUniform2uiv
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniform3d)(GLuint program, GLint location, GLdouble v0, GLdouble v1, GLdouble v2);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniform3d)(GLuint program,
+                                                       GLint location,
+                                                       GLdouble v0, GLdouble v1,
+                                                       GLdouble v2);
 #define glProgramUniform3d _ptrc_glProgramUniform3d
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniform3dv)(GLuint program, GLint location, GLsizei count, const GLdouble * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniform3dv)(GLuint program,
+                                                        GLint location,
+                                                        GLsizei count,
+                                                        const GLdouble *value);
 #define glProgramUniform3dv _ptrc_glProgramUniform3dv
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniform3f)(GLuint program, GLint location, GLfloat v0, GLfloat v1, GLfloat v2);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniform3f)(GLuint program,
+                                                       GLint location,
+                                                       GLfloat v0, GLfloat v1,
+                                                       GLfloat v2);
 #define glProgramUniform3f _ptrc_glProgramUniform3f
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniform3fv)(GLuint program, GLint location, GLsizei count, const GLfloat * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniform3fv)(GLuint program,
+                                                        GLint location,
+                                                        GLsizei count,
+                                                        const GLfloat *value);
 #define glProgramUniform3fv _ptrc_glProgramUniform3fv
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniform3i)(GLuint program, GLint location, GLint v0, GLint v1, GLint v2);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniform3i)(GLuint program,
+                                                       GLint location, GLint v0,
+                                                       GLint v1, GLint v2);
 #define glProgramUniform3i _ptrc_glProgramUniform3i
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniform3iv)(GLuint program, GLint location, GLsizei count, const GLint * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniform3iv)(GLuint program,
+                                                        GLint location,
+                                                        GLsizei count,
+                                                        const GLint *value);
 #define glProgramUniform3iv _ptrc_glProgramUniform3iv
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniform3ui)(GLuint program, GLint location, GLuint v0, GLuint v1, GLuint v2);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniform3ui)(GLuint program,
+                                                        GLint location,
+                                                        GLuint v0, GLuint v1,
+                                                        GLuint v2);
 #define glProgramUniform3ui _ptrc_glProgramUniform3ui
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniform3uiv)(GLuint program, GLint location, GLsizei count, const GLuint * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniform3uiv)(GLuint program,
+                                                         GLint location,
+                                                         GLsizei count,
+                                                         const GLuint *value);
 #define glProgramUniform3uiv _ptrc_glProgramUniform3uiv
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniform4d)(GLuint program, GLint location, GLdouble v0, GLdouble v1, GLdouble v2, GLdouble v3);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniform4d)(GLuint program,
+                                                       GLint location,
+                                                       GLdouble v0, GLdouble v1,
+                                                       GLdouble v2,
+                                                       GLdouble v3);
 #define glProgramUniform4d _ptrc_glProgramUniform4d
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniform4dv)(GLuint program, GLint location, GLsizei count, const GLdouble * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniform4dv)(GLuint program,
+                                                        GLint location,
+                                                        GLsizei count,
+                                                        const GLdouble *value);
 #define glProgramUniform4dv _ptrc_glProgramUniform4dv
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniform4f)(GLuint program, GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniform4f)(GLuint program,
+                                                       GLint location,
+                                                       GLfloat v0, GLfloat v1,
+                                                       GLfloat v2, GLfloat v3);
 #define glProgramUniform4f _ptrc_glProgramUniform4f
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniform4fv)(GLuint program, GLint location, GLsizei count, const GLfloat * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniform4fv)(GLuint program,
+                                                        GLint location,
+                                                        GLsizei count,
+                                                        const GLfloat *value);
 #define glProgramUniform4fv _ptrc_glProgramUniform4fv
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniform4i)(GLuint program, GLint location, GLint v0, GLint v1, GLint v2, GLint v3);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniform4i)(GLuint program,
+                                                       GLint location, GLint v0,
+                                                       GLint v1, GLint v2,
+                                                       GLint v3);
 #define glProgramUniform4i _ptrc_glProgramUniform4i
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniform4iv)(GLuint program, GLint location, GLsizei count, const GLint * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniform4iv)(GLuint program,
+                                                        GLint location,
+                                                        GLsizei count,
+                                                        const GLint *value);
 #define glProgramUniform4iv _ptrc_glProgramUniform4iv
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniform4ui)(GLuint program, GLint location, GLuint v0, GLuint v1, GLuint v2, GLuint v3);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniform4ui)(GLuint program,
+                                                        GLint location,
+                                                        GLuint v0, GLuint v1,
+                                                        GLuint v2, GLuint v3);
 #define glProgramUniform4ui _ptrc_glProgramUniform4ui
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniform4uiv)(GLuint program, GLint location, GLsizei count, const GLuint * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniform4uiv)(GLuint program,
+                                                         GLint location,
+                                                         GLsizei count,
+                                                         const GLuint *value);
 #define glProgramUniform4uiv _ptrc_glProgramUniform4uiv
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniformMatrix2dv)(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLdouble * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniformMatrix2dv)(
+    GLuint program, GLint location, GLsizei count, GLboolean transpose,
+    const GLdouble *value);
 #define glProgramUniformMatrix2dv _ptrc_glProgramUniformMatrix2dv
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniformMatrix2fv)(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniformMatrix2fv)(
+    GLuint program, GLint location, GLsizei count, GLboolean transpose,
+    const GLfloat *value);
 #define glProgramUniformMatrix2fv _ptrc_glProgramUniformMatrix2fv
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniformMatrix2x3dv)(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLdouble * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniformMatrix2x3dv)(
+    GLuint program, GLint location, GLsizei count, GLboolean transpose,
+    const GLdouble *value);
 #define glProgramUniformMatrix2x3dv _ptrc_glProgramUniformMatrix2x3dv
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniformMatrix2x3fv)(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniformMatrix2x3fv)(
+    GLuint program, GLint location, GLsizei count, GLboolean transpose,
+    const GLfloat *value);
 #define glProgramUniformMatrix2x3fv _ptrc_glProgramUniformMatrix2x3fv
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniformMatrix2x4dv)(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLdouble * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniformMatrix2x4dv)(
+    GLuint program, GLint location, GLsizei count, GLboolean transpose,
+    const GLdouble *value);
 #define glProgramUniformMatrix2x4dv _ptrc_glProgramUniformMatrix2x4dv
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniformMatrix2x4fv)(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniformMatrix2x4fv)(
+    GLuint program, GLint location, GLsizei count, GLboolean transpose,
+    const GLfloat *value);
 #define glProgramUniformMatrix2x4fv _ptrc_glProgramUniformMatrix2x4fv
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniformMatrix3dv)(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLdouble * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniformMatrix3dv)(
+    GLuint program, GLint location, GLsizei count, GLboolean transpose,
+    const GLdouble *value);
 #define glProgramUniformMatrix3dv _ptrc_glProgramUniformMatrix3dv
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniformMatrix3fv)(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniformMatrix3fv)(
+    GLuint program, GLint location, GLsizei count, GLboolean transpose,
+    const GLfloat *value);
 #define glProgramUniformMatrix3fv _ptrc_glProgramUniformMatrix3fv
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniformMatrix3x2dv)(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLdouble * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniformMatrix3x2dv)(
+    GLuint program, GLint location, GLsizei count, GLboolean transpose,
+    const GLdouble *value);
 #define glProgramUniformMatrix3x2dv _ptrc_glProgramUniformMatrix3x2dv
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniformMatrix3x2fv)(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniformMatrix3x2fv)(
+    GLuint program, GLint location, GLsizei count, GLboolean transpose,
+    const GLfloat *value);
 #define glProgramUniformMatrix3x2fv _ptrc_glProgramUniformMatrix3x2fv
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniformMatrix3x4dv)(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLdouble * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniformMatrix3x4dv)(
+    GLuint program, GLint location, GLsizei count, GLboolean transpose,
+    const GLdouble *value);
 #define glProgramUniformMatrix3x4dv _ptrc_glProgramUniformMatrix3x4dv
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniformMatrix3x4fv)(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniformMatrix3x4fv)(
+    GLuint program, GLint location, GLsizei count, GLboolean transpose,
+    const GLfloat *value);
 #define glProgramUniformMatrix3x4fv _ptrc_glProgramUniformMatrix3x4fv
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniformMatrix4dv)(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLdouble * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniformMatrix4dv)(
+    GLuint program, GLint location, GLsizei count, GLboolean transpose,
+    const GLdouble *value);
 #define glProgramUniformMatrix4dv _ptrc_glProgramUniformMatrix4dv
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniformMatrix4fv)(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniformMatrix4fv)(
+    GLuint program, GLint location, GLsizei count, GLboolean transpose,
+    const GLfloat *value);
 #define glProgramUniformMatrix4fv _ptrc_glProgramUniformMatrix4fv
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniformMatrix4x2dv)(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLdouble * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniformMatrix4x2dv)(
+    GLuint program, GLint location, GLsizei count, GLboolean transpose,
+    const GLdouble *value);
 #define glProgramUniformMatrix4x2dv _ptrc_glProgramUniformMatrix4x2dv
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniformMatrix4x2fv)(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniformMatrix4x2fv)(
+    GLuint program, GLint location, GLsizei count, GLboolean transpose,
+    const GLfloat *value);
 #define glProgramUniformMatrix4x2fv _ptrc_glProgramUniformMatrix4x2fv
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniformMatrix4x3dv)(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLdouble * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniformMatrix4x3dv)(
+    GLuint program, GLint location, GLsizei count, GLboolean transpose,
+    const GLdouble *value);
 #define glProgramUniformMatrix4x3dv _ptrc_glProgramUniformMatrix4x3dv
-extern void (CODEGEN_FUNCPTR *_ptrc_glProgramUniformMatrix4x3fv)(GLuint program, GLint location, GLsizei count, GLboolean transpose, const GLfloat * value);
+extern void(CODEGEN_FUNCPTR *_ptrc_glProgramUniformMatrix4x3fv)(
+    GLuint program, GLint location, GLsizei count, GLboolean transpose,
+    const GLfloat *value);
 #define glProgramUniformMatrix4x3fv _ptrc_glProgramUniformMatrix4x3fv
-extern void (CODEGEN_FUNCPTR *_ptrc_glReleaseShaderCompiler)(void);
+extern void(CODEGEN_FUNCPTR *_ptrc_glReleaseShaderCompiler)(void);
 #define glReleaseShaderCompiler _ptrc_glReleaseShaderCompiler
-extern void (CODEGEN_FUNCPTR *_ptrc_glScissorArrayv)(GLuint first, GLsizei count, const GLint * v);
+extern void(CODEGEN_FUNCPTR *_ptrc_glScissorArrayv)(GLuint first, GLsizei count,
+                                                    const GLint *v);
 #define glScissorArrayv _ptrc_glScissorArrayv
-extern void (CODEGEN_FUNCPTR *_ptrc_glScissorIndexed)(GLuint index, GLint left, GLint bottom, GLsizei width, GLsizei height);
+extern void(CODEGEN_FUNCPTR *_ptrc_glScissorIndexed)(GLuint index, GLint left,
+                                                     GLint bottom,
+                                                     GLsizei width,
+                                                     GLsizei height);
 #define glScissorIndexed _ptrc_glScissorIndexed
-extern void (CODEGEN_FUNCPTR *_ptrc_glScissorIndexedv)(GLuint index, const GLint * v);
+extern void(CODEGEN_FUNCPTR *_ptrc_glScissorIndexedv)(GLuint index,
+                                                      const GLint *v);
 #define glScissorIndexedv _ptrc_glScissorIndexedv
-extern void (CODEGEN_FUNCPTR *_ptrc_glShaderBinary)(GLsizei count, const GLuint * shaders, GLenum binaryformat, const void * binary, GLsizei length);
+extern void(CODEGEN_FUNCPTR *_ptrc_glShaderBinary)(GLsizei count,
+                                                   const GLuint *shaders,
+                                                   GLenum binaryformat,
+                                                   const void *binary,
+                                                   GLsizei length);
 #define glShaderBinary _ptrc_glShaderBinary
-extern void (CODEGEN_FUNCPTR *_ptrc_glUseProgramStages)(GLuint pipeline, GLbitfield stages, GLuint program);
+extern void(CODEGEN_FUNCPTR *_ptrc_glUseProgramStages)(GLuint pipeline,
+                                                       GLbitfield stages,
+                                                       GLuint program);
 #define glUseProgramStages _ptrc_glUseProgramStages
-extern void (CODEGEN_FUNCPTR *_ptrc_glValidateProgramPipeline)(GLuint pipeline);
+extern void(CODEGEN_FUNCPTR *_ptrc_glValidateProgramPipeline)(GLuint pipeline);
 #define glValidateProgramPipeline _ptrc_glValidateProgramPipeline
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttribL1d)(GLuint index, GLdouble x);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttribL1d)(GLuint index, GLdouble x);
 #define glVertexAttribL1d _ptrc_glVertexAttribL1d
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttribL1dv)(GLuint index, const GLdouble * v);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttribL1dv)(GLuint index,
+                                                       const GLdouble *v);
 #define glVertexAttribL1dv _ptrc_glVertexAttribL1dv
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttribL2d)(GLuint index, GLdouble x, GLdouble y);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttribL2d)(GLuint index, GLdouble x,
+                                                      GLdouble y);
 #define glVertexAttribL2d _ptrc_glVertexAttribL2d
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttribL2dv)(GLuint index, const GLdouble * v);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttribL2dv)(GLuint index,
+                                                       const GLdouble *v);
 #define glVertexAttribL2dv _ptrc_glVertexAttribL2dv
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttribL3d)(GLuint index, GLdouble x, GLdouble y, GLdouble z);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttribL3d)(GLuint index, GLdouble x,
+                                                      GLdouble y, GLdouble z);
 #define glVertexAttribL3d _ptrc_glVertexAttribL3d
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttribL3dv)(GLuint index, const GLdouble * v);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttribL3dv)(GLuint index,
+                                                       const GLdouble *v);
 #define glVertexAttribL3dv _ptrc_glVertexAttribL3dv
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttribL4d)(GLuint index, GLdouble x, GLdouble y, GLdouble z, GLdouble w);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttribL4d)(GLuint index, GLdouble x,
+                                                      GLdouble y, GLdouble z,
+                                                      GLdouble w);
 #define glVertexAttribL4d _ptrc_glVertexAttribL4d
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttribL4dv)(GLuint index, const GLdouble * v);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttribL4dv)(GLuint index,
+                                                       const GLdouble *v);
 #define glVertexAttribL4dv _ptrc_glVertexAttribL4dv
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttribLPointer)(GLuint index, GLint size, GLenum type, GLsizei stride, const void * pointer);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttribLPointer)(
+    GLuint index, GLint size, GLenum type, GLsizei stride, const void *pointer);
 #define glVertexAttribLPointer _ptrc_glVertexAttribLPointer
-extern void (CODEGEN_FUNCPTR *_ptrc_glViewportArrayv)(GLuint first, GLsizei count, const GLfloat * v);
+extern void(CODEGEN_FUNCPTR *_ptrc_glViewportArrayv)(GLuint first,
+                                                     GLsizei count,
+                                                     const GLfloat *v);
 #define glViewportArrayv _ptrc_glViewportArrayv
-extern void (CODEGEN_FUNCPTR *_ptrc_glViewportIndexedf)(GLuint index, GLfloat x, GLfloat y, GLfloat w, GLfloat h);
+extern void(CODEGEN_FUNCPTR *_ptrc_glViewportIndexedf)(GLuint index, GLfloat x,
+                                                       GLfloat y, GLfloat w,
+                                                       GLfloat h);
 #define glViewportIndexedf _ptrc_glViewportIndexedf
-extern void (CODEGEN_FUNCPTR *_ptrc_glViewportIndexedfv)(GLuint index, const GLfloat * v);
+extern void(CODEGEN_FUNCPTR *_ptrc_glViewportIndexedfv)(GLuint index,
+                                                        const GLfloat *v);
 #define glViewportIndexedfv _ptrc_glViewportIndexedfv
 
-extern void (CODEGEN_FUNCPTR *_ptrc_glBindImageTexture)(GLuint unit, GLuint texture, GLint level, GLboolean layered, GLint layer, GLenum access, GLenum format);
+extern void(CODEGEN_FUNCPTR *_ptrc_glBindImageTexture)(
+    GLuint unit, GLuint texture, GLint level, GLboolean layered, GLint layer,
+    GLenum access, GLenum format);
 #define glBindImageTexture _ptrc_glBindImageTexture
-extern void (CODEGEN_FUNCPTR *_ptrc_glDrawArraysInstancedBaseInstance)(GLenum mode, GLint first, GLsizei count, GLsizei instancecount, GLuint baseinstance);
-#define glDrawArraysInstancedBaseInstance _ptrc_glDrawArraysInstancedBaseInstance
-extern void (CODEGEN_FUNCPTR *_ptrc_glDrawElementsInstancedBaseInstance)(GLenum mode, GLsizei count, GLenum type, const void * indices, GLsizei instancecount, GLuint baseinstance);
-#define glDrawElementsInstancedBaseInstance _ptrc_glDrawElementsInstancedBaseInstance
-extern void (CODEGEN_FUNCPTR *_ptrc_glDrawElementsInstancedBaseVertexBaseInstance)(GLenum mode, GLsizei count, GLenum type, const void * indices, GLsizei instancecount, GLint basevertex, GLuint baseinstance);
-#define glDrawElementsInstancedBaseVertexBaseInstance _ptrc_glDrawElementsInstancedBaseVertexBaseInstance
-extern void (CODEGEN_FUNCPTR *_ptrc_glDrawTransformFeedbackInstanced)(GLenum mode, GLuint id, GLsizei instancecount);
+extern void(CODEGEN_FUNCPTR *_ptrc_glDrawArraysInstancedBaseInstance)(
+    GLenum mode, GLint first, GLsizei count, GLsizei instancecount,
+    GLuint baseinstance);
+#define glDrawArraysInstancedBaseInstance \
+  _ptrc_glDrawArraysInstancedBaseInstance
+extern void(CODEGEN_FUNCPTR *_ptrc_glDrawElementsInstancedBaseInstance)(
+    GLenum mode, GLsizei count, GLenum type, const void *indices,
+    GLsizei instancecount, GLuint baseinstance);
+#define glDrawElementsInstancedBaseInstance \
+  _ptrc_glDrawElementsInstancedBaseInstance
+extern void(
+    CODEGEN_FUNCPTR *_ptrc_glDrawElementsInstancedBaseVertexBaseInstance)(
+    GLenum mode, GLsizei count, GLenum type, const void *indices,
+    GLsizei instancecount, GLint basevertex, GLuint baseinstance);
+#define glDrawElementsInstancedBaseVertexBaseInstance \
+  _ptrc_glDrawElementsInstancedBaseVertexBaseInstance
+extern void(CODEGEN_FUNCPTR *_ptrc_glDrawTransformFeedbackInstanced)(
+    GLenum mode, GLuint id, GLsizei instancecount);
 #define glDrawTransformFeedbackInstanced _ptrc_glDrawTransformFeedbackInstanced
-extern void (CODEGEN_FUNCPTR *_ptrc_glDrawTransformFeedbackStreamInstanced)(GLenum mode, GLuint id, GLuint stream, GLsizei instancecount);
-#define glDrawTransformFeedbackStreamInstanced _ptrc_glDrawTransformFeedbackStreamInstanced
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetActiveAtomicCounterBufferiv)(GLuint program, GLuint bufferIndex, GLenum pname, GLint * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glDrawTransformFeedbackStreamInstanced)(
+    GLenum mode, GLuint id, GLuint stream, GLsizei instancecount);
+#define glDrawTransformFeedbackStreamInstanced \
+  _ptrc_glDrawTransformFeedbackStreamInstanced
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetActiveAtomicCounterBufferiv)(
+    GLuint program, GLuint bufferIndex, GLenum pname, GLint *params);
 #define glGetActiveAtomicCounterBufferiv _ptrc_glGetActiveAtomicCounterBufferiv
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetInternalformativ)(GLenum target, GLenum internalformat, GLenum pname, GLsizei bufSize, GLint * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetInternalformativ)(GLenum target,
+                                                          GLenum internalformat,
+                                                          GLenum pname,
+                                                          GLsizei bufSize,
+                                                          GLint *params);
 #define glGetInternalformativ _ptrc_glGetInternalformativ
-extern void (CODEGEN_FUNCPTR *_ptrc_glMemoryBarrier)(GLbitfield barriers);
+extern void(CODEGEN_FUNCPTR *_ptrc_glMemoryBarrier)(GLbitfield barriers);
 #define glMemoryBarrier _ptrc_glMemoryBarrier
-extern void (CODEGEN_FUNCPTR *_ptrc_glTexStorage1D)(GLenum target, GLsizei levels, GLenum internalformat, GLsizei width);
+extern void(CODEGEN_FUNCPTR *_ptrc_glTexStorage1D)(GLenum target,
+                                                   GLsizei levels,
+                                                   GLenum internalformat,
+                                                   GLsizei width);
 #define glTexStorage1D _ptrc_glTexStorage1D
-extern void (CODEGEN_FUNCPTR *_ptrc_glTexStorage2D)(GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height);
+extern void(CODEGEN_FUNCPTR *_ptrc_glTexStorage2D)(GLenum target,
+                                                   GLsizei levels,
+                                                   GLenum internalformat,
+                                                   GLsizei width,
+                                                   GLsizei height);
 #define glTexStorage2D _ptrc_glTexStorage2D
-extern void (CODEGEN_FUNCPTR *_ptrc_glTexStorage3D)(GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth);
+extern void(CODEGEN_FUNCPTR *_ptrc_glTexStorage3D)(
+    GLenum target, GLsizei levels, GLenum internalformat, GLsizei width,
+    GLsizei height, GLsizei depth);
 #define glTexStorage3D _ptrc_glTexStorage3D
 
-extern void (CODEGEN_FUNCPTR *_ptrc_glBindVertexBuffer)(GLuint bindingindex, GLuint buffer, GLintptr offset, GLsizei stride);
+extern void(CODEGEN_FUNCPTR *_ptrc_glBindVertexBuffer)(GLuint bindingindex,
+                                                       GLuint buffer,
+                                                       GLintptr offset,
+                                                       GLsizei stride);
 #define glBindVertexBuffer _ptrc_glBindVertexBuffer
-extern void (CODEGEN_FUNCPTR *_ptrc_glClearBufferData)(GLenum target, GLenum internalformat, GLenum format, GLenum type, const void * data);
+extern void(CODEGEN_FUNCPTR *_ptrc_glClearBufferData)(GLenum target,
+                                                      GLenum internalformat,
+                                                      GLenum format,
+                                                      GLenum type,
+                                                      const void *data);
 #define glClearBufferData _ptrc_glClearBufferData
-extern void (CODEGEN_FUNCPTR *_ptrc_glClearBufferSubData)(GLenum target, GLenum internalformat, GLintptr offset, GLsizeiptr size, GLenum format, GLenum type, const void * data);
+extern void(CODEGEN_FUNCPTR *_ptrc_glClearBufferSubData)(
+    GLenum target, GLenum internalformat, GLintptr offset, GLsizeiptr size,
+    GLenum format, GLenum type, const void *data);
 #define glClearBufferSubData _ptrc_glClearBufferSubData
-extern void (CODEGEN_FUNCPTR *_ptrc_glCopyImageSubData)(GLuint srcName, GLenum srcTarget, GLint srcLevel, GLint srcX, GLint srcY, GLint srcZ, GLuint dstName, GLenum dstTarget, GLint dstLevel, GLint dstX, GLint dstY, GLint dstZ, GLsizei srcWidth, GLsizei srcHeight, GLsizei srcDepth);
+extern void(CODEGEN_FUNCPTR *_ptrc_glCopyImageSubData)(
+    GLuint srcName, GLenum srcTarget, GLint srcLevel, GLint srcX, GLint srcY,
+    GLint srcZ, GLuint dstName, GLenum dstTarget, GLint dstLevel, GLint dstX,
+    GLint dstY, GLint dstZ, GLsizei srcWidth, GLsizei srcHeight,
+    GLsizei srcDepth);
 #define glCopyImageSubData _ptrc_glCopyImageSubData
-extern void (CODEGEN_FUNCPTR *_ptrc_glDebugMessageCallback)(GLDEBUGPROC callback, const void * userParam);
+extern void(CODEGEN_FUNCPTR *_ptrc_glDebugMessageCallback)(
+    GLDEBUGPROC callback, const void *userParam);
 #define glDebugMessageCallback _ptrc_glDebugMessageCallback
-extern void (CODEGEN_FUNCPTR *_ptrc_glDebugMessageControl)(GLenum source, GLenum type, GLenum severity, GLsizei count, const GLuint * ids, GLboolean enabled);
+extern void(CODEGEN_FUNCPTR *_ptrc_glDebugMessageControl)(
+    GLenum source, GLenum type, GLenum severity, GLsizei count,
+    const GLuint *ids, GLboolean enabled);
 #define glDebugMessageControl _ptrc_glDebugMessageControl
-extern void (CODEGEN_FUNCPTR *_ptrc_glDebugMessageInsert)(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar * buf);
+extern void(CODEGEN_FUNCPTR *_ptrc_glDebugMessageInsert)(GLenum source,
+                                                         GLenum type, GLuint id,
+                                                         GLenum severity,
+                                                         GLsizei length,
+                                                         const GLchar *buf);
 #define glDebugMessageInsert _ptrc_glDebugMessageInsert
-extern void (CODEGEN_FUNCPTR *_ptrc_glDispatchCompute)(GLuint num_groups_x, GLuint num_groups_y, GLuint num_groups_z);
+extern void(CODEGEN_FUNCPTR *_ptrc_glDispatchCompute)(GLuint num_groups_x,
+                                                      GLuint num_groups_y,
+                                                      GLuint num_groups_z);
 #define glDispatchCompute _ptrc_glDispatchCompute
-extern void (CODEGEN_FUNCPTR *_ptrc_glDispatchComputeIndirect)(GLintptr indirect);
+extern void(CODEGEN_FUNCPTR *_ptrc_glDispatchComputeIndirect)(
+    GLintptr indirect);
 #define glDispatchComputeIndirect _ptrc_glDispatchComputeIndirect
-extern void (CODEGEN_FUNCPTR *_ptrc_glFramebufferParameteri)(GLenum target, GLenum pname, GLint param);
+extern void(CODEGEN_FUNCPTR *_ptrc_glFramebufferParameteri)(GLenum target,
+                                                            GLenum pname,
+                                                            GLint param);
 #define glFramebufferParameteri _ptrc_glFramebufferParameteri
-extern GLuint (CODEGEN_FUNCPTR *_ptrc_glGetDebugMessageLog)(GLuint count, GLsizei bufSize, GLenum * sources, GLenum * types, GLuint * ids, GLenum * severities, GLsizei * lengths, GLchar * messageLog);
+extern GLuint(CODEGEN_FUNCPTR *_ptrc_glGetDebugMessageLog)(
+    GLuint count, GLsizei bufSize, GLenum *sources, GLenum *types, GLuint *ids,
+    GLenum *severities, GLsizei *lengths, GLchar *messageLog);
 #define glGetDebugMessageLog _ptrc_glGetDebugMessageLog
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetFramebufferParameteriv)(GLenum target, GLenum pname, GLint * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetFramebufferParameteriv)(GLenum target,
+                                                                GLenum pname,
+                                                                GLint *params);
 #define glGetFramebufferParameteriv _ptrc_glGetFramebufferParameteriv
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetInternalformati64v)(GLenum target, GLenum internalformat, GLenum pname, GLsizei bufSize, GLint64 * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetInternalformati64v)(
+    GLenum target, GLenum internalformat, GLenum pname, GLsizei bufSize,
+    GLint64 *params);
 #define glGetInternalformati64v _ptrc_glGetInternalformati64v
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetObjectLabel)(GLenum identifier, GLuint name, GLsizei bufSize, GLsizei * length, GLchar * label);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetObjectLabel)(GLenum identifier,
+                                                     GLuint name,
+                                                     GLsizei bufSize,
+                                                     GLsizei *length,
+                                                     GLchar *label);
 #define glGetObjectLabel _ptrc_glGetObjectLabel
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetObjectPtrLabel)(const void * ptr, GLsizei bufSize, GLsizei * length, GLchar * label);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetObjectPtrLabel)(const void *ptr,
+                                                        GLsizei bufSize,
+                                                        GLsizei *length,
+                                                        GLchar *label);
 #define glGetObjectPtrLabel _ptrc_glGetObjectPtrLabel
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetProgramInterfaceiv)(GLuint program, GLenum programInterface, GLenum pname, GLint * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetProgramInterfaceiv)(
+    GLuint program, GLenum programInterface, GLenum pname, GLint *params);
 #define glGetProgramInterfaceiv _ptrc_glGetProgramInterfaceiv
-extern GLuint (CODEGEN_FUNCPTR *_ptrc_glGetProgramResourceIndex)(GLuint program, GLenum programInterface, const GLchar * name);
+extern GLuint(CODEGEN_FUNCPTR *_ptrc_glGetProgramResourceIndex)(
+    GLuint program, GLenum programInterface, const GLchar *name);
 #define glGetProgramResourceIndex _ptrc_glGetProgramResourceIndex
-extern GLint (CODEGEN_FUNCPTR *_ptrc_glGetProgramResourceLocation)(GLuint program, GLenum programInterface, const GLchar * name);
+extern GLint(CODEGEN_FUNCPTR *_ptrc_glGetProgramResourceLocation)(
+    GLuint program, GLenum programInterface, const GLchar *name);
 #define glGetProgramResourceLocation _ptrc_glGetProgramResourceLocation
-extern GLint (CODEGEN_FUNCPTR *_ptrc_glGetProgramResourceLocationIndex)(GLuint program, GLenum programInterface, const GLchar * name);
-#define glGetProgramResourceLocationIndex _ptrc_glGetProgramResourceLocationIndex
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetProgramResourceName)(GLuint program, GLenum programInterface, GLuint index, GLsizei bufSize, GLsizei * length, GLchar * name);
+extern GLint(CODEGEN_FUNCPTR *_ptrc_glGetProgramResourceLocationIndex)(
+    GLuint program, GLenum programInterface, const GLchar *name);
+#define glGetProgramResourceLocationIndex \
+  _ptrc_glGetProgramResourceLocationIndex
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetProgramResourceName)(
+    GLuint program, GLenum programInterface, GLuint index, GLsizei bufSize,
+    GLsizei *length, GLchar *name);
 #define glGetProgramResourceName _ptrc_glGetProgramResourceName
-extern void (CODEGEN_FUNCPTR *_ptrc_glGetProgramResourceiv)(GLuint program, GLenum programInterface, GLuint index, GLsizei propCount, const GLenum * props, GLsizei bufSize, GLsizei * length, GLint * params);
+extern void(CODEGEN_FUNCPTR *_ptrc_glGetProgramResourceiv)(
+    GLuint program, GLenum programInterface, GLuint index, GLsizei propCount,
+    const GLenum *props, GLsizei bufSize, GLsizei *length, GLint *params);
 #define glGetProgramResourceiv _ptrc_glGetProgramResourceiv
-extern void (CODEGEN_FUNCPTR *_ptrc_glInvalidateBufferData)(GLuint buffer);
+extern void(CODEGEN_FUNCPTR *_ptrc_glInvalidateBufferData)(GLuint buffer);
 #define glInvalidateBufferData _ptrc_glInvalidateBufferData
-extern void (CODEGEN_FUNCPTR *_ptrc_glInvalidateBufferSubData)(GLuint buffer, GLintptr offset, GLsizeiptr length);
+extern void(CODEGEN_FUNCPTR *_ptrc_glInvalidateBufferSubData)(
+    GLuint buffer, GLintptr offset, GLsizeiptr length);
 #define glInvalidateBufferSubData _ptrc_glInvalidateBufferSubData
-extern void (CODEGEN_FUNCPTR *_ptrc_glInvalidateFramebuffer)(GLenum target, GLsizei numAttachments, const GLenum * attachments);
+extern void(CODEGEN_FUNCPTR *_ptrc_glInvalidateFramebuffer)(
+    GLenum target, GLsizei numAttachments, const GLenum *attachments);
 #define glInvalidateFramebuffer _ptrc_glInvalidateFramebuffer
-extern void (CODEGEN_FUNCPTR *_ptrc_glInvalidateSubFramebuffer)(GLenum target, GLsizei numAttachments, const GLenum * attachments, GLint x, GLint y, GLsizei width, GLsizei height);
+extern void(CODEGEN_FUNCPTR *_ptrc_glInvalidateSubFramebuffer)(
+    GLenum target, GLsizei numAttachments, const GLenum *attachments, GLint x,
+    GLint y, GLsizei width, GLsizei height);
 #define glInvalidateSubFramebuffer _ptrc_glInvalidateSubFramebuffer
-extern void (CODEGEN_FUNCPTR *_ptrc_glInvalidateTexImage)(GLuint texture, GLint level);
+extern void(CODEGEN_FUNCPTR *_ptrc_glInvalidateTexImage)(GLuint texture,
+                                                         GLint level);
 #define glInvalidateTexImage _ptrc_glInvalidateTexImage
-extern void (CODEGEN_FUNCPTR *_ptrc_glInvalidateTexSubImage)(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth);
+extern void(CODEGEN_FUNCPTR *_ptrc_glInvalidateTexSubImage)(
+    GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLint zoffset,
+    GLsizei width, GLsizei height, GLsizei depth);
 #define glInvalidateTexSubImage _ptrc_glInvalidateTexSubImage
-extern void (CODEGEN_FUNCPTR *_ptrc_glMultiDrawArraysIndirect)(GLenum mode, const void * indirect, GLsizei drawcount, GLsizei stride);
+extern void(CODEGEN_FUNCPTR *_ptrc_glMultiDrawArraysIndirect)(
+    GLenum mode, const void *indirect, GLsizei drawcount, GLsizei stride);
 #define glMultiDrawArraysIndirect _ptrc_glMultiDrawArraysIndirect
-extern void (CODEGEN_FUNCPTR *_ptrc_glMultiDrawElementsIndirect)(GLenum mode, GLenum type, const void * indirect, GLsizei drawcount, GLsizei stride);
+extern void(CODEGEN_FUNCPTR *_ptrc_glMultiDrawElementsIndirect)(
+    GLenum mode, GLenum type, const void *indirect, GLsizei drawcount,
+    GLsizei stride);
 #define glMultiDrawElementsIndirect _ptrc_glMultiDrawElementsIndirect
-extern void (CODEGEN_FUNCPTR *_ptrc_glObjectLabel)(GLenum identifier, GLuint name, GLsizei length, const GLchar * label);
+extern void(CODEGEN_FUNCPTR *_ptrc_glObjectLabel)(GLenum identifier,
+                                                  GLuint name, GLsizei length,
+                                                  const GLchar *label);
 #define glObjectLabel _ptrc_glObjectLabel
-extern void (CODEGEN_FUNCPTR *_ptrc_glObjectPtrLabel)(const void * ptr, GLsizei length, const GLchar * label);
+extern void(CODEGEN_FUNCPTR *_ptrc_glObjectPtrLabel)(const void *ptr,
+                                                     GLsizei length,
+                                                     const GLchar *label);
 #define glObjectPtrLabel _ptrc_glObjectPtrLabel
-extern void (CODEGEN_FUNCPTR *_ptrc_glPopDebugGroup)(void);
+extern void(CODEGEN_FUNCPTR *_ptrc_glPopDebugGroup)(void);
 #define glPopDebugGroup _ptrc_glPopDebugGroup
-extern void (CODEGEN_FUNCPTR *_ptrc_glPushDebugGroup)(GLenum source, GLuint id, GLsizei length, const GLchar * message);
+extern void(CODEGEN_FUNCPTR *_ptrc_glPushDebugGroup)(GLenum source, GLuint id,
+                                                     GLsizei length,
+                                                     const GLchar *message);
 #define glPushDebugGroup _ptrc_glPushDebugGroup
-extern void (CODEGEN_FUNCPTR *_ptrc_glShaderStorageBlockBinding)(GLuint program, GLuint storageBlockIndex, GLuint storageBlockBinding);
+extern void(CODEGEN_FUNCPTR *_ptrc_glShaderStorageBlockBinding)(
+    GLuint program, GLuint storageBlockIndex, GLuint storageBlockBinding);
 #define glShaderStorageBlockBinding _ptrc_glShaderStorageBlockBinding
-extern void (CODEGEN_FUNCPTR *_ptrc_glTexBufferRange)(GLenum target, GLenum internalformat, GLuint buffer, GLintptr offset, GLsizeiptr size);
+extern void(CODEGEN_FUNCPTR *_ptrc_glTexBufferRange)(GLenum target,
+                                                     GLenum internalformat,
+                                                     GLuint buffer,
+                                                     GLintptr offset,
+                                                     GLsizeiptr size);
 #define glTexBufferRange _ptrc_glTexBufferRange
-extern void (CODEGEN_FUNCPTR *_ptrc_glTexStorage2DMultisample)(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height, GLboolean fixedsamplelocations);
+extern void(CODEGEN_FUNCPTR *_ptrc_glTexStorage2DMultisample)(
+    GLenum target, GLsizei samples, GLenum internalformat, GLsizei width,
+    GLsizei height, GLboolean fixedsamplelocations);
 #define glTexStorage2DMultisample _ptrc_glTexStorage2DMultisample
-extern void (CODEGEN_FUNCPTR *_ptrc_glTexStorage3DMultisample)(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLboolean fixedsamplelocations);
+extern void(CODEGEN_FUNCPTR *_ptrc_glTexStorage3DMultisample)(
+    GLenum target, GLsizei samples, GLenum internalformat, GLsizei width,
+    GLsizei height, GLsizei depth, GLboolean fixedsamplelocations);
 #define glTexStorage3DMultisample _ptrc_glTexStorage3DMultisample
-extern void (CODEGEN_FUNCPTR *_ptrc_glTextureView)(GLuint texture, GLenum target, GLuint origtexture, GLenum internalformat, GLuint minlevel, GLuint numlevels, GLuint minlayer, GLuint numlayers);
+extern void(CODEGEN_FUNCPTR *_ptrc_glTextureView)(
+    GLuint texture, GLenum target, GLuint origtexture, GLenum internalformat,
+    GLuint minlevel, GLuint numlevels, GLuint minlayer, GLuint numlayers);
 #define glTextureView _ptrc_glTextureView
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttribBinding)(GLuint attribindex, GLuint bindingindex);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttribBinding)(GLuint attribindex,
+                                                          GLuint bindingindex);
 #define glVertexAttribBinding _ptrc_glVertexAttribBinding
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttribFormat)(GLuint attribindex, GLint size, GLenum type, GLboolean normalized, GLuint relativeoffset);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttribFormat)(GLuint attribindex,
+                                                         GLint size,
+                                                         GLenum type,
+                                                         GLboolean normalized,
+                                                         GLuint relativeoffset);
 #define glVertexAttribFormat _ptrc_glVertexAttribFormat
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttribIFormat)(GLuint attribindex, GLint size, GLenum type, GLuint relativeoffset);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttribIFormat)(
+    GLuint attribindex, GLint size, GLenum type, GLuint relativeoffset);
 #define glVertexAttribIFormat _ptrc_glVertexAttribIFormat
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexAttribLFormat)(GLuint attribindex, GLint size, GLenum type, GLuint relativeoffset);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexAttribLFormat)(
+    GLuint attribindex, GLint size, GLenum type, GLuint relativeoffset);
 #define glVertexAttribLFormat _ptrc_glVertexAttribLFormat
-extern void (CODEGEN_FUNCPTR *_ptrc_glVertexBindingDivisor)(GLuint bindingindex, GLuint divisor);
+extern void(CODEGEN_FUNCPTR *_ptrc_glVertexBindingDivisor)(GLuint bindingindex,
+                                                           GLuint divisor);
 #define glVertexBindingDivisor _ptrc_glVertexBindingDivisor
 
-enum ogl_LoadStatus
-{
-	ogl_LOAD_FAILED = 0,
-	ogl_LOAD_SUCCEEDED = 1,
+enum ogl_LoadStatus {
+  ogl_LOAD_FAILED = 0,
+  ogl_LOAD_SUCCEEDED = 1,
 };
 
 int ogl_LoadFunctions();

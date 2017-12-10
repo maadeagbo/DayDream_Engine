@@ -11,17 +11,6 @@ if(CMAKE_CONFIGURATION_TYPES)
 #SET(CMAKE_BUILD_TYPE "Debug")
 set(CMAKE_CXX_STANDARD 11)
 
-# clang-format
-if (UNIX)
-	add_custom_target(
-		clangformat
-		COMMAND /usr/bin/clang-format
-		-style=google
-		-i
-		${SOURCES}
-	)
-endif()
-
 # set output directories
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
@@ -214,6 +203,18 @@ include_directories(${CMAKE_SOURCE_DIR}/includes
 	${IMGUI_PATH}
 	${LUA_PATH}
 	${VRPN_PATH})
+
+
+# clang-format
+if (UNIX)
+	add_custom_target(
+		clangformat
+		COMMAND /usr/bin/clang-format
+		-style=google
+		-i
+		${SOURCES} ${PROJECT_SOURCES}
+	)
+endif()
 
 add_executable(DayDream_Engine
 				${SOURCES} ${PROJECT_SOURCES} ${SHADER_SOURCES} ${IMGUI_SRC})

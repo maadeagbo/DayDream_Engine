@@ -192,14 +192,15 @@ bool check_stack_nil(lua_State *L, int idx) {
 lua_State *init_lua_state() {
   lua_State *L = luaL_newstate();  // opens lua
   if (L) {
-    luaL_openlibs(L);                  // opens standard libraries
-    append_package_path(L, ROOT_DIR);  // add project root path to scripts
+    luaL_openlibs(L);                     // opens standard libraries
+    append_package_path(L, ROOT_DIR);     // add root path to scripts
+    append_package_path(L, PROJECT_DIR);  // add project path to scripts
 
-    // Add global variables for all scripts
-    cbuff<512> dir;
-    dir.format("%sscripts/", ROOT_DIR);
+    // Add global variables for use in scripts
+    cbuff<512> dir = ROOT_DIR;
+    //dir.format("%sscripts/", ROOT_DIR);
     lua_pushstring(L, dir.str());
-    lua_setglobal(L, "SCRIPTS_DIR");
+    lua_setglobal(L, "ROOT_DIR");
   }
   return L;
 }
