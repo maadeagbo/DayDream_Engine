@@ -118,13 +118,6 @@ endif()
 find_package(Freetype REQUIRED)
 include_directories(${FREETYPE_INCLUDE_DIRS})
 
-# includes zlib (unix)
-#find_package(ZLIB REQUIRED)
-#if(ZLIB_FOUND)
-	#message(STATUS ${ZLIB_LIBRARY})
-	#target_link_libraries(DayDream_Engine ${ZLIB_LIBRARY})
-#endif()
-
 # use the file(GLOB...) or file(GLOB_RECURSE...) to grab wildcard src files
 file(GLOB_RECURSE SOURCES 	"${CMAKE_SOURCE_DIR}/Core/*.cpp"
 							"${CMAKE_SOURCE_DIR}/includes/*.hpp"
@@ -204,7 +197,6 @@ include_directories(${CMAKE_SOURCE_DIR}/includes
 	${LUA_PATH}
 	${VRPN_PATH})
 
-
 # clang-format
 if (UNIX)
 	add_custom_target(
@@ -217,7 +209,8 @@ if (UNIX)
 endif()
 
 add_executable(DayDream_Engine
-				${SOURCES} ${PROJECT_SOURCES} ${SHADER_SOURCES} ${IMGUI_SRC})
+				${SOURCES} ${PROJECT_SOURCES} ${SHADER_SOURCES} ${IMGUI_SRC}
+				${SCRIPTS})
 
 if(MSVC)
 	# set stack size

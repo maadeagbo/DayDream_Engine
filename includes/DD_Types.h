@@ -30,6 +30,7 @@
 #include "DD_Container.h"
 #include "DD_EventTypes.h"
 #include "DD_String.h"
+#include "DD_LuaHooks.h"
 
 #include <gl_core_4_3.h>
 

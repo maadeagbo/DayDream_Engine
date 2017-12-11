@@ -1,108 +1,227 @@
 #include "DD_EventQueue.h"
 #include "DD_Terminal.h"
 
-bool DD_Queue::push(const DD_Event& _event) {
-  size_t qsize = m_data.size();
+bool DD_Queue::push(const DD_LEvent &_event) {
+  size_t qsize = events_current.size();
   if (m_numEvents == qsize) {
     return false;
   }
-  m_data[m_tail] = std::move(_event);
+  events_current[m_tail] = std::move(_event);
   m_tail = (m_tail + 1) % qsize;
   m_numEvents++;
   return true;
 }
 
-bool DD_Queue::pop(DD_Event& _event) {
-  size_t qsize = m_data.size();
+int DD_Queue::register_lua_func(lua_State *L) {
+  parse_lua_events(L, fb);
+
+  // grab signature key
+  int *s_val = fb.get_func_val<int>("sig.key");
+  // grab global key
+  const char *g_val = fb.get_func_val<const char>("global.name");
+  // grab function key
+  const char *f_val = fb.get_func_val<const char>("func.name");
+
+  // cannot add new callback w/out function and signature
+  if (f_val && s_val) {
+    handler_sig callback;
+    // add class function
+    if (g_val) {
+      callback.global_id = get_lua_ref(L, "", g_val);
+      callback.func_id = get_lua_ref(L, g_val, f_val);
+    } else {
+      callback.func_id = get_lua_ref(L, "", f_val);
+    }
+    register_handler((size_t)*s_val, callback);
+  }
+
+  return 0;
+}
+
+int DD_Queue::subscribe_lua_func(lua_State *L) {
+  parse_lua_events(L, fb);
+
+  // grab event key
+  int *e_val = fb.get_func_val<int>("event.key");
+  // grab signature key
+  int *s_val = fb.get_func_val<int>("sig.key");
+
+  if (e_val && s_val) {
+    subscribe((size_t)*e_val, (size_t)*s_val);
+  }
+  return 0;
+}
+
+int DD_Queue::unsubscribe_lua_func(lua_State *L) {
+  parse_lua_events(L, fb);
+
+  // grab event key
+  int *e_val = fb.get_func_val<int>("event.key");
+  // grab signature key
+  int *s_val = fb.get_func_val<int>("sig.key");
+
+  if (e_val && s_val) {
+    unsubscribe((size_t)*e_val, (size_t)*s_val);
+  }
+  return 0;
+}
+
+bool DD_Queue::pop(DD_LEvent &_event) {
+  size_t qsize = events_current.size();
   if (m_numEvents == 0) {
     return false;
   }
-  _event = std::move(m_data[m_head]);
+  _event = std::move(events_current[m_head]);
   m_head = (m_head + 1) % qsize;
   m_numEvents--;
   return true;
 }
 
-bool DD_Queue::RegisterHandler(EventHandler& handler, const char* ticket,
-                               const char* sig) {
-  if (handlers.find(ticket) == handlers.end()) {
+void DD_Queue::register_sys_func(syshandler_sig _sig) {
+  bool registered = false;
+  for (size_t i = 0; i < sys_callback_funcs.size() && !registered; i++) {
+    // look for next slot
+    if (sys_callback_funcs[i].sig < 0) {
+      registered = true;
+      sys_callback_funcs[i] = _sig;
+    }
+  }
+}
+
+void DD_Queue::unregister_func(const size_t _sig) {
+  callback_funcs.erase(_sig);
+}
+
+void DD_Queue::subscribe(const size_t event_sig, const size_t _sig) {
+  if (registered_events.find(event_sig) == registered_events.end()) {
     // if it doesn't exist, create new container
-    handlers[ticket] = callbackContainer(50);
-    m_counter[ticket] = 1;
-    handlers[ticket][0].func = handler;
-    handlers[ticket][0].sig.set(sig);
-    return true;
+    registered_events[event_sig] = dd_array<size_t>(5);
+    registered_events[event_sig][1] = _sig;
+    registered_events[event_sig][0] = 1;  // store number of registered funcs
   } else {
-    if (m_counter[ticket] >= handlers[ticket].size()) {
+    size_t full_q = registered_events[event_sig].size() - 1;
+    if (registered_events[event_sig][0] == full_q) {
       // no more space, create more
-      callbackContainer temp(m_counter[ticket] + 25);
-      temp = handlers[ticket];
-      handlers[ticket] = std::move(temp);
+      dd_array<size_t> temp(full_q + 1 + 10);
+      temp = registered_events[event_sig];
+      registered_events[event_sig] = std::move(temp);
     }
-    // add new handler
-    handlers[ticket][m_counter[ticket]].func = handler;
-    handlers[ticket][m_counter[ticket]].sig.set(sig);
-    m_counter[ticket] += 1;
-    return true;
+    // register new handler to event
+    size_t &idx = registered_events[event_sig][0];
+    registered_events[event_sig][idx + 1] = _sig;
+    idx++;
   }
 }
 
-// Registers function that post events into the queue
-bool DD_Queue::RegisterPoster(EventHandler& handler, const char* sig) {
-  if (m_postLimit >= m_postHandlers.size()) {
-    return false;
-  }
-  m_postHandlers[m_postLimit].func = handler;
-  m_postHandlers[m_postLimit].sig.set(sig);
-  m_postLimit += 1;
-  return true;
+void DD_Queue::register_handler(const size_t id, const handler_sig &sig) {
+  callback_funcs[id] = sig;
 }
 
-// Queries for post events and loads the queue before render job is sent
-void DD_Queue::GetPosts(const char* postID, const float dt,
-                        const float totalTime) {
-  for (size_t i = 0; i < m_postLimit; i++) {
-    DD_Event event = DD_Event();
-    const float frame_t = main_clock->getFrameTime();
-    const float run_t = main_clock->getTimeFloat();
-    event.m_type = postID;
-    event.m_time = frame_t;
-    event.m_total_runtime = run_t;
-
-    DD_Event newEvent = std::move(m_postHandlers[i].func(event));
-
-    if (newEvent.m_type.compare("") != 0) {
-      push(newEvent);
+void DD_Queue::process_callback_buff() {
+  for (unsigned i = 0; i < cb.num_events; i++) {
+    DD_LEvent &_event = cb.buffer[i];
+    if (_event.delay > 0) {  // add to future queue
+      push_future(_event);
+    } else {
+      push(_event);
     }
   }
 }
 
-void DD_Queue::ProcessQueue() {
-  const float frame_t = main_clock->getFrameTime();
-  const float run_t = main_clock->getTimeFloat();
+void DD_Queue::process_future() {
+  unsigned num_events = (unsigned)f_numEvents;
+  for (unsigned i = 0; i < num_events; i++) {
+    DD_LEvent _event;
+    pop_future(_event);
 
-  const size_t events_this_frame = m_numEvents;
-  for (size_t i = 0; i < events_this_frame; i++) {
-    DD_Event current = DD_Event();
-    pop(current);
-    current.m_time = frame_t;
-    current.m_total_runtime = run_t;
+    if (_event.delay == 0) {
+      push(_event);
+    } else {
+      _event.delay--;
+      push_future(_event);
+    }
+  }
+}
 
-    // find and loop through array that matches
-    if (handlers.find(current.m_type) != handlers.end()) {
-      callbackContainer& pool = handlers[current.m_type];
-      size_t count = m_counter[current.m_type];
+void DD_Queue::unsubscribe(const size_t event_sig, const size_t _sig) {
+  if (registered_events.find(event_sig) != registered_events.end()) {
+    dd_array<size_t> &func_sigs = registered_events[event_sig];
+    bool removed = false;
+    for (size_t i = 1; i <= func_sigs[0] && !removed; i++) {
+      // use replacement and decrement to remove
+      if (func_sigs[i] == _sig) {
+        removed = true;
+        func_sigs[i] = func_sigs[func_sigs[0]];
+        func_sigs[0]--;
+      }
+    }
+  }
+}
 
-      for (size_t j = 0; j < count; j++) {
-        DD_Event new_event = pool[j].func(current);  // process event
-        if (new_event.m_type.compare("") != 0) {     // push new event
-          push(new_event);
+void DD_Queue::process_queue() {
+  while (!shutdown) {
+    DD_LEvent _event;
+    pop(_event);
+
+    size_t e_sig = _event.handle.gethash();
+    // check if event is a system call
+    if (_event.handle == sys_call) {
+      if (_event.active == 1 && _event.args[0].val.type == VType::STRING) {
+        // get key
+        size_t idx = _event.args[0].val.v_strptr.gethash();
+        for (size_t i = 0; i < sys_callback_funcs.size(); i++) {
+          // call system function if key matches
+          if (sys_callback_funcs[i].sig == idx) {
+            sys_callback_funcs[i].func(_event);
+          }
         }
       }
     }
+    // check if event is to process backed-up/future events
+    else if (_event.handle == check_future) {
+      process_future();
+    }
+    // check if event is level update call
+    else if (_event.handle == lvl_call) {
+      callback_lua(L, _event, lvl_update.func_id, lvl_update.global_id, &cb);
+      process_callback_buff();
+    }
+    // check if event is level initialize call
+    else if (_event.handle == lvl_call_i) {
+      callback_lua(L, _event, lvl_init.func_id, lvl_init.global_id, &cb);
+      process_callback_buff();
+    }
+    // event can be processed by scripts
+    else if (registered_events.find(e_sig) != registered_events.end()) {
+      dd_array<size_t> &func_sigs = registered_events[e_sig];
 
-    if (current.m_message != nullptr) {
-      delete current.m_message;
+      for (size_t i = 1; i <= func_sigs[0]; i++) {
+        handler_sig &handle = callback_funcs[func_sigs[i]];
+        callback_lua(L, _event, handle.func_id, handle.global_id, &cb);
+        process_callback_buff();
+      }
     }
   }
+}
+
+void DD_Queue::push_future(const DD_LEvent &_event) {
+  size_t qsize = events_future.size();
+  if (f_numEvents == qsize) {
+    return;
+  }
+
+  events_future[f_tail] = std::move(_event);
+  f_tail = (f_tail + 1) % qsize;
+  f_numEvents++;
+}
+
+void DD_Queue::pop_future(DD_LEvent &_event) {
+  size_t qsize = events_future.size();
+  if (f_numEvents == 0) {
+    return;
+  }
+
+  _event = std::move(events_future[f_head]);
+  f_head = (f_head + 1) % qsize;
+  f_numEvents--;
 }

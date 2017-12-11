@@ -39,8 +39,12 @@ struct DD_LEvent {
   cbuff<32> handle;
   KeyVal args[MAX_EVENT_ARGS];
   unsigned active = 0;
-  unsigned priority_timer[2] = {0, 0};
+  unsigned delay = 0;
+  unsigned priority = 0;
 };
+
+// system event handler signature
+typedef std::function<void(DD_LEvent&)> SysEventHandler;
 
 /// \brief Add argument to DD_LEvent
 template <typename T>
