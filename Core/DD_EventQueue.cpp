@@ -188,8 +188,14 @@ void DD_Queue::process_queue() {
     }
     // check if event is level initialize call
     else if (_event.handle == lvl_call_i) {
-      callback_lua(L, _event, lvl_init.func_id, lvl_init.global_id, &cb);
-      process_callback_buff();
+			async_call = std::async(std::launch::async, callback_lua, L, _event,
+															lvl_init.func_id, lvl_init.global_id, &cb, 
+															nullptr);
+      //callback_lua(L, _event, lvl_init.func_id, lvl_init.global_id, &cb);
+			DD_LEvent a_event;
+			a_event.handle = "_check_async";
+			add_arg_LEvent<bool>(&a_event, "", false);
+			a_event.delay = 5;
     }
     // event can be processed by scripts
     else if (registered_events.find(e_sig) != registered_events.end()) {

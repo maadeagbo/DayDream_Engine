@@ -38,6 +38,7 @@ struct DD_Engine {
         main_window(nullptr),
         main_lvl(10),
         num_lvls(0),
+				load_ticks(3),
         current_lvl(0),
         load_assets(false),
         flag_debug(false) {}
@@ -57,6 +58,7 @@ struct DD_Engine {
   void LevelAssets(const char* assets_file);
   void LoadQueue();
   DD_Event Update(DD_Event& event);
+	void update(DD_LEvent &_event);
   void execScript(std::string script_file, float frametime);
   bool execTerminal(const char* cmd, float frametime);
   void openWindow(const size_t width, const size_t height,
@@ -84,7 +86,9 @@ struct DD_Engine {
   DD_CallBackBuff main_cb;
   std::string lvl_resource;
   dd_array<DD_GameLevel*> main_lvl;
+	std::future<void> async_call;
   size_t num_lvls;
+	int load_ticks;
   int current_lvl;
   bool load_assets;
   bool flag_debug;

@@ -22,8 +22,10 @@ class DD_AISystem {
   DD_AISystem() {}
   ~DD_AISystem() {}
 
-  DD_Resources* res_ptr;
-  DD_Event update(DD_Event& event);
+  DD_Resources *res_ptr;
+	PushFunc push;
+	DD_Event update(DD_Event& event);
+	void ai_update(DD_LEvent &_event);
 
   void generatePRM(DD_AIObject* ai_obj);
   void mapPRMtoLines(DD_AIObject* ai_obj);

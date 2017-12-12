@@ -287,6 +287,9 @@ void DD_Input::UpdateMouseWheel(SDL_MouseWheelEvent& key) {
   MouseY_Scroll = key.y;
 }
 
+void DD_Input::update(DD_LEvent & _event) {
+}
+
 inputBuff* DD_Input::GetInput() {
   inputBuff* MyInput = new inputBuff();
   for (size_t i = 0; i < 512; i++) {

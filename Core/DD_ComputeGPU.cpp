@@ -114,3 +114,6 @@ DD_Event DD_Compute::Compute(DD_Event& event) {
   }
   return DD_Event();
 }
+
+void DD_Compute::compute(DD_LEvent & _event) {
+}

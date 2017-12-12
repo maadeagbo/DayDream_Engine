@@ -304,6 +304,7 @@ void register_callback_lua(lua_State *L, const char *func_sig,
   lua_register(L, func_sig, _func);
 }
 
+/*
 void callback_lua(lua_State *L, const DD_LEvent &levent, DD_CallBackBuff &cb,
                   const char *func, const char *lclass) {
   /// \brief quick print out error func
@@ -358,6 +359,7 @@ void callback_lua(lua_State *L, const DD_LEvent &levent, DD_CallBackBuff &cb,
   // get returned events and fill buffer
   parse_lua_events(L, cb);
 }
+//*/
 
 void callback_lua(lua_State *L, const DD_LEvent &levent, int func_ref,
                   int global_ref, DD_CallBackBuff *cb, DD_FuncBuff *fb) {

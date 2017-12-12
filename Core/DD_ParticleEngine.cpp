@@ -201,6 +201,9 @@ DD_Event DD_ParticleSys::Create(DD_Event& event) {
   return DD_Event();
 }
 
+void DD_ParticleSys::create(DD_LEvent & _event) {
+}
+
 int repeats = 0;
 
 // called once per frame to iterate over alive emitters
@@ -654,6 +657,9 @@ DD_Event DD_ParticleSys::AddJobToQueue(DD_Event& event) {
     }
   }
   return DD_Event();
+}
+
+void DD_ParticleSys::add_job(DD_LEvent & _event) {
 }
 
 // Remove dead emiiters from resources bin

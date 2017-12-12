@@ -100,6 +100,9 @@ DD_Event DD_AISystem::update(DD_Event& event) {
   return DD_Event();
 }
 
+void DD_AISystem::ai_update(DD_LEvent & _event) {
+}
+
 /**
         Uses provided function handler in initializtion method to calculate
         heuristics for A*

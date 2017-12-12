@@ -156,8 +156,8 @@ void register_callback_lua(lua_State *L, const char *func_sig,
 bool parse_luafile(lua_State *L, const char *filename);
 
 /// \brief Envoke lua callback function and return event
-void callback_lua(lua_State *L, const DD_LEvent &event, DD_CallBackBuff &cb,
-                  const char *func, const char *lclass = "");
+//void callback_lua(lua_State *L, const DD_LEvent &event, DD_CallBackBuff &cb,
+//                  const char *func, const char *lclass = "");
 
 /// \brief Envoke lua callback function with lua_ref pointer
 void callback_lua(lua_State *L, const DD_LEvent &levent, int func_ref,

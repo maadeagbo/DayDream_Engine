@@ -20,6 +20,12 @@ const u64 SECOND_LL = 1000000000LL;
 
 int resolution_set[2] = {1400, 800};
 bool engine_mode_flags[] = {true, false, false, false};
+
+const size_t exit_hash = getCharHash("sys_exit");
+const size_t frame_enter_hash = getCharHash("frame_init");
+const size_t frame_exit_hash = getCharHash("frame_exit");
+const size_t load_hash = getCharHash("load_screen");
+const size_t resource_hash = getCharHash("init_resources");
 }
 
 void DD_Engine::startup_lua() { main_lstate = init_lua_state(); }
@@ -218,23 +224,28 @@ bool DD_Engine::LevelSelect(const size_t w, const size_t h) {
   // grab levels from startup script
   cbuff<512> startup_script;
   startup_script.format("%sscripts/startup.lua", ROOT_DIR);
-  parse_luafile(main_lstate, startup_script.str());
+  bool file_loaded = parse_luafile(main_lstate, startup_script.str());
 
   // create array of levels
   dd_array<const char*> lvls_list;
-  DD_LEvent init_event;
-  init_event.handle = "get_lvls";
-  callback_lua(main_lstate, init_event, main_cb, "generate_levels");
-  int *num_levels = main_cb.get_callback_val<int>("num_levels");
-  if (num_levels) {
-    //printf("Found # of levels: %d\n", *num_levels);
-    lvls_list.resize((unsigned)(*num_levels));
-    cbuff<4> _lvl;
-    for (unsigned i = 0; i < (unsigned)lvls_list.size(); i++) {
-      _lvl.format("%u", i + 1);
-      lvls_list[i] = main_cb.get_callback_val<const char>(_lvl.str());
-    }
-  }
+	if (file_loaded) {
+		// get reference to function
+		int func_ref = get_lua_ref(main_lstate, nullptr, "generate_levels");
+		DD_LEvent init_event;
+		init_event.handle = "get_lvls";
+		//callback_lua(main_lstate, init_event, main_cb, "generate_levels");
+		callback_lua(main_lstate, init_event, func_ref, -1, &main_cb);
+		int *num_levels = main_cb.get_callback_val<int>("num_levels");
+		if (num_levels) {
+			//printf("Found # of levels: %d\n", *num_levels);
+			lvls_list.resize((unsigned)(*num_levels));
+			cbuff<4> _lvl;
+			for (unsigned i = 0; i < (unsigned)lvls_list.size(); i++) {
+				_lvl.format("%u", i + 1);
+				lvls_list[i] = main_cb.get_callback_val<const char>(_lvl.str());
+			}
+		}
+	}
 
   init_flag = EngineState::MAIN;
   bool launch = false;
@@ -315,6 +326,18 @@ bool DD_Engine::LevelSelect(const size_t w, const size_t h) {
 }
 
 void DD_Engine::Load() {
+	std::_Ph<1> arg_1 = std::placeholders::_1;
+	cbuff<32> event_id;
+	syshandler_sig system_handle;
+	SysEventHandler _sh;
+	PushFunc push_func = std::bind(&DD_Queue::push, &main_q, arg_1);
+
+	auto register_func = [&](const char *str) {
+		event_id = str;
+		system_handle = { _sh, event_id.gethash() };
+		main_q.register_sys_func(system_handle);
+	};
+
   EngineMode init_options = EngineMode::DD_NOT_SET;
   init_options = (engine_mode_flags[0])
                      ? EngineMode(init_options | EngineMode::DD_VSYNC)
@@ -336,68 +359,81 @@ void DD_Engine::Load() {
   DD_MathLib::setResourceBin(&main_res);
   // Load Renderer
   main_renderer.m_resourceBin = &main_res;
+	main_renderer.push = push_func;
   main_renderer.m_time = &main_timer;
   main_renderer.LoadRendererEngine((GLfloat)m_WIDTH, (GLfloat)m_HEIGHT);
   main_renderer.m_particleSys->m_resBin = &main_res;
   // load compute unit
   main_comp.init();
 
+	// add input handler
+	_sh = std::bind(&DD_Input::update, &main_input, arg_1);
+	register_func("query_input");
+
   // add compute handler
   main_comp.res_ptr = &main_res;
-  EventHandler handlerC =
-      std::bind(&DD_Compute::Compute, &main_comp, std::placeholders::_1);
-  main_q.RegisterHandler(handlerC, "compute_texA");
-  main_q.RegisterPoster(handlerC);
+	main_comp.push = push_func;
+	_sh = std::bind(&DD_Compute::compute, &main_comp, arg_1);
+	register_func("compute_texA");
 
   // initialize Animation system and register handlers
   main_animator.res_ptr = &main_res;
-  EventHandler handlerAn =
-      std::bind(&DD_AnimSystem::update, &main_animator, std::placeholders::_1);
-  main_q.RegisterHandler(handlerAn, "update_animation");
+	main_animator.push = push_func;
+	system_handle = { _sh, event_id.gethash() };
+	_sh = std::bind(&DD_AnimSystem::anim_update, &main_animator, arg_1);
+	register_func("update_animation");
 
   // add render engine handler
-  EventHandler handlerR = std::bind(&DD_Renderer::RenderHandler, &main_renderer,
-                                    std::placeholders::_1);
-  main_q.RegisterHandler(handlerR, "render");
-  main_q.RegisterHandler(handlerR, "toggle_screenshots");
-  main_q.RegisterHandler(handlerR, "rendstat");
+	_sh = std::bind(&DD_Renderer::render_handler, &main_renderer, arg_1);
+	register_func("render");
+	register_func("toggle_screenshots");
+	register_func("rendstat");
+
 
   // add particle handler
-  EventHandler handlerP =
-      std::bind(&DD_ParticleSys::Create, main_renderer.m_particleSys,
-                std::placeholders::_1);
-  EventHandler handlerP2 =
-      std::bind(&DD_ParticleSys::AddJobToQueue, main_renderer.m_particleSys,
-                std::placeholders::_1);
-  main_q.RegisterHandler(handlerP, "generate_emitter");
-  main_q.RegisterHandler(handlerP, "create_cloth");
-  main_q.RegisterHandler(handlerP, "debug");
-  main_q.RegisterHandler(handlerP, "system_pause");
-  main_q.RegisterHandler(handlerP, "update_cloth");
-  main_q.RegisterHandler(handlerP2, "particle_jobA");
-  main_q.RegisterPoster(handlerP);
+	main_renderer.m_particleSys->push = push_func;
+  _sh = std::bind(&DD_ParticleSys::create, main_renderer.m_particleSys, arg_1);
+	register_func("generate_emitter");
+	register_func("create_cloth");
+	register_func("debug");
+	register_func("system_pause");
+	register_func("update_cloth");
+  _sh = std::bind(&DD_ParticleSys::add_job, main_renderer.m_particleSys, arg_1);
+	register_func("particle_jobA");
 
   // add AI program handler and setup
   main_ai.res_ptr = &main_res;
-  EventHandler handlerA =
-      std::bind(&DD_AISystem::update, &main_ai, std::placeholders::_1);
-  main_q.RegisterHandler(handlerA, "update_AI");
+	main_ai.push = push_func;
+  _sh = std::bind(&DD_AISystem::ai_update, &main_ai, arg_1);
+	register_func("update_AI");
 
   // terminal input callback
-  EventHandler handlerT =
-      std::bind(&DD_Terminal::getInput, std::placeholders::_1);
-  main_q.RegisterHandler(handlerT, "input");
-  main_q.main_clock = &main_timer;
+  _sh = std::bind(&DD_Terminal::get_input, std::placeholders::_1);
+	register_func("input");
 
   // add engine callback
-  EventHandler handlerE =
-      std::bind(&DD_Engine::Update, this, std::placeholders::_1);
-  main_q.RegisterHandler(handlerE, "EXIT");
+  _sh = std::bind(&DD_Engine::update, this, arg_1);
+	register_func("sys_exit");
+	register_func("frame_init");
+	register_func("frame_exit");
+	register_func("load_screen");
+	register_func("init_resources");
 }
 
 /// \brief Load engine compoenets for DD_AssetViewer
 void DD_Engine::LoadViewer() {
-  // initialize Asset viewer
+	std::_Ph<1> arg_1 = std::placeholders::_1;
+	cbuff<32> event_id;
+	syshandler_sig system_handle;
+	SysEventHandler _sh;
+	PushFunc push_func = std::bind(&DD_Queue::push, &main_q, arg_1);
+
+	auto register_func = [&](const char *str) {
+		event_id = str;
+		system_handle = { _sh, event_id.gethash() };
+		main_q.register_sys_func(system_handle);
+	};
+
   // log dimensions
   main_viewer.m_screenH = m_HEIGHT;
   main_viewer.m_screenW = m_WIDTH;
@@ -406,12 +442,12 @@ void DD_Engine::LoadViewer() {
   // register handlers
   EventHandler handlerV =
       std::bind(&DD_AssetViewer::Update, &main_viewer, std::placeholders::_1);
-  main_q.RegisterHandler(handlerV, "viewer");
+  /*main_q.RegisterHandler(handlerV, "viewer");
   main_q.RegisterHandler(handlerV, "new_mdl");
   main_q.RegisterHandler(handlerV, "new_sk");
   main_q.RegisterHandler(handlerV, "new_mdlsk");
   main_q.RegisterHandler(handlerV, "new_agent_sk");
-  main_q.RegisterHandler(handlerV, "new_anim");
+  main_q.RegisterHandler(handlerV, "new_anim");*/
 }
 
 void DD_Engine::updateSDL() {
@@ -455,6 +491,28 @@ void DD_Engine::updateSDL() {
 /* Call in main function to begin up game loop
 */
 void DD_Engine::Run() {
+	// load screen set up
+	load_assets = true;
+	// push some events to kick start the queue
+	DD_LEvent _event;
+
+	// add resource init
+	_event.active = 0;
+	_event.handle = "_sys_call";
+	add_arg_LEvent<const char *>(&_event, "", "init_resources");
+	main_q.push(_event);
+	// add level init
+	_event.active = 0;
+	_event.handle = "_lvl_call_init";
+	add_arg_LEvent<const char *>(&_event, "", "");
+	main_q.push(_event);
+	// add frame update
+	_event.active = 0;
+	_event.handle = "_sys_call";
+	add_arg_LEvent<const char *>(&_event, "", "frame_init");
+	main_q.push(_event);
+
+	/*
   if (init_flag == EngineState::MAIN) {
     // get resource for current level
     lvl_resource = main_lvl[current_lvl]->m_assetFile;
@@ -527,6 +585,7 @@ void DD_Engine::Run() {
       std::this_thread::sleep_for(chrono_msec);
     }
   }
+	//*/
 }
 
 void DD_Engine::gameLoop() {
@@ -735,6 +794,76 @@ DD_Event DD_Engine::Update(DD_Event& event) {
     windowShouldClose = fb->flag;
   }
   return DD_Event();
+}
+
+void DD_Engine::update(DD_LEvent & _event) {
+	if (_event.active == 1 && _event.args[0].val.type == VType::STRING) {
+		size_t e_sig = _event.args[0].val.v_strptr.gethash();
+		if (e_sig == exit_hash) {		//close app
+			main_q.shutdown_queue();
+		}
+		else if (e_sig == frame_enter_hash) {	// load frame
+			// clear framebuffer 
+			glClearColor(main_renderer.bgcol[0], main_renderer.bgcol[1],
+									 main_renderer.bgcol[2], main_renderer.bgcol[3]);
+			glClear(GL_COLOR_BUFFER_BIT);
+
+			main_timer.update();
+
+			// start imgui window processing
+			ImGui_ImplSdlGL3_NewFrame(main_window);
+			// pole SDL events
+			updateSDL();
+			// run scene graph
+			ResSpace::updateSceneGraph(&main_res, main_timer.getTimeFloat());
+
+			// Choose the next event based on flags
+			DD_LEvent _event;
+
+			if (load_assets) {
+				_event.handle = "_sys_call";
+				add_arg_LEvent<const char *>(&_event, "", "init_resources");
+				main_q.push(_event);
+			} else {
+				//
+			}
+		}
+		else if (e_sig == frame_exit_hash) {	// exit frame
+			// query terminal
+			DD_Terminal::display((float)m_WIDTH, (float)m_HEIGHT);
+			// render IMGUI ui
+			ImGui::Render();
+			// swap buffers
+			SDL_GL_SwapWindow(main_window);
+		}
+		else if (e_sig == load_hash) {	// load screen
+			// Show load screen
+			main_renderer.DrawLoadScreen(main_timer.getTimeFloat());
+		}
+		else if (e_sig == resource_hash) {	// loading resources 
+			// spawn loading of resources in new thread
+			switch (load_ticks) {
+				case 3:
+					async_call = std::async(std::launch::async, ResSpace::Load, &main_res,
+										 lvl_resource.c_str());
+					load_ticks--;
+					break;
+				case 2:
+					async_call = std::async(std::launch::async, ;
+					load_ticks--;
+					break;
+				case 1:
+					async_call;
+					load_ticks--;
+					break;
+				case 0:
+					load_assets = false;
+					break;
+				default:
+					break;
+			}
+		}
+	}
 }
 
 void DD_Engine::InitCurrentLevel() {

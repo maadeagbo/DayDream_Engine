@@ -83,6 +83,7 @@ struct DD_Input {
   void UpdateMouse(SDL_MouseButtonEvent& key, const bool down);
   void UpdateMousePos(SDL_MouseMotionEvent& key);
   void UpdateMouseWheel(SDL_MouseWheelEvent& key);
+	void update(DD_LEvent &_event);
 
   inputBuff* GetInput();
 

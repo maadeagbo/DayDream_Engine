@@ -87,6 +87,7 @@ struct DD_Renderer {
 
   // Main methods
   DD_Event RenderHandler(DD_Event& event);
+	void render_handler(DD_LEvent &_event);
   void LoadRendererEngine(const GLfloat _Width, const GLfloat _Height);
   void LoadEngineAssets();
   void QueryShaders();
@@ -119,6 +120,7 @@ struct DD_Renderer {
   void RenderLightSphere(DD_Shader* shader, const glm::mat4 MVP);
   void CreateCubeMap(const char* ID);
   GLfloat ComputeLuminance();
+	PushFunc push;
 
   GBuffer m_gbuffer;
   ShadowBuffer m_sbuffer;

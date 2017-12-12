@@ -136,7 +136,7 @@ add_definitions(
 	"-DFONTS_DIR=\"${CMAKE_SOURCE_DIR}/Resource/Fonts/\""
 )
 
-# use file(GLOB_RECURSE...), add_library(DayDream_Engine...), and
+# use file(GLOB_RECURSE...), add_library(dd_engine...), and
 # source_group(<group name> FILES...) to create folder structure in project
 # LIST_DIRECTORIES remove directory name from files
 file(GLOB_RECURSE PROJECT_SOURCES
@@ -208,19 +208,19 @@ if (UNIX)
 	)
 endif()
 
-add_executable(DayDream_Engine
+add_executable(dd_engine
 				${SOURCES} ${PROJECT_SOURCES} ${SHADER_SOURCES} ${IMGUI_SRC}
 				${SCRIPTS})
 
 if(MSVC)
 	# set stack size
-	set_property(TARGET DayDream_Engine APPEND PROPERTY LINK_FLAGS /STACK:2000000)
+	set_property(TARGET dd_engine APPEND PROPERTY LINK_FLAGS /STACK:2000000)
 endif()
 
 # set visual studio startup project
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 			PROPERTY VS_STARTUP_PROJECT
-			DayDream_Engine)
+			dd_engine)
 # add libraries
 find_library(VRPN_LIB vrpn ${CMAKE_CURRENT_SOURCE_DIR}/vrpn_lib_files)
 if(NOT VRPN_LIB)
@@ -282,9 +282,9 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -lstdc++fs")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -lstdc++fs")
 
 if(NOT WIN32)
-	target_link_libraries(DayDream_Engine ${SOIL_LIB} ${OPENGL_gl_LIBRARY}
+	target_link_libraries(dd_engine ${SOIL_LIB} ${OPENGL_gl_LIBRARY}
 	${SDL2_LIBRARY} ${VRPN_LIB} ${FREETYPE_LIBRARIES} ${FS_LIB} ${LUA_LIB})
 else()
-	target_link_libraries(DayDream_Engine ${SOIL_LIB} ${OPENGL_gl_LIBRARY}
+	target_link_libraries(dd_engine ${SOIL_LIB} ${OPENGL_gl_LIBRARY}
 	${SDL2_LIBRARY} ${VRPN_LIB} ${FREETYPE_LIBRARIES} ${LUA_LIB})
 endif()
