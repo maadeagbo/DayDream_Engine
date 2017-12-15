@@ -62,6 +62,21 @@ template <>
 bool add_arg_LEvent<const char *>(DD_LEvent *levent, const char *key,
                                   const char *arg);
 
+/// brief Get argument from DD_LEvent
+template <typename T>
+T* get_arg_LEvent(DD_LEvent *levent, const char *key) {
+	return nullptr;
+}
+
+template <>
+int* get_arg_LEvent<int>(DD_LEvent *levent, const char *key);
+template <>
+float* get_arg_LEvent<float>(DD_LEvent *levent, const char *key);
+template <>
+bool* get_arg_LEvent<bool>(DD_LEvent *levent, const char *key);
+template <>
+const char* get_arg_LEvent<const char>(DD_LEvent *levent, const char *key);
+
 /// \brief Buffer to hold evens from callback function
 struct DD_CallBackBuff {
   /// \brief Get new event from buffer (return nullptr if buffer is full)
@@ -146,6 +161,7 @@ int dispatch_(lua_State *L) {
 void append_package_path(lua_State *L, const char *path);
 
 /// \brief Check lua stack value for nil (returns true if nil)
+/// \return True if nil
 bool check_stack_nil(lua_State *L, int idx);
 
 /// \brief Register class function w/ dispatch template
@@ -153,6 +169,7 @@ void register_callback_lua(lua_State *L, const char *func_sig,
                            lua_CFunction _func);
 
 /// \brief Read and execute lua script file
+/// \return Ture if successfully opened
 bool parse_luafile(lua_State *L, const char *filename);
 
 /// \brief Envoke lua callback function and return event
@@ -189,7 +206,29 @@ void print_table(lua_State *L, const int tabs = 0);
 void print_callbackbuff(DD_CallBackBuff &cb);
 
 /// \brief Store and return handle to lua function
+/// \return Integer handle to function or class
 int get_lua_ref(lua_State *L, const char *lclass, const char *func);
 
 /// \brief Clear function reference
 void clear_lua_ref(lua_State *L, int func_ref);
+
+/// \brief Set integer global in lua scripts
+inline void set_lua_global(lua_State *L, const char* name, const int val) {
+	lua_pushinteger(L, val);
+	lua_setglobal(L, name);
+}
+/// \brief Set float global in lua scripts
+inline void set_lua_global(lua_State *L, const char* name, const float val) {
+	lua_pushnumber(L, val);
+	lua_setglobal(L, name);
+}
+/// \brief Set boolean global in lua scripts
+inline void set_lua_global(lua_State *L, const char* name, const bool val) {
+	lua_pushboolean(L, val);
+	lua_setglobal(L, name);
+}
+/// \brief Set string global in lua scripts
+inline void set_lua_global(lua_State *L, const char* name, const char *val) {
+	lua_pushstring(L, val);
+	lua_setglobal(L, name);
+}

@@ -5,6 +5,10 @@ cbuff<64> _key;
 cbuff<256> _val;
 }
 
+// ********************************************************************
+// Template definitions
+// ********************************************************************
+
 template <>
 bool add_arg_LEvent<bool>(DD_LEvent *levent, const char *key, bool arg) {
   if (!levent || levent->active >= MAX_EVENT_ARGS) {
@@ -55,6 +59,70 @@ bool add_arg_LEvent<const char *>(DD_LEvent *levent, const char *key,
 }
 
 template <>
+int* get_arg_LEvent<int>(DD_LEvent *levent, const char *key) {
+	if (!levent) { return nullptr; }
+
+	Varying<32> *v = nullptr;
+	cbuff<32> *k = nullptr;
+	for (unsigned i = 0; i < levent->active; i++) {
+		k = &levent->args[i].key;
+		v = &levent->args[i].val;
+		if (k->compare(key) == 0 && v->type == VType::INT) {
+			return &v->v_int;
+		}
+	}
+	return nullptr;
+}
+
+template <>
+float* get_arg_LEvent<float>(DD_LEvent *levent, const char *key) {
+	if (!levent) { return nullptr; }
+
+	Varying<32> *v = nullptr;
+	cbuff<32> *k = nullptr;
+	for (unsigned i = 0; i < levent->active; i++) {
+		k = &levent->args[i].key;
+		v = &levent->args[i].val;
+		if (k->compare(key) == 0 && v->type == VType::FLOAT) {
+			return &v->v_float;
+		}
+	}
+	return nullptr;
+}
+
+template <>
+bool* get_arg_LEvent<bool>(DD_LEvent *levent, const char *key) {
+	if (!levent) { return nullptr; }
+
+	Varying<32> *v = nullptr;
+	cbuff<32> *k = nullptr;
+	for (unsigned i = 0; i < levent->active; i++) {
+		k = &levent->args[i].key;
+		v = &levent->args[i].val;
+		if (k->compare(key) == 0 && v->type == VType::BOOL) {
+			return &v->v_bool;
+		}
+	}
+	return nullptr;
+}
+
+template <>
+const char* get_arg_LEvent<const char>(DD_LEvent *levent, const char *key) {
+	if (!levent) { return nullptr; }
+
+	Varying<32> *v = nullptr;
+	cbuff<32> *k = nullptr;
+	for (unsigned i = 0; i < levent->active; i++) {
+		k = &levent->args[i].key;
+		v = &levent->args[i].val;
+		if (k->compare(key) == 0 && v->type == VType::STRING) {
+			return v->v_strptr.str();
+		}
+	}
+	return nullptr;
+}
+
+template <>
 int *DD_CallBackBuff::get_callback_val<int>(const char *ckey) {
   Varying<32> *v = nullptr;
   cbuff<32> *k = nullptr;
@@ -63,10 +131,8 @@ int *DD_CallBackBuff::get_callback_val<int>(const char *ckey) {
       k = &buffer[i].args[j].key;
       v = &buffer[i].args[j].val;
 
-      if (v->type == VType::INT) {
-        if (k->compare(ckey) == 0) {
-          return &v->v_int;
-        }
+      if (k->compare(ckey) == 0 && v->type == VType::INT) {
+        return &v->v_int;
       }
     }
   }
@@ -82,10 +148,8 @@ float *DD_CallBackBuff::get_callback_val<float>(const char *ckey) {
       k = &buffer[i].args[j].key;
       v = &buffer[i].args[j].val;
 
-      if (v->type == VType::FLOAT) {
-        if (k->compare(ckey) == 0) {
-          return &v->v_float;
-        }
+      if (k->compare(ckey) == 0 && v->type == VType::FLOAT) {
+        return &v->v_float;
       }
     }
   }
@@ -101,10 +165,8 @@ bool *DD_CallBackBuff::get_callback_val<bool>(const char *ckey) {
       k = &buffer[i].args[j].key;
       v = &buffer[i].args[j].val;
 
-      if (v->type == VType::BOOL) {
-        if (k->compare(ckey) == 0) {
-          return &v->v_bool;
-        }
+      if (k->compare(ckey) == 0 && v->type == VType::BOOL) {
+				return &v->v_bool;
       }
     }
   }
@@ -120,22 +182,12 @@ const char *DD_CallBackBuff::get_callback_val<const char>(const char *ckey) {
       k = &buffer[i].args[j].key;
       v = &buffer[i].args[j].val;
 
-      if (v->type == VType::STRING) {
-        if (k->compare(ckey) == 0) {
-          return v->v_strptr.str();
-        }
+      if (k->compare(ckey) == 0 && v->type == VType::STRING) {
+        return v->v_strptr.str();
       }
     }
   }
   return nullptr;
-}
-
-void DD_CallBackBuff::clear_callbackbuff() {
-  for (unsigned i = 0; i < num_events; i++) {
-    buffer[i].active = 0;
-    buffer[i].handle = "";
-  }
-  num_events = 0;
 }
 
 template <>
@@ -182,6 +234,17 @@ const char *DD_FuncBuff::get_func_val<const char>(const char *ckey) {
   return nullptr;
 }
 
+// ********************************************************************
+// ********************************************************************
+
+void DD_CallBackBuff::clear_callbackbuff() {
+	for (unsigned i = 0; i < num_events; i++) {
+		buffer[i].active = 0;
+		buffer[i].handle = "";
+	}
+	num_events = 0;
+}
+
 bool check_stack_nil(lua_State *L, int idx) {
   if (lua_type(L, idx) == LUA_TNIL) {
     return true;
@@ -197,10 +260,7 @@ lua_State *init_lua_state() {
     append_package_path(L, PROJECT_DIR);  // add project path to scripts
 
     // Add global variables for use in scripts
-    cbuff<512> dir = ROOT_DIR;
-    //dir.format("%sscripts/", ROOT_DIR);
-    lua_pushstring(L, dir.str());
-    lua_setglobal(L, "ROOT_DIR");
+		set_lua_global(L, "ROOT_DIR", ROOT_DIR);
   }
   return L;
 }

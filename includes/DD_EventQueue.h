@@ -19,33 +19,34 @@
 #include "DD_Timer.h"
 #include "DD_Types.h"
 
+#define ASYNC_BUFF_MAX 10
+
 struct handler_sig {
   int global_id = -1;
   int func_id = -1;
 };
 
-struct syshandler_sig {
-  SysEventHandler func;
-  size_t sig = -1;
-};
-
 struct DD_Queue {
   DD_Queue(const size_t size = 1000)
-      : events_current(size),
-        events_future(size / 4),
-        sys_call("_sys_call"),
-        sys_call_async("_sys_call_async"),
-        lvl_call("_lvl_call"),
-        lvl_call_i("_lvl_call_init"),
-        check_future("_process_future"),
-        m_head(0),
-        f_head(0),
-        m_tail(0),
-        f_tail(0),
-        m_numEvents(0),
-        f_numEvents(0),
-        sys_callback_funcs(50),
-        shutdown(false) {}
+		: events_current(size),
+			events_future(size / 2),
+			lvl_call("_lvl_call"),
+			lvl_call_i("_lvl_init"),
+			async_call("_async_call"),
+			check_future("_process_future"),
+			check_async("_check_async"),
+			m_head(0),
+      f_head(0),
+			m_tail(0),
+			f_tail(0),
+			m_numEvents(0),
+			f_numEvents(0),
+			async_buffer(ASYNC_BUFF_MAX),
+			shutdown(false) {
+		for (unsigned i = 0; i < (unsigned)ASYNC_BUFF_MAX; i++) {
+			async_free_list[i] = true;
+		}
+	}
 
   /// \brief Add events to queue
   /// \param _event DD_LEvent event
@@ -62,7 +63,7 @@ struct DD_Queue {
   int unsubscribe_lua_func(lua_State* L);
   /// \brief Add internal callback function to queue from system functions
   /// \param _sig Systen callback function
-  void register_sys_func(syshandler_sig _sig);
+  void register_sys_func(const size_t _sig, SysEventHandler handler);
   /// \brief Remove callback function from queue
   /// \param _sig callback function signature
   void unregister_func(const size_t _sig);
@@ -80,15 +81,18 @@ struct DD_Queue {
   inline void shutdown_queue() { shutdown = true; }
 
  private:
+	/// \brief Add events to current queue
+	/// \param _event DD_LEvent event
+	bool push_current(const DD_LEvent& _event);
   /// \brief Add events to future queue
   /// \param _event DD_LEvent event
-  void push_future(const DD_LEvent& _event);
+  bool push_future(const DD_LEvent& _event);
   /// \brief Remove events from future queue
   /// \param _event DD_LEvent event
-  void pop_future(DD_LEvent& _event);
-  /// \brief Get next event
+  bool pop_future(DD_LEvent& _event);
+  /// \brief Get next event from current queue
   /// \param _event DD_LEvent event
-  bool pop(DD_LEvent& _event);
+  bool pop_current(DD_LEvent& _event);
   /// \brief Add callback to callback_funcs
   /// \param id DD_Agent id
   /// \param sig lua callback function
@@ -97,6 +101,22 @@ struct DD_Queue {
   void process_callback_buff();
   /// \brief Update and add events to main queue from future queue
   void process_future();
+	/// \brief Get next free slot in async list
+	/// \return Index >= 0 if an available slot is found
+	int next_async_slot();
+	/// \brief Check async calls and add event to queue based on completion
+	/// \param idx Index to async call location in buffer
+	void process_async_call(const unsigned idx, const char *tag, 
+													 const char *reciever);
+	/// \brief Return number of active async calls
+	/// \return Active calls in free list
+	inline const unsigned active_async_calls() const {
+		unsigned active = 0;
+		for (unsigned i = 0; i < (unsigned)ASYNC_BUFF_MAX; i++) {
+			active = (async_free_list[i]) ? active + 1 : active;
+		}
+		return active;
+	}
 
   lua_State* L;
   dd_array<DD_LEvent> events_current;  //< events to be processed this frame
@@ -104,11 +124,12 @@ struct DD_Queue {
   DD_CallBackBuff cb;
   DD_FuncBuff fb;
 	cbuff<32> sys_call;
-	cbuff<32> sys_call_async;
-  cbuff<32> lvl_call;
-  cbuff<32> lvl_call_i;
-  cbuff<32> check_future;
-	std::future<void> async_call;
+	cbuff<32> lvl_call;
+	cbuff<32> lvl_call_i;
+  cbuff<32> async_call;
+	cbuff<32> check_future;
+	cbuff<32> check_async;
+	//std::future<void> async_call;
   size_t m_head, m_tail, m_numEvents;
   size_t f_head, f_tail, f_numEvents;
   // pools
@@ -116,10 +137,11 @@ struct DD_Queue {
   /// of each node
   std::map<size_t, dd_array<size_t>> registered_events;
   std::map<size_t, handler_sig> callback_funcs;
-  dd_array<syshandler_sig> sys_callback_funcs;
+	std::map<size_t, SysEventHandler> sys_funcs;
+	dd_array<std::future<void>> async_buffer;
   handler_sig lvl_init;
   handler_sig lvl_update;
-
+	bool async_free_list[ASYNC_BUFF_MAX];
   bool shutdown;
 };
 

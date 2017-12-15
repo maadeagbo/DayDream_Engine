@@ -2,14 +2,12 @@
 #include "DD_Terminal.h"
 
 bool DD_Queue::push(const DD_LEvent &_event) {
-  size_t qsize = events_current.size();
-  if (m_numEvents == qsize) {
-    return false;
-  }
-  events_current[m_tail] = std::move(_event);
-  m_tail = (m_tail + 1) % qsize;
-  m_numEvents++;
-  return true;
+  switch (_event.delay) {
+		case 0:
+			return push_current(_event);
+		default:
+			return push_future(_event);
+	}
 }
 
 int DD_Queue::register_lua_func(lua_State *L) {
@@ -66,7 +64,7 @@ int DD_Queue::unsubscribe_lua_func(lua_State *L) {
   return 0;
 }
 
-bool DD_Queue::pop(DD_LEvent &_event) {
+bool DD_Queue::pop_current(DD_LEvent &_event) {
   size_t qsize = events_current.size();
   if (m_numEvents == 0) {
     return false;
@@ -77,19 +75,15 @@ bool DD_Queue::pop(DD_LEvent &_event) {
   return true;
 }
 
-void DD_Queue::register_sys_func(syshandler_sig _sig) {
-  bool registered = false;
-  for (size_t i = 0; i < sys_callback_funcs.size() && !registered; i++) {
-    // look for next slot
-    if (sys_callback_funcs[i].sig < 0) {
-      registered = true;
-      sys_callback_funcs[i] = _sig;
-    }
-  }
+void DD_Queue::register_sys_func(const size_t _sig, SysEventHandler handler) {
+	sys_funcs[_sig] = handler;
 }
 
 void DD_Queue::unregister_func(const size_t _sig) {
-  callback_funcs.erase(_sig);
+	// can only unregister lua functions
+	if (callback_funcs.find(_sig) != callback_funcs.end()) {
+		callback_funcs.erase(_sig);
+	}
 }
 
 void DD_Queue::subscribe(const size_t event_sig, const size_t _sig) {
@@ -119,12 +113,7 @@ void DD_Queue::register_handler(const size_t id, const handler_sig &sig) {
 
 void DD_Queue::process_callback_buff() {
   for (unsigned i = 0; i < cb.num_events; i++) {
-    DD_LEvent &_event = cb.buffer[i];
-    if (_event.delay > 0) {  // add to future queue
-      push_future(_event);
-    } else {
-      push(_event);
-    }
+		push(cb.buffer[i]);
   }
 }
 
@@ -134,13 +123,52 @@ void DD_Queue::process_future() {
     DD_LEvent _event;
     pop_future(_event);
 
-    if (_event.delay == 0) {
+    if (_event.delay == 0) {	// add to normal queue
       push(_event);
-    } else {
+    } else {									// update then send back to future queue
       _event.delay--;
       push_future(_event);
     }
   }
+}
+
+int DD_Queue::next_async_slot() {
+	for (unsigned i = 0; i < (unsigned)ASYNC_BUFF_MAX; i++) {
+		if (async_free_list[i]) {
+			async_free_list[i] = false;
+			return i;
+		}
+	}
+	return -1;
+}
+
+void DD_Queue::process_async_call(const unsigned idx, const char *tag,
+																	const char *reciever) {
+	if (idx >= ASYNC_BUFF_MAX && idx >= 0 && !tag) {
+		// check status of async
+		std::future<void> &call = async_buffer[idx];
+		if (call.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+			// create finish event
+			DD_LEvent a_event;
+			a_event.handle = reciever;
+			add_arg_LEvent<const char*>(&a_event, "tag", tag);
+			push(a_event);
+		} else {
+			// create delay event
+			DD_LEvent a_event;
+			a_event.handle = "_check_async";
+			add_arg_LEvent<int>(&a_event, "idx", idx);
+			add_arg_LEvent<const char*>(&a_event, "tag", tag);
+			add_arg_LEvent<const char*>(&a_event, "reciever", reciever);
+			a_event.delay = 30;
+			push_future(a_event);
+		}
+	} else {
+		// print error
+		const char *_t = (tag) ? tag : "nullptr";
+		DD_Terminal::f_post("[error] Async processing failure. %d::%s::%s",
+												idx, _t, reciever);
+	}
 }
 
 void DD_Queue::unsubscribe(const size_t event_sig, const size_t _sig) {
@@ -161,73 +189,106 @@ void DD_Queue::unsubscribe(const size_t event_sig, const size_t _sig) {
 void DD_Queue::process_queue() {
   while (!shutdown) {
     DD_LEvent _event;
-    pop(_event);
+		pop_current(_event);
 
     size_t e_sig = _event.handle.gethash();
-    // check if event is a system call
-    if (_event.handle == sys_call) {
-      if (_event.active == 1 && _event.args[0].val.type == VType::STRING) {
-        // get key
-        size_t idx = _event.args[0].val.v_strptr.gethash();
-        for (size_t i = 0; i < sys_callback_funcs.size(); i++) {
-          // call system function if key matches
-          if (sys_callback_funcs[i].sig == idx) {
-            sys_callback_funcs[i].func(_event);
-          }
-        }
-      }
-    }
     // check if event is to process backed-up/future events
-    else if (_event.handle == check_future) {
+    if (_event.handle == check_future) {
       process_future();
     }
-    // check if event is level update call
+    // check if event is level call
     else if (_event.handle == lvl_call) {
       callback_lua(L, _event, lvl_update.func_id, lvl_update.global_id, &cb);
       process_callback_buff();
     }
-    // check if event is level initialize call
-    else if (_event.handle == lvl_call_i) {
-			async_call = std::async(std::launch::async, callback_lua, L, _event,
-															lvl_init.func_id, lvl_init.global_id, &cb, 
-															nullptr);
-      //callback_lua(L, _event, lvl_init.func_id, lvl_init.global_id, &cb);
-			DD_LEvent a_event;
-			a_event.handle = "_check_async";
-			add_arg_LEvent<bool>(&a_event, "", false);
-			a_event.delay = 5;
+    // check if event is system async call
+    else if (_event.handle == async_call) {
+			const char *_tag = get_arg_LEvent<const char>(&_event, "tag");
+			const char *_reciever = get_arg_LEvent<const char>(&_event, "reciever");
+			int idx = next_async_slot();
+			// async level init
+			if (idx >= 0 && _tag && _reciever && lvl_call_i.compare(_tag) == 0) {
+				async_buffer[idx] = std::async(std::launch::async, callback_lua, L, 
+																			 _event, lvl_init.func_id, 
+																			 lvl_init.global_id, &cb, nullptr);
+				// send delay event
+				DD_LEvent a_event;
+				a_event.handle = "_check_async";
+				add_arg_LEvent<int>(&a_event, "idx", idx);
+				add_arg_LEvent<const char*>(&a_event, "tag", "lvl init done");
+				add_arg_LEvent<const char*>(&a_event, "reciever", _reciever);
+				a_event.delay = 30;
+				push_future(a_event);
+			} else {
+				// print error message to terminal
+				_tag = (_tag) ? _tag : "(t)nullptr";
+				_reciever = (_reciever) ? _reciever : "(r)nullptr";
+				DD_Terminal::f_post("[error] Async init failure. %d::%s::%s",
+														idx, _tag, _reciever);
+				// free index
+				if (idx >= 0) { async_free_list[idx] = true; }
+			}
     }
-    // event can be processed by scripts
+		// check if event is async call check
+		else if (_event.handle == check_async) {
+			const char *_tag = get_arg_LEvent<const char>(&_event, "tag");
+			const char *_reciever = get_arg_LEvent<const char>(&_event, "reciever");
+			int *idx = get_arg_LEvent<int>(&_event, "idx");
+
+			process_async_call(*idx, _tag, _reciever);
+		}
+    // event can be processed by scripts or system calls
     else if (registered_events.find(e_sig) != registered_events.end()) {
       dd_array<size_t> &func_sigs = registered_events[e_sig];
 
       for (size_t i = 1; i <= func_sigs[0]; i++) {
-        handler_sig &handle = callback_funcs[func_sigs[i]];
-        callback_lua(L, _event, handle.func_id, handle.global_id, &cb);
-        process_callback_buff();
+				// script
+				if (callback_funcs.count(func_sigs[i]) > 0) {
+					handler_sig &handle = callback_funcs[func_sigs[i]];
+					callback_lua(L, _event, handle.func_id, handle.global_id, &cb);
+					process_callback_buff();
+				}
+				// system call
+				if (sys_funcs.count(func_sigs[i]) > 0) {
+					SysEventHandler &handle = sys_funcs[func_sigs[i]];
+					handle(_event);
+				}
       }
     }
   }
 }
 
-void DD_Queue::push_future(const DD_LEvent &_event) {
+bool DD_Queue::push_current(const DD_LEvent & _event) {
+	size_t qsize = events_current.size();
+	if (m_numEvents == qsize) {
+		return false;
+	}
+	events_current[m_tail] = std::move(_event);
+	m_tail = (m_tail + 1) % qsize;
+	m_numEvents++;
+	return true;
+}
+
+bool DD_Queue::push_future(const DD_LEvent &_event) {
   size_t qsize = events_future.size();
   if (f_numEvents == qsize) {
-    return;
+    return false;
   }
 
   events_future[f_tail] = std::move(_event);
   f_tail = (f_tail + 1) % qsize;
   f_numEvents++;
+	return true;
 }
 
-void DD_Queue::pop_future(DD_LEvent &_event) {
+bool DD_Queue::pop_future(DD_LEvent &_event) {
   size_t qsize = events_future.size();
   if (f_numEvents == 0) {
-    return;
+    return false;
   }
 
   _event = std::move(events_future[f_head]);
   f_head = (f_head + 1) % qsize;
   f_numEvents--;
+	return true;
 }
