@@ -135,6 +135,11 @@ add_definitions(
 	"-DPROJECT_DIR=\"${CMAKE_SOURCE_DIR}/Projects/\""
 	"-DFONTS_DIR=\"${CMAKE_SOURCE_DIR}/Resource/Fonts/\""
 )
+if (MSVC)
+	# warning that pop up for strtok & fopen & std::copy
+	add_definitions("-D_SCL_SECURE_NO_WARNINGS")
+	add_definitions("-D_CRT_SECURE_NO_WARNINGS")
+endif()
 
 # use file(GLOB_RECURSE...), add_library(dd_engine...), and
 # source_group(<group name> FILES...) to create folder structure in project
@@ -277,11 +282,11 @@ endif()
 #	message(FATAL_ERROR "NOOOOOOOO")
 #4endif()
 
-# filesystem goes last
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -lstdc++fs")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -lstdc++fs")
-
 if(NOT WIN32)
+	# filesystem goes last
+	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -lstdc++fs")
+	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -lstdc++fs")
+
 	target_link_libraries(dd_engine ${SOIL_LIB} ${OPENGL_gl_LIBRARY}
 	${SDL2_LIBRARY} ${VRPN_LIB} ${FREETYPE_LIBRARIES} ${FS_LIB} ${LUA_LIB})
 else()

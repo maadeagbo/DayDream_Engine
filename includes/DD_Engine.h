@@ -53,12 +53,10 @@ struct DD_Engine {
   bool LevelSelect(const size_t w = 600, const size_t h = 600);
   void Run();
   inline SDL_Window* GetWin() { return main_window; }
-  void AddLevel(DD_GameLevel* level, const char* assetLoc, const char* ID);
-  void LevelAssets(const char* assets_file);
   void LoadQueue();
   DD_Event Update(DD_Event& event);
-	void update(DD_LEvent &_event);
-  //void execScript(std::string script_file);
+  void update(DD_LEvent& _event);
+  // void execScript(std::string script_file);
   bool execTerminal(const char* cmd);
   void openWindow(const size_t width, const size_t height,
                   EngineMode mode = EngineMode::DD_NOT_SET);
@@ -82,9 +80,9 @@ struct DD_Engine {
   DD_Resources main_res;
   DD_Compute main_comp;
   DD_AssetViewer main_viewer;
-  DD_CallBackBuff main_cb;
   dd_array<DD_GameLevel*> main_lvl;
-	PushFunc q_push;
+  PushFunc q_push;
+  DD_FuncBuff main_fb;
   size_t num_lvls;
   int current_lvl;
   bool load_screen;

@@ -3,7 +3,7 @@
 namespace {
 cbuff<64> _key;
 cbuff<256> _val;
-}
+}  // namespace
 
 // ********************************************************************
 // Template definitions
@@ -59,132 +59,72 @@ bool add_arg_LEvent<const char *>(DD_LEvent *levent, const char *key,
 }
 
 template <>
-int* get_arg_LEvent<int>(DD_LEvent *levent, const char *key) {
-	if (!levent) { return nullptr; }
+int *get_arg_LEvent<int>(DD_LEvent *levent, const char *key) {
+  if (!levent) {
+    return nullptr;
+  }
 
-	Varying<32> *v = nullptr;
-	cbuff<32> *k = nullptr;
-	for (unsigned i = 0; i < levent->active; i++) {
-		k = &levent->args[i].key;
-		v = &levent->args[i].val;
-		if (k->compare(key) == 0 && v->type == VType::INT) {
-			return &v->v_int;
-		}
-	}
-	return nullptr;
-}
-
-template <>
-float* get_arg_LEvent<float>(DD_LEvent *levent, const char *key) {
-	if (!levent) { return nullptr; }
-
-	Varying<32> *v = nullptr;
-	cbuff<32> *k = nullptr;
-	for (unsigned i = 0; i < levent->active; i++) {
-		k = &levent->args[i].key;
-		v = &levent->args[i].val;
-		if (k->compare(key) == 0 && v->type == VType::FLOAT) {
-			return &v->v_float;
-		}
-	}
-	return nullptr;
-}
-
-template <>
-bool* get_arg_LEvent<bool>(DD_LEvent *levent, const char *key) {
-	if (!levent) { return nullptr; }
-
-	Varying<32> *v = nullptr;
-	cbuff<32> *k = nullptr;
-	for (unsigned i = 0; i < levent->active; i++) {
-		k = &levent->args[i].key;
-		v = &levent->args[i].val;
-		if (k->compare(key) == 0 && v->type == VType::BOOL) {
-			return &v->v_bool;
-		}
-	}
-	return nullptr;
-}
-
-template <>
-const char* get_arg_LEvent<const char>(DD_LEvent *levent, const char *key) {
-	if (!levent) { return nullptr; }
-
-	Varying<32> *v = nullptr;
-	cbuff<32> *k = nullptr;
-	for (unsigned i = 0; i < levent->active; i++) {
-		k = &levent->args[i].key;
-		v = &levent->args[i].val;
-		if (k->compare(key) == 0 && v->type == VType::STRING) {
-			return v->v_strptr.str();
-		}
-	}
-	return nullptr;
-}
-
-template <>
-int *DD_CallBackBuff::get_callback_val<int>(const char *ckey) {
   Varying<32> *v = nullptr;
   cbuff<32> *k = nullptr;
-  for (unsigned i = 0; i < num_events; i++) {
-    for (unsigned j = 0; j < buffer[i].active; j++) {
-      k = &buffer[i].args[j].key;
-      v = &buffer[i].args[j].val;
-
-      if (k->compare(ckey) == 0 && v->type == VType::INT) {
-        return &v->v_int;
-      }
+  for (unsigned i = 0; i < levent->active; i++) {
+    k = &levent->args[i].key;
+    v = &levent->args[i].val;
+    if (k->compare(key) == 0 && v->type == VType::INT) {
+      return &v->v_int;
     }
   }
   return nullptr;
 }
 
 template <>
-float *DD_CallBackBuff::get_callback_val<float>(const char *ckey) {
+float *get_arg_LEvent<float>(DD_LEvent *levent, const char *key) {
+  if (!levent) {
+    return nullptr;
+  }
+
   Varying<32> *v = nullptr;
   cbuff<32> *k = nullptr;
-  for (unsigned i = 0; i < num_events; i++) {
-    for (unsigned j = 0; j < buffer[i].active; j++) {
-      k = &buffer[i].args[j].key;
-      v = &buffer[i].args[j].val;
-
-      if (k->compare(ckey) == 0 && v->type == VType::FLOAT) {
-        return &v->v_float;
-      }
+  for (unsigned i = 0; i < levent->active; i++) {
+    k = &levent->args[i].key;
+    v = &levent->args[i].val;
+    if (k->compare(key) == 0 && v->type == VType::FLOAT) {
+      return &v->v_float;
     }
   }
   return nullptr;
 }
 
 template <>
-bool *DD_CallBackBuff::get_callback_val<bool>(const char *ckey) {
+bool *get_arg_LEvent<bool>(DD_LEvent *levent, const char *key) {
+  if (!levent) {
+    return nullptr;
+  }
+
   Varying<32> *v = nullptr;
   cbuff<32> *k = nullptr;
-  for (unsigned i = 0; i < num_events; i++) {
-    for (unsigned j = 0; j < buffer[i].active; j++) {
-      k = &buffer[i].args[j].key;
-      v = &buffer[i].args[j].val;
-
-      if (k->compare(ckey) == 0 && v->type == VType::BOOL) {
-				return &v->v_bool;
-      }
+  for (unsigned i = 0; i < levent->active; i++) {
+    k = &levent->args[i].key;
+    v = &levent->args[i].val;
+    if (k->compare(key) == 0 && v->type == VType::BOOL) {
+      return &v->v_bool;
     }
   }
   return nullptr;
 }
 
 template <>
-const char *DD_CallBackBuff::get_callback_val<const char>(const char *ckey) {
+const char *get_arg_LEvent<const char>(DD_LEvent *levent, const char *key) {
+  if (!levent) {
+    return nullptr;
+  }
+
   Varying<32> *v = nullptr;
   cbuff<32> *k = nullptr;
-  for (unsigned i = 0; i < num_events; i++) {
-    for (unsigned j = 0; j < buffer[i].active; j++) {
-      k = &buffer[i].args[j].key;
-      v = &buffer[i].args[j].val;
-
-      if (k->compare(ckey) == 0 && v->type == VType::STRING) {
-        return v->v_strptr.str();
-      }
+  for (unsigned i = 0; i < levent->active; i++) {
+    k = &levent->args[i].key;
+    v = &levent->args[i].val;
+    if (k->compare(key) == 0 && v->type == VType::STRING) {
+      return v->v_strptr.str();
     }
   }
   return nullptr;
@@ -237,14 +177,6 @@ const char *DD_FuncBuff::get_func_val<const char>(const char *ckey) {
 // ********************************************************************
 // ********************************************************************
 
-void DD_CallBackBuff::clear_callbackbuff() {
-	for (unsigned i = 0; i < num_events; i++) {
-		buffer[i].active = 0;
-		buffer[i].handle = "";
-	}
-	num_events = 0;
-}
-
 bool check_stack_nil(lua_State *L, int idx) {
   if (lua_type(L, idx) == LUA_TNIL) {
     return true;
@@ -255,12 +187,11 @@ bool check_stack_nil(lua_State *L, int idx) {
 lua_State *init_lua_state() {
   lua_State *L = luaL_newstate();  // opens lua
   if (L) {
-    luaL_openlibs(L);                     // opens standard libraries
-    append_package_path(L, ROOT_DIR);     // add root path to scripts
-    append_package_path(L, PROJECT_DIR);  // add project path to scripts
+    luaL_openlibs(L);                  // opens standard libraries
+    append_package_path(L, ROOT_DIR);  // add root path to scripts
 
     // Add global variables for use in scripts
-		set_lua_global(L, "ROOT_DIR", ROOT_DIR);
+    set_lua_global(L, "ROOT_DIR", ROOT_DIR);
   }
   return L;
 }
@@ -317,46 +248,12 @@ void push_args(lua_State *L, const DD_LEvent &levent, const int idx) {
   }
 }
 
-DD_LEvent *DD_CallBackBuff::get_new_event() {
-  if (num_events == MAX_CALLBACK_EVENTS) {
-    return nullptr;
-  }
-  unsigned idx = num_events++;
-  return &buffer[idx];
-}
-
 DD_LFuncArg *DD_FuncBuff::get_next_arg() {
-  if (num_args == MAX_CALLBACK_EVENTS) {
+  if (num_args == MAX_ARG_BUFFER_SIZE) {
     return nullptr;
   }
   unsigned idx = num_args++;
   return &buffer[idx];
-}
-
-void print_callbackbuff(DD_CallBackBuff &cb) {
-  for (unsigned i = 0; i < cb.num_events; i++) {
-    printf("Event: %s\n", cb.buffer[i].handle.str());
-    for (unsigned j = 0; j < cb.buffer[i].active; j++) {
-      cbuff<32> &k = cb.buffer[i].args[j].key;
-      Varying<32> &v = cb.buffer[i].args[j].val;
-      switch (v.type) {
-        case VType::BOOL:
-          printf("\t%s : %s\n", k.str(), v.v_bool ? "true" : "false");
-          break;
-        case VType::FLOAT:
-          printf("\t%s : %.3f\n", k.str(), v.v_float);
-          break;
-        case VType::INT:
-          printf("\t%s : %d\n", k.str(), v.v_int);
-          break;
-        case VType::STRING:
-          printf("\t%s : %s\n", k.str(), v.v_strptr.str());
-          break;
-        default:
-          break;
-      }
-    }
-  }
 }
 
 void register_callback_lua(lua_State *L, const char *func_sig,
@@ -364,65 +261,8 @@ void register_callback_lua(lua_State *L, const char *func_sig,
   lua_register(L, func_sig, _func);
 }
 
-/*
-void callback_lua(lua_State *L, const DD_LEvent &levent, DD_CallBackBuff &cb,
-                  const char *func, const char *lclass) {
-  /// \brief quick print out error func
-  int err_num = 0;
-  auto handle_error = [&]() {
-    fprintf(stderr, "callback_lua::%s\n", lua_tostring(L, -1));
-    lua_pop(L, 1);
-  };
-
-  // reset buffer and check class
-  cb.clear_callbackbuff();
-  bool lclass_flag = lclass && *lclass;
-
-  // find lua class, func, and set class as argument (self)
-  // return if function or class doesn't exist
-  if (lclass_flag) {
-    lua_getglobal(L, lclass);
-    if (check_stack_nil(L, -1)) {
-      printf("<%s> class doesn't exist.\n", lclass);
-      return;
-    }
-    lua_getfield(L, -1, func);
-    if (check_stack_nil(L, -1)) {
-      printf("<%s> : <%s> function doesn't exist.\n", lclass, func);
-      return;
-    }
-    lua_rotate(L, 1, -1);
-  } else {  // find global function
-    lua_getglobal(L, func);
-    if (check_stack_nil(L, -1)) {
-      printf("<%s> global function doesn't exist.\n", func);
-      return;
-    }
-  }
-
-  // push event arguments (in the form of a table)
-  lua_pushstring(L, levent.handle.str());  // push event handle
-  lua_newtable(L);  // create new table and put on top of stack
-  if (levent.active > 0) {
-    for (unsigned i = 0; i < levent.active; i++) {
-      push_args(L, levent, i + 1);  // push arguments
-    }
-  }
-  lua_pushinteger(L, (int)levent.active);  // push # of arguments
-
-  // call function
-  int num_args = lclass_flag ? 4 : 3;
-  if ((err_num = lua_pcall(L, num_args, LUA_MULTRET, 0)) != 0) {
-    handle_error();
-  }
-
-  // get returned events and fill buffer
-  parse_lua_events(L, cb);
-}
-//*/
-
-void callback_lua(lua_State *L, const DD_LEvent &levent, int func_ref,
-                  int global_ref, DD_CallBackBuff *cb, DD_FuncBuff *fb) {
+void callback_lua(lua_State *L, const DD_LEvent &levent, DD_FuncBuff &fb,
+                  int func_ref, int global_ref) {
   /// \brief print out error func
   int err_num = 0;
   auto handle_error = [&]() {
@@ -431,11 +271,7 @@ void callback_lua(lua_State *L, const DD_LEvent &levent, int func_ref,
   };
 
   // reset buffer
-  if (cb) {
-    cb->clear_callbackbuff();
-  } else if (fb) {
-    fb->num_args = 0;
-  }
+  fb.num_args = 0;
 
   // retrieve function
   if (global_ref > 0) {
@@ -468,17 +304,13 @@ void callback_lua(lua_State *L, const DD_LEvent &levent, int func_ref,
   lua_pushinteger(L, (int)levent.active);  // push # of arguments
 
   // call function
-  int num_args = global_ref ? 4 : 3;
+  int num_args = global_ref > 0 ? 4 : 3;
   if ((err_num = lua_pcall(L, num_args, LUA_MULTRET, 0)) != 0) {
     handle_error();
   }
 
   // get returned events and fill buffer
-  if (cb) {
-    parse_lua_events(L, *cb);
-  } else if (fb) {
-    parse_lua_events(L, *fb);
-  }
+  parse_lua_events(L, fb);
 }
 
 void stack_dump(lua_State *L) {
@@ -512,7 +344,7 @@ void parse_lua_events(lua_State *L, DD_FuncBuff &fb) {
   fb.num_args = 0;
   // events must be in the form of a table
   int top = lua_gettop(L); /* number of events */
-  // printf("# of returns: %d\n", top);
+                           // printf("# of returns: %d\n", top);
   for (int i = 1; i <= top; i++) {
     int t = lua_type(L, i);
     switch (t) {
@@ -522,32 +354,11 @@ void parse_lua_events(lua_State *L, DD_FuncBuff &fb) {
         break;
       }
       default:
+        printf("%s\n", lua_typename(L, t));
+        lua_pop(L, 1);  // Pop
         break;
     }
   }
-}
-
-void parse_lua_events(lua_State *L, DD_CallBackBuff &cb) {
-  // events must be in the form of a table
-  int top = lua_gettop(L); /* number of events */
-  // printf("# of returns: %d\n", top);
-  for (int i = 1; i <= top; i++) {
-    int t = lua_type(L, i);
-    switch (t) {
-      case LUA_TTABLE: {
-        DD_LEvent *levent = cb.get_new_event();
-        if (levent) {
-          parse_table(L, levent);
-          // printf("\tEvent #%u\n", cb.num_events);
-        }
-        lua_pop(L, 1);  // Pop table
-        break;
-      }
-      default:
-        break;
-    }
-  }
-  // printf("# of events parsed: %u\n", cb.num_events);
 }
 
 void parse_table(lua_State *L, DD_LEvent *levent, const int tabs) {
@@ -566,6 +377,7 @@ void parse_table(lua_State *L, DD_LEvent *levent, const int tabs) {
         } else {
           bool arg_set = add_arg_LEvent(levent, _key.str(), _val.str());
           if (!arg_set) {
+            printf("A\n");
             printf("No more arg slots available\n");
           }
         }
@@ -579,6 +391,7 @@ void parse_table(lua_State *L, DD_LEvent *levent, const int tabs) {
 
         bool arg_set = add_arg_LEvent(levent, _key.str(), lbool);
         if (!arg_set) {
+          printf("B\n");
           printf("No more args available\n");
         }
 
@@ -593,6 +406,7 @@ void parse_table(lua_State *L, DD_LEvent *levent, const int tabs) {
 
           bool arg_set = add_arg_LEvent(levent, _key.str(), val);
           if (!arg_set) {
+            printf("C\n");
             printf("No more args available\n");
           }
         } else {
@@ -603,6 +417,7 @@ void parse_table(lua_State *L, DD_LEvent *levent, const int tabs) {
 
           bool arg_set = add_arg_LEvent(levent, _key.str(), val);
           if (!arg_set) {
+            printf("D\n");
             printf("No more args available\n");
           }
         }
@@ -686,9 +501,10 @@ void parse_table(lua_State *L, DD_FuncBuff *fb, const int tabs) {
 
 void print_table(lua_State *L, const int tabs) {
   // assume table is already on stack
-  lua_pushnil(L);                 // push key on stack for table access
-  while (lua_next(L, -2) != 0) {  // adds value to the top of the stack
-    // copy the key so that lua_tostring does not modify the original
+  lua_pushnil(L);  // push key on stack for table access
+  while (lua_next(L, -2) !=
+         0) {  // adds value to the top of the stack
+               // copy the key so that lua_tostring does not modify the original
     lua_pushvalue(L, -2);
     /* uses 'key' (at index -1) and 'value' (at index -2) */
     if (lua_isboolean(L, -2)) {  // boolean
@@ -716,13 +532,37 @@ void print_table(lua_State *L, const int tabs) {
     } else if (lua_istable(L, -2)) {
       printf("--key (array - %d) : %s\n", tabs, lua_tostring(L, -1));
       lua_pop(L, 1);  // remove copy key
-      // printf("-->%d\t", tabs); stack_dump(L);	// check entrance
+      // printf("-->%d\t", tabs); stack_dump(L);	// check
+                      // entrance
       print_table(L, tabs + 1);
       printf("--array - %d : done\n", tabs);
     }
     lua_pop(L, 1);  // remove value
   }
   // printf("<--%d\t", tabs); stack_dump(L);			// check exit
+}
+
+void print_buffer(DD_FuncBuff &fb) {
+  for (unsigned i = 0; i < fb.num_args; i++) {
+    cbuff<32> &k = fb.buffer[i].arg_name;
+    Varying<256> &v = fb.buffer[i].arg;
+    switch (v.type) {
+      case VType::BOOL:
+        printf("\t%s : %s\n", k.str(), v.v_bool ? "true" : "false");
+        break;
+      case VType::FLOAT:
+        printf("\t%s : %.3f\n", k.str(), v.v_float);
+        break;
+      case VType::INT:
+        printf("\t%s : %d\n", k.str(), v.v_int);
+        break;
+      case VType::STRING:
+        printf("\t%s : %s\n", k.str(), v.v_strptr.str());
+        break;
+      default:
+        break;
+    }
+  }
 }
 
 int get_lua_ref(lua_State *L, const char *lclass, const char *func) {
@@ -758,8 +598,45 @@ int get_lua_ref(lua_State *L, const char *lclass, const char *func) {
   return LUA_REFNIL;
 }
 
+int get_lua_ref(lua_State *L, int lclass, const char *func) {
+  if (lclass == LUA_REFNIL) {  // invalid class object
+    return LUA_REFNIL;
+  }
+  // add class object to the stack
+  lua_rawgeti(L, LUA_REGISTRYINDEX, lclass);
+  if (!check_stack_nil(L, -1)) {  // make sure class object exists
+                                  // get function
+    lua_getfield(L, -1, func);
+    if (!check_stack_nil(L, -1)) {
+      // remove global table from stack once class function found
+      lua_rotate(L, 1, -1);
+      lua_pop(L, 1);
+      // make sure value retrieved is a function
+      int t = lua_type(L, -1);
+      if (t == LUA_TFUNCTION) {
+        return luaL_ref(L, LUA_REGISTRYINDEX);
+      }
+    }
+  }
+  return LUA_REFNIL;
+}
+
 void clear_lua_ref(lua_State *L, int func_ref) {
   luaL_unref(L, LUA_REGISTRYINDEX, func_ref);
+}
+
+int get_lua_object(lua_State *L) {
+  if (lua_gettop(L) > 0) {          // stack non-empty
+    if (!check_stack_nil(L, -1)) {  // non-nil object
+      return luaL_ref(L, LUA_REGISTRYINDEX);
+    }
+  }
+  return LUA_REFNIL;
+}
+
+void add_func_to_scripts(lua_State *L, lua_CFunction func, const char *name) {
+  lua_pushcfunction(L, func);
+  lua_setglobal(L, name);
 }
 
 void append_package_path(lua_State *L, const char *path) {

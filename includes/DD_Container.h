@@ -3,11 +3,6 @@
 #define DAYDREAM_CONTAINERS
 #ifdef DAYDREAM_CONTAINERS
 
-#ifdef _MSC_VER
-#define _SCL_SECURE_NO_WARNINGS
-#pragma warning(disable : 4996)
-#endif
-
 #include <algorithm>
 #include "Pow2Assert.h"
 

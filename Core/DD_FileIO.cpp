@@ -9,7 +9,7 @@ DD_IOhandle::~DD_IOhandle() {
 
 /// \brief Open a file or directory (based on DD_IOflag)
 bool DD_IOhandle::open(const char* fileName, const DD_IOflag flags) {
-  std::ios_base::openmode ios_flag;
+  std::ios_base::openmode ios_flag = std::ios::in;
   if ((unsigned)(flags & DD_IOflag::READ)) {
     ios_flag = std::ios::in;
   } else if ((unsigned)(flags & DD_IOflag::WRITE)) {

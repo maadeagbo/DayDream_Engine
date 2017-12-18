@@ -1213,10 +1213,10 @@ void loadAgentsToMemory(DD_Resources* res) {
     size_t range = agent->num_handlers;
     for (size_t j = 0; j < range; j++) {
       if (agent->tickets[j] == "post") {
-        res->queue->RegisterPoster(agent->handlers[j]);
+        //res->queue->RegisterPoster(agent->handlers[j]);
       } else {
-        res->queue->RegisterHandler(agent->handlers[j],
-                                    agent->tickets[j].c_str());
+        //res->queue->RegisterHandler(agent->handlers[j],
+                                    //agent->tickets[j].c_str());
       }
     }
     // register models
@@ -1385,10 +1385,10 @@ void loadAgent_ID(DD_Resources* res, const char* agentID, bool mem_flag) {
     size_t range = agent->num_handlers;
     for (size_t i = 0; i < range; i++) {
       if (agent->tickets[i] == "post") {
-        res->queue->RegisterPoster(agent->handlers[i], agentID);
+        //res->queue->RegisterPoster(agent->handlers[i], agentID);
       } else {
-        res->queue->RegisterHandler(agent->handlers[i],
-                                    agent->tickets[i].c_str(), agentID);
+        //res->queue->RegisterHandler(agent->handlers[i],
+                                    //agent->tickets[i].c_str(), agentID);
       }
     }
     // register models
@@ -1512,6 +1512,7 @@ size_t getAddress(std::function<T(U...)> f) {
   return (size_t)*fnPointer;
 }
 
+/*
 void deleteAgent(DD_Resources* res, const char* agent_id,
                  bool free_gpu_memory) {
   DD_Agent* agent = ResSpace::findDD_Agent(res, agent_id);
@@ -1563,6 +1564,7 @@ void deleteAgent(DD_Resources* res, const char* agent_id,
     removeDD_Agent(res, agent_id);
   }
 }
+//*/
 
 void deleteEmitter(DD_Resources* res, const char* emitterID) {
   int index = -1;

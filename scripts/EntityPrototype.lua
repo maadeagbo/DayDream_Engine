@@ -7,8 +7,7 @@ do
         name = "not_set",
         health = 0.0,
         position = { 0.0, 0.0, 0.0 },
-        alive = false,
-		callbacks = {}
+        alive = false
     }
 
     function Entity:new(params)
@@ -29,7 +28,7 @@ do
         -- body
     end
 
-    function Entity:update( event )
+    function Entity:update( event, args, num_args )
         -- body
     end
 

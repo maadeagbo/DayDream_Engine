@@ -25,10 +25,10 @@ const cbuff<32> exit_hash("sys_exit");
 const cbuff<32> frame_enter_hash("frame_init");
 const cbuff<32> frame_exit_hash("frame_exit");
 const cbuff<32> load_hash("load_screen");
-const cbuff<32> lvl_init_hash("_lvl_init");
-const cbuff<32> lvl_asset_hash("_lvl_init");
+const cbuff<32> lvl_init_hash("_lvl_init_done");
+const cbuff<32> lvl_asset_hash("_asset_init");
 const cbuff<32> terminal_hash("poll_terminal");
-}
+}  // namespace
 
 void DD_Engine::startup_lua() { main_lstate = init_lua_state(); }
 
@@ -103,7 +103,7 @@ void DD_Engine::openWindow(const size_t width, const size_t height,
 
 /* Load OpenGL generator
  * \param displayInfo Set to true to display info of system
-*/
+ */
 bool DD_Engine::InitGLLoadGen(const bool displayInfo) {
   // Initialize GLLoadGen to setup the OpenGL Function pointers
   int loaded = ogl_LoadFunctions();
@@ -117,10 +117,10 @@ bool DD_Engine::InitGLLoadGen(const bool displayInfo) {
 
   if (displayInfo) {
     // check opengl version supported
-    const GLubyte* renderer = glGetString(GL_RENDERER);
-    const GLubyte* vendor = glGetString(GL_VENDOR);
-    const GLubyte* version = glGetString(GL_VERSION);
-    const GLubyte* glslVersion = glGetString(GL_SHADING_LANGUAGE_VERSION);
+    const GLubyte *renderer = glGetString(GL_RENDERER);
+    const GLubyte *vendor = glGetString(GL_VENDOR);
+    const GLubyte *version = glGetString(GL_VERSION);
+    const GLubyte *glslVersion = glGetString(GL_SHADING_LANGUAGE_VERSION);
     GLint major, minor;
     glGetIntegerv(GL_MAJOR_VERSION, &major);
     glGetIntegerv(GL_MINOR_VERSION, &minor);
@@ -187,7 +187,7 @@ bool DD_Engine::InitGLLoadGen(const bool displayInfo) {
 }
 
 /* Close SDL and OpenGL context
-*/
+ */
 void DD_Engine::CleanUpSDLContext() {
   // delete context
   SDL_GL_DeleteContext(main_glcontext);
@@ -229,25 +229,25 @@ bool DD_Engine::LevelSelect(const size_t w, const size_t h) {
   bool file_loaded = parse_luafile(main_lstate, startup_script.str());
 
   // create array of levels
-  dd_array<const char*> lvls_list;
-	if (file_loaded) {
-		// get reference to function
-		int func_ref = get_lua_ref(main_lstate, nullptr, "generate_levels");
-		DD_LEvent init_event;
-		init_event.handle = "get_lvls";
-		//callback_lua(main_lstate, init_event, main_cb, "generate_levels");
-		callback_lua(main_lstate, init_event, func_ref, -1, &main_cb);
-		int *num_levels = main_cb.get_callback_val<int>("num_levels");
-		if (num_levels) {
-			//printf("Found # of levels: %d\n", *num_levels);
-			lvls_list.resize((unsigned)(*num_levels));
-			cbuff<4> _lvl;
-			for (unsigned i = 0; i < (unsigned)lvls_list.size(); i++) {
-				_lvl.format("%u", i + 1);
-				lvls_list[i] = main_cb.get_callback_val<const char>(_lvl.str());
-			}
-		}
-	}
+  dd_array<const char *> lvls_list;
+  if (file_loaded) {
+    // get reference to function
+    int func_ref = get_lua_ref(main_lstate, nullptr, "generate_levels");
+    DD_LEvent init_event;
+    init_event.handle = "get_lvls";
+    callback_lua(main_lstate, init_event, main_fb, func_ref, -1);
+
+    int *num_levels = main_fb.get_func_val<int>("num_levels");
+    if (num_levels) {
+      // printf("Found # of levels: %d\n", *num_levels);
+      lvls_list.resize((unsigned)(*num_levels));
+      cbuff<4> _lvl;
+      for (unsigned i = 0; i < (unsigned)lvls_list.size(); i++) {
+        _lvl.format("%u", i + 1);
+        lvls_list[i] = main_fb.get_func_val<const char>(_lvl.str());
+      }
+    }
+  }
 
   init_flag = EngineState::MAIN;
   bool launch = false;
@@ -285,7 +285,7 @@ bool DD_Engine::LevelSelect(const size_t w, const size_t h) {
     }
 
     const int choices = 13;
-    const char* res_[choices] = {"320",  "480",  "620",  "720",  "800",
+    const char *res_[choices] = {"320",  "480",  "620",  "720",  "800",
                                  "1024", "1080", "1280", "1440", "1600",
                                  "1920", "2048", "3200"};
     ImGui::Combo("Width", &wh_idx[0], res_, choices);
@@ -328,11 +328,11 @@ bool DD_Engine::LevelSelect(const size_t w, const size_t h) {
 }
 
 void DD_Engine::Load() {
-	std::_Ph<1> arg_1 = std::placeholders::_1;
-	size_t system_id;
-	SysEventHandler _sh;
-	PushFunc push_func = std::bind(&DD_Queue::push, &main_q, arg_1);
-	q_push = push_func;
+  std::_Ph<1> arg_1 = std::placeholders::_1;
+  size_t system_id;
+  SysEventHandler _sh;
+  PushFunc push_func = std::bind(&DD_Queue::push, &main_q, arg_1);
+  q_push = push_func;
 
   EngineMode init_options = EngineMode::DD_NOT_SET;
   init_options = (engine_mode_flags[0])
@@ -349,6 +349,9 @@ void DD_Engine::Load() {
                      : init_options;
 
   openWindow(m_WIDTH, m_HEIGHT, init_options);
+  // set useful lua globals
+  set_lua_global(main_lstate, "SCR_W", m_WIDTH);
+  set_lua_global(main_lstate, "SCR_H", m_HEIGHT);
   // Load resources and attach queue
   main_res.queue = &main_q;
 
@@ -357,85 +360,85 @@ void DD_Engine::Load() {
 
   // Load render engine
   main_renderer.m_resourceBin = &main_res;
-	main_renderer.push = push_func;
+  main_renderer.push = push_func;
   main_renderer.m_time = &main_timer;
   main_renderer.LoadRendererEngine((GLfloat)m_WIDTH, (GLfloat)m_HEIGHT);
   main_renderer.m_particleSys->m_resBin = &main_res;
-	// add render engine handler
-	system_id = getCharHash("dd_renderer");
-	_sh = std::bind(&DD_Renderer::render_handler, &main_renderer, arg_1);
-	main_q.register_sys_func(system_id, _sh);
-	main_q.subscribe(getCharHash("render"), system_id);
-	main_q.subscribe(getCharHash("toggle_screenshots"), system_id);
-	main_q.subscribe(getCharHash("rendstat"), system_id);
+  // add render engine handler
+  system_id = getCharHash("dd_renderer");
+  _sh = std::bind(&DD_Renderer::render_handler, &main_renderer, arg_1);
+  main_q.register_sys_func(system_id, _sh);
+  main_q.subscribe(getCharHash("render"), system_id);
+  main_q.subscribe(getCharHash("toggle_screenshots"), system_id);
+  main_q.subscribe(getCharHash("rendstat"), system_id);
 
   // load compute unit and handler
   main_comp.init();
-	main_comp.res_ptr = &main_res;
-	main_comp.push = push_func;
-	system_id = getCharHash("dd_compute");
-	_sh = std::bind(&DD_Compute::compute, &main_comp, arg_1);
-	main_q.register_sys_func(system_id, _sh);
-	main_q.subscribe(getCharHash("compute_texA"), system_id);
+  main_comp.res_ptr = &main_res;
+  main_comp.push = push_func;
+  system_id = getCharHash("dd_compute");
+  _sh = std::bind(&DD_Compute::compute, &main_comp, arg_1);
+  main_q.register_sys_func(system_id, _sh);
+  main_q.subscribe(getCharHash("compute_texA"), system_id);
 
-	// add input handler
-	system_id = getCharHash("dd_input");
-	_sh = std::bind(&DD_Input::update, &main_input, arg_1);
-	main_q.register_sys_func(system_id, _sh);
-	main_q.subscribe(getCharHash("query_input"), system_id);
+  // add input handler
+  system_id = getCharHash("dd_input");
+  _sh = std::bind(&DD_Input::update, &main_input, arg_1);
+  main_q.register_sys_func(system_id, _sh);
+  main_q.subscribe(getCharHash("query_input"), system_id);
 
   // initialize Animation system and register handlers
   main_animator.res_ptr = &main_res;
-	main_animator.push = push_func;
-	system_id = getCharHash("dd_animation");
-	_sh = std::bind(&DD_AnimSystem::anim_update, &main_animator, arg_1);
-	main_q.register_sys_func(system_id, _sh);
-	main_q.subscribe(getCharHash("update_animation"), system_id);
+  main_animator.push = push_func;
+  system_id = getCharHash("dd_animation");
+  _sh = std::bind(&DD_AnimSystem::anim_update, &main_animator, arg_1);
+  main_q.register_sys_func(system_id, _sh);
+  main_q.subscribe(getCharHash("update_animation"), system_id);
 
   // add particle handler
-	main_renderer.m_particleSys->push = push_func;
-	system_id = getCharHash("dd_particles");
+  main_renderer.m_particleSys->push = push_func;
+  system_id = getCharHash("dd_particles");
   _sh = std::bind(&DD_ParticleSys::create, main_renderer.m_particleSys, arg_1);
-	main_q.register_sys_func(system_id, _sh);
-	main_q.subscribe(getCharHash("generate_emitter"), system_id);
-	main_q.subscribe(getCharHash("create_cloth"), system_id);
-	main_q.subscribe(getCharHash("debug"), system_id);
-	main_q.subscribe(getCharHash("system_pause"), system_id);
-	main_q.subscribe(getCharHash("update_cloth"), system_id);
-  //_sh = std::bind(&DD_ParticleSys::add_job, main_renderer.m_particleSys, arg_1);
-	//register_func("particle_jobA");
+  main_q.register_sys_func(system_id, _sh);
+  main_q.subscribe(getCharHash("generate_emitter"), system_id);
+  main_q.subscribe(getCharHash("create_cloth"), system_id);
+  main_q.subscribe(getCharHash("debug"), system_id);
+  main_q.subscribe(getCharHash("system_pause"), system_id);
+  main_q.subscribe(getCharHash("update_cloth"), system_id);
+  //_sh = std::bind(&DD_ParticleSys::add_job, main_renderer.m_particleSys,
+  // arg_1); register_func("particle_jobA");
 
   // add AI program handler and setup
   main_ai.res_ptr = &main_res;
-	main_ai.push = push_func;
-	system_id = getCharHash("dd_ai");
+  main_ai.push = push_func;
+  system_id = getCharHash("dd_ai");
   _sh = std::bind(&DD_AISystem::ai_update, &main_ai, arg_1);
-	main_q.register_sys_func(system_id, _sh);
-	main_q.subscribe(getCharHash("update_AI"), system_id);
+  main_q.register_sys_func(system_id, _sh);
+  main_q.subscribe(getCharHash("update_AI"), system_id);
 
   // terminal input callback
-	system_id = getCharHash("dd_terminal");
+  system_id = getCharHash("dd_terminal");
   _sh = std::bind(&DD_Terminal::get_input, std::placeholders::_1);
-	main_q.register_sys_func(system_id, _sh);
-	main_q.subscribe(getCharHash("input"), system_id);
+  main_q.register_sys_func(system_id, _sh);
+  main_q.subscribe(getCharHash("input"), system_id);
 
   // add engine callback
-	system_id = getCharHash("dd_engine");
-	_sh = std::bind(&DD_Engine::update, this, arg_1);
-	main_q.register_sys_func(system_id, _sh);
-	main_q.subscribe(getCharHash("sys_exit"), system_id);
-	main_q.subscribe(getCharHash("frame_init"), system_id);
-	main_q.subscribe(getCharHash("frame_exit"), system_id);
-	main_q.subscribe(getCharHash("load_screen"), system_id);
-	main_q.subscribe(getCharHash("init_resources"), system_id);
+  system_id = getCharHash("dd_engine");
+  _sh = std::bind(&DD_Engine::update, this, arg_1);
+  main_q.register_sys_func(system_id, _sh);
+  main_q.subscribe(getCharHash("sys_exit"), system_id);
+  main_q.subscribe(getCharHash("frame_init"), system_id);
+  main_q.subscribe(getCharHash("frame_exit"), system_id);
+  main_q.subscribe(getCharHash("load_screen"), system_id);
+  main_q.subscribe(getCharHash("init_resources"), system_id);
 }
 
 /// \brief Load engine compoenets for DD_AssetViewer
 void DD_Engine::LoadViewer() {
-	std::_Ph<1> arg_1 = std::placeholders::_1;
-	cbuff<32> event_id;
-	SysEventHandler _sh;
-	PushFunc push_func = std::bind(&DD_Queue::push, &main_q, arg_1);
+  std::_Ph<1> arg_1 = std::placeholders::_1;
+  cbuff<32> event_id;
+  SysEventHandler _sh;
+  PushFunc push_func = std::bind(&DD_Queue::push, &main_q, arg_1);
 
   // log dimensions
   main_viewer.m_screenH = m_HEIGHT;
@@ -492,105 +495,105 @@ void DD_Engine::updateSDL() {
 }
 
 /* Call in main function to begin up game loop
-*/
+ */
 void DD_Engine::Run() {
-	// push some events to kick start the queue
-	DD_LEvent _event;
+  // push some events to kick start the queue
+  DD_LEvent _event;
 
-	// turn on load screen
-	_event.handle = "dd_engine";
-	add_arg_LEvent<const char*>(&_event, "tag", load_hash.str());
-	q_push(_event);
-	// add async level assets load
-	_event.active = 0;
-	// add async level init
-	_event.active = 0;
-	_event.handle = "_async_call";
-	add_arg_LEvent<const char *>(&_event, "tag", lvl_init_hash.str());
-	add_arg_LEvent<const char *>(&_event, "reciever", "dd_engine");
-	q_push(_event);
-	// add frame update
-	_event.active = 0;
-	_event.handle = "dd_engine";
-	add_arg_LEvent<const char *>(&_event, "tag", frame_enter_hash.str());
-	q_push(_event);
+  // turn on load screen
+  _event.handle = "dd_engine";
+  add_arg_LEvent<const char *>(&_event, "tag", load_hash.str());
+  q_push(_event);
+  // add async level assets load
+  _event.active = 0;
+  // add async level init
+  _event.active = 0;
+  _event.handle = "_async_call";
+  add_arg_LEvent<const char *>(&_event, "tag", lvl_init_hash.str());
+  add_arg_LEvent<const char *>(&_event, "reciever", "dd_engine");
+  q_push(_event);
+  // add frame update
+  _event.active = 0;
+  _event.handle = "dd_engine";
+  add_arg_LEvent<const char *>(&_event, "tag", frame_enter_hash.str());
+  q_push(_event);
 
-	/*
-  if (init_flag == EngineState::MAIN) {
-    // get resource for current level
-    lvl_resource = main_lvl[current_lvl]->m_assetFile;
-  }
-
-  const double frame_time = 1.0 / FRAME_CAP;
-  u64 last_update_time = main_timer.getTime();
-  double unprocessed_time = 0.0;
-
-  glClearColor(main_renderer.bgcol[0], main_renderer.bgcol[1],
-               main_renderer.bgcol[2], main_renderer.bgcol[3]);
-  while (!windowShouldClose) {
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    // update time
-    if (UNLOCK_FRAMEPACE) {
-      main_timer.update();
-    } else {
-      main_timer.update((float)frame_time);
-    }
-
-    // fixed frame loop
-    u64 start_time = main_timer.getTime();
-    u64 elapsed_time = start_time - last_update_time;
-    last_update_time = start_time;
-
-    unprocessed_time += elapsed_time / (double)SECOND_LL;
-
-    // start imgui window processing
-    ImGui_ImplSdlGL3_NewFrame(main_window);
-
-    unprocessed_time -= frame_time;
-    // pole SDL events
-    updateSDL();
-    // run event loop
-    ResSpace::updateSceneGraph(&main_res, main_timer.getTimeFloat());
-    gameLoop();
-
-    if (main_state == GameState::ACTIVE) {
-      // add render event
-      float frametime = main_timer.getFrameTime();
-      DD_Event rendE = DD_Event();
-      rendE.m_time = frametime;
-      rendE.m_type = "render";
-      main_q.push(rendE);
-      // add debug (text rendering must be last (gl_blend))
-      if (flag_debug) {
-        DD_Event debugE = DD_Event();
-        debugE.m_time = frametime;
-        debugE.m_type = "debug";
-        main_q.push(debugE);
-      }
-      main_q.ProcessQueue();
-
-      // render IMGUI ui
-      DD_Terminal::display((float)m_WIDTH, (float)m_HEIGHT);
-      ImGui::Render();
-      // swap buffers
-      SDL_GL_SwapWindow(main_window);
-    } else if (main_state == GameState::LOADING) {
-      // Show load screen
-      main_renderer.DrawLoadScreen(main_timer.getTimeFloat());
-
-      // render IMGUI ui
-      DD_Terminal::display((float)m_WIDTH, (float)m_HEIGHT);
-      ImGui::Render();
-      // swap buffers
-      SDL_GL_SwapWindow(main_window);
-    } else {
-      std::this_thread::sleep_for(chrono_msec);
-    }
-  }
-	//*/
+  /*
+if (init_flag == EngineState::MAIN) {
+// get resource for current level
+lvl_resource = main_lvl[current_lvl]->m_assetFile;
 }
 
+const double frame_time = 1.0 / FRAME_CAP;
+u64 last_update_time = main_timer.getTime();
+double unprocessed_time = 0.0;
+
+glClearColor(main_renderer.bgcol[0], main_renderer.bgcol[1],
+         main_renderer.bgcol[2], main_renderer.bgcol[3]);
+while (!windowShouldClose) {
+glClear(GL_COLOR_BUFFER_BIT);
+
+// update time
+if (UNLOCK_FRAMEPACE) {
+main_timer.update();
+} else {
+main_timer.update((float)frame_time);
+}
+
+// fixed frame loop
+u64 start_time = main_timer.getTime();
+u64 elapsed_time = start_time - last_update_time;
+last_update_time = start_time;
+
+unprocessed_time += elapsed_time / (double)SECOND_LL;
+
+// start imgui window processing
+ImGui_ImplSdlGL3_NewFrame(main_window);
+
+unprocessed_time -= frame_time;
+// pole SDL events
+updateSDL();
+// run event loop
+ResSpace::updateSceneGraph(&main_res, main_timer.getTimeFloat());
+gameLoop();
+
+if (main_state == GameState::ACTIVE) {
+// add render event
+float frametime = main_timer.getFrameTime();
+DD_Event rendE = DD_Event();
+rendE.m_time = frametime;
+rendE.m_type = "render";
+main_q.push(rendE);
+// add debug (text rendering must be last (gl_blend))
+if (flag_debug) {
+  DD_Event debugE = DD_Event();
+  debugE.m_time = frametime;
+  debugE.m_type = "debug";
+  main_q.push(debugE);
+}
+main_q.ProcessQueue();
+
+// render IMGUI ui
+DD_Terminal::display((float)m_WIDTH, (float)m_HEIGHT);
+ImGui::Render();
+// swap buffers
+SDL_GL_SwapWindow(main_window);
+} else if (main_state == GameState::LOADING) {
+// Show load screen
+main_renderer.DrawLoadScreen(main_timer.getTimeFloat());
+
+// render IMGUI ui
+DD_Terminal::display((float)m_WIDTH, (float)m_HEIGHT);
+ImGui::Render();
+// swap buffers
+SDL_GL_SwapWindow(main_window);
+} else {
+std::this_thread::sleep_for(chrono_msec);
+}
+}
+  //*/
+}
+/*
 void DD_Engine::gameLoop() {
   switch (main_state) {
     case GameState::LOADING:
@@ -670,6 +673,7 @@ void DD_Engine::gameLoop() {
       break;
   }
 }
+//*/
 
 /// \brief Clean up engine resources
 void DD_Engine::cleanUp() {
@@ -679,6 +683,7 @@ void DD_Engine::cleanUp() {
   SDL_Quit();
 }
 
+/*
 void DD_Engine::LoadQueue() {
   // THINGS TO DO ONCE PER FRAME IN ORDER
   float frametime = main_timer.getFrameTime();
@@ -731,8 +736,9 @@ void DD_Engine::LoadQueue() {
   animE.m_type = "update_animation";
   main_q.push(animE);
 }
+//*/
 
-//void DD_Engine::execScript(std::string script_file) {
+// void DD_Engine::execScript(std::string script_file) {
 //  DD_IOhandle script;
 //  if (!script.open(script_file.c_str(), DD_IOflag::READ)) {
 //    return;
@@ -745,103 +751,95 @@ void DD_Engine::LoadQueue() {
 //  }
 //}
 
-bool DD_Engine::execTerminal(const char* cmd) {
+bool DD_Engine::execTerminal(const char *cmd) {
   if (cmd) {
-		cbuff<32> str_arg;
+    cbuff<32> str_arg;
 
     // split arguments and tags if possible
     std::string head;
-		std::string buff = cmd;
+    std::string buff = cmd;
     size_t head_idx = buff.find_first_of(" ");
     if (head_idx != std::string::npos) {
       head = buff.substr(0, head_idx);
-			str_arg = buff.substr(head_idx + 1).c_str();
+      str_arg = buff.substr(head_idx + 1).c_str();
     } else {
       head = buff;
     }
 
-		DD_LEvent _event;
-		_event.handle = head.c_str();
-		add_arg_LEvent<const char*>(&_event, "tag", str_arg.str());
-		q_push(_event);
+    DD_LEvent _event;
+    _event.handle = head.c_str();
+    add_arg_LEvent<const char *>(&_event, "tag", str_arg.str());
+    q_push(_event);
     return true;
   } else {
     return false;
   }
 }
 
-DD_Event DD_Engine::Update(DD_Event& event) {
+DD_Event DD_Engine::Update(DD_Event &event) {
   if (event.m_type.compare("EXIT") == 0) {
-    flagBuff* fb = static_cast<flagBuff*>(event.m_message);
+    flagBuff *fb = static_cast<flagBuff *>(event.m_message);
     windowShouldClose = fb->flag;
   }
   return DD_Event();
 }
 
-void DD_Engine::update(DD_LEvent & _event) {
-	const char *tag = get_arg_LEvent<const char>(&_event, "tag");
-	if (tag) {
-		size_t e_sig = getCharHash(tag);
-		if (e_sig == exit_hash.gethash()) {		//close app
-			main_q.shutdown_queue();
-		}
-		else if (e_sig == frame_enter_hash.gethash()) {	// setup new frame
-			// clear framebuffer 
-			glClearColor(main_renderer.bgcol[0], main_renderer.bgcol[1],
-									 main_renderer.bgcol[2], main_renderer.bgcol[3]);
-			glClear(GL_COLOR_BUFFER_BIT);
+void DD_Engine::update(DD_LEvent &_event) {
+  size_t e_sig = _event.handle.gethash();
+  if (e_sig == exit_hash.gethash()) {  // close app
+    main_q.shutdown_queue();
+  } else if (e_sig == frame_enter_hash.gethash()) {  // setup new frame
+    // clear framebuffer
+    glClearColor(main_renderer.bgcol[0], main_renderer.bgcol[1],
+                 main_renderer.bgcol[2], main_renderer.bgcol[3]);
+    glClear(GL_COLOR_BUFFER_BIT);
 
-			main_timer.update();
+    main_timer.update();
 
-			// start imgui window processing
-			ImGui_ImplSdlGL3_NewFrame(main_window);
-			// pole SDL events
-			updateSDL();
-			// run scene graph
-			ResSpace::updateSceneGraph(&main_res, main_timer.getTimeFloat());
+    // start imgui window processing
+    ImGui_ImplSdlGL3_NewFrame(main_window);
+    // pole SDL events
+    updateSDL();
+    // run scene graph
+    ResSpace::updateSceneGraph(&main_res, main_timer.getTimeFloat());
 
-			if (load_screen) {
-				// Show load screen
-				main_renderer.DrawLoadScreen(main_timer.getTimeFloat());
-			} else {
-				// send next event in sequence 
-				// terminal, VR, AI, level update, animation, render, frame exit
-				DD_LEvent new_event;
-			}
-		}
-		else if (e_sig == frame_exit_hash.gethash()) {	// exit frame
-			// query terminal
-			DD_Terminal::display((float)m_WIDTH, (float)m_HEIGHT);
-			// render IMGUI ui
-			ImGui::Render();
-			// swap buffers
-			SDL_GL_SwapWindow(main_window);
-			// push event for starting next frame
-			DD_LEvent new_event;
-			new_event.handle = "dd_engine";
-			add_arg_LEvent<const char *>(&new_event, "tag", frame_enter_hash.str());
-			q_push(new_event);
-		}
-		else if (e_sig == load_hash.gethash()) {	// load screen
-			load_screen ^= 1;
-		}
-		else if (e_sig == terminal_hash.gethash()) {	// process queue
-			bool more_cmds = true;
-			while (more_cmds) {
-				const char* cmd = DD_Terminal::pollBuffer();
-				more_cmds = execTerminal(cmd);
-			}
-		}
-		else if (e_sig == lvl_init_hash.gethash()) {	// set level attributes
-			// set useful lua globals
-			set_lua_global(main_lstate, "SCR_W", m_WIDTH);
-			set_lua_global(main_lstate, "SCR_H", m_HEIGHT);
-			// add functionality to set active skybox in scripts
-			// add function from DD_Engine that sets: main_renderer.m_lvl_cubMap
-		}
-	}
+    if (load_screen) {
+      // Show load screen
+      main_renderer.DrawLoadScreen(main_timer.getTimeFloat());
+    } else {
+      // send next event in sequence
+      // terminal, VR, AI, level update,
+      // post update (periodic update for scripts),
+      // physics, animation, render, frame exit
+      DD_LEvent new_event;
+    }
+  } else if (e_sig == frame_exit_hash.gethash()) {  // exit frame
+    // query terminal
+    DD_Terminal::display((float)m_WIDTH, (float)m_HEIGHT);
+    // render IMGUI ui
+    ImGui::Render();
+    // swap buffers
+    SDL_GL_SwapWindow(main_window);
+    // push event for starting next frame
+    DD_LEvent new_event;
+    new_event.handle = "dd_engine";
+    add_arg_LEvent<const char *>(&new_event, "tag", frame_enter_hash.str());
+    q_push(new_event);
+  } else if (e_sig == load_hash.gethash()) {  // load screen
+    load_screen ^= 1;
+  } else if (e_sig == terminal_hash.gethash()) {  // process queue
+    bool more_cmds = true;
+    while (more_cmds) {
+      const char *cmd = DD_Terminal::pollBuffer();
+      more_cmds = execTerminal(cmd);
+    }
+  } else if (e_sig == lvl_init_hash.gethash()) {  // set level attributes
+    // add functionality to set active skybox in scripts
+    // add function from DD_Engine that sets: main_renderer.m_lvl_cubMap
+  }
 }
 
+/*
 void DD_Engine::InitCurrentLevel() {
   if (init_flag != EngineState::MAIN) {
     return;
@@ -872,3 +870,4 @@ void DD_Engine::InitCurrentLevel() {
   main_renderer.m_scrVertDist = main_lvl[current_lvl]->m_scrVertDist;
   main_renderer.m_flagDCM = main_lvl[current_lvl]->m_flagDynamicCubeMap;
 }
+//*/

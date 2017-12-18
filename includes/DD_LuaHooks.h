@@ -8,7 +8,7 @@ extern "C" {
 #include "lualib.h"
 }
 
-#define MAX_CALLBACK_EVENTS 10
+#define MAX_ARG_BUFFER_SIZE 10
 #define MAX_EVENT_ARGS 8
 
 /// \brief class for parsing Varying data struct
@@ -44,7 +44,7 @@ struct DD_LEvent {
 };
 
 // system event handler signature
-typedef std::function<void(DD_LEvent&)> SysEventHandler;
+typedef std::function<void(DD_LEvent &)> SysEventHandler;
 
 /// \brief Add argument to DD_LEvent
 template <typename T>
@@ -64,46 +64,20 @@ bool add_arg_LEvent<const char *>(DD_LEvent *levent, const char *key,
 
 /// brief Get argument from DD_LEvent
 template <typename T>
-T* get_arg_LEvent(DD_LEvent *levent, const char *key) {
-	return nullptr;
+T *get_arg_LEvent(DD_LEvent *levent, const char *key) {
+  return nullptr;
 }
 
 template <>
-int* get_arg_LEvent<int>(DD_LEvent *levent, const char *key);
+int *get_arg_LEvent<int>(DD_LEvent *levent, const char *key);
 template <>
-float* get_arg_LEvent<float>(DD_LEvent *levent, const char *key);
+float *get_arg_LEvent<float>(DD_LEvent *levent, const char *key);
 template <>
-bool* get_arg_LEvent<bool>(DD_LEvent *levent, const char *key);
+bool *get_arg_LEvent<bool>(DD_LEvent *levent, const char *key);
 template <>
-const char* get_arg_LEvent<const char>(DD_LEvent *levent, const char *key);
+const char *get_arg_LEvent<const char>(DD_LEvent *levent, const char *key);
 
-/// \brief Buffer to hold evens from callback function
-struct DD_CallBackBuff {
-  /// \brief Get new event from buffer (return nullptr if buffer is full)
-  DD_LEvent *get_new_event();
-  /// \brief Parse DD_CallBackBuff arguments to into values
-  template <typename T>
-  T *get_callback_val(const char *ckey) {
-    return nullptr;
-  }
-
-  /// \brief resets DD_CallBackBuff
-  void clear_callbackbuff();
-
-  DD_LEvent buffer[MAX_CALLBACK_EVENTS];
-  unsigned num_events = 0;
-};
-
-template <>
-const char *DD_CallBackBuff::get_callback_val<const char>(const char *ckey);
-template <>
-bool *DD_CallBackBuff::get_callback_val<bool>(const char *ckey);
-template <>
-float *DD_CallBackBuff::get_callback_val<float>(const char *ckey);
-template <>
-int *DD_CallBackBuff::get_callback_val<int>(const char *ckey);
-
-/// \brief Data type for passing function arguments to C++ from Lua
+/// \brief Data type for passing information between C++ and Lua
 struct DD_LFuncArg {
   cbuff<32> arg_name;
   Varying<256> arg;
@@ -119,7 +93,7 @@ struct DD_FuncBuff {
     return nullptr;
   }
 
-  DD_LFuncArg buffer[MAX_CALLBACK_EVENTS];
+  DD_LFuncArg buffer[MAX_ARG_BUFFER_SIZE];
   unsigned num_args = 0;
 };
 
@@ -172,23 +146,15 @@ void register_callback_lua(lua_State *L, const char *func_sig,
 /// \return Ture if successfully opened
 bool parse_luafile(lua_State *L, const char *filename);
 
-/// \brief Envoke lua callback function and return event
-//void callback_lua(lua_State *L, const DD_LEvent &event, DD_CallBackBuff &cb,
-//                  const char *func, const char *lclass = "");
-
 /// \brief Envoke lua callback function with lua_ref pointer
-void callback_lua(lua_State *L, const DD_LEvent &levent, int func_ref,
-                  int global_ref = LUA_REFNIL, DD_CallBackBuff *cb = nullptr,
-                  DD_FuncBuff *fb = nullptr);
+void callback_lua(lua_State *L, const DD_LEvent &levent, DD_FuncBuff &fb,
+                  int func_ref, int global_ref = LUA_REFNIL);
 
 /// \brief Push event arguments onto the stack
 void push_args(lua_State *L, const DD_LEvent &levent, const int idx);
 
 /// \brief Dump stack
 void stack_dump(lua_State *L);
-
-/// \brief Parse all events to callback buffer
-void parse_lua_events(lua_State *L, DD_CallBackBuff &cb);
 
 /// \brief Parse all events to function argument buffer
 void parse_lua_events(lua_State *L, DD_FuncBuff &fb);
@@ -202,33 +168,44 @@ void parse_table(lua_State *L, DD_FuncBuff *fb, const int tabs = 0);
 /// \brief Print tables for returned events (debug)
 void print_table(lua_State *L, const int tabs = 0);
 
-/// \brief Print out contents of DD_CallbackBuff
-void print_callbackbuff(DD_CallBackBuff &cb);
+/// \brief Print out contents of buffer
+void print_buffer(DD_FuncBuff &fb);
 
 /// \brief Store and return handle to lua function
 /// \return Integer handle to function or class
 int get_lua_ref(lua_State *L, const char *lclass, const char *func);
 
+/// \brief Store and return handle to lua function
+/// \return Integer handle to function or class
+int get_lua_ref(lua_State *L, int lclass, const char *func);
+
 /// \brief Clear function reference
 void clear_lua_ref(lua_State *L, int func_ref);
 
 /// \brief Set integer global in lua scripts
-inline void set_lua_global(lua_State *L, const char* name, const int val) {
-	lua_pushinteger(L, val);
-	lua_setglobal(L, name);
+inline void set_lua_global(lua_State *L, const char *name, const int val) {
+  lua_pushinteger(L, val);
+  lua_setglobal(L, name);
 }
 /// \brief Set float global in lua scripts
-inline void set_lua_global(lua_State *L, const char* name, const float val) {
-	lua_pushnumber(L, val);
-	lua_setglobal(L, name);
+inline void set_lua_global(lua_State *L, const char *name, const float val) {
+  lua_pushnumber(L, val);
+  lua_setglobal(L, name);
 }
 /// \brief Set boolean global in lua scripts
-inline void set_lua_global(lua_State *L, const char* name, const bool val) {
-	lua_pushboolean(L, val);
-	lua_setglobal(L, name);
+inline void set_lua_global(lua_State *L, const char *name, const bool val) {
+  lua_pushboolean(L, val);
+  lua_setglobal(L, name);
 }
 /// \brief Set string global in lua scripts
-inline void set_lua_global(lua_State *L, const char* name, const char *val) {
-	lua_pushstring(L, val);
-	lua_setglobal(L, name);
+inline void set_lua_global(lua_State *L, const char *name, const char *val) {
+  lua_pushstring(L, val);
+  lua_setglobal(L, name);
 }
+
+/// \brief Get lua object (table) from top of stack and return pointer
+/// \return Lua reference pointer
+int get_lua_object(lua_State *L);
+
+/// \brief Add simple c/c++ functions to lua scripts
+void add_func_to_scripts(lua_State *L, lua_CFunction func, const char *name);
