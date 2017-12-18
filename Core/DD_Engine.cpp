@@ -30,7 +30,10 @@ const cbuff<32> lvl_asset_hash("_asset_init");
 const cbuff<32> terminal_hash("poll_terminal");
 }  // namespace
 
-void DD_Engine::startup_lua() { main_lstate = init_lua_state(); }
+void DD_Engine::startup_lua() { 
+	main_lstate = init_lua_state();
+	main_q.set_lua_ptr(main_lstate);
+}
 
 void DD_Engine::openWindow(const size_t width, const size_t height,
                            EngineMode mode) {
@@ -308,6 +311,10 @@ bool DD_Engine::LevelSelect(const size_t w, const size_t h) {
       ImGui::Dummy(ImVec2(scrW / 2 - 60 / 2 - 10, 20));
       ImGui::SameLine();
       launch = ImGui::Button("Launch", ImVec2(60, 20));
+			if (launch) {
+				// set up queue handlers
+				main_q.init_level_scripts(lvls_list[current_lvl]);
+			}
     }
     ImGui::Dummy(ImVec2(scrW / 2 - 180 / 2 - 10, 20));
     ImGui::SameLine();

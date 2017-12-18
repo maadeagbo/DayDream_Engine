@@ -76,6 +76,10 @@ struct DD_Queue {
   void process_queue();
   /// \brief ONLY CALLED INTERNALLY BY DD_Engine. DO NOT USE
   inline void shutdown_queue() { shutdown = true; }
+	/// \brief ONLY CALLED INTERNALLY BY DD_Engine. DO NOT USE
+	inline void set_lua_ptr(lua_State *_L) { L = _L; }
+	/// \brief ONLY CALLED INTERNALLY BY DD_Engine. DO NOT USE
+	void init_level_scripts(const char *script_id);
 
  private:
   /// \brief Add events to current queue

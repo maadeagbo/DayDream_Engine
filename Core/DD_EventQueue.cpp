@@ -4,14 +4,14 @@
 namespace {
 cbuff<32> event_id_hash("event_id");
 cbuff<32> delay_hash("delay");
-} // namespace
+}  // namespace
 
 bool DD_Queue::push(const DD_LEvent &_event) {
   switch (_event.delay) {
-  case 0:
-    return push_current(_event);
-  default:
-    return push_future(_event);
+    case 0:
+      return push_current(_event);
+    default:
+      return push_future(_event);
   }
 }
 
@@ -34,22 +34,22 @@ int DD_Queue::push_lua(lua_State *_L) {
     // log remaining arguments
     else {
       switch (fb.buffer[i].arg.type) {
-      case VType::BOOL:
-        add_arg_LEvent<bool>(&_event, fb.buffer[i].arg_name.str(),
-                             fb.buffer->arg.v_bool);
-        break;
-      case VType::INT:
-        add_arg_LEvent<int>(&_event, fb.buffer[i].arg_name.str(),
-                            fb.buffer->arg.v_int);
-        break;
-      case VType::FLOAT:
-        add_arg_LEvent<float>(&_event, fb.buffer[i].arg_name.str(),
-                              fb.buffer->arg.v_float);
-        break;
-      case VType::STRING:
-        add_arg_LEvent<const char *>(&_event, fb.buffer[i].arg_name.str(),
-                                     fb.buffer->arg.v_strptr.str());
-        break;
+        case VType::BOOL:
+          add_arg_LEvent<bool>(&_event, fb.buffer[i].arg_name.str(),
+                               fb.buffer->arg.v_bool);
+          break;
+        case VType::INT:
+          add_arg_LEvent<int>(&_event, fb.buffer[i].arg_name.str(),
+                              fb.buffer->arg.v_int);
+          break;
+        case VType::FLOAT:
+          add_arg_LEvent<float>(&_event, fb.buffer[i].arg_name.str(),
+                                fb.buffer->arg.v_float);
+          break;
+        case VType::STRING:
+          add_arg_LEvent<const char *>(&_event, fb.buffer[i].arg_name.str(),
+                                       fb.buffer->arg.v_strptr.str());
+          break;
       }
     }
   }
@@ -136,7 +136,7 @@ void DD_Queue::subscribe(const size_t event_sig, const size_t _sig) {
     // if it doesn't exist, create new container
     registered_events[event_sig] = dd_array<size_t>(5);
     registered_events[event_sig][1] = _sig;
-    registered_events[event_sig][0] = 1; // store number of registered funcs
+    registered_events[event_sig][0] = 1;  // store number of registered funcs
   } else {
     size_t full_q = registered_events[event_sig].size() - 1;
     if (registered_events[event_sig][0] == full_q) {
@@ -162,9 +162,9 @@ void DD_Queue::process_future() {
     DD_LEvent _event;
     pop_future(_event);
 
-    if (_event.delay == 0) { // add to normal queue
+    if (_event.delay == 0) {  // add to normal queue
       push(_event);
-    } else { // update then send back to future queue
+    } else {  // update then send back to future queue
       _event.delay--;
       push_future(_event);
     }
@@ -231,32 +231,32 @@ void DD_Queue::process_queue() {
       const int async_flag = (_event.handle == check_lvl_async) ? 0 : 1;
 
       switch (async_flag) {
-      case 0: // check level init function
-        if (async_lvl_init.wait_for(timespan) == std::future_status::ready) {
-          // create completion event
-          a_event.handle = "_lvl_init_done";
-          push(a_event);
-        } else {
-          // create delay event
-          a_event.handle = check_lvl_async;
-          a_event.delay = 30;
-          push_future(a_event);
-        }
-        break;
-      case 1: // check resource load function
-        if (async_resource.wait_for(timespan) == std::future_status::ready) {
-          // create completion event
-          a_event.handle = "_load_resource_done";
-          push(a_event);
-        } else {
-          // create delay event
-          a_event.handle = check_res_async;
-          a_event.delay = 30;
-          push_future(a_event);
-        }
-        break;
-      default:
-        break;
+        case 0:  // check level init function
+          if (async_lvl_init.wait_for(timespan) == std::future_status::ready) {
+            // create completion event
+            a_event.handle = "_lvl_init_done";
+            push(a_event);
+          } else {
+            // create delay event
+            a_event.handle = check_lvl_async;
+            a_event.delay = 30;
+            push_future(a_event);
+          }
+          break;
+        case 1:  // check resource load function
+          if (async_resource.wait_for(timespan) == std::future_status::ready) {
+            // create completion event
+            a_event.handle = "_load_resource_done";
+            push(a_event);
+          } else {
+            // create delay event
+            a_event.handle = check_res_async;
+            a_event.delay = 30;
+            push_future(a_event);
+          }
+          break;
+        default:
+          break;
       }
     }
     // event can be processed by scripts or system calls
@@ -276,6 +276,57 @@ void DD_Queue::process_queue() {
         }
       }
     }
+  }
+}
+
+void DD_Queue::init_level_scripts(const char *script_id) {
+  // find level functions
+  cbuff<256> file_name;
+  file_name.format("%sscripts/%s.lua", ROOT_DIR, script_id);
+  bool file_found = parse_luafile(L, file_name.str());
+  if (file_found) {
+    int global_ref = get_lua_ref(L, nullptr, script_id);
+    if (global_ref != LUA_REFNIL) {
+      // get init function
+      int func_ref = get_lua_ref(L, global_ref, "init");
+      if (func_ref != LUA_REFNIL) {
+        // add queue handle
+        lvl_init = {global_ref, func_ref};
+      } else {
+        DD_Terminal::f_post("init_level_scripts::Failed to find: %s::init",
+                            script_id);
+      }
+      // get update function
+      func_ref = get_lua_ref(L, global_ref, "update");
+      if (func_ref != LUA_REFNIL) {
+        // add queue handle
+        lvl_update = {global_ref, func_ref};
+      } else {
+        DD_Terminal::f_post("init_level_scripts::Failed to find: %s::update",
+                            script_id);
+      }
+    } else {
+      DD_Terminal::f_post("init_level_scripts::Failed to find: %s", script_id);
+    }
+  } else {
+    DD_Terminal::f_post("init_level_scripts::Failed to open <%s>",
+                        file_name.str());
+  }
+  // find load function
+  file_name.format("%sscripts/%s_assets.lua", ROOT_DIR, script_id);
+  file_found = parse_luafile(L, file_name.str());
+  if (file_found) {
+    int func_ref = get_lua_ref(L, nullptr, "load");
+    if (func_ref != LUA_REFNIL) {
+      // add queue handle
+      lvl_res = {-1, func_ref};
+    } else {
+      DD_Terminal::f_post("init_level_scripts::Failed to find: %s_asset::load",
+                          script_id);
+    }
+  } else {
+    DD_Terminal::f_post("init_level_scripts::Failed to open <%s>",
+                        file_name.str());
   }
 }
 
