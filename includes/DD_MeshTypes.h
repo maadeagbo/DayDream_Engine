@@ -168,7 +168,7 @@ struct BoundingBox {
 };
 
 /// \brief Container for model information
-struct ModelID {
+struct ModelIDs {
 	float _near = 0.f, _far = 100.f;
 	cbuff<32> model;
 };
@@ -177,6 +177,7 @@ struct ModelID {
 struct DD_Body {
 	btRigidBody *body;
 	btTransform t_f;
+	dd_array<BoundingBox> BBox;
 };
 
 // Useful glm functions
