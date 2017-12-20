@@ -15,6 +15,16 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
+# for multi-config builds (e.g. msvc)
+foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
+    string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
+		set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} 
+				${PROJECT_SOURCE_DIR}/bin )
+		set( CMAKE_LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} 
+				${PROJECT_SOURCE_DIR}/lib )
+		set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} 
+				${PROJECT_SOURCE_DIR}/lib )
+endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
 
 # set flags for debug and release mode
 include(CheckCXXCompilerFlag)
@@ -50,17 +60,36 @@ if(HAS_CNEW)
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -std=c++11")
 endif()
 
+option(USE_STATIC_LINKAGE "Use static libraries when linking executable"	ON)
+if(USE_STATIC_LINKAGE)
+	# statically link to reduce dependancies
+	foreach(flag_var CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE 
+					CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO CMAKE_C_FLAGS
+					CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE CMAKE_C_FLAGS_MINSIZEREL 
+					CMAKE_C_FLAGS_RELWITHDEBINFO )
+		if(${flag_var} MATCHES "/MD")
+			STRING(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
+		endif(${flag_var} MATCHES "/MD")
+		if(${flag_var} MATCHES "/MDd")
+			STRING(REGEX REPLACE "/MDd" "/MTd" ${flag_var} "${${flag_var}}")
+		endif(${flag_var} MATCHES "/MDd")
+	endforeach(flag_var)
+endif()
 
 # add paths to freetype lib and sdl2
 if(NOT UNIX)
 	set(ENV{SDL2DIR} ${CMAKE_CURRENT_SOURCE_DIR}/SDL2-2.0.7)
 	set(ENV{FREETYPE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/freetype-2.7)
+	set(ENV{BULLET_ROOT} ${CMAKE_CURRENT_SOURCE_DIR}/bullet3_287)
 endif()
 
 # includes cmake/FindSDL2.cmake and sets module path
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIR})
+
+# add bullet physics
+add_subdirectory(${PROJECT_SOURCE_DIR}/bullet3_287)
 
 # include directories for project
 find_path(GLM_PATH glm.hpp
@@ -74,6 +103,13 @@ find_path(IMGUI_PATH imgui.h
 	${CMAKE_CURRENT_SOURCE_DIR}/imgui)
 if(NOT IMGUI_PATH)
 	message(FATAL_ERROR "IMGUI_PATH IMGUI includes not found")
+endif()
+find_path(BULLET_PATH 
+	NAMES btBulletCollisionCommon.h btBulletDynamicsCommon.h
+	PATHS
+	${CMAKE_SOURCE_DIR}/bullet3_287/src)
+if(NOT BULLET_PATH)
+	message(FATAL_ERROR "BULLET3 includes not found")
 endif()
 find_path(VRPN_PATH vrpn_Tracker.h
 	PATHS
@@ -200,6 +236,7 @@ include_directories(${CMAKE_SOURCE_DIR}/includes
 	${PROJ_HEADERS}
 	${IMGUI_PATH}
 	${LUA_PATH}
+	${BULLET_PATH}
 	${VRPN_PATH})
 
 # clang-format
@@ -282,14 +319,24 @@ endif()
 #	message(FATAL_ERROR "NOOOOOOOO")
 #4endif()
 
+if(MSVC)
+	set(BULLET_LIB 
+		${PROJECT_SOURCE_DIR}/lib/BulletDynamics.lib
+		${PROJECT_SOURCE_DIR}/lib/BulletCollision.lib
+		${PROJECT_SOURCE_DIR}/lib/LinearMath.lib
+		${PROJECT_SOURCE_DIR}/lib/BulletSoftBody.lib
+	)
+else()
+endif()
+
 if(NOT WIN32)
 	# filesystem goes last
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -lstdc++fs")
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -lstdc++fs")
 
-	target_link_libraries(dd_engine ${SOIL_LIB} ${OPENGL_gl_LIBRARY}
-	${SDL2_LIBRARY} ${VRPN_LIB} ${FREETYPE_LIBRARIES} ${FS_LIB} ${LUA_LIB})
+	target_link_libraries(dd_engine ${SOIL_LIB} ${OPENGL_gl_LIBRARY} ${BULLET_LIB}
+		${SDL2_LIBRARY} ${VRPN_LIB} ${FREETYPE_LIBRARIES} ${FS_LIB} ${LUA_LIB})
 else()
-	target_link_libraries(dd_engine ${SOIL_LIB} ${OPENGL_gl_LIBRARY}
-	${SDL2_LIBRARY} ${VRPN_LIB} ${FREETYPE_LIBRARIES} ${LUA_LIB})
+	target_link_libraries(dd_engine ${SOIL_LIB} ${OPENGL_gl_LIBRARY} ${BULLET_LIB}
+		${SDL2_LIBRARY} ${VRPN_LIB} ${FREETYPE_LIBRARIES} ${LUA_LIB})
 endif()

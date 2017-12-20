@@ -2,15 +2,16 @@
 
 #include "SDL.h"
 
-#include "../Core/AssetViewer/DD_AssetViewer.h"
 #include "DD_AISystem.h"
 #include "DD_AnimSystem.h"
+#include "DD_AssetManager.h"
 #include "DD_ComputeGPU.h"
 #include "DD_EventQueue.h"
 #include "DD_GameLevel.h"
 #include "DD_Input.h"
 #include "DD_LuaHooks.h"
 #include "DD_MathLib.h"
+#include "DD_PhysicsEngine.h"
 #include "DD_RenderEngine.h"
 #include "DD_ResourceLoader.h"
 #include "DD_Timer.h"
@@ -49,7 +50,6 @@ struct DD_Engine {
   void startup_lua();
   void Launch();
   void Load();
-  void LoadViewer();
   bool LevelSelect(const size_t w = 600, const size_t h = 600);
   void Run();
   inline SDL_Window* GetWin() { return main_window; }
@@ -79,7 +79,7 @@ struct DD_Engine {
   DD_Queue main_q;
   DD_Resources main_res;
   DD_Compute main_comp;
-  DD_AssetViewer main_viewer;
+	DD_Physics	main_physics;
   dd_array<DD_GameLevel*> main_lvl;
   PushFunc q_push;
   DD_FuncBuff main_fb;

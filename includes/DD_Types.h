@@ -27,22 +27,32 @@
 #include <thread>
 #include <typeinfo>
 
+// simple template container library
 #include "DD_Container.h"
 #include "DD_EventTypes.h"
+// simple string library
 #include "DD_String.h"
+// lua bindings
 #include "DD_LuaHooks.h"
 
+// OpenGL includes
 #include <gl_core_4_3.h>
 
+// GLM includes
 #include <glm/fwd.hpp>
+#ifdef _WIN32
 #define GLM_FORCE_CXX98
 #define GLM_FORCE_CXX11
-#define GLM_FORCE_CXX14  // removes non-standard extensions warnings in VS
-                         // compiler
+#define GLM_FORCE_CXX14  // removes non-standard extensions warnings 
+#endif
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
+
+// Bullet Physics include
+#include <btBulletCollisionCommon.h>
+#include <btBulletDynamicsCommon.h>
 
 typedef std::uint_fast8_t u8;    // 8-bit unsigned int for fast access
 typedef std::uint_fast32_t u32;  // 32-bit unsigned int for high precision

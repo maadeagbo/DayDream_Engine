@@ -1,6 +1,5 @@
 #include "DD_ResourceLoader.h"
 #include "DD_FileIO.h"
-#include "DD_OBJ_Parser.h"
 #include "DD_Terminal.h"
 
 // parsing specific variables
@@ -525,92 +524,93 @@ DD_Material createMaterial(DD_Resources* res, obj_mat& matbuff) {
 
 DD_Model loadModel(DD_Resources* res, const char* obj_path,
                    const char* mtlName) {
-  DD_Model model = DD_Model();
-  ObjAsset asset = ObjAsset();
-  ObjAssetParser::ParseFlag parseResult;
-  parseResult = ObjAssetParser::PreProcess(asset, obj_path, mtlName);
-  if (parseResult.success && !parseResult.ddMesh) {
-    ObjAssetParser::FormatForOpenGL(asset);
+  //DD_Model model = DD_Model();
+  //ObjAsset asset = ObjAsset();
+  //ObjAssetParser::ParseFlag parseResult;
+  //parseResult = ObjAssetParser::PreProcess(asset, obj_path, mtlName);
+  //if (parseResult.success && !parseResult.ddMesh) {
+  //  ObjAssetParser::FormatForOpenGL(asset);
 
-    // initialize model's containers
-    model.meshes.resize(asset.meshes.size());
-    model.materials.resize(asset.meshes.size());
-    model.VAO.resize(asset.meshes.size());
-    model.VBO.resize(asset.meshes.size());
-    model.EBO.resize(asset.meshes.size());
-    model.instVBO.resize(asset.meshes.size());
-    model.instColorVBO.resize(asset.meshes.size());
+  //  // initialize model's containers
+  //  model.meshes.resize(asset.meshes.size());
+  //  model.materials.resize(asset.meshes.size());
+  //  model.VAO.resize(asset.meshes.size());
+  //  model.VBO.resize(asset.meshes.size());
+  //  model.EBO.resize(asset.meshes.size());
+  //  model.instVBO.resize(asset.meshes.size());
+  //  model.instColorVBO.resize(asset.meshes.size());
 
-    model.meshes = std::move(asset.meshes);
-    model.directory = asset.info.directory;
+  //  model.meshes = std::move(asset.meshes);
+  //  model.directory = asset.info.directory;
 
-    // Create materials (if new)
-    for (size_t i = 0; i < asset.info.mat_buffer.size(); i++) {
-      if (asset.info.mat_buffer[i].ID.compare("default") == 0) {
-        continue;  // skip creation (already present in materials)
-      }
-      if (asset.info.mat_buffer[i].ID.compare("") == 0) {
-        continue;  // skip creation (mesh with no material)
-      }
-      obj_mat& _mat = asset.info.mat_buffer[i];
-      res->materials[res->mtl_counter] =
-          std::move(ResSpace::createMaterial(res, _mat));
-      res->mtl_counter += 1;
-    }
+  //  // Create materials (if new)
+  //  for (size_t i = 0; i < asset.info.mat_buffer.size(); i++) {
+  //    if (asset.info.mat_buffer[i].ID.compare("default") == 0) {
+  //      continue;  // skip creation (already present in materials)
+  //    }
+  //    if (asset.info.mat_buffer[i].ID.compare("") == 0) {
+  //      continue;  // skip creation (mesh with no material)
+  //    }
+  //    obj_mat& _mat = asset.info.mat_buffer[i];
+  //    res->materials[res->mtl_counter] =
+  //        std::move(ResSpace::createMaterial(res, _mat));
+  //    res->mtl_counter += 1;
+  //  }
 
-    for (size_t i = 0; i < model.meshes.size(); i++) {
-      std::string mat_ID = model.meshes[i].material_ID;
-      if (mat_ID.compare("default") == 0) {
-        // set index of material to 0
-        model.materials[i] = 0;
-      } else {
-        // set index of material
-        int index = ResSpace::getDD_Material_idx(res, mat_ID.c_str());
-        if (index == -1) {
-          model.meshes[i].material_ID = "default";
-          model.materials[i] = 0;
-        } else {
-          model.materials[i] = index;
-        }
-      }
-    }  // end of for loop
-    return model;
-  } else if (parseResult.success && parseResult.ddMesh) {
-    // load .ddmesh
-    ObjAssetParser::LoadDDMesh(asset);
+  //  for (size_t i = 0; i < model.meshes.size(); i++) {
+  //    std::string mat_ID = model.meshes[i].material_ID;
+  //    if (mat_ID.compare("default") == 0) {
+  //      // set index of material to 0
+  //      model.materials[i] = 0;
+  //    } else {
+  //      // set index of material
+  //      int index = ResSpace::getDD_Material_idx(res, mat_ID.c_str());
+  //      if (index == -1) {
+  //        model.meshes[i].material_ID = "default";
+  //        model.materials[i] = 0;
+  //      } else {
+  //        model.materials[i] = index;
+  //      }
+  //    }
+  //  }  // end of for loop
+  //  return model;
+  //} else if (parseResult.success && parseResult.ddMesh) {
+  //  // load .ddmesh
+  //  ObjAssetParser::LoadDDMesh(asset);
 
-    // initialize model's containers
-    model.meshes.resize(asset.meshes.size());
-    model.materials.resize(asset.meshes.size());
-    model.VAO.resize(asset.meshes.size());
-    model.VBO.resize(asset.meshes.size());
-    model.EBO.resize(asset.meshes.size());
-    model.instVBO.resize(asset.meshes.size());
-    model.instColorVBO.resize(asset.meshes.size());
+  //  // initialize model's containers
+  //  model.meshes.resize(asset.meshes.size());
+  //  model.materials.resize(asset.meshes.size());
+  //  model.VAO.resize(asset.meshes.size());
+  //  model.VBO.resize(asset.meshes.size());
+  //  model.EBO.resize(asset.meshes.size());
+  //  model.instVBO.resize(asset.meshes.size());
+  //  model.instColorVBO.resize(asset.meshes.size());
 
-    model.meshes = std::move(asset.meshes);
-    model.directory = asset.info.directory;
+  //  model.meshes = std::move(asset.meshes);
+  //  model.directory = asset.info.directory;
 
-    for (size_t i = 0; i < model.meshes.size(); i++) {
-      std::string mat_ID = model.meshes[i].material_ID;
-      if (mat_ID.compare("default") == 0) {
-        // set index of material to 0
-        model.materials[i] = 0;
-      } else {
-        // set index of material
-        int index = ResSpace::getDD_Material_idx(res, mat_ID.c_str());
-        if (index == -1) {
-          model.meshes[i].material_ID = "default";
-          model.materials[i] = 0;
-        } else {
-          model.materials[i] = index;
-        }
-      }
-    }  // end of for loop
-    return model;
-  } else {
-    return DD_Model();
-  }
+  //  for (size_t i = 0; i < model.meshes.size(); i++) {
+  //    std::string mat_ID = model.meshes[i].material_ID;
+  //    if (mat_ID.compare("default") == 0) {
+  //      // set index of material to 0
+  //      model.materials[i] = 0;
+  //    } else {
+  //      // set index of material
+  //      int index = ResSpace::getDD_Material_idx(res, mat_ID.c_str());
+  //      if (index == -1) {
+  //        model.meshes[i].material_ID = "default";
+  //        model.materials[i] = 0;
+  //      } else {
+  //        model.materials[i] = index;
+  //      }
+  //    }
+  //  }  // end of for loop
+  //  return model;
+  //} else {
+  //  return DD_Model();
+  //}
+	return DD_Model();
 }
 
 DD_ModelSK* loadSkinnedModel(DD_Resources* res, const char* new_mdl_id,

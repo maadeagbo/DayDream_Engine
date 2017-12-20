@@ -167,6 +167,18 @@ struct BoundingBox {
   void SetLineBuffer();
 };
 
+/// \brief Container for model information
+struct ModelID {
+	float _near = 0.f, _far = 100.f;
+	cbuff<32> model;
+};
+
+/// \brief Container for manipulating transforms
+struct DD_Body {
+	btRigidBody *body;
+	btTransform t_f;
+};
+
 // Useful glm functions
 glm::vec4 getVec4f(const char* str);
 

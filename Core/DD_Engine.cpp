@@ -209,7 +209,6 @@ void DD_Engine::Launch() {
   switch (init_flag) {
     case EngineState::VIEWER:
       Load();
-      LoadViewer();
       break;
     case EngineState::WORLD_BUILDER:
       break;
@@ -219,8 +218,6 @@ void DD_Engine::Launch() {
     default:
       break;
   }
-  // load terminal history
-  DD_Terminal::inTerminalHistory();
 }
 
 /// \brief Select level and set parameters
@@ -316,12 +313,12 @@ bool DD_Engine::LevelSelect(const size_t w, const size_t h) {
 				main_q.init_level_scripts(lvls_list[current_lvl]);
 			}
     }
-    ImGui::Dummy(ImVec2(scrW / 2 - 180 / 2 - 10, 20));
+    /*ImGui::Dummy(ImVec2(scrW / 2 - 180 / 2 - 10, 20));
     ImGui::SameLine();
     if (ImGui::Button("Launch Asset Viewer", ImVec2(180, 20))) {
       launch = true;
       init_flag = EngineState::VIEWER;
-    };
+    };*/
 
     ImGui::End();
     ImGui::Render();
@@ -359,7 +356,12 @@ void DD_Engine::Load() {
   // set useful lua globals
   set_lua_global(main_lstate, "SCR_W", m_WIDTH);
   set_lua_global(main_lstate, "SCR_H", m_HEIGHT);
-  // Load resources and attach queue
+  
+	// initialize bullet physics library
+	main_physics.initialize_world();
+	
+	// Initialize resource manager
+	DD_Assets::initialize(main_physics.world);
   main_res.queue = &main_q;
 
   // set up math/physics library
@@ -438,29 +440,9 @@ void DD_Engine::Load() {
   main_q.subscribe(getCharHash("frame_exit"), system_id);
   main_q.subscribe(getCharHash("load_screen"), system_id);
   main_q.subscribe(getCharHash("init_resources"), system_id);
-}
 
-/// \brief Load engine compoenets for DD_AssetViewer
-void DD_Engine::LoadViewer() {
-  std::_Ph<1> arg_1 = std::placeholders::_1;
-  cbuff<32> event_id;
-  SysEventHandler _sh;
-  PushFunc push_func = std::bind(&DD_Queue::push, &main_q, arg_1);
-
-  // log dimensions
-  main_viewer.m_screenH = m_HEIGHT;
-  main_viewer.m_screenW = m_WIDTH;
-  // log resource bin
-  main_viewer.res_ptr = &main_res;
-  // register handlers
-  EventHandler handlerV =
-      std::bind(&DD_AssetViewer::Update, &main_viewer, std::placeholders::_1);
-  /*main_q.RegisterHandler(handlerV, "viewer");
-  main_q.RegisterHandler(handlerV, "new_mdl");
-  main_q.RegisterHandler(handlerV, "new_sk");
-  main_q.RegisterHandler(handlerV, "new_mdlsk");
-  main_q.RegisterHandler(handlerV, "new_agent_sk");
-  main_q.RegisterHandler(handlerV, "new_anim");*/
+	// load terminal history
+	DD_Terminal::inTerminalHistory();
 }
 
 void DD_Engine::updateSDL() {

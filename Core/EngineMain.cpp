@@ -9,7 +9,7 @@ int main(int argc, char* argv[]) {
   bool launch_engine = ddEngine.LevelSelect();
 
   if (launch_engine) {
-    ddEngine.Launch();
+    ddEngine.Load();
     ddEngine.Run();
   }
   ddEngine.cleanUp();

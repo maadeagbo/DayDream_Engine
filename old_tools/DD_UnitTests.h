@@ -4,7 +4,6 @@
 #include "DD_Container.h"
 #include "DD_EventQueue.h"
 #include "DD_Model.h"
-#include "DD_OBJ_Parser.h"
 #include "DD_RenderEngine.h"
 #include "DD_ResourceLoader.h"
 #include "DD_Timer.h"
