@@ -39,10 +39,10 @@ struct DD_Queue {
         check_lvl_async("_check_lvl_async"),
         check_res_async("_check_res_async"),
         m_head(0),
-        f_head(0),
         m_tail(0),
-        f_tail(0),
         m_numEvents(0),
+        f_head(0),
+        f_tail(0),
         f_numEvents(0),
         shutdown(false) {}
 

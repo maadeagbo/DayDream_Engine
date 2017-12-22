@@ -6,10 +6,10 @@
 
 namespace {
 bool windowShouldClose = false;
-size_t lvl_agents = 0;
+//size_t lvl_agents = 0;
 
-bool loading_lvl = false, async_done = false, p_tex_loading = true,
-     loading_agents = false;
+//bool loading_lvl = false, async_done = false, p_tex_loading = true,
+//     loading_agents = false;
 std::future<void> load_RES, load_RAM, load_LVL;
 std::chrono::milliseconds timespan(10);
 std::chrono::milliseconds chrono_msec(1);
@@ -18,7 +18,7 @@ const bool UNLOCK_FRAMEPACE = true;
 const size_t FRAME_CAP = 100;
 const u64 SECOND_LL = 1000000000LL;
 
-int resolution_set[2] = {1400, 800};
+//int resolution_set[2] = {1400, 800};
 bool engine_mode_flags[] = {true, false, false, false};
 
 const cbuff<32> exit_hash("sys_exit");

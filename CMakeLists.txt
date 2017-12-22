@@ -317,27 +317,12 @@ if(MSVC)
 		${PROJECT_SOURCE_DIR}/lib/BulletSoftBody.lib
 	)
 else()
-	find_library(B_01 BulletDynamics 
-		PATHS ${PROJECT_SOURCE_DIR}/bullet3_287/build/src/*)
-	if(NOT B_01)
-		message(FATAL_ERROR "BulletDynamics library not found")
-	endif()
-	find_library(B_02 BulletCollision
-		PATHS ${PROJECT_SOURCE_DIR}/bullet3_287/build/src/*)
-	if(NOT B_02)
-		message(FATAL_ERROR "BulletCollision library not found")
-	endif()
-	find_library(B_03 LinearMath
-		PATHS ${PROJECT_SOURCE_DIR}/bullet3_287/build/src/*)
-	if(NOT B_03)
-		message(FATAL_ERROR "Bullet LinearMath library not found")
-	endif()
-	find_library(B_04 BulletSoftBody
-		PATHS ${PROJECT_SOURCE_DIR}/bullet3_287/build/src/*)
-	if(NOT B_04)
-		message(FATAL_ERROR "BulletSoftBody library not found")
-	endif()
-	set(BULLET_LIB ${B_01} ${B_02} ${B_03} ${B_04})
+	set(BULLET_LIB 
+		${PROJECT_SOURCE_DIR}/lib/libBulletDynamics.a
+		${PROJECT_SOURCE_DIR}/lib/libBulletCollision.a
+		${PROJECT_SOURCE_DIR}/lib/libLinearMath.a
+		${PROJECT_SOURCE_DIR}/lib/libBulletSoftBody.a
+	)
 endif()
 
 if(NOT WIN32)
