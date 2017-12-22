@@ -100,3 +100,26 @@ glm::mat4 GetOffAxisProjMatrix(const DD_Camera* cam, const glm::vec3 screenPos,
                                const glm::vec3 eyePos);
 void PrintInfo(const DD_Camera& cam);
 }
+
+/// \brief Describes camera attributes
+struct DD_Cam {
+	/// \brief Engine identifier assigned at initialization
+	size_t id;
+	/// \brief Engine info for scene graph
+	ParentInfo parent;
+	/// \brief Horizontal field of view
+	float fovh = 0.f;
+	/// \brief Near plane
+	float n_plane = 0.f;
+	/// \brief Far plane
+	float f_plane = 100.f;
+	/// \brief VR camera left/right eye distance in meters
+	float eye_dist = 0.f;
+	/// \brief Frustum information. Set up at initialization (position: 0, 0, 0)
+	FrustumBox cam_frustum;
+
+	/// \brief Marks instance as active camera
+	bool active = false;
+	/// \brief Marks camera as stereoscopic
+	bool vr_flag = false;
+};

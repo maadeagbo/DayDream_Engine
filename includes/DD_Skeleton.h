@@ -14,6 +14,9 @@ struct DD_Joint {
 
 /// \brief Simple Skeleton container
 struct DD_Skeleton {
+	/// \brief Engine identifier assigned at initialization
+	size_t id;
+
   cbuff<64> m_ID;
   glm::mat4 m_globalMat;
   dd_array<DD_Joint> m_bones;
@@ -28,6 +31,11 @@ struct DD_JointPose {
 
 /// \brief Skeleton pose (ID and a list of joint rotations)
 struct DD_SkeletonPose {
+	/// \brief Engine identifier assigned at initialization
+	size_t id;
+	/// \brief DD_Skeleton identifier
+	size_t skeleton_id;
+
   cbuff<64> m_skeletonID;
   glm::mat4 m_globalMat;
   dd_array<DD_JointPose> m_localPose;

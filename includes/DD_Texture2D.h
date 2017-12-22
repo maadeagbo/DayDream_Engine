@@ -1,9 +1,9 @@
 #pragma once
 
 /*
-* Copyright (c) 2016, Moses Adeagbo
-* All rights reserved.
-*/
+ * Copyright (c) 2016, Moses Adeagbo
+ * All rights reserved.
+ */
 
 /*-----------------------------------------------------------------------------
 *
@@ -25,6 +25,18 @@ enum TextureType {
   EMISSIVE,
   NUM_T_TYPES
 };
+
+enum class TexType : unsigned {
+  ALBEDO = 0x1,
+  SPEC = 0x2,
+  NORMAL = 0x4,
+  ROUGH = 0x8,
+  METAL = 0x10,
+  EMISSIVE = 0x20,
+  AMBIENT = 0x40,
+  NULL_T = 0x80
+};
+ENABLE_BITMASK_OPERATORS(TexType)
 
 struct DD_Texture2D {
   std::string m_ID;
@@ -74,4 +86,31 @@ struct DD_Skybox {
 
  private:
   bool activated = false;
+};
+
+struct ImageInfo {
+  /// \brief Handle to GPU buffer
+  unsigned handle;
+  /// \brief width and height
+  unsigned width = 0, height = 0;
+  /// \brief Texture object formet
+  unsigned internal_format;
+  /// \brief Image formet
+  unsigned image_format;
+  /// \brief Wrapping mode along axis
+  unsigned wrap_s, wrap_t, wrap_r;
+  /// \brief filter when pixels < screen pixels
+  unsigned min_filter;
+  /// \brief filter when pixels > screen pixels
+  unsigned mag_filter;
+};
+
+/// \brief Container for 2D textures
+struct DD_Tex2D {
+  /// \brief Engine identifier assigned at initialization
+  size_t id;
+  /// \brief Type of texture
+  TexType type = TexType::NULL_T;
+  /// \brief Image information on GPU and RAM
+  ImageInfo image_info;
 };

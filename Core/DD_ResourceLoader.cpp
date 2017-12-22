@@ -46,7 +46,7 @@ void skipPastSpace(char*& str) {
   }
   str++;
 }
-}
+}  // namespace
 
 struct meshStuff {
   std::string id, path, mtl;
@@ -524,11 +524,11 @@ DD_Material createMaterial(DD_Resources* res, obj_mat& matbuff) {
 
 DD_Model loadModel(DD_Resources* res, const char* obj_path,
                    const char* mtlName) {
-  //DD_Model model = DD_Model();
-  //ObjAsset asset = ObjAsset();
-  //ObjAssetParser::ParseFlag parseResult;
-  //parseResult = ObjAssetParser::PreProcess(asset, obj_path, mtlName);
-  //if (parseResult.success && !parseResult.ddMesh) {
+  // DD_Model model = DD_Model();
+  // ObjAsset asset = ObjAsset();
+  // ObjAssetParser::ParseFlag parseResult;
+  // parseResult = ObjAssetParser::PreProcess(asset, obj_path, mtlName);
+  // if (parseResult.success && !parseResult.ddMesh) {
   //  ObjAssetParser::FormatForOpenGL(asset);
 
   //  // initialize model's containers
@@ -610,7 +610,7 @@ DD_Model loadModel(DD_Resources* res, const char* obj_path,
   //} else {
   //  return DD_Model();
   //}
-	return DD_Model();
+  return DD_Model();
 }
 
 DD_ModelSK* loadSkinnedModel(DD_Resources* res, const char* new_mdl_id,
@@ -1213,10 +1213,10 @@ void loadAgentsToMemory(DD_Resources* res) {
     size_t range = agent->num_handlers;
     for (size_t j = 0; j < range; j++) {
       if (agent->tickets[j] == "post") {
-        //res->queue->RegisterPoster(agent->handlers[j]);
+        // res->queue->RegisterPoster(agent->handlers[j]);
       } else {
-        //res->queue->RegisterHandler(agent->handlers[j],
-                                    //agent->tickets[j].c_str());
+        // res->queue->RegisterHandler(agent->handlers[j],
+        // agent->tickets[j].c_str());
       }
     }
     // register models
@@ -1385,10 +1385,10 @@ void loadAgent_ID(DD_Resources* res, const char* agentID, bool mem_flag) {
     size_t range = agent->num_handlers;
     for (size_t i = 0; i < range; i++) {
       if (agent->tickets[i] == "post") {
-        //res->queue->RegisterPoster(agent->handlers[i], agentID);
+        // res->queue->RegisterPoster(agent->handlers[i], agentID);
       } else {
-        //res->queue->RegisterHandler(agent->handlers[i],
-                                    //agent->tickets[i].c_str(), agentID);
+        // res->queue->RegisterHandler(agent->handlers[i],
+        // agent->tickets[i].c_str(), agentID);
       }
     }
     // register models
@@ -1606,7 +1606,7 @@ void flushLineAgents(DD_Resources* res) {
   }
   res->l_agent_counter = 0;
 }
-}
+}  // namespace ResSpace
 
 DD_Texture2D* CreateTexture_OBJMAT(DD_Resources* res, std::string dir,
                                    std::string tex_path) {

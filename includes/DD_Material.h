@@ -52,3 +52,21 @@ class DD_Material {
  private:
   MaterialType m_matType;
 };
+
+
+struct DD_Mat {
+	/// \brief Engine identifier assigned at initialization
+	size_t id;
+	/// \brief Diffuse color
+	glm::vec4 base_color;
+	/// \brief Attached textures (engine ids)
+	dd_array<size_t> textures;
+	/// \brief Specular component
+	float spec_value;
+	/// \brief Flag for activated textures (bit comparison w/ TexTypes)
+	unsigned texture_flag = 0;
+	/// \brief Flag that marks if the mesh is back on the gpu
+	bool loaded_gpu = false;
+	/// \brief Flag that marks if the mesh can modify color thru instancing
+	bool color_modifier = false;
+};

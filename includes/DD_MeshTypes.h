@@ -1,9 +1,9 @@
 #pragma once
 
 /*
-* Copyright (c) 2016, Moses Adeagbo
-* All rights reserved.
-*/
+ * Copyright (c) 2016, Moses Adeagbo
+ * All rights reserved.
+ */
 
 /*-----------------------------------------------------------------------------
 *
@@ -169,15 +169,49 @@ struct BoundingBox {
 
 /// \brief Container for model information
 struct ModelIDs {
-	float _near = 0.f, _far = 100.f;
-	cbuff<32> model;
+  /// \brief LOD bounds
+  float _near = 0.f, _far = 100.f;
+  /// \brief Mesh name
+  cbuff<32> model;
+};
+
+/// \brief Container for mesh data stored on RAM and GPU
+struct MeshInfo {
+  /// \brief Parsed mwsh information
+  MeshData mesh_data;
+  /// \brief Handles to GPU buffers
+  unsigned vao = 0, vbo = 0, ebo = 0, inst_vbo = 0, inst_cvbo = 0;
+  /// \brief Engine material index
+  size_t material;
+  /// \brief Flag that marks if the mesh is back on the gpu
+  bool loaded_gpu = false;
 };
 
 /// \brief Container for manipulating transforms
 struct DD_Body {
-	btRigidBody *body;
-	btTransform t_f;
-	dd_array<BoundingBox> BBox;
+  /// \brief Assigned on agent creation. Deleted on agent destruction
+  btRigidBody* body;
+  /// \brief Initialized on mesh import or set to default size
+  dd_array<BoundingBox> BBox;
+  /// \brief Only useful in agents w/ meshes
+  glm::vec3 scale;
+
+  /// \brief Forward direction based on world (0, 0, -1)
+  glm::vec3 ForwardDir();
+  /// \brief Right direction based on world (0, 0, -1)
+  glm::vec3 RightDir();
+  /// \brief Up direction based on world (0, 0, -1)
+  glm::vec3 UpDir();
+  /// \brief Change btRigidBody's velocity
+  void UpdateVelocity(const glm::vec3& vel);
+  /// \brief Change btRigidBody's position
+  void UpdatePosition(const glm::vec3& pos);
+  /// \brief Change btRigidBody's rotation
+  void UpdateRotation(const glm::vec3& rot);
+  /// \brief Change transform's scale
+  inline void UpdateScale(const glm::vec3& _scale) { scale = _scale; }
+  /// \brief convert btRigidBody and scale into model matrix
+  glm::mat4 getModelMat();
 };
 
 // Useful glm functions

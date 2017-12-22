@@ -1,9 +1,9 @@
 #pragma once
 
 /*
-* Copyright (c) 2016, Moses Adeagbo
-* All rights reserved.
-*/
+ * Copyright (c) 2016, Moses Adeagbo
+ * All rights reserved.
+ */
 
 /*-----------------------------------------------------------------------------
 *
@@ -43,7 +43,7 @@
 #ifdef _WIN32
 #define GLM_FORCE_CXX98
 #define GLM_FORCE_CXX11
-#define GLM_FORCE_CXX14  // removes non-standard extensions warnings 
+#define GLM_FORCE_CXX14  // removes non-standard extensions warnings
 #endif
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -61,14 +61,13 @@ typedef std::int_fast64_t I64;   // 64-bit signed int for high precision
 
 // Enum bitwise flags
 /*
-* std::enable_if will take a boolean and a type (in this case targeting enums)
-* and only allow the functions to work if the boolean is true. For this
-* implementation, EnableBitMaskOperators takes a class and enables the functions
-* To activate, use explicit speciaization:
-* 	template<>
-*	struct EnableBitMaskOperators<T> { static const bool enable = true; };
-* (wrapped explicit specialization in macro ENABLE_BITMASK_OPERATORS(TYPE) )
-*/
+ * std::enable_if will take a boolean and a type (in this case targeting enums)
+ * and only allow the functions to work if the boolean is true. For this
+ * implementation, EnableBitMaskOperators takes a class and enables the
+ *functions To activate, use explicit speciaization: template<> struct
+ *EnableBitMaskOperators<T> { static const bool enable = true; }; (wrapped
+ *explicit specialization in macro ENABLE_BITMASK_OPERATORS(TYPE) )
+ */
 template <typename Enum>
 struct EnableBitMaskOperators {
   static const bool enable = false;
@@ -107,3 +106,11 @@ operator&(Enum lhs, Enum rhs) {
   return static_cast<Enum>(static_cast<underlying>(lhs) &
                            static_cast<underlying>(rhs));
 }
+
+/// \brief Cotainer for scene graph
+struct ParentInfo {
+  /// \brief Engine identifier for parent agent
+  size_t parent_id;
+  /// \brief Boolean to set if object is parented
+  bool parent_set = false;
+};

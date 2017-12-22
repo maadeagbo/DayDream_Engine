@@ -44,3 +44,15 @@ void OpenGLBindMesh(const int index, DD_Model& model, const size_t inst_size,
 void OpenGLUnBindMesh(const int index, DD_Model& model);
 void PrintInfo(const DD_Model& mod);
 }
+
+/// \brief Data used by render engine for drawing
+struct DD_MeshData {
+	/// \brief Engine identifier assigned at initialization
+	size_t id;
+	/// \brief Mesh information
+	dd_array<MeshInfo> mesh_info;
+	/// \brief DD_SkeletonPose identification
+	size_t skinnedpose_id;
+	/// \brief Marks if mesh has skinned data
+	bool skinned = false;
+};
