@@ -15,11 +15,15 @@
 *
 -----------------------------------------------------------------------------*/
 
+#include <initializer_list>
 #include "DD_Input.h"
 #include "DD_Timer.h"
 #include "DD_Types.h"
 
 struct handler_sig {
+  handler_sig() {}
+  handler_sig(const int gid, const int fid) : global_id(gid), func_id(fid) {}
+  // handler_sig(std::initializer_list<handler_sig>) {}
   int global_id = -1;
   int func_id = -1;
 };
@@ -76,10 +80,10 @@ struct DD_Queue {
   void process_queue();
   /// \brief ONLY CALLED INTERNALLY BY DD_Engine. DO NOT USE
   inline void shutdown_queue() { shutdown = true; }
-	/// \brief ONLY CALLED INTERNALLY BY DD_Engine. DO NOT USE
-	inline void set_lua_ptr(lua_State *_L) { L = _L; }
-	/// \brief ONLY CALLED INTERNALLY BY DD_Engine. DO NOT USE
-	void init_level_scripts(const char *script_id);
+  /// \brief ONLY CALLED INTERNALLY BY DD_Engine. DO NOT USE
+  inline void set_lua_ptr(lua_State *_L) { L = _L; }
+  /// \brief ONLY CALLED INTERNALLY BY DD_Engine. DO NOT USE
+  void init_level_scripts(const char *script_id);
 
  private:
   /// \brief Add events to current queue

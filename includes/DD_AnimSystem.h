@@ -12,11 +12,11 @@ class DD_AnimSystem {
   ~DD_AnimSystem() {}
 
   DD_Resources* res_ptr;
-	PushFunc push;
+  PushFunc push;
 
-	DD_Event update(DD_Event& event);
+  DD_Event update(DD_Event& event);
 
-	void anim_update(DD_LEvent &_event);
+  void anim_update(DD_LEvent& _event);
 
  private:
   void processAnimState(DD_ModelSK* mdlsk, const DD_Skeleton* sk,

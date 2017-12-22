@@ -89,30 +89,30 @@ void PrintInfo(const DD_Light& lght);
 }
 
 struct DD_Bulb {
-	/// \brief Engine identifier assigned at initialization
-	size_t id;
-	/// \brief Engine info for scene graph
-	ParentInfo parent;
-	/// \brief Sets shader lighting equation
-	LightType type;
-	/// \brief Normalized vector for directional and spot lights
-	glm::vec3 direction;
-	/// \brief Location of light
-	glm::vec3 position;
-	/// \brief Color of light
-	glm::vec3 color;
-	/// \brief Linear falloff compnent 
-	float linear;
-	/// \brief Quadratic falloff component
-	float quadratic;
-	/// \brief Incedence angle cutoff spot light
-	float cutoff_i;
-	/// \brief Out angle cutoff spot light
-	float cutoff_o;
-	/// \brief Spot light exponent
-	float spot_exp;
-	/// \brief Marks light as active
-	bool active = false;
-	/// \brief Mark light for shadow calculation
-	bool shadow = false;
+  /// \brief Engine identifier assigned at initialization
+  size_t id;
+  /// \brief Engine info for scene graph
+  ParentInfo parent;
+  /// \brief Sets shader lighting equation
+  LightType type;
+  /// \brief Normalized vector for directional and spot lights
+  glm::vec3 direction;
+  /// \brief Location of light
+  glm::vec3 position;
+  /// \brief Color of light
+  glm::vec3 color;
+  /// \brief Linear falloff compnent
+  float linear;
+  /// \brief Quadratic falloff component
+  float quadratic;
+  /// \brief Incedence angle cutoff spot light
+  float cutoff_i;
+  /// \brief Out angle cutoff spot light
+  float cutoff_o;
+  /// \brief Spot light exponent
+  float spot_exp;
+  /// \brief Marks light as active
+  bool active = false;
+  /// \brief Mark light for shadow calculation
+  bool shadow = false;
 };

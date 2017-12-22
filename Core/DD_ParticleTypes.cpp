@@ -339,27 +339,35 @@ void DD_Water::update(const float dt) {
 //			// height
 //			m_pos[i][j].y -= dt_x * (u_00.x - u_01.x) -
 //							 dt_y * (v_00.z -
-//v_01.z);
+// v_01.z);
 //			// x momentum
 //			m_vel[i][j].x -= dt_x * (
-//									(sq_f(u_00.x)/u_00.y +
-//hgrav * sq_f(u_00.y)) -
-//									(sq_f(u_01.x)/u_01.y +
-//hgrav * sq_f(u_01.y)))
-//						   - dt_y * (((v_00.z * v_00.x)/v_00.y)
+//									(sq_f(u_00.x)/u_00.y
+//+
+// hgrav * sq_f(u_00.y)) -
+//									(sq_f(u_01.x)/u_01.y
+//+
+// hgrav * sq_f(u_01.y)))
+//						   - dt_y * (((v_00.z *
+//v_00.x)/v_00.y)
 //-
-//									((v_01.z * v_01.x) /
-//v_01.y));
+//									((v_01.z * v_01.x)
+///
+// v_01.y));
 //			// z momentum
 //			m_vel[i][j].y -= dt_y * (
-//									(sq_f(v_00.z)/v_00.y +
-//hgrav * sq_f(v_00.y)) -
-//									(sq_f(v_01.z)/v_01.y +
-//hgrav * sq_f(v_01.y)))
-//						   - dt_x * (((u_00.x * u_00.z) / u_00.y)
+//									(sq_f(v_00.z)/v_00.y
+//+
+// hgrav * sq_f(v_00.y)) -
+//									(sq_f(v_01.z)/v_01.y
+//+
+// hgrav * sq_f(v_01.y)))
+//						   - dt_x * (((u_00.x * u_00.z) /
+//u_00.y)
 //-
-//									((u_01.x * u_01.z) /
-//u_01.y));
+//									((u_01.x * u_01.z)
+///
+// u_01.y));
 //		}
 //	}
 
@@ -383,14 +391,16 @@ void DD_Water::update(const float dt) {
   //	for (int i = 0; i < (int)m_rowS; i++) {
   //		for (int j = 1; j < (int)m_colS - 1; j++) {
   //			// height
-  //			m_pos[i][j].y -= dt_y * (m_zhalf[i][j].z - m_zhalf[i][j -
-  //1].z);
+  //			m_pos[i][j].y -= dt_y * (m_zhalf[i][j].z - m_zhalf[i][j
+  //-
+  // 1].z);
   //			// velocity
   //			m_vel[i][j].y -= dt_y * (dampc * m_vel[i][j].y +
   //				sq_f(m_zhalf[i][j].z) / m_zhalf[i][j].y + hgrav
   //*
   //				sq_f(m_zhalf[i][j].y) -
-  //				sq_f(m_zhalf[i][j - 1].z) / m_zhalf[i][j - 1].y - hgrav
+  //				sq_f(m_zhalf[i][j - 1].z) / m_zhalf[i][j - 1].y -
+  //hgrav
   //*
   //				sq_f(m_zhalf[i][j - 1].y)
   //				);

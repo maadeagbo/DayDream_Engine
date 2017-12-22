@@ -46,17 +46,17 @@ class DD_ParticleSys {
   }
 
   DD_Resources* m_resBin;
-	PushFunc push;
+  PushFunc push;
 
   void Load(const float Width, const float Height);
   bool Init();
-	DD_Event Create(DD_Event& event);
-	void create(DD_LEvent &_event);
+  DD_Event Create(DD_Event& event);
+  void create(DD_LEvent& _event);
   bool Draw(const float dt, glm::mat4 view, glm::mat4 proj,
             const glm::vec3 camP, const GLuint particleFBO,
             const GLuint gbufferFBO);
-	DD_Event AddJobToQueue(DD_Event& event);
-	void add_job(DD_LEvent &_event);
+  DD_Event AddJobToQueue(DD_Event& event);
+  void add_job(DD_LEvent& _event);
   bool pause;
 
  private:

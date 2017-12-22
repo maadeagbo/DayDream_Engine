@@ -79,7 +79,7 @@ struct DD_Engine {
   DD_Queue main_q;
   DD_Resources main_res;
   DD_Compute main_comp;
-	DD_Physics	main_physics;
+  DD_Physics main_physics;
   dd_array<DD_GameLevel*> main_lvl;
   PushFunc q_push;
   DD_FuncBuff main_fb;

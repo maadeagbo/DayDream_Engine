@@ -634,8 +634,7 @@ DD_Event DD_Renderer::RenderHandler(DD_Event& event) {
   return DD_Event();
 }
 
-void DD_Renderer::render_handler(DD_LEvent & _event) {
-}
+void DD_Renderer::render_handler(DD_LEvent& _event) {}
 
 void DD_Renderer::LoadRendererEngine(const GLfloat _Width,
                                      const GLfloat _Height) {

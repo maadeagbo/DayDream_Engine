@@ -17,11 +17,11 @@ class DD_Compute {
   ~DD_Compute();
 
   DD_Resources* res_ptr;
-	PushFunc push;
+  PushFunc push;
 
   void init();
   DD_Event Compute(DD_Event& event);
-	void compute(DD_LEvent &_event);
+  void compute(DD_LEvent& _event);
 
  private:
   GLuint m_kinectDepthBuff[2];

@@ -55,10 +55,7 @@ if(HAS_MSG)
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fmessage-length=0")
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fmessage-length=0")
 endif()
-if(HAS_CNEW)
-	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -std=c++11")
-	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -std=c++11")
-endif()
+set (CMAKE_CXX_STANDARD 11)
 
 option(USE_STATIC_LINKAGE "Use static libraries when linking executable"	ON)
 if(USE_STATIC_LINKAGE)
@@ -311,14 +308,7 @@ if(MINGW)
 # 	endif()
 endif()
 
-#find_library(SDL2_DYNAMIC SDL2
-#	PATHS
-#	${SDL2_LIBRARY}
-#	${SDL2_LIBRARY_TEMP})
-#if(NOT SDL2_DYNAMIC)
-#	message(FATAL_ERROR "NOOOOOOOO")
-#4endif()
-
+# bullet physics libraries
 if(MSVC)
 	set(BULLET_LIB 
 		${PROJECT_SOURCE_DIR}/lib/BulletDynamics.lib
@@ -327,6 +317,27 @@ if(MSVC)
 		${PROJECT_SOURCE_DIR}/lib/BulletSoftBody.lib
 	)
 else()
+	find_library(B_01 BulletDynamics 
+		PATHS ${PROJECT_SOURCE_DIR}/bullet3_287/build/src/*)
+	if(NOT B_01)
+		message(FATAL_ERROR "BulletDynamics library not found")
+	endif()
+	find_library(B_02 BulletCollision
+		PATHS ${PROJECT_SOURCE_DIR}/bullet3_287/build/src/*)
+	if(NOT B_02)
+		message(FATAL_ERROR "BulletCollision library not found")
+	endif()
+	find_library(B_03 LinearMath
+		PATHS ${PROJECT_SOURCE_DIR}/bullet3_287/build/src/*)
+	if(NOT B_03)
+		message(FATAL_ERROR "Bullet LinearMath library not found")
+	endif()
+	find_library(B_04 BulletSoftBody
+		PATHS ${PROJECT_SOURCE_DIR}/bullet3_287/build/src/*)
+	if(NOT B_04)
+		message(FATAL_ERROR "BulletSoftBody library not found")
+	endif()
+	set(BULLET_LIB ${B_01} ${B_02} ${B_03} ${B_04})
 endif()
 
 if(NOT WIN32)

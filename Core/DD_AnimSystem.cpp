@@ -45,8 +45,7 @@ DD_Event DD_AnimSystem::update(DD_Event& event) {
   return DD_Event();
 }
 
-void DD_AnimSystem::anim_update(DD_LEvent & _event) {
-}
+void DD_AnimSystem::anim_update(DD_LEvent& _event) {}
 
 void DD_AnimSystem::processAnimState(DD_ModelSK* mdlsk, const DD_Skeleton* sk,
                                      const float time) {

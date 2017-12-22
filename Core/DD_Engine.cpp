@@ -30,9 +30,9 @@ const cbuff<32> lvl_asset_hash("_asset_init");
 const cbuff<32> terminal_hash("poll_terminal");
 }  // namespace
 
-void DD_Engine::startup_lua() { 
-	main_lstate = init_lua_state();
-	main_q.set_lua_ptr(main_lstate);
+void DD_Engine::startup_lua() {
+  main_lstate = init_lua_state();
+  main_q.set_lua_ptr(main_lstate);
 }
 
 void DD_Engine::openWindow(const size_t width, const size_t height,
@@ -308,10 +308,10 @@ bool DD_Engine::LevelSelect(const size_t w, const size_t h) {
       ImGui::Dummy(ImVec2(scrW / 2 - 60 / 2 - 10, 20));
       ImGui::SameLine();
       launch = ImGui::Button("Launch", ImVec2(60, 20));
-			if (launch) {
-				// set up queue handlers
-				main_q.init_level_scripts(lvls_list[current_lvl]);
-			}
+      if (launch) {
+        // set up queue handlers
+        main_q.init_level_scripts(lvls_list[current_lvl]);
+      }
     }
     /*ImGui::Dummy(ImVec2(scrW / 2 - 180 / 2 - 10, 20));
     ImGui::SameLine();
@@ -332,7 +332,7 @@ bool DD_Engine::LevelSelect(const size_t w, const size_t h) {
 }
 
 void DD_Engine::Load() {
-  std::_Ph<1> arg_1 = std::placeholders::_1;
+  std::_Placeholder<1> arg_1 = std::placeholders::_1;
   size_t system_id;
   SysEventHandler _sh;
   PushFunc push_func = std::bind(&DD_Queue::push, &main_q, arg_1);
@@ -356,12 +356,12 @@ void DD_Engine::Load() {
   // set useful lua globals
   set_lua_global(main_lstate, "SCR_W", m_WIDTH);
   set_lua_global(main_lstate, "SCR_H", m_HEIGHT);
-  
-	// initialize bullet physics library
-	main_physics.initialize_world();
-	
-	// Initialize resource manager
-	DD_Assets::initialize(main_physics.world);
+
+  // initialize bullet physics library
+  main_physics.initialize_world();
+
+  // Initialize resource manager
+  DD_Assets::initialize(main_physics.world);
   main_res.queue = &main_q;
 
   // set up math/physics library
@@ -441,8 +441,8 @@ void DD_Engine::Load() {
   main_q.subscribe(getCharHash("load_screen"), system_id);
   main_q.subscribe(getCharHash("init_resources"), system_id);
 
-	// load terminal history
-	DD_Terminal::inTerminalHistory();
+  // load terminal history
+  DD_Terminal::inTerminalHistory();
 }
 
 void DD_Engine::updateSDL() {

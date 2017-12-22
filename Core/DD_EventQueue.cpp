@@ -204,8 +204,9 @@ void DD_Queue::process_queue() {
     // check if event is lvl init call
     else if (_event.handle == lvl_call_i) {
       // async level init
-      async_lvl_init = std::async(std::launch::async, callback_lua, L, _event,
-                                  fb, lvl_init.func_id, lvl_init.global_id);
+      async_lvl_init =
+          std::async(std::launch::async, callback_lua, L, std::ref(_event),
+                     std::ref(fb), lvl_init.func_id, lvl_init.global_id);
       // send delay event
       DD_LEvent a_event;
       a_event.handle = check_lvl_async;
@@ -215,8 +216,9 @@ void DD_Queue::process_queue() {
     // check if event is resource load call
     else if (_event.handle == res_call) {
       // async resources load
-      async_resource = std::async(std::launch::async, callback_lua, L, _event,
-                                  fb, lvl_res.func_id, lvl_res.global_id);
+      async_resource =
+          std::async(std::launch::async, callback_lua, L, std::ref(_event),
+                     std::ref(fb), lvl_res.func_id, lvl_res.global_id);
       // send delay event
       DD_LEvent a_event;
       a_event.handle = check_res_async;

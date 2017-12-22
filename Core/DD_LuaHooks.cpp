@@ -501,10 +501,9 @@ void parse_table(lua_State *L, DD_FuncBuff *fb, const int tabs) {
 
 void print_table(lua_State *L, const int tabs) {
   // assume table is already on stack
-  lua_pushnil(L);  // push key on stack for table access
-  while (lua_next(L, -2) !=
-         0) {  // adds value to the top of the stack
-               // copy the key so that lua_tostring does not modify the original
+  lua_pushnil(L);                 // push key on stack for table access
+  while (lua_next(L, -2) != 0) {  // adds value to the top of the stack
+    // copy the key so that lua_tostring does not modify the original
     lua_pushvalue(L, -2);
     /* uses 'key' (at index -1) and 'value' (at index -2) */
     if (lua_isboolean(L, -2)) {  // boolean
@@ -533,7 +532,7 @@ void print_table(lua_State *L, const int tabs) {
       printf("--key (array - %d) : %s\n", tabs, lua_tostring(L, -1));
       lua_pop(L, 1);  // remove copy key
       // printf("-->%d\t", tabs); stack_dump(L);	// check
-                      // entrance
+      // entrance
       print_table(L, tabs + 1);
       printf("--array - %d : done\n", tabs);
     }

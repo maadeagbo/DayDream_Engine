@@ -199,8 +199,7 @@ DD_Event DD_Terminal::getInput(DD_Event& event) {
   return DD_Event();
 }
 
-void DD_Terminal::get_input(DD_LEvent & _event) {
-}
+void DD_Terminal::get_input(DD_LEvent& _event) {}
 
 void DD_Terminal::inTerminalHistory() {
   write_out_history = true;  // prevents wiping terminal history on exit
