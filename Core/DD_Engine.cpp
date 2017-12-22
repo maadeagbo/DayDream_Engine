@@ -332,7 +332,11 @@ bool DD_Engine::LevelSelect(const size_t w, const size_t h) {
 }
 
 void DD_Engine::Load() {
+#ifdef _WIN32
+  std::_Ph<1> arg_1 = std::placeholders::_1;
+#else
   std::_Placeholder<1> arg_1 = std::placeholders::_1;
+#endif
   size_t system_id;
   SysEventHandler _sh;
   PushFunc push_func = std::bind(&DD_Queue::push, &main_q, arg_1);
