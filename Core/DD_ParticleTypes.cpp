@@ -349,9 +349,10 @@ void DD_Water::update(const float dt) {
 //+
 // hgrav * sq_f(u_01.y)))
 //						   - dt_y * (((v_00.z *
-//v_00.x)/v_00.y)
+// v_00.x)/v_00.y)
 //-
-//									((v_01.z * v_01.x)
+//									((v_01.z *
+//v_01.x)
 ///
 // v_01.y));
 //			// z momentum
@@ -362,10 +363,12 @@ void DD_Water::update(const float dt) {
 //									(sq_f(v_01.z)/v_01.y
 //+
 // hgrav * sq_f(v_01.y)))
-//						   - dt_x * (((u_00.x * u_00.z) /
-//u_00.y)
+//						   - dt_x * (((u_00.x * u_00.z)
+///
+// u_00.y)
 //-
-//									((u_01.x * u_01.z)
+//									((u_01.x *
+//u_01.z)
 ///
 // u_01.y));
 //		}
@@ -399,8 +402,9 @@ void DD_Water::update(const float dt) {
   //				sq_f(m_zhalf[i][j].z) / m_zhalf[i][j].y + hgrav
   //*
   //				sq_f(m_zhalf[i][j].y) -
-  //				sq_f(m_zhalf[i][j - 1].z) / m_zhalf[i][j - 1].y -
-  //hgrav
+  //				sq_f(m_zhalf[i][j - 1].z) / m_zhalf[i][j - 1].y
+  //-
+  // hgrav
   //*
   //				sq_f(m_zhalf[i][j - 1].y)
   //				);

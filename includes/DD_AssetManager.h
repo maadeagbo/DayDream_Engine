@@ -1,5 +1,15 @@
 #pragma once
 
+#include "DD_BaseAgent.h"
+#include "DD_Camera.h"
+#include "DD_Light.h"
+#include "DD_LuaHooks.h"
+#include "DD_Model.h"
+#include "DD_Skeleton.h"
+#include "DD_Texture2D.h"
+#include "DD_Types.h"
+#include "freelist.h"
+
 #ifndef ASSETS_CONTAINER_MAX_SIZE
 #define ASSETS_CONTAINER_MAX_SIZE 200
 #endif  // !ASSETS_CONTAINER_MAX_SIZE
@@ -93,15 +103,6 @@
   std::map<size_t, unsigned> map_##CONTAINER;  \
   dd_array<bool> freelist_##CONTAINER(C_SIZE); \
   dd_array<TYPE> CONTAINER(C_SIZE);
-
-#include "DD_BaseAgent.h"
-#include "DD_Camera.h"
-#include "DD_Light.h"
-#include "DD_LuaHooks.h"
-#include "DD_Model.h"
-#include "DD_Skeleton.h"
-#include "DD_Texture2D.h"
-#include "DD_Types.h"
 
 namespace DD_Assets {
 /// \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY DD_ENGINE
