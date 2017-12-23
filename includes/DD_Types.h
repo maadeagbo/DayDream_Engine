@@ -18,7 +18,7 @@
 #include <algorithm>
 #include <chrono>
 #include <cmath>
-#include <cstdint>
+#include <inttypes.h>
 #include <cstdio>
 #include <functional>
 #include <future>

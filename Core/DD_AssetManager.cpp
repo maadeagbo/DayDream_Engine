@@ -22,14 +22,6 @@ ASSET_CREATE(DD_SkeletonPose, poses, ASSETS_CONTAINER_MAX_SIZE)
 ASSET_CREATE(DD_Tex2D, textures, ASSETS_CONTAINER_MAX_SIZE)
 }  // namespace
 
-/// \brief Set all freelist values to true
-/// \param freelist "Free list" of available slots
-void reset_freelist(dd_array<bool> freelist) {
-  for (size_t i = 0; i < freelist.size(); i++) {
-    freelist[i] = true;
-  }
-}
-
 /// \brief Parse ddm file and load to ram
 /// \param filename Path to .ddm file
 /// \return MeshData of input ddm file
@@ -39,13 +31,13 @@ namespace DD_Assets {
 void initialize(btDiscreteDynamicsWorld *physics_world) {
   p_world = physics_world;
   // set free lists
-  reset_freelist(freelist_b_agents);
-  reset_freelist(freelist_cams);
-  reset_freelist(freelist_lights);
-  reset_freelist(freelist_meshes);
-  reset_freelist(freelist_skeletons);
-  reset_freelist(freelist_poses);
-  reset_freelist(freelist_textures);
+  fl_b_agents.initialize(b_agents.size());
+  fl_cams.initialize(cams.size());
+  fl_lights.initialize(lights.size());
+  fl_meshes.initialize(meshes.size());
+  fl_skeletons.initialize(skeletons.size());
+  fl_poses.initialize(poses.size());
+  fl_textures.initialize(textures.size());
 }
 
 int create_agent(lua_State *L) {
