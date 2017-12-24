@@ -8,6 +8,7 @@
 #include "DD_Skeleton.h"
 #include "DD_Texture2D.h"
 #include "DD_Types.h"
+#include "DD_Material.h"
 #include "freelist.h"
 
 #ifndef ASSETS_CONTAINER_MAX_SIZE
@@ -92,26 +93,25 @@
   freelist fl_##CONTAINER;                    \
   dd_array<TYPE> CONTAINER(C_SIZE);
 
-namespace DD_Assets {
 /// \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY DD_ENGINE
-void initialize(btDiscreteDynamicsWorld* physics_world);
+void dd_assets_initialize(btDiscreteDynamicsWorld* physics_world);
 
 /// \brief Create DD_BaseAgent from lua scripts
 /// \param L lua state
 /// \return Number of returned values to lua
-int create_agent(lua_State* L);
+int dd_assets_create_agent(lua_State* L);
 /// \brief Create DD_MeshData from lua scripts
 /// \param L lua state
 /// \return Number of returned values to lua
-int create_mesh(lua_State* L);
+int dd_assets_create_mesh(lua_State* L);
 /// \brief Create DD_Cam from lua scripts
 /// \param L lua state
 /// \return Number of returned values to lua
-int create_cam(lua_State* L);
+int dd_assets_create_cam(lua_State* L);
 /// \brief Create DD_Bulb from lua scripts
 /// \param L lua state
 /// \return Number of returned values to lua
-int create_light(lua_State* L);
+int dd_assets_create_light(lua_State* L);
 
 ASSET_DECL(DD_BaseAgent)
 ASSET_DECL(DD_Cam)
@@ -120,4 +120,4 @@ ASSET_DECL(DD_MeshData)
 ASSET_DECL(DD_Skeleton)
 ASSET_DECL(DD_SkeletonPose)
 ASSET_DECL(DD_Tex2D)
-}  // namespace DD_Assets
+ASSET_DECL(DD_Mat)

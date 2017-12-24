@@ -89,15 +89,18 @@ struct obj_vec3 {
 
 struct obj_mat {
   std::string ID;
+	cbuff<32> mat_id;
   std::string directory;
   obj_vec3 diffuseRaw;
+	glm::vec4 diff_raw;
   std::string albedo_tex, specular_tex, metalness_tex, roughness_tex,
       normal_tex, emissive_tex, ao_tex;
   bool albedo_flag, spec_flag, metal_flag, rough_flag, norm_flag, emit_flag,
       ao_flag, multiplier;
 
   obj_mat() {
-    diffuseRaw = obj_vec3(0.5f, 0.5f, 0.5f);
+		diffuseRaw = obj_vec3(0.5f, 0.5f, 0.5f);
+		diff_raw = glm::vec4(0.5f, 0.5f, 0.5f, 1.f);
     albedo_flag = false;
     spec_flag = false;
     ao_flag = false;
@@ -123,7 +126,9 @@ struct MeshData {
   dd_array<Vertex> data;
   obj_mat material_info;
   std::string material_ID;
-  obj_vec3 bbox_min, bbox_max;
+	obj_vec3 bbox_min, bbox_max;
+	cbuff<32> mat_id;
+	glm::vec3 bb_min, bb_max;
 };
 
 struct MeshContainer {
@@ -182,7 +187,7 @@ struct MeshInfo {
   /// \brief Handles to GPU buffers
   unsigned vao = 0, vbo = 0, ebo = 0, inst_vbo = 0, inst_cvbo = 0;
   /// \brief Engine material index
-  size_t material;
+  size_t material = 0;
   /// \brief Flag that marks if the mesh is back on the gpu
   bool loaded_gpu = false;
 };

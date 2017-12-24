@@ -50,6 +50,7 @@ struct DD_Engine {
   void startup_lua();
   void Launch();
   void Load();
+	void register_lfuncs();
   bool LevelSelect(const size_t w = 600, const size_t h = 600);
   void Run();
   inline SDL_Window* GetWin() { return main_window; }

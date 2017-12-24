@@ -33,6 +33,8 @@ const cbuff<32> terminal_hash("poll_terminal");
 void DD_Engine::startup_lua() {
   main_lstate = init_lua_state();
   main_q.set_lua_ptr(main_lstate);
+
+	register_lfuncs();
 }
 
 void DD_Engine::openWindow(const size_t width, const size_t height,
@@ -364,10 +366,6 @@ void DD_Engine::Load() {
   // initialize bullet physics library
   main_physics.initialize_world();
 
-  // Initialize resource manager
-  DD_Assets::initialize(main_physics.world);
-  main_res.queue = &main_q;
-
   // set up math/physics library
   DD_MathLib::setResourceBin(&main_res);
 
@@ -447,6 +445,13 @@ void DD_Engine::Load() {
 
   // load terminal history
   DD_Terminal::inTerminalHistory();
+}
+
+void DD_Engine::register_lfuncs() {
+	// Initialize resource manager
+	dd_assets_initialize(main_physics.world);
+	// add DD_MeshData creation function
+	add_func_to_scripts(main_lstate, dd_assets_create_mesh, "load_ddm");
 }
 
 void DD_Engine::updateSDL() {

@@ -5,7 +5,18 @@ local inputs =
     "DeadWorld"
 }
 
+local function test_01()
+	arg = {
+		["path"] = "C:/Users/Moses/Documents/DayDream_Engine/Resource/Meshes/primitives/cube.ddm"
+	}
+	key = load_ddm(arg);
+	print("Created mesh id: "..key)
+end
+
 function generate_levels( event, args, num_args )
+		
+		test_01()
+
     -- creates a list of found level scripts
     levels = {}
     for i,v in ipairs(inputs) do

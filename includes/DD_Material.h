@@ -53,6 +53,7 @@ class DD_Material {
   MaterialType m_matType;
 };
 
+/// \brief Container for material information
 struct DD_Mat {
   /// \brief Engine identifier assigned at initialization
   size_t id;
@@ -64,8 +65,8 @@ struct DD_Mat {
   float spec_value;
   /// \brief Flag for activated textures (bit comparison w/ TexTypes)
   unsigned texture_flag = 0;
-  /// \brief Flag that marks if the mesh is back on the gpu
+  /// \brief Flag that marks if the material is loaded on the gpu
   bool loaded_gpu = false;
-  /// \brief Flag that marks if the mesh can modify color thru instancing
+  /// \brief Flag that marks if color can be modified thru instancing
   bool color_modifier = false;
 };
