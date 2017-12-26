@@ -149,160 +149,121 @@ void edit_key(InputData& idata, SDL_Keysym& key, const bool b_flag,
       idata.keys[(unsigned)DD_Keys::A_Key] = {b_flag, i_flag};
       break;
     case SDLK_b:
-      idata.keys[(unsigned)DD_Keys::B_Key].active = b_flag;
-      idata.keys[(unsigned)DD_Keys::B_Key].order = i_flag;
+      idata.keys[(unsigned)DD_Keys::B_Key] = {b_flag, i_flag};
       break;
     case SDLK_c:
-      idata.keys[(unsigned)DD_Keys::C_Key].active = b_flag;
-      idata.keys[(unsigned)DD_Keys::C_Key].order = i_flag;
+      idata.keys[(unsigned)DD_Keys::C_Key] = {b_flag, i_flag};
       break;
     case SDLK_d:
-      idata.keys[(unsigned)DD_Keys::D_Key].active = b_flag;
-      idata.keys[(unsigned)DD_Keys::D_Key].order = i_flag;
+      idata.keys[(unsigned)DD_Keys::D_Key] = {b_flag, i_flag};
       break;
     case SDLK_e:
-      idata.keys[(unsigned)DD_Keys::E_Key].active = b_flag;
-      idata.keys[(unsigned)DD_Keys::E_Key].order = i_flag;
+      idata.keys[(unsigned)DD_Keys::E_Key] = {b_flag, i_flag};
       break;
     case SDLK_f:
-      idata.keys[(unsigned)DD_Keys::F_Key].active = b_flag;
-      idata.keys[(unsigned)DD_Keys::F_Key].order = i_flag;
+      idata.keys[(unsigned)DD_Keys::F_Key] = {b_flag, i_flag};
       break;
     case SDLK_g:
-      idata.keys[(unsigned)DD_Keys::G_Key].active = b_flag;
-      idata.keys[(unsigned)DD_Keys::G_Key].order = i_flag;
+      idata.keys[(unsigned)DD_Keys::G_Key] = {b_flag, i_flag};
       break;
     case SDLK_h:
-      idata.keys[(unsigned)DD_Keys::H_Key].active = b_flag;
-      idata.keys[(unsigned)DD_Keys::H_Key].order = i_flag;
+      idata.keys[(unsigned)DD_Keys::H_Key] = {b_flag, i_flag};
       break;
     case SDLK_i:
-      idata.keys[(unsigned)DD_Keys::I_Key].active = b_flag;
-      idata.keys[(unsigned)DD_Keys::I_Key].order = i_flag;
+      idata.keys[(unsigned)DD_Keys::I_Key] = {b_flag, i_flag};
       break;
     case SDLK_j:
-      idata.keys[(unsigned)DD_Keys::J_Key].active = b_flag;
-      idata.keys[(unsigned)DD_Keys::J_Key].order = i_flag;
+      idata.keys[(unsigned)DD_Keys::J_Key] = {b_flag, i_flag};
       break;
     case SDLK_k:
-      idata.keys[(unsigned)DD_Keys::K_Key].active = b_flag;
-      idata.keys[(unsigned)DD_Keys::K_Key].order = i_flag;
+      idata.keys[(unsigned)DD_Keys::K_Key] = {b_flag, i_flag};
       break;
     case SDLK_l:
-      idata.keys[(unsigned)DD_Keys::L_Key].active = b_flag;
-      idata.keys[(unsigned)DD_Keys::L_Key].order = i_flag;
+      idata.keys[(unsigned)DD_Keys::L_Key] = {b_flag, i_flag};
       break;
     case SDLK_m:
-      idata.keys[(unsigned)DD_Keys::M_Key].active = b_flag;
-      idata.keys[(unsigned)DD_Keys::M_Key].order = i_flag;
+      idata.keys[(unsigned)DD_Keys::M_Key] = {b_flag, i_flag};
       break;
     case SDLK_n:
-      idata.keys[(unsigned)DD_Keys::N_Key].active = b_flag;
-      idata.keys[(unsigned)DD_Keys::N_Key].order = i_flag;
+      idata.keys[(unsigned)DD_Keys::N_Key] = {b_flag, i_flag};
       break;
     case SDLK_o:
-      idata.keys[(unsigned)DD_Keys::O_Key].active = b_flag;
-      idata.keys[(unsigned)DD_Keys::O_Key].order = i_flag;
+      idata.keys[(unsigned)DD_Keys::O_Key] = {b_flag, i_flag};
       break;
     case SDLK_p:
-      idata.keys[(unsigned)DD_Keys::P_Key].active = b_flag;
-      idata.keys[(unsigned)DD_Keys::P_Key].order = i_flag;
+      idata.keys[(unsigned)DD_Keys::P_Key] = {b_flag, i_flag};
       break;
     case SDLK_q:
-      idata.keys[(unsigned)DD_Keys::Q_Key].active = b_flag;
-      idata.keys[(unsigned)DD_Keys::Q_Key].order = i_flag;
+      idata.keys[(unsigned)DD_Keys::Q_Key] = {b_flag, i_flag};
       break;
     case SDLK_r:
-      idata.keys[(unsigned)DD_Keys::R_Key].active = b_flag;
-      idata.keys[(unsigned)DD_Keys::R_Key].order = i_flag;
+      idata.keys[(unsigned)DD_Keys::R_Key] = {b_flag, i_flag};
       break;
     case SDLK_s:
-      idata.keys[(unsigned)DD_Keys::S_Key].active = b_flag;
-      idata.keys[(unsigned)DD_Keys::S_Key].order = i_flag;
+      idata.keys[(unsigned)DD_Keys::S_Key] = {b_flag, i_flag};
       break;
     case SDLK_t:
-      idata.keys[(unsigned)DD_Keys::T_Key].active = b_flag;
-      idata.keys[(unsigned)DD_Keys::T_Key].order = i_flag;
+      idata.keys[(unsigned)DD_Keys::T_Key] = {b_flag, i_flag};
       break;
     case SDLK_u:
-      idata.keys[(unsigned)DD_Keys::U_Key].active = b_flag;
-      idata.keys[(unsigned)DD_Keys::U_Key].order = i_flag;
+      idata.keys[(unsigned)DD_Keys::U_Key] = {b_flag, i_flag};
       break;
     case SDLK_v:
-      idata.keys[(unsigned)DD_Keys::V_Key].active = b_flag;
-      idata.keys[(unsigned)DD_Keys::V_Key].order = i_flag;
+      idata.keys[(unsigned)DD_Keys::V_Key] = {b_flag, i_flag};
       break;
     case SDLK_w:
-      idata.keys[(unsigned)DD_Keys::W_Key].active = b_flag;
-      idata.keys[(unsigned)DD_Keys::W_Key].order = i_flag;
+      idata.keys[(unsigned)DD_Keys::W_Key] = {b_flag, i_flag};
       break;
     case SDLK_x:
-      idata.keys[(unsigned)DD_Keys::X_Key].active = b_flag;
-      idata.keys[(unsigned)DD_Keys::X_Key].order = i_flag;
+      idata.keys[(unsigned)DD_Keys::X_Key] = {b_flag, i_flag};
       break;
     case SDLK_y:
-      idata.keys[(unsigned)DD_Keys::Y_Key].active = b_flag;
-      idata.keys[(unsigned)DD_Keys::Y_Key].order = i_flag;
+      idata.keys[(unsigned)DD_Keys::Y_Key] = {b_flag, i_flag};
       break;
     case SDLK_z:
-      idata.keys[(unsigned)DD_Keys::Z_Key].active = b_flag;
-      idata.keys[(unsigned)DD_Keys::Z_Key].order = i_flag;
+      idata.keys[(unsigned)DD_Keys::Z_Key] = {b_flag, i_flag};
       break;
     case SDLK_SPACE:
-      idata.keys[(unsigned)DD_Keys::Space_Key].active = b_flag;
-      idata.keys[(unsigned)DD_Keys::Space_Key].order = i_flag;
+      idata.keys[(unsigned)DD_Keys::Space_Key] = {b_flag, i_flag};
       break;
     case SDLK_KP_ENTER:  // doesn't work
-      idata.keys[(unsigned)DD_Keys::Enter_Key].active = b_flag;
-      idata.keys[(unsigned)DD_Keys::Enter_Key].order = i_flag;
+      idata.keys[(unsigned)DD_Keys::Enter_Key] = {b_flag, i_flag};
       break;
     case SDLK_ESCAPE:
-      idata.keys[(unsigned)DD_Keys::Escape_Key].active = b_flag;
-      idata.keys[(unsigned)DD_Keys::Escape_Key].order = i_flag;
+      idata.keys[(unsigned)DD_Keys::Escape_Key] = {b_flag, i_flag};
       break;
     case SDLK_LALT:
-      idata.keys[(unsigned)DD_Keys::ALT_L_Key].active = b_flag;
-      idata.keys[(unsigned)DD_Keys::ALT_L_Key].order = i_flag;
+      idata.keys[(unsigned)DD_Keys::ALT_L_Key] = {b_flag, i_flag};
       break;
     case SDLK_LCTRL:
-      idata.keys[(unsigned)DD_Keys::CTRL_L_Key].active = b_flag;
-      idata.keys[(unsigned)DD_Keys::CTRL_L_Key].order = i_flag;
+      idata.keys[(unsigned)DD_Keys::CTRL_L_Key] = {b_flag, i_flag};
       break;
     case SDLK_LSHIFT:
-      idata.keys[(unsigned)DD_Keys::Shift_L_Key].active = b_flag;
-      idata.keys[(unsigned)DD_Keys::Shift_L_Key].order = i_flag;
+      idata.keys[(unsigned)DD_Keys::Shift_L_Key] = {b_flag, i_flag};
       break;
     case SDLK_RALT:
-      idata.keys[(unsigned)DD_Keys::ALT_R_Key].active = b_flag;
-      idata.keys[(unsigned)DD_Keys::ALT_R_Key].order = i_flag;
+      idata.keys[(unsigned)DD_Keys::ALT_R_Key] = {b_flag, i_flag};
       break;
     case SDLK_RCTRL:
-      idata.keys[(unsigned)DD_Keys::CTRL_R_Key].active = b_flag;
-      idata.keys[(unsigned)DD_Keys::CTRL_R_Key].order = i_flag;
+      idata.keys[(unsigned)DD_Keys::CTRL_R_Key] = {b_flag, i_flag};
       break;
     case SDLK_RSHIFT:
-      idata.keys[(unsigned)DD_Keys::SHIFT_R_Key].active = b_flag;
-      idata.keys[(unsigned)DD_Keys::SHIFT_R_Key].order = i_flag;
+      idata.keys[(unsigned)DD_Keys::SHIFT_R_Key] = {b_flag, i_flag};
       break;
     case SDLK_UP:
-      idata.keys[(unsigned)DD_Keys::UP_KEY].active = b_flag;
-      idata.keys[(unsigned)DD_Keys::UP_KEY].order = i_flag;
+      idata.keys[(unsigned)DD_Keys::UP_KEY] = {b_flag, i_flag};
       break;
     case SDLK_DOWN:
-      idata.keys[(unsigned)DD_Keys::DOWN_KEY].active = b_flag;
-      idata.keys[(unsigned)DD_Keys::DOWN_KEY].order = i_flag;
+      idata.keys[(unsigned)DD_Keys::DOWN_KEY] = {b_flag, i_flag};
       break;
     case SDLK_RIGHT:
-      idata.keys[(unsigned)DD_Keys::RIGHT_KEY].active = b_flag;
-      idata.keys[(unsigned)DD_Keys::RIGHT_KEY].order = i_flag;
+      idata.keys[(unsigned)DD_Keys::RIGHT_KEY] = {b_flag, i_flag};
       break;
     case SDLK_LEFT:
-      idata.keys[(unsigned)DD_Keys::LEFT_KEY].active = b_flag;
-      idata.keys[(unsigned)DD_Keys::LEFT_KEY].order = i_flag;
+      idata.keys[(unsigned)DD_Keys::LEFT_KEY] = {b_flag, i_flag};
       break;
     case SDLK_TAB:
-      idata.keys[(unsigned)DD_Keys::TAB_Key].active = b_flag;
-      idata.keys[(unsigned)DD_Keys::TAB_Key].order = i_flag;
+      idata.keys[(unsigned)DD_Keys::TAB_Key] = {b_flag, i_flag};
       break;
     default:
       break;

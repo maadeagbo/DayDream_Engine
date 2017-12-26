@@ -189,7 +189,8 @@ void DD_Queue::unsubscribe(const size_t event_sig, const size_t _sig) {
 void DD_Queue::process_queue() {
   while (!shutdown) {
     DD_LEvent _event;
-    pop_current(_event);
+    bool event_present = pop_current(_event);
+    if (!event_present) continue;
 
     size_t e_sig = _event.handle.gethash();
     // check if event is to process backed-up/future events

@@ -113,3 +113,8 @@ struct ParentInfo {
   /// \brief Boolean to set if object is parented
   bool parent_set = false;
 };
+
+// System handles
+
+const size_t sys_engine_hash = getCharHash("dd_engine");
+const size_t sys_terminal_hash = getCharHash("dd_terminal");

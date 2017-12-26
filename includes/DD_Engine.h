@@ -54,7 +54,7 @@ struct DD_Engine {
   void updateSDL();
   void cleanUp();
 
-  int m_WIDTH, m_HEIGHT;
+  int window_w, window_h;
   GameState main_state;
   EngineState init_flag;
   SDL_Window* main_window;

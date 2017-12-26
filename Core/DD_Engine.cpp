@@ -10,7 +10,7 @@ bool windowShouldClose = false;
 
 // bool loading_lvl = false, async_done = false, p_tex_loading = true,
 //     loading_agents = false;
-std::future<void> load_RES, load_RAM, load_LVL;
+// std::future<void> load_RES, load_RAM, load_LVL;
 std::chrono::milliseconds timespan(10);
 std::chrono::milliseconds chrono_msec(1);
 
@@ -28,6 +28,7 @@ const cbuff<32> load_hash("load_screen");
 const cbuff<32> lvl_init_hash("_lvl_init_done");
 const cbuff<32> lvl_asset_hash("_asset_init");
 const cbuff<32> terminal_hash("poll_terminal");
+const cbuff<32> init_screen_hash("init_screen");
 }  // namespace
 
 void DD_Engine::startup_lua() {
@@ -39,8 +40,8 @@ void DD_Engine::startup_lua() {
 
 void DD_Engine::openWindow(const size_t width, const size_t height,
                            EngineMode mode) {
-  m_WIDTH = (int)width;
-  m_HEIGHT = (int)height;
+  window_w = (int)width;
+  window_h = (int)height;
 
   u32 flags = SDL_WINDOW_OPENGL;
   int monitor_choice = 0, vsync_option = 0;
@@ -73,11 +74,12 @@ void DD_Engine::openWindow(const size_t width, const size_t height,
   }
   // create centered window (set hints before)
   // SDL_SetHint(SDL_HINT_RENDER_VSYNC, "1");
-  main_window = SDL_CreateWindow(
-      "DayDream Engine Alpha", SDL_WINDOWPOS_CENTERED_DISPLAY(monitor_choice),
-      SDL_WINDOWPOS_CENTERED_DISPLAY(monitor_choice), m_WIDTH, m_HEIGHT, flags);
+  main_window = SDL_CreateWindow("DayDream Engine Alpha",
+                                 SDL_WINDOWPOS_CENTERED_DISPLAY(monitor_choice),
+                                 SDL_WINDOWPOS_CENTERED_DISPLAY(monitor_choice),
+                                 window_w, window_h, flags);
   // reset base width and height incase fullscreen set
-  SDL_GetWindowSize(main_window, &m_WIDTH, &m_HEIGHT);
+  SDL_GetWindowSize(main_window, &window_w, &window_h);
 
   // Setup ImGui binding
   ImGui_ImplSdlGL3_Init(main_window);
@@ -295,8 +297,8 @@ bool DD_Engine::LevelSelect(const size_t w, const size_t h) {
     ImGui::Combo("Height", &wh_idx[1], res_, choices);
 
     // ImGui::DragInt2("<-- Resolution", resolution_set, 10.f, 100);
-    m_WIDTH = (int)strtod(res_[wh_idx[0]], nullptr);
-    m_HEIGHT = (int)strtod(res_[wh_idx[1]], nullptr);
+    window_w = (int)strtod(res_[wh_idx[0]], nullptr);
+    window_h = (int)strtod(res_[wh_idx[1]], nullptr);
 
     ImGui::Checkbox("VSYNC", &engine_mode_flags[0]);
     ImGui::SameLine();
@@ -339,29 +341,28 @@ void DD_Engine::Load() {
 #else
   std::_Placeholder<1> arg_1 = std::placeholders::_1;
 #endif
-  size_t system_id;
   SysEventHandler _sh;
   PushFunc push_func = std::bind(&DD_Queue::push, &main_q, arg_1);
   q_push = push_func;
   /*
-EngineMode init_options = EngineMode::DD_NOT_SET;
-init_options = (engine_mode_flags[0])
-               ? EngineMode(init_options | EngineMode::DD_VSYNC)
-               : init_options;
-init_options = (engine_mode_flags[1])
-               ? EngineMode(init_options | EngineMode::DD_FULLSCREEN)
-               : init_options;
-init_options = (engine_mode_flags[2])
-               ? EngineMode(init_options | EngineMode::DD_SECOND_DISPLAY)
-               : init_options;
-init_options = (engine_mode_flags[3])
-               ? EngineMode(init_options | EngineMode::DD_NO_CONSOLE)
-               : init_options;
+  EngineMode init_options = EngineMode::DD_NOT_SET;
+  init_options = (engine_mode_flags[0])
+                ? EngineMode(init_options | EngineMode::DD_VSYNC)
+                : init_options;
+  init_options = (engine_mode_flags[1])
+                ? EngineMode(init_options | EngineMode::DD_FULLSCREEN)
+                : init_options;
+  init_options = (engine_mode_flags[2])
+                ? EngineMode(init_options | EngineMode::DD_SECOND_DISPLAY)
+                : init_options;
+  init_options = (engine_mode_flags[3])
+                ? EngineMode(init_options | EngineMode::DD_NO_CONSOLE)
+                : init_options;
 
-openWindow(m_WIDTH, m_HEIGHT, init_options);
+  openWindow(window_w, window_h, init_options);
   // set useful lua globals
-set_lua_global(main_lstate, "SCR_W", m_WIDTH);
-set_lua_global(main_lstate, "SCR_H", m_HEIGHT);
+  set_lua_global(main_lstate, "SCR_W", window_w);
+  set_lua_global(main_lstate, "SCR_H", window_h);
 //*/
   // initialize time
   DD_Time::initialize();
@@ -377,27 +378,27 @@ set_lua_global(main_lstate, "SCR_H", m_HEIGHT);
 
   // Load render engine
   /*
-main_renderer.m_resourceBin = &main_res;
-main_renderer.push = push_func;
-main_renderer.m_time = &main_timer;
-main_renderer.LoadRendererEngine((GLfloat)m_WIDTH, (GLfloat)m_HEIGHT);
-main_renderer.m_particleSys->m_resBin = &main_res;
-// add render engine handler
-system_id = getCharHash("dd_renderer");
-_sh = std::bind(&DD_Renderer::render_handler, &main_renderer, arg_1);
-main_q.register_sys_func(system_id, _sh);
-main_q.subscribe(getCharHash("render"), system_id);
-main_q.subscribe(getCharHash("toggle_screenshots"), system_id);
-main_q.subscribe(getCharHash("rendstat"), system_id);
+  main_renderer.m_resourceBin = &main_res;
+  main_renderer.push = push_func;
+  main_renderer.m_time = &main_timer;
+  main_renderer.LoadRendererEngine((GLfloat)window_w, (GLfloat)window_h);
+  main_renderer.m_particleSys->m_resBin = &main_res;
+  // add render engine handler
+  system_id = getCharHash("dd_renderer");
+  _sh = std::bind(&DD_Renderer::render_handler, &main_renderer, arg_1);
+  main_q.register_sys_func(system_id, _sh);
+  main_q.subscribe(getCharHash("render"), system_id);
+  main_q.subscribe(getCharHash("toggle_screenshots"), system_id);
+  main_q.subscribe(getCharHash("rendstat"), system_id);
 
-// load compute unit and handler
-main_comp.init();
-main_comp.res_ptr = &main_res;
-main_comp.push = push_func;
-system_id = getCharHash("dd_compute");
-_sh = std::bind(&DD_Compute::compute, &main_comp, arg_1);
-main_q.register_sys_func(system_id, _sh);
-main_q.subscribe(getCharHash("compute_texA"), system_id);
+  // load compute unit and handler
+  main_comp.init();
+  main_comp.res_ptr = &main_res;
+  main_comp.push = push_func;
+  system_id = getCharHash("dd_compute");
+  _sh = std::bind(&DD_Compute::compute, &main_comp, arg_1);
+  main_q.register_sys_func(system_id, _sh);
+  main_q.subscribe(getCharHash("compute_texA"), system_id);
   //*/
 
   // initialize Animation system and register handlers
@@ -434,20 +435,18 @@ main_q.subscribe(getCharHash("compute_texA"), system_id);
         //*/
 
   // terminal input callback
-  system_id = getCharHash("dd_terminal");
   _sh = std::bind(&DD_Terminal::get_input, std::placeholders::_1);
-  main_q.register_sys_func(system_id, _sh);
-  main_q.subscribe(getCharHash("input"), system_id);
+  main_q.register_sys_func(sys_terminal_hash, _sh);
+  main_q.subscribe(getCharHash("input"), sys_terminal_hash);
 
   // add engine callback
-  system_id = getCharHash("dd_engine");
   _sh = std::bind(&DD_Engine::update, this, arg_1);
-  main_q.register_sys_func(system_id, _sh);
-  main_q.subscribe(getCharHash("sys_exit"), system_id);
-  main_q.subscribe(getCharHash("frame_init"), system_id);
-  main_q.subscribe(getCharHash("frame_exit"), system_id);
-  main_q.subscribe(getCharHash("load_screen"), system_id);
-  main_q.subscribe(getCharHash("init_resources"), system_id);
+  main_q.register_sys_func(sys_engine_hash, _sh);
+  main_q.subscribe(getCharHash("sys_exit"), sys_engine_hash);
+  main_q.subscribe(getCharHash("frame_init"), sys_engine_hash);
+  main_q.subscribe(getCharHash("frame_exit"), sys_engine_hash);
+  main_q.subscribe(getCharHash("load_screen"), sys_engine_hash);
+  main_q.subscribe(getCharHash("init_resources"), sys_engine_hash);
 
   // load terminal history
   DD_Terminal::inTerminalHistory();
@@ -509,96 +508,105 @@ void DD_Engine::Run() {
   // push some events to kick start the queue
   DD_LEvent _event;
 
+  // create new screen
+
   // turn on load screen
-  _event.handle = "dd_engine";
-  add_arg_LEvent<const char *>(&_event, "tag", load_hash.str());
+  _event.handle = load_hash;
+  //add_arg_LEvent<const char *>(&_event, "tag", load_hash.str());
   q_push(_event);
   // add async level assets load
   _event.active = 0;
   // add async level init
   _event.active = 0;
   _event.handle = "_async_call";
-  add_arg_LEvent<const char *>(&_event, "tag", lvl_init_hash.str());
-  add_arg_LEvent<const char *>(&_event, "reciever", "dd_engine");
-  q_push(_event);
+  //add_arg_LEvent<const char *>(&_event, "tag", lvl_init_hash.str());
+  //add_arg_LEvent<const char *>(&_event, "reciever", "dd_engine");
+  //q_push(_event);
   // add frame update
   _event.active = 0;
   _event.handle = "dd_engine";
-  add_arg_LEvent<const char *>(&_event, "tag", frame_enter_hash.str());
+  //add_arg_LEvent<const char *>(&_event, "tag", frame_enter_hash.str());
+  //q_push(_event);
+
+  // exit (debug testing)
+  _event.active = 0;
+  _event.handle = exit_hash;
+  _event.delay = 1000;
   q_push(_event);
 
+  main_q.process_queue();
   /*
-if (init_flag == EngineState::MAIN) {
-// get resource for current level
-lvl_resource = main_lvl[current_lvl]->m_assetFile;
-}
+  if (init_flag == EngineState::MAIN) {
+  // get resource for current level
+  lvl_resource = main_lvl[current_lvl]->m_assetFile;
+  }
 
-const double frame_time = 1.0 / FRAME_CAP;
-u64 last_update_time = main_timer.getTime();
-double unprocessed_time = 0.0;
+  const double frame_time = 1.0 / FRAME_CAP;
+  u64 last_update_time = main_timer.getTime();
+  double unprocessed_time = 0.0;
 
-glClearColor(main_renderer.bgcol[0], main_renderer.bgcol[1],
-         main_renderer.bgcol[2], main_renderer.bgcol[3]);
-while (!windowShouldClose) {
-glClear(GL_COLOR_BUFFER_BIT);
+  glClearColor(main_renderer.bgcol[0], main_renderer.bgcol[1],
+          main_renderer.bgcol[2], main_renderer.bgcol[3]);
+  while (!windowShouldClose) {
+  glClear(GL_COLOR_BUFFER_BIT);
 
-// update time
-if (UNLOCK_FRAMEPACE) {
-main_timer.update();
-} else {
-main_timer.update((float)frame_time);
-}
+  // update time
+  if (UNLOCK_FRAMEPACE) {
+  main_timer.update();
+  } else {
+  main_timer.update((float)frame_time);
+  }
 
-// fixed frame loop
-u64 start_time = main_timer.getTime();
-u64 elapsed_time = start_time - last_update_time;
-last_update_time = start_time;
+  // fixed frame loop
+  u64 start_time = main_timer.getTime();
+  u64 elapsed_time = start_time - last_update_time;
+  last_update_time = start_time;
 
-unprocessed_time += elapsed_time / (double)SECOND_LL;
+  unprocessed_time += elapsed_time / (double)SECOND_LL;
 
-// start imgui window processing
-ImGui_ImplSdlGL3_NewFrame(main_window);
+  // start imgui window processing
+  ImGui_ImplSdlGL3_NewFrame(main_window);
 
-unprocessed_time -= frame_time;
-// pole SDL events
-updateSDL();
-// run event loop
-ResSpace::updateSceneGraph(&main_res, main_timer.getTimeFloat());
-gameLoop();
+  unprocessed_time -= frame_time;
+  // pole SDL events
+  updateSDL();
+  // run event loop
+  ResSpace::updateSceneGraph(&main_res, main_timer.getTimeFloat());
+  gameLoop();
 
-if (main_state == GameState::ACTIVE) {
-// add render event
-float frametime = main_timer.getFrameTime();
-DD_Event rendE = DD_Event();
-rendE.m_time = frametime;
-rendE.m_type = "render";
-main_q.push(rendE);
-// add debug (text rendering must be last (gl_blend))
-if (flag_debug) {
-  DD_Event debugE = DD_Event();
-  debugE.m_time = frametime;
-  debugE.m_type = "debug";
-  main_q.push(debugE);
-}
-main_q.ProcessQueue();
+  if (main_state == GameState::ACTIVE) {
+  // add render event
+  float frametime = main_timer.getFrameTime();
+  DD_Event rendE = DD_Event();
+  rendE.m_time = frametime;
+  rendE.m_type = "render";
+  main_q.push(rendE);
+  // add debug (text rendering must be last (gl_blend))
+  if (flag_debug) {
+    DD_Event debugE = DD_Event();
+    debugE.m_time = frametime;
+    debugE.m_type = "debug";
+    main_q.push(debugE);
+  }
+  main_q.ProcessQueue();
 
-// render IMGUI ui
-DD_Terminal::display((float)m_WIDTH, (float)m_HEIGHT);
-ImGui::Render();
-// swap buffers
-SDL_GL_SwapWindow(main_window);
-} else if (main_state == GameState::LOADING) {
-// Show load screen
-main_renderer.DrawLoadScreen(main_timer.getTimeFloat());
+  // render IMGUI ui
+  DD_Terminal::display((float)window_w, (float)window_h);
+  ImGui::Render();
+  // swap buffers
+  SDL_GL_SwapWindow(main_window);
+  } else if (main_state == GameState::LOADING) {
+  // Show load screen
+  main_renderer.DrawLoadScreen(main_timer.getTimeFloat());
 
-// render IMGUI ui
-DD_Terminal::display((float)m_WIDTH, (float)m_HEIGHT);
-ImGui::Render();
-// swap buffers
-SDL_GL_SwapWindow(main_window);
-} else {
-std::this_thread::sleep_for(chrono_msec);
-}
+  // render IMGUI ui
+  DD_Terminal::display((float)window_w, (float)window_h);
+  ImGui::Render();
+  // swap buffers
+  SDL_GL_SwapWindow(main_window);
+  } else {
+  std::this_thread::sleep_for(chrono_msec);
+  }
 }
   //*/
 }
@@ -789,6 +797,26 @@ void DD_Engine::update(DD_LEvent &_event) {
   size_t e_sig = _event.handle.gethash();
   if (e_sig == exit_hash.gethash()) {  // close app
     main_q.shutdown_queue();
+  } else if (e_sig == init_screen_hash.gethash()) {  // open new window
+    EngineMode init_options = EngineMode::DD_NOT_SET;
+    init_options = (engine_mode_flags[0])
+                       ? EngineMode(init_options | EngineMode::DD_VSYNC)
+                       : init_options;
+    init_options = (engine_mode_flags[1])
+                       ? EngineMode(init_options | EngineMode::DD_FULLSCREEN)
+                       : init_options;
+    init_options =
+        (engine_mode_flags[2])
+            ? EngineMode(init_options | EngineMode::DD_SECOND_DISPLAY)
+            : init_options;
+    init_options = (engine_mode_flags[3])
+                       ? EngineMode(init_options | EngineMode::DD_NO_CONSOLE)
+                       : init_options;
+
+    openWindow(window_w, window_h, init_options);
+    // set useful lua globals
+    set_lua_global(main_lstate, "WINDOW_WIDTH", (int64_t)window_w);
+    set_lua_global(main_lstate, "WINDOW_HEIGHT", (int64_t)window_h);
   } else if (e_sig == frame_enter_hash.gethash()) {  // setup new frame
     // clear framebuffer
     // glClearColor(main_renderer.bgcol[0], main_renderer.bgcol[1],
@@ -818,7 +846,7 @@ void DD_Engine::update(DD_LEvent &_event) {
     }
   } else if (e_sig == frame_exit_hash.gethash()) {  // exit frame
     // query terminal
-    DD_Terminal::display((float)m_WIDTH, (float)m_HEIGHT);
+    DD_Terminal::display((float)window_w, (float)window_h);
     // render IMGUI ui
     ImGui::Render();
     // swap buffers
@@ -850,8 +878,8 @@ void DD_Engine::InitCurrentLevel() {
 
   DD_GameLevel* lvl = main_lvl[current_lvl];
   // log dimensions
-  lvl->m_screenH = m_HEIGHT;
-  lvl->m_screenW = m_WIDTH;
+  lvl->m_screenH = window_h;
+  lvl->m_screenW = window_w;
   // log resource bin
   lvl->res_ptr = &main_res;
   lvl->Init();
