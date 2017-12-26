@@ -85,6 +85,13 @@ struct DD_Queue {
   /// \brief ONLY CALLED INTERNALLY BY DD_Engine. DO NOT USE
   void init_level_scripts(const char *script_id);
 
+  cbuff<32> lvl_call;
+  cbuff<32> lvl_call_i;
+  cbuff<32> res_call;
+  cbuff<32> check_future;
+  cbuff<32> check_lvl_async;
+  cbuff<32> check_res_async;
+
  private:
   /// \brief Add events to current queue
   /// \param _event DD_LEvent event
@@ -109,12 +116,6 @@ struct DD_Queue {
   dd_array<DD_LEvent> events_current;  //< events to be processed this frame
   dd_array<DD_LEvent> events_future;   //< events to be processed the future
   DD_FuncBuff fb;
-  cbuff<32> lvl_call;
-  cbuff<32> lvl_call_i;
-  cbuff<32> res_call;
-  cbuff<32> check_future;
-  cbuff<32> check_lvl_async;
-  cbuff<32> check_res_async;
   size_t m_head, m_tail, m_numEvents;
   size_t f_head, f_tail, f_numEvents;
   // pools

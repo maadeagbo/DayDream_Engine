@@ -442,11 +442,11 @@ void DD_Engine::Load() {
   // add engine callback
   _sh = std::bind(&DD_Engine::update, this, arg_1);
   main_q.register_sys_func(sys_engine_hash, _sh);
-  main_q.subscribe(getCharHash("sys_exit"), sys_engine_hash);
-  main_q.subscribe(getCharHash("frame_init"), sys_engine_hash);
-  main_q.subscribe(getCharHash("frame_exit"), sys_engine_hash);
-  main_q.subscribe(getCharHash("load_screen"), sys_engine_hash);
-  main_q.subscribe(getCharHash("init_resources"), sys_engine_hash);
+  main_q.subscribe(exit_hash.gethash(), sys_engine_hash);
+  main_q.subscribe(frame_enter_hash.gethash(), sys_engine_hash);
+  main_q.subscribe(frame_exit_hash.gethash(), sys_engine_hash);
+  main_q.subscribe(load_hash.gethash(), sys_engine_hash);
+  main_q.subscribe(init_screen_hash.gethash(), sys_engine_hash);
 
   // load terminal history
   DD_Terminal::inTerminalHistory();
@@ -509,24 +509,24 @@ void DD_Engine::Run() {
   DD_LEvent _event;
 
   // create new screen
+  _event.handle = init_screen_hash;
+  q_push(_event);
 
   // turn on load screen
   _event.handle = load_hash;
-  //add_arg_LEvent<const char *>(&_event, "tag", load_hash.str());
   q_push(_event);
+
   // add async level assets load
-  _event.active = 0;
+
   // add async level init
   _event.active = 0;
   _event.handle = "_async_call";
-  //add_arg_LEvent<const char *>(&_event, "tag", lvl_init_hash.str());
-  //add_arg_LEvent<const char *>(&_event, "reciever", "dd_engine");
-  //q_push(_event);
+  // q_push(_event);
+
   // add frame update
   _event.active = 0;
-  _event.handle = "dd_engine";
-  //add_arg_LEvent<const char *>(&_event, "tag", frame_enter_hash.str());
-  //q_push(_event);
+  _event.handle = frame_enter_hash;
+  q_push(_event);
 
   // exit (debug testing)
   _event.active = 0;
@@ -824,6 +824,7 @@ void DD_Engine::update(DD_LEvent &_event) {
     // glClear(GL_COLOR_BUFFER_BIT);
 
     DD_Time::update();
+    printf("Run time: %.5f\r", DD_Time::get_time_float());
 
     // start imgui window processing
     ImGui_ImplSdlGL3_NewFrame(main_window);
@@ -834,15 +835,24 @@ void DD_Engine::update(DD_LEvent &_event) {
     // run scene graph
     // ResSpace::updateSceneGraph(&main_res, main_timer.getTimeFloat());
 
+    // send event to check "future" events status
+    DD_LEvent new_event;
+    new_event.handle = main_q.check_future;
+    q_push(new_event);
+
     if (load_screen) {
       // Show load screen
       // main_renderer.DrawLoadScreen(main_timer.getTimeFloat());
+
+      // send frame exit event
+      new_event;
+      new_event.handle = frame_exit_hash;
+      q_push(new_event);
     } else {
       // send next event in sequence
       // terminal, VR, AI, level update,
       // post update (periodic update for scripts),
       // physics, animation, render, frame exit
-      DD_LEvent new_event;
     }
   } else if (e_sig == frame_exit_hash.gethash()) {  // exit frame
     // query terminal
@@ -851,11 +861,12 @@ void DD_Engine::update(DD_LEvent &_event) {
     ImGui::Render();
     // swap buffers
     SDL_GL_SwapWindow(main_window);
+
     // push event for starting next frame
     DD_LEvent new_event;
-    new_event.handle = "dd_engine";
-    add_arg_LEvent<const char *>(&new_event, "tag", frame_enter_hash.str());
+    new_event.handle = frame_enter_hash;
     q_push(new_event);
+
   } else if (e_sig == load_hash.gethash()) {  // load screen
     load_screen ^= 1;
   } else if (e_sig == terminal_hash.gethash()) {  // process queue
