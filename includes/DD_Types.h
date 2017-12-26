@@ -29,7 +29,6 @@
 
 // simple template container library
 #include "DD_Container.h"
-#include "DD_EventTypes.h"
 // simple string library
 #include "DD_String.h"
 // lua bindings

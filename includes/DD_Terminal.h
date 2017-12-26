@@ -29,7 +29,6 @@ void clearTerminal();
 void display(const float scr_width, const float scr_height);
 void dumpTerminalToImGuiText();
 const char* pollBuffer();
-DD_Event getInput(DD_Event& event);
 void get_input(DD_LEvent& _event);
 void inTerminalHistory();
 void outTerminalHistory();
@@ -40,4 +39,5 @@ void f_post(const char* format_str, const Args&... args) {
   snprintf(buff, sizeof(buff), format_str, args...);
   post(buff);
 }
+
 }

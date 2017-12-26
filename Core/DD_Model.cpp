@@ -1,5 +1,6 @@
 #include "DD_Model.h"
 
+/*
 BoundingBox ModelSpace::CalculateBBox(const DD_Model& model) {
   BoundingBox bbox;
 
@@ -35,6 +36,7 @@ BoundingBox ModelSpace::CalculateBBox(const DD_Model& model) {
 
   return bbox;
 }
+//*/
 
 void ModelSpace::OpenGLBindMesh(const int index, DD_Model& model,
                                 const size_t inst_size,
@@ -125,6 +127,7 @@ void ModelSpace::OpenGLUnBindMesh(const int index, DD_Model& model) {
   }
 }
 
+/*
 void ModelSpace::PrintInfo(const DD_Model& mod) {
   printf("\nModel ID: %s\n", mod.m_ID.c_str());
   for (size_t i = 0; i < mod.meshes.size(); i++) {
@@ -149,3 +152,4 @@ void ModelSpace::PrintInfo(const DD_Model& mod) {
     }
   }
 }
+//*/

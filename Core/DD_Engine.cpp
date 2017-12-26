@@ -239,7 +239,7 @@ bool DD_Engine::LevelSelect(const size_t w, const size_t h) {
     init_event.handle = "get_lvls";
     callback_lua(main_lstate, init_event, main_fb, func_ref, -1);
 
-    int *num_levels = main_fb.get_func_val<int>("num_levels");
+    int64_t *num_levels = main_fb.get_func_val<int64_t>("num_levels");
     if (num_levels) {
       // printf("Found # of levels: %d\n", *num_levels);
       lvls_list.resize((unsigned)(*num_levels));
@@ -343,7 +343,7 @@ void DD_Engine::Load() {
   SysEventHandler _sh;
   PushFunc push_func = std::bind(&DD_Queue::push, &main_q, arg_1);
   q_push = push_func;
-
+	/*
   EngineMode init_options = EngineMode::DD_NOT_SET;
   init_options = (engine_mode_flags[0])
                      ? EngineMode(init_options | EngineMode::DD_VSYNC)
@@ -359,17 +359,22 @@ void DD_Engine::Load() {
                      : init_options;
 
   openWindow(m_WIDTH, m_HEIGHT, init_options);
-  // set useful lua globals
+	// set useful lua globals
   set_lua_global(main_lstate, "SCR_W", m_WIDTH);
   set_lua_global(main_lstate, "SCR_H", m_HEIGHT);
+  //*/
 
   // initialize bullet physics library
   main_physics.initialize_world();
 
+	// Initialize resource manager
+	dd_assets_initialize(main_physics.world);
+
   // set up math/physics library
-  DD_MathLib::setResourceBin(&main_res);
+  //DD_MathLib::setResourceBin(&main_res);
 
   // Load render engine
+	/*
   main_renderer.m_resourceBin = &main_res;
   main_renderer.push = push_func;
   main_renderer.m_time = &main_timer;
@@ -391,15 +396,11 @@ void DD_Engine::Load() {
   _sh = std::bind(&DD_Compute::compute, &main_comp, arg_1);
   main_q.register_sys_func(system_id, _sh);
   main_q.subscribe(getCharHash("compute_texA"), system_id);
-
-  // add input handler
-  system_id = getCharHash("dd_input");
-  _sh = std::bind(&DD_Input::update, &main_input, arg_1);
-  main_q.register_sys_func(system_id, _sh);
-  main_q.subscribe(getCharHash("query_input"), system_id);
+	//*/
 
   // initialize Animation system and register handlers
-  main_animator.res_ptr = &main_res;
+  /*
+	main_animator.res_ptr = &main_res;
   main_animator.push = push_func;
   system_id = getCharHash("dd_animation");
   _sh = std::bind(&DD_AnimSystem::anim_update, &main_animator, arg_1);
@@ -418,14 +419,17 @@ void DD_Engine::Load() {
   main_q.subscribe(getCharHash("update_cloth"), system_id);
   //_sh = std::bind(&DD_ParticleSys::add_job, main_renderer.m_particleSys,
   // arg_1); register_func("particle_jobA");
+	//*/
 
   // add AI program handler and setup
-  main_ai.res_ptr = &main_res;
+  /*
+	main_ai.res_ptr = &main_res;
   main_ai.push = push_func;
   system_id = getCharHash("dd_ai");
   _sh = std::bind(&DD_AISystem::ai_update, &main_ai, arg_1);
   main_q.register_sys_func(system_id, _sh);
   main_q.subscribe(getCharHash("update_AI"), system_id);
+	//*/
 
   // terminal input callback
   system_id = getCharHash("dd_terminal");
@@ -448,15 +452,20 @@ void DD_Engine::Load() {
 }
 
 void DD_Engine::register_lfuncs() {
-	// Initialize resource manager
-	dd_assets_initialize(main_physics.world);
 	// add DD_MeshData creation function
 	add_func_to_scripts(main_lstate, dd_assets_create_mesh, "load_ddm");
+	// camera creation
+	add_func_to_scripts(main_lstate, dd_assets_create_cam, "create_cam");
+	// light creation
+	add_func_to_scripts(main_lstate, dd_assets_create_light, "create_light");
+	// agent creation
+	add_func_to_scripts(main_lstate, dd_assets_create_agent, "create_agent");
 }
 
 void DD_Engine::updateSDL() {
   // get keyboard events
   SDL_Event sdlEvent;
+	DD_Input::new_frame(main_input);
   while (SDL_PollEvent(&sdlEvent)) {
     // imgui process event
     ImGui_ImplSdlGL3_ProcessEvent(&sdlEvent);
@@ -467,26 +476,26 @@ void DD_Engine::updateSDL() {
         break;
       /* Look for a keypress */
       case SDL_KEYDOWN:
-        main_input.UpdateKeyDown(sdlEvent.key.keysym);
+				DD_Input::update_keydown(main_input, sdlEvent.key.keysym);
         if (sdlEvent.key.keysym.scancode == SDL_SCANCODE_GRAVE) {
           DD_Terminal::flipDebugFlag();
           flag_debug ^= 1;
         }
         break;
       case SDL_KEYUP:
-        main_input.UpdateKeyUp(sdlEvent.key.keysym);
+				DD_Input::update_keyup(main_input, sdlEvent.key.keysym);
         break;
       case SDL_MOUSEBUTTONDOWN:
-        main_input.UpdateMouse(sdlEvent.button, true);
+				DD_Input::update_mouse_button(main_input, sdlEvent.button, true);
         break;
       case SDL_MOUSEBUTTONUP:
-        main_input.UpdateMouse(sdlEvent.button, false);
+				DD_Input::update_mouse_button(main_input, sdlEvent.button, false);
         break;
       case SDL_MOUSEMOTION:
-        main_input.UpdateMousePos(sdlEvent.motion);
+				DD_Input::update_mouse_pos(main_input, sdlEvent.motion);
         break;
       case SDL_MOUSEWHEEL:
-        main_input.UpdateMouseWheel(sdlEvent.wheel);
+				DD_Input::update_mouse_wheel(main_input, sdlEvent.wheel);
         break;
     }
   }
@@ -774,23 +783,15 @@ bool DD_Engine::execTerminal(const char *cmd) {
   }
 }
 
-DD_Event DD_Engine::Update(DD_Event &event) {
-  if (event.m_type.compare("EXIT") == 0) {
-    flagBuff *fb = static_cast<flagBuff *>(event.m_message);
-    windowShouldClose = fb->flag;
-  }
-  return DD_Event();
-}
-
 void DD_Engine::update(DD_LEvent &_event) {
   size_t e_sig = _event.handle.gethash();
   if (e_sig == exit_hash.gethash()) {  // close app
     main_q.shutdown_queue();
   } else if (e_sig == frame_enter_hash.gethash()) {  // setup new frame
     // clear framebuffer
-    glClearColor(main_renderer.bgcol[0], main_renderer.bgcol[1],
-                 main_renderer.bgcol[2], main_renderer.bgcol[3]);
-    glClear(GL_COLOR_BUFFER_BIT);
+    //glClearColor(main_renderer.bgcol[0], main_renderer.bgcol[1],
+                 //main_renderer.bgcol[2], main_renderer.bgcol[3]);
+    //glClear(GL_COLOR_BUFFER_BIT);
 
     main_timer.update();
 
@@ -798,12 +799,14 @@ void DD_Engine::update(DD_LEvent &_event) {
     ImGui_ImplSdlGL3_NewFrame(main_window);
     // pole SDL events
     updateSDL();
+		// update terminal button presses
+
     // run scene graph
-    ResSpace::updateSceneGraph(&main_res, main_timer.getTimeFloat());
+    //ResSpace::updateSceneGraph(&main_res, main_timer.getTimeFloat());
 
     if (load_screen) {
       // Show load screen
-      main_renderer.DrawLoadScreen(main_timer.getTimeFloat());
+      //main_renderer.DrawLoadScreen(main_timer.getTimeFloat());
     } else {
       // send next event in sequence
       // terminal, VR, AI, level update,

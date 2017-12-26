@@ -30,7 +30,7 @@
 
 struct DD_Model {
   std::string m_ID;
-  dd_array<MeshData> meshes;
+  dd_array<DDM_Data> meshes;
   dd_array<GLuint> VAO, VBO, EBO, instVBO, instColorVBO;
   dd_array<size_t> materials;  // index
   std::string directory;
@@ -38,21 +38,39 @@ struct DD_Model {
 };
 
 namespace ModelSpace {
-BoundingBox CalculateBBox(const DD_Model& model);
+//BoundingBox CalculateBBox(const DD_Model& model);
 void OpenGLBindMesh(const int index, DD_Model& model, const size_t inst_size,
                     const size_t inst_c_size);
 void OpenGLUnBindMesh(const int index, DD_Model& model);
-void PrintInfo(const DD_Model& mod);
+//void PrintInfo(const DD_Model& mod);
 }
+
+/// \brief Container for agent mesh information
+struct ModelIDs {
+  /// \brief LOD bounds
+  float _near = 0.f, _far = 100.f;
+  /// \brief Mesh id
+  size_t model = -1;
+	/// \brief Marks whether the mesh is skinned for animation
+	bool sk_flag = false;
+};
+
+/// \brief Container for mesh data stored on GPU
+struct GPUInfo {
+  /// \brief Handles to GPU buffers
+  unsigned vao = 0, inst_vbo = 0, inst_cvbo = 0;
+  /// \brief Flag that marks if the mesh is back on the gpu
+  bool loaded_gpu = false;
+};
 
 /// \brief Data used by render engine for drawing
 struct DD_MeshData {
   /// \brief Engine identifier assigned at initialization
   size_t id;
   /// \brief Mesh information
-  dd_array<MeshInfo> mesh_info;
-  /// \brief DD_SkeletonPose identification
-  size_t skinnedpose_id;
-  /// \brief Marks if mesh has skinned data
-  bool skinned = false;
+  dd_array<DDM_Data> mesh_info;
+	/// \brief GPU buffer handles
+	unsigned vbo = 0, ebo = 0;
+	/// \brief Flag that marks if the mesh is back on the gpu
+	bool loaded_gpu = false;
 };

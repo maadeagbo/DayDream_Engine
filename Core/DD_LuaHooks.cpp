@@ -22,7 +22,7 @@ bool add_arg_LEvent<bool>(DD_LEvent *levent, const char *key, bool arg) {
 }
 
 template <>
-bool add_arg_LEvent<int>(DD_LEvent *levent, const char *key, int arg) {
+bool add_arg_LEvent<int64_t>(DD_LEvent *levent, const char *key, int64_t arg) {
   if (!levent || levent->active >= MAX_EVENT_ARGS) {
     return false;
   }
@@ -59,7 +59,7 @@ bool add_arg_LEvent<const char *>(DD_LEvent *levent, const char *key,
 }
 
 template <>
-int *get_arg_LEvent<int>(DD_LEvent *levent, const char *key) {
+int64_t *get_arg_LEvent<int64_t>(DD_LEvent *levent, const char *key) {
   if (!levent) {
     return nullptr;
   }
@@ -131,7 +131,7 @@ const char *get_arg_LEvent<const char>(DD_LEvent *levent, const char *key) {
 }
 
 template <>
-int *DD_FuncBuff::get_func_val<int>(const char *ckey) {
+int64_t *DD_FuncBuff::get_func_val<int64_t>(const char *ckey) {
   for (unsigned i = 0; i < num_args; i++) {
     bool param_check = buffer[i].arg_name.compare(ckey) == 0;
     if (param_check && buffer[i].arg.type == VType::INT) {
@@ -301,7 +301,7 @@ void callback_lua(lua_State *L, const DD_LEvent &levent, DD_FuncBuff &fb,
       push_args(L, levent, i + 1);  // push arguments
     }
   }
-  lua_pushinteger(L, (int)levent.active);  // push # of arguments
+  lua_pushinteger(L, (int64_t)levent.active);  // push # of arguments
 
   // call function
   int num_args = global_ref > 0 ? 4 : 3;
@@ -399,7 +399,7 @@ void parse_table(lua_State *L, DD_LEvent *levent, const int tabs) {
       }
       case LUA_TNUMBER: {
         if (lua_isinteger(L, -1)) {
-          int val = (int)lua_tointeger(L, -1);
+          int64_t val = (int64_t)lua_tointeger(L, -1);
           lua_pushvalue(L, -2);  // copy the key
           _key.format("%s", lua_tostring(L, -1));
           lua_pop(L, 1);  // remove copy key
@@ -468,7 +468,7 @@ void parse_table(lua_State *L, DD_FuncBuff *fb, const int tabs) {
       }
       case LUA_TNUMBER: {
         if (lua_isinteger(L, -1)) {
-          int val = (int)lua_tointeger(L, -1);
+					int64_t val = (int64_t)lua_tointeger(L, -1);
           lua_pushvalue(L, -2);  // copy the key
           _key.format("%s", lua_tostring(L, -1));
           lua_pop(L, 1);  // remove copy key
@@ -513,7 +513,7 @@ void print_table(lua_State *L, const int tabs) {
       lua_pop(L, 1);  // remove copy key
     } else if (lua_isnumber(L, -2)) {
       if (lua_isinteger(L, -2)) {  // integer
-        int32_t val = (int32_t)lua_tointeger(L, -2);
+        int64_t val = (int64_t)lua_tointeger(L, -2);
         printf("key(int) : %s\n", lua_tostring(L, -1));
         printf("\t%d \n", val);
         lua_pop(L, 1);  // remove copy key

@@ -22,7 +22,7 @@ struct Varying {
 
   union {
     cbuff<str_size> v_strptr;
-    int32_t v_int;
+    int64_t v_int;
     float v_float;
     bool v_bool;
   };
@@ -53,7 +53,7 @@ bool add_arg_LEvent(DD_LEvent *levent, const char *key, T arg) {
 }
 
 template <>
-bool add_arg_LEvent<int>(DD_LEvent *levent, const char *key, int arg);
+bool add_arg_LEvent<int64_t>(DD_LEvent *levent, const char *key, int64_t arg);
 template <>
 bool add_arg_LEvent<float>(DD_LEvent *levent, const char *key, float arg);
 template <>
@@ -69,7 +69,7 @@ T *get_arg_LEvent(DD_LEvent *levent, const char *key) {
 }
 
 template <>
-int *get_arg_LEvent<int>(DD_LEvent *levent, const char *key);
+int64_t *get_arg_LEvent<int64_t>(DD_LEvent *levent, const char *key);
 template <>
 float *get_arg_LEvent<float>(DD_LEvent *levent, const char *key);
 template <>
@@ -98,7 +98,7 @@ struct DD_FuncBuff {
 };
 
 template <>
-int *DD_FuncBuff::get_func_val<int>(const char *ckey);
+int64_t *DD_FuncBuff::get_func_val<int64_t>(const char *ckey);
 template <>
 float *DD_FuncBuff::get_func_val<float>(const char *ckey);
 template <>
@@ -183,7 +183,7 @@ int get_lua_ref(lua_State *L, int lclass, const char *func);
 void clear_lua_ref(lua_State *L, int func_ref);
 
 /// \brief Set integer global in lua scripts
-inline void set_lua_global(lua_State *L, const char *name, const int val) {
+inline void set_lua_global(lua_State *L, const char *name, const int64_t val) {
   lua_pushinteger(L, val);
   lua_setglobal(L, name);
 }

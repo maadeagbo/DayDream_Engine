@@ -1,9 +1,9 @@
 #pragma once
 
 /*
-* Copyright (c) 2016, Moses Adeagbo
-* All rights reserved.
-*/
+ * Copyright (c) 2016, Moses Adeagbo
+ * All rights reserved.
+ */
 
 /*-----------------------------------------------------------------------------
 *
@@ -24,7 +24,7 @@ u64 SecsToNanoSecs(float seconds);
 float NanoSecsToSecs(u64 nanosecs);
 u64 NanoSecsToMilli64(u64 nanosecs);
 const size_t f_hist = 30;
-}
+}  // namespace Timer
 
 class DD_Timer {
  public:
@@ -50,3 +50,10 @@ class DD_Timer {
   u64 m_time_nano, m_start_time;
   float m_ft[Timer::f_hist];
 };
+
+namespace DD_Time {
+/// \brief DO NOT CALL. ONLY TO BE CALLED BY DD_ENGINE
+void initialize();
+/// \brief DO NOT CALL. ONLY TO BE CALLED BY DD_ENGINE
+void update();
+}  // namespace DD_Time

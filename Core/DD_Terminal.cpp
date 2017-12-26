@@ -177,6 +177,7 @@ const char* DD_Terminal::pollBuffer() {
   return cmdBuffer[cmd_buff_count];
 }
 
+/*
 DD_Event DD_Terminal::getInput(DD_Event& event) {
   if (event.m_type == "input") {
     // slight delay between taps
@@ -198,6 +199,7 @@ DD_Event DD_Terminal::getInput(DD_Event& event) {
   }
   return DD_Event();
 }
+//*/
 
 void DD_Terminal::get_input(DD_LEvent& _event) {}
 

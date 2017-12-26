@@ -5,48 +5,6 @@
  * All rights reserved.
  */
 
-/*-----------------------------------------------------------------------------
-*
-*	obj_vec:
-*		- 3-float array container
-*			- can be accessed w/ x(), y(), and z()
-*			- can be accessed w/ data[]
-*			- overloaded + & - operators
-*			- returns normailized obj_vec
-*	Vertex:
-*		- Container for:
-*			- 3-float position array
-*			- 3-float normal array
-*			- 3-float tangent array
-*			- 2-float uv array
-*	obj_mat:
-*		- Container for material information
-*			- ID --> material id
-*			- directory --> location for texture images
-*			- Boolean flag and file names for these textures:
-*				- albedo
-*				- albedo (multiplier)
-*				- specular
-*				- normal
-*				- emittion
-*				- metalness
-*				- ambient occlusion
-*	MeshData:
-*		- Container for all mesh information in OpenGL format
-*			- indices --> for drawing
-*			- data --> array of Vertex structs
-*			- material info (obj_mat) and ID (for quick access)
-*			- Bounding box of mesh (min and max corners)
-*	DD_LineAgent:
-*		- Container for all Line rendering elements (uses LinePoint &&
-XZLine)
-*	Bounding Box:
-*		-
-*
-*	TODO:
-*
------------------------------------------------------------------------------*/
-
 #include "DD_Types.h"
 
 struct obj_vec3 {
@@ -121,14 +79,13 @@ struct Vertex {
   float joints[4] = {0, 0, 0, 0};
 };
 
-struct MeshData {
+struct DDM_Data {
   dd_array<int> indices;
   dd_array<Vertex> data;
   obj_mat material_info;
-  std::string material_ID;
-	obj_vec3 bbox_min, bbox_max;
-	cbuff<32> mat_id;
+	cbuff<256> path;
 	glm::vec3 bb_min, bb_max;
+	size_t mat_id;
 };
 
 struct MeshContainer {
@@ -172,32 +129,12 @@ struct BoundingBox {
   void SetLineBuffer();
 };
 
-/// \brief Container for model information
-struct ModelIDs {
-  /// \brief LOD bounds
-  float _near = 0.f, _far = 100.f;
-  /// \brief Mesh name
-  cbuff<32> model;
-};
-
-/// \brief Container for mesh data stored on RAM and GPU
-struct MeshInfo {
-  /// \brief Parsed mwsh information
-  MeshData mesh_data;
-  /// \brief Handles to GPU buffers
-  unsigned vao = 0, vbo = 0, ebo = 0, inst_vbo = 0, inst_cvbo = 0;
-  /// \brief Engine material index
-  size_t material = 0;
-  /// \brief Flag that marks if the mesh is back on the gpu
-  bool loaded_gpu = false;
-};
-
 /// \brief Container for manipulating transforms
 struct DD_Body {
   /// \brief Assigned on agent creation. Deleted on agent destruction
   btRigidBody* body;
   /// \brief Initialized on mesh import or set to default size
-  dd_array<BoundingBox> BBox;
+	btCollisionShape *bbox;
   /// \brief Only useful in agents w/ meshes
   glm::vec3 scale;
 

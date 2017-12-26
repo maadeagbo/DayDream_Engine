@@ -6,26 +6,27 @@
 
 /// \brief Skeletal bone base structure
 struct DD_Joint {
-  glm::mat4 m_invBP;   //< inverse bind pose matrix
-  glm::mat4 m_pDelta;  //< transform from parent to this joint
-  cbuff<64> m_ID;
-  u8 m_parent;
+	/// \brief inverse bind pose matrix
+  glm::mat4 inv_bp;   
+	/// \brief transform from parent to this joint
+  glm::mat4 p_delta;
+  cbuff<64> id;
+  u8 parent;
 };
 
 /// \brief Simple Skeleton container
 struct DD_Skeleton {
   /// \brief Engine identifier assigned at initialization
   size_t id;
-
-  cbuff<64> m_ID;
-  glm::mat4 m_globalMat;
-  dd_array<DD_Joint> m_bones;
+	/// \brief global model matrix from file
+  glm::mat4 global_mat;
+  dd_array<DD_Joint> bones;
 };
 
 /// \brief Joint transformations (only concered w/ skeletons w/ joint rotations)
 struct DD_JointPose {
-  glm::quat m_rot = glm::quat();
-  glm::vec3 m_trans = glm::vec3();
+  glm::quat rot = glm::quat();
+  glm::vec3 trans = glm::vec3();
   // float       m_scale;
 };
 
@@ -33,12 +34,14 @@ struct DD_JointPose {
 struct DD_SkeletonPose {
   /// \brief Engine identifier assigned at initialization
   size_t id;
-  /// \brief DD_Skeleton identifier
-  size_t skeleton_id;
-
-  cbuff<64> m_skeletonID;
-  glm::mat4 m_globalMat;
-  dd_array<DD_JointPose> m_localPose;
-  dd_array<glm::mat4> m_globalPose;
-  dd_array<glm::mat4> m_invBPs;
+	/// \brief skeleton id
+	size_t sk_id;
+	/// \brief modifiable global matrix to apply to skeleton
+  glm::mat4 global_mat;
+	/// \brief scratch buffer for local pose data
+  dd_array<DD_JointPose> local_pose;
+	/// \brief per-frame calculated global pose data
+	dd_array<DD_JointPose> global_pose;
+	/// \brief Marks if imported animation uses global matrices or local
+	bool global_poses = false;
 };

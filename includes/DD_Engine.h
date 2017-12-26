@@ -2,18 +2,11 @@
 
 #include "SDL.h"
 
-#include "DD_AISystem.h"
-#include "DD_AnimSystem.h"
 #include "DD_AssetManager.h"
-#include "DD_ComputeGPU.h"
 #include "DD_EventQueue.h"
-#include "DD_GameLevel.h"
 #include "DD_Input.h"
 #include "DD_LuaHooks.h"
-#include "DD_MathLib.h"
 #include "DD_PhysicsEngine.h"
-#include "DD_RenderEngine.h"
-#include "DD_ResourceLoader.h"
 #include "DD_Timer.h"
 #include "DD_Types.h"
 
@@ -37,7 +30,6 @@ struct DD_Engine {
   DD_Engine()
       : main_state(GameState::LOADING),
         main_window(nullptr),
-        main_lvl(10),
         num_lvls(0),
         current_lvl(0),
         load_screen(false),
@@ -54,16 +46,12 @@ struct DD_Engine {
   bool LevelSelect(const size_t w = 600, const size_t h = 600);
   void Run();
   inline SDL_Window* GetWin() { return main_window; }
-  void LoadQueue();
-  DD_Event Update(DD_Event& event);
   void update(DD_LEvent& _event);
   // void execScript(std::string script_file);
   bool execTerminal(const char* cmd);
   void openWindow(const size_t width, const size_t height,
                   EngineMode mode = EngineMode::DD_NOT_SET);
-  void InitCurrentLevel();
   void updateSDL();
-  void gameLoop();
   void cleanUp();
 
   int m_WIDTH, m_HEIGHT;
@@ -72,17 +60,13 @@ struct DD_Engine {
   SDL_Window* main_window;
   SDL_GLContext main_glcontext;
   lua_State* main_lstate;
-  DD_Renderer main_renderer;
-  DD_AISystem main_ai;
-  DD_AnimSystem main_animator;
+
   DD_Timer main_timer;
-  DD_Input main_input;
+  InputData main_input;
   DD_Queue main_q;
-  DD_Resources main_res;
-  DD_Compute main_comp;
   DD_Physics main_physics;
-  dd_array<DD_GameLevel*> main_lvl;
-  PushFunc q_push;
+  
+	PushFunc q_push;
   DD_FuncBuff main_fb;
   size_t num_lvls;
   int current_lvl;
