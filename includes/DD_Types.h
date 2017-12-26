@@ -15,10 +15,10 @@
 -----------------------------------------------------------------------------*/
 
 #include <inttypes.h>
+#include <inttypes.h>
 #include <algorithm>
 #include <chrono>
 #include <cmath>
-#include <inttypes.h>
 #include <cstdio>
 #include <functional>
 #include <future>

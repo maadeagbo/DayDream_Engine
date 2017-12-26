@@ -1,13 +1,10 @@
 #include "DD_Input.h"
 
 namespace {
-int mouse_xdelta = 0;
-int mouse_ydelta = 0;
 int mouse_x = 0;
 int mouse_y = 0;
 int mouse_lastx = 0;
 int mouse_lasty = 0;
-int mouse_scroll = 0;
 bool flag_first_mouse = false;
 }  // namespace
 
@@ -67,11 +64,11 @@ glm::vec2 DD_Input_::filterMouseInput(glm::vec2 frame_in) {
 //*/
 
 namespace DD_Input {
-void new_frame(InputData& input_data) { 
-	// reset key order tracker
-	input_data.order_tracker = 0; 
-	// reset scroll wheel tracker
-	input_data.keys[(unsigned)DD_Keys::MOUSE_SCROLL].order = 0;
+void new_frame(InputData& input_data) {
+  // reset key order tracker
+  input_data.order_tracker = 0;
+  // reset scroll wheel tracker
+  input_data.keys[(unsigned)DD_Keys::MOUSE_SCROLL].order = 0;
 }
 
 void update_keyup(InputData& input_data, SDL_Keysym& key) {
@@ -89,13 +86,13 @@ void update_mouse_button(InputData& input_data, SDL_MouseButtonEvent& key,
   if (b_flag) {
     switch (key.button) {
       case SDL_BUTTON_LEFT:
-				input_data.keys[(unsigned)DD_Keys::MOUSE_LEFT].active = true;
+        input_data.keys[(unsigned)DD_Keys::MOUSE_LEFT].active = true;
         break;
       case SDL_BUTTON_MIDDLE:
-				input_data.keys[(unsigned)DD_Keys::MOUSE_MIDDLE].active = true;
+        input_data.keys[(unsigned)DD_Keys::MOUSE_MIDDLE].active = true;
         break;
       case SDL_BUTTON_RIGHT:
-				input_data.keys[(unsigned)DD_Keys::MOUSE_RIGHT].active = true;
+        input_data.keys[(unsigned)DD_Keys::MOUSE_RIGHT].active = true;
         break;
       default:
         break;
@@ -103,13 +100,13 @@ void update_mouse_button(InputData& input_data, SDL_MouseButtonEvent& key,
   } else {
     switch (key.button) {
       case SDL_BUTTON_LEFT:
-				input_data.keys[(unsigned)DD_Keys::MOUSE_LEFT].active = false;
+        input_data.keys[(unsigned)DD_Keys::MOUSE_LEFT].active = false;
         break;
       case SDL_BUTTON_MIDDLE:
-				input_data.keys[(unsigned)DD_Keys::MOUSE_MIDDLE].active = false;
+        input_data.keys[(unsigned)DD_Keys::MOUSE_MIDDLE].active = false;
         break;
       case SDL_BUTTON_RIGHT:
-				input_data.keys[(unsigned)DD_Keys::MOUSE_RIGHT].active = false;
+        input_data.keys[(unsigned)DD_Keys::MOUSE_RIGHT].active = false;
         break;
       default:
         break;
@@ -117,28 +114,30 @@ void update_mouse_button(InputData& input_data, SDL_MouseButtonEvent& key,
   }
 }
 
-void update_mouse_pos(InputData & input_data, SDL_MouseMotionEvent & key) {
-	if (flag_first_mouse) {
-		// set up for 1st movement
-		mouse_lastx = (int)key.x;
-		mouse_lasty = (int)key.y;
-		flag_first_mouse = false;
-	}
-	// log current mouse movement 
-	mouse_x = (int)key.x;
-	mouse_y = (int)key.y;
-	// get delta
-	input_data.keys[(unsigned)DD_Keys::MOUSE_YDELTA].order = mouse_lasty - mouse_y;
-	input_data.keys[(unsigned)DD_Keys::MOUSE_XDELTA].order = mouse_lastx - mouse_x;
-	input_data.keys[(unsigned)DD_Keys::MOUSE_Y].order = mouse_y;
-	input_data.keys[(unsigned)DD_Keys::MOUSE_X].order = mouse_x;
-	// set old mouse position
-	mouse_lastx = mouse_x;
-	mouse_lasty = mouse_y;
+void update_mouse_pos(InputData& input_data, SDL_MouseMotionEvent& key) {
+  if (flag_first_mouse) {
+    // set up for 1st movement
+    mouse_lastx = (int)key.x;
+    mouse_lasty = (int)key.y;
+    flag_first_mouse = false;
+  }
+  // log current mouse movement
+  mouse_x = (int)key.x;
+  mouse_y = (int)key.y;
+  // get delta
+  input_data.keys[(unsigned)DD_Keys::MOUSE_YDELTA].order =
+      mouse_lasty - mouse_y;
+  input_data.keys[(unsigned)DD_Keys::MOUSE_XDELTA].order =
+      mouse_lastx - mouse_x;
+  input_data.keys[(unsigned)DD_Keys::MOUSE_Y].order = mouse_y;
+  input_data.keys[(unsigned)DD_Keys::MOUSE_X].order = mouse_x;
+  // set old mouse position
+  mouse_lastx = mouse_x;
+  mouse_lasty = mouse_y;
 }
 
-void update_mouse_wheel(InputData & input_data, SDL_MouseWheelEvent & key) {
-	input_data.keys[(unsigned)DD_Keys::MOUSE_SCROLL].order = key.y;
+void update_mouse_wheel(InputData& input_data, SDL_MouseWheelEvent& key) {
+  input_data.keys[(unsigned)DD_Keys::MOUSE_SCROLL].order = key.y;
 }
 
 }  // namespace DD_Input
@@ -147,7 +146,7 @@ void edit_key(InputData& idata, SDL_Keysym& key, const bool b_flag,
               const int i_flag) {
   switch (key.sym) {
     case SDLK_a:
-			idata.keys[(unsigned)DD_Keys::A_Key] = { b_flag, i_flag };
+      idata.keys[(unsigned)DD_Keys::A_Key] = {b_flag, i_flag};
       break;
     case SDLK_b:
       idata.keys[(unsigned)DD_Keys::B_Key].active = b_flag;

@@ -47,18 +47,18 @@ struct obj_vec3 {
 
 struct obj_mat {
   std::string ID;
-	cbuff<32> mat_id;
+  cbuff<32> mat_id;
   std::string directory;
   obj_vec3 diffuseRaw;
-	glm::vec4 diff_raw;
+  glm::vec4 diff_raw;
   std::string albedo_tex, specular_tex, metalness_tex, roughness_tex,
       normal_tex, emissive_tex, ao_tex;
   bool albedo_flag, spec_flag, metal_flag, rough_flag, norm_flag, emit_flag,
       ao_flag, multiplier;
 
   obj_mat() {
-		diffuseRaw = obj_vec3(0.5f, 0.5f, 0.5f);
-		diff_raw = glm::vec4(0.5f, 0.5f, 0.5f, 1.f);
+    diffuseRaw = obj_vec3(0.5f, 0.5f, 0.5f);
+    diff_raw = glm::vec4(0.5f, 0.5f, 0.5f, 1.f);
     albedo_flag = false;
     spec_flag = false;
     ao_flag = false;
@@ -83,9 +83,9 @@ struct DDM_Data {
   dd_array<int> indices;
   dd_array<Vertex> data;
   obj_mat material_info;
-	cbuff<256> path;
-	glm::vec3 bb_min, bb_max;
-	size_t mat_id;
+  cbuff<256> path;
+  glm::vec3 bb_min, bb_max;
+  size_t mat_id;
 };
 
 struct MeshContainer {
@@ -134,7 +134,7 @@ struct DD_Body {
   /// \brief Assigned on agent creation. Deleted on agent destruction
   btRigidBody* body;
   /// \brief Initialized on mesh import or set to default size
-	btCollisionShape *bbox;
+  btCollisionShape* bbox;
   /// \brief Only useful in agents w/ meshes
   glm::vec3 scale;
 

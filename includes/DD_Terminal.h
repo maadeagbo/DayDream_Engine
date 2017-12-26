@@ -39,5 +39,4 @@ void f_post(const char* format_str, const Args&... args) {
   snprintf(buff, sizeof(buff), format_str, args...);
   post(buff);
 }
-
 }

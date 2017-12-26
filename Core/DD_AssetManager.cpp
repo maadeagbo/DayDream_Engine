@@ -120,7 +120,7 @@ int dd_assets_create_agent(lua_State *L) {
     new_agent = spawnDD_BaseAgent(out_id);
     if (new_agent) {
       // add mesh for render
-			DD_MeshData *mdata = nullptr;
+      DD_MeshData *mdata = nullptr;
       if (mesh_id) {
         mdata = findDD_MeshData((size_t)(*mesh_id));
         if (mdata) {
@@ -128,9 +128,9 @@ int dd_assets_create_agent(lua_State *L) {
           new_agent->mesh.resize(1);
           new_agent->mesh[0].model = mdata->id;
         } else {
-					printf("\tFailed to find mesh <%d>\n", *mesh_id);
-				}
-			} 
+          printf("\tFailed to find mesh <%ld>\n", *mesh_id);
+        }
+      }
       // add skeleton for animation
       if (sk_id) {
         DD_Skeleton *sk = findDD_Skeleton((size_t)*sk_id);
@@ -138,14 +138,14 @@ int dd_assets_create_agent(lua_State *L) {
           // create skeleton pose struct and log in agent
           DD_SkeletonPose *skpose = spawnDD_SkeletonPose(new_agent->id);
           if (skpose) {
-						skpose->sk_id = sk->id;
-						skpose->global_mat = sk->global_mat;
-						skpose->local_pose.resize(sk->bones.size());
-						skpose->global_pose.resize(sk->bones.size());
+            skpose->sk_id = sk->id;
+            skpose->global_mat = sk->global_mat;
+            skpose->local_pose.resize(sk->bones.size());
+            skpose->global_pose.resize(sk->bones.size());
             new_agent->mesh[0].sk_flag = true;
           } else {
-						printf("\tFailed to find skeleton <%d>\n", *sk_id);
-					}
+            printf("\tFailed to find skeleton <%ld>\n", *sk_id);
+          }
         }
       }
       // add parent object
@@ -156,11 +156,11 @@ int dd_assets_create_agent(lua_State *L) {
           new_agent->parent.parent_id = p_agent->id;
           new_agent->parent.parent_set = true;
         } else {
-					printf("\tFailed to find parent <%d>\n", *p_id);
-				}
+          printf("\tFailed to find parent <%ld>\n", *p_id);
+        }
       }
       // add DD_Body to agent and then agent to world
-			add_rigid_body(new_agent, mdata);
+      add_rigid_body(new_agent, mdata);
       // return agent id
       lua_pushinteger(L, new_agent->id);
       return 1;
@@ -188,6 +188,7 @@ int dd_assets_create_mesh(lua_State *L) {
     }
     printf("Failed to create new mesh <%s>\n", file);
   }
+  printf("Failed to create new mesh\n");
   return 0;
 }
 
@@ -206,6 +207,7 @@ int dd_assets_create_cam(lua_State *L) {
     }
     printf("Failed to create new camera <%s>\n", id);
   }
+  printf("Failed to create new camera\n");
   return 0;
 }
 
@@ -224,6 +226,7 @@ int dd_assets_create_light(lua_State *L) {
     }
     printf("Failed to create new light <%s>\n", id);
   }
+  printf("Failed to create new light\n");
   return 0;
 }
 
@@ -232,6 +235,7 @@ DD_MeshData *load_ddm(const char *filename) {
   auto getUint = [](const char *str) {
     return (unsigned)strtoul(str, nullptr, 10);
   };
+  DD_MeshData *mdata = nullptr;
   DD_IOhandle io_handle;
   dd_array<DDM_Data> out_data;
   dd_array<FbxEData> edata;
@@ -280,9 +284,9 @@ DD_MeshData *load_ddm(const char *filename) {
       }
       line = io_handle.readNextLine();
     }  // end of while
+    // create DD_MeshData only if file exists
+    mdata = spawnDD_MeshData(name.gethash());
   }
-  // create DD_MeshData
-  DD_MeshData *mdata = spawnDD_MeshData(name.gethash());
   if (!mdata) {  // failed to create object
     printf("load_ddm::Failed to create DD_MeshData object\n");
     return nullptr;
@@ -609,9 +613,9 @@ bool add_rigid_body(DD_BaseAgent *agent, DD_MeshData *mdata) {
   btDefaultMotionState *myMotionState = new btDefaultMotionState(transform);
   btRigidBody::btRigidBodyConstructionInfo rbInfo(
       mass, myMotionState, agent->body.bbox, localInertia);
-	agent->body.body = new btRigidBody(rbInfo);
+  agent->body.body = new btRigidBody(rbInfo);
 
-	// add to world
-	p_world->addRigidBody(agent->body.body);
-	return true;
+  // add to world
+  p_world->addRigidBody(agent->body.body);
+  return true;
 }

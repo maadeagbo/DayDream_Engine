@@ -34,7 +34,7 @@ void DD_Engine::startup_lua() {
   main_lstate = init_lua_state();
   main_q.set_lua_ptr(main_lstate);
 
-	register_lfuncs();
+  register_lfuncs();
 }
 
 void DD_Engine::openWindow(const size_t width, const size_t height,
@@ -343,64 +343,66 @@ void DD_Engine::Load() {
   SysEventHandler _sh;
   PushFunc push_func = std::bind(&DD_Queue::push, &main_q, arg_1);
   q_push = push_func;
-	/*
-  EngineMode init_options = EngineMode::DD_NOT_SET;
-  init_options = (engine_mode_flags[0])
-                     ? EngineMode(init_options | EngineMode::DD_VSYNC)
-                     : init_options;
-  init_options = (engine_mode_flags[1])
-                     ? EngineMode(init_options | EngineMode::DD_FULLSCREEN)
-                     : init_options;
-  init_options = (engine_mode_flags[2])
-                     ? EngineMode(init_options | EngineMode::DD_SECOND_DISPLAY)
-                     : init_options;
-  init_options = (engine_mode_flags[3])
-                     ? EngineMode(init_options | EngineMode::DD_NO_CONSOLE)
-                     : init_options;
+  /*
+EngineMode init_options = EngineMode::DD_NOT_SET;
+init_options = (engine_mode_flags[0])
+               ? EngineMode(init_options | EngineMode::DD_VSYNC)
+               : init_options;
+init_options = (engine_mode_flags[1])
+               ? EngineMode(init_options | EngineMode::DD_FULLSCREEN)
+               : init_options;
+init_options = (engine_mode_flags[2])
+               ? EngineMode(init_options | EngineMode::DD_SECOND_DISPLAY)
+               : init_options;
+init_options = (engine_mode_flags[3])
+               ? EngineMode(init_options | EngineMode::DD_NO_CONSOLE)
+               : init_options;
 
-  openWindow(m_WIDTH, m_HEIGHT, init_options);
-	// set useful lua globals
-  set_lua_global(main_lstate, "SCR_W", m_WIDTH);
-  set_lua_global(main_lstate, "SCR_H", m_HEIGHT);
-  //*/
+openWindow(m_WIDTH, m_HEIGHT, init_options);
+  // set useful lua globals
+set_lua_global(main_lstate, "SCR_W", m_WIDTH);
+set_lua_global(main_lstate, "SCR_H", m_HEIGHT);
+//*/
+  // initialize time
+  DD_Time::initialize();
 
   // initialize bullet physics library
   main_physics.initialize_world();
 
-	// Initialize resource manager
-	dd_assets_initialize(main_physics.world);
+  // Initialize resource manager
+  dd_assets_initialize(main_physics.world);
 
   // set up math/physics library
-  //DD_MathLib::setResourceBin(&main_res);
+  // DD_MathLib::setResourceBin(&main_res);
 
   // Load render engine
-	/*
-  main_renderer.m_resourceBin = &main_res;
-  main_renderer.push = push_func;
-  main_renderer.m_time = &main_timer;
-  main_renderer.LoadRendererEngine((GLfloat)m_WIDTH, (GLfloat)m_HEIGHT);
-  main_renderer.m_particleSys->m_resBin = &main_res;
-  // add render engine handler
-  system_id = getCharHash("dd_renderer");
-  _sh = std::bind(&DD_Renderer::render_handler, &main_renderer, arg_1);
-  main_q.register_sys_func(system_id, _sh);
-  main_q.subscribe(getCharHash("render"), system_id);
-  main_q.subscribe(getCharHash("toggle_screenshots"), system_id);
-  main_q.subscribe(getCharHash("rendstat"), system_id);
+  /*
+main_renderer.m_resourceBin = &main_res;
+main_renderer.push = push_func;
+main_renderer.m_time = &main_timer;
+main_renderer.LoadRendererEngine((GLfloat)m_WIDTH, (GLfloat)m_HEIGHT);
+main_renderer.m_particleSys->m_resBin = &main_res;
+// add render engine handler
+system_id = getCharHash("dd_renderer");
+_sh = std::bind(&DD_Renderer::render_handler, &main_renderer, arg_1);
+main_q.register_sys_func(system_id, _sh);
+main_q.subscribe(getCharHash("render"), system_id);
+main_q.subscribe(getCharHash("toggle_screenshots"), system_id);
+main_q.subscribe(getCharHash("rendstat"), system_id);
 
-  // load compute unit and handler
-  main_comp.init();
-  main_comp.res_ptr = &main_res;
-  main_comp.push = push_func;
-  system_id = getCharHash("dd_compute");
-  _sh = std::bind(&DD_Compute::compute, &main_comp, arg_1);
-  main_q.register_sys_func(system_id, _sh);
-  main_q.subscribe(getCharHash("compute_texA"), system_id);
-	//*/
+// load compute unit and handler
+main_comp.init();
+main_comp.res_ptr = &main_res;
+main_comp.push = push_func;
+system_id = getCharHash("dd_compute");
+_sh = std::bind(&DD_Compute::compute, &main_comp, arg_1);
+main_q.register_sys_func(system_id, _sh);
+main_q.subscribe(getCharHash("compute_texA"), system_id);
+  //*/
 
   // initialize Animation system and register handlers
   /*
-	main_animator.res_ptr = &main_res;
+        main_animator.res_ptr = &main_res;
   main_animator.push = push_func;
   system_id = getCharHash("dd_animation");
   _sh = std::bind(&DD_AnimSystem::anim_update, &main_animator, arg_1);
@@ -419,17 +421,17 @@ void DD_Engine::Load() {
   main_q.subscribe(getCharHash("update_cloth"), system_id);
   //_sh = std::bind(&DD_ParticleSys::add_job, main_renderer.m_particleSys,
   // arg_1); register_func("particle_jobA");
-	//*/
+        //*/
 
   // add AI program handler and setup
   /*
-	main_ai.res_ptr = &main_res;
+        main_ai.res_ptr = &main_res;
   main_ai.push = push_func;
   system_id = getCharHash("dd_ai");
   _sh = std::bind(&DD_AISystem::ai_update, &main_ai, arg_1);
   main_q.register_sys_func(system_id, _sh);
   main_q.subscribe(getCharHash("update_AI"), system_id);
-	//*/
+        //*/
 
   // terminal input callback
   system_id = getCharHash("dd_terminal");
@@ -452,20 +454,20 @@ void DD_Engine::Load() {
 }
 
 void DD_Engine::register_lfuncs() {
-	// add DD_MeshData creation function
-	add_func_to_scripts(main_lstate, dd_assets_create_mesh, "load_ddm");
-	// camera creation
-	add_func_to_scripts(main_lstate, dd_assets_create_cam, "create_cam");
-	// light creation
-	add_func_to_scripts(main_lstate, dd_assets_create_light, "create_light");
-	// agent creation
-	add_func_to_scripts(main_lstate, dd_assets_create_agent, "create_agent");
+  // add DD_MeshData creation function
+  add_func_to_scripts(main_lstate, dd_assets_create_mesh, "load_ddm");
+  // camera creation
+  add_func_to_scripts(main_lstate, dd_assets_create_cam, "create_cam");
+  // light creation
+  add_func_to_scripts(main_lstate, dd_assets_create_light, "create_light");
+  // agent creation
+  add_func_to_scripts(main_lstate, dd_assets_create_agent, "create_agent");
 }
 
 void DD_Engine::updateSDL() {
   // get keyboard events
   SDL_Event sdlEvent;
-	DD_Input::new_frame(main_input);
+  DD_Input::new_frame(main_input);
   while (SDL_PollEvent(&sdlEvent)) {
     // imgui process event
     ImGui_ImplSdlGL3_ProcessEvent(&sdlEvent);
@@ -476,26 +478,26 @@ void DD_Engine::updateSDL() {
         break;
       /* Look for a keypress */
       case SDL_KEYDOWN:
-				DD_Input::update_keydown(main_input, sdlEvent.key.keysym);
+        DD_Input::update_keydown(main_input, sdlEvent.key.keysym);
         if (sdlEvent.key.keysym.scancode == SDL_SCANCODE_GRAVE) {
           DD_Terminal::flipDebugFlag();
           flag_debug ^= 1;
         }
         break;
       case SDL_KEYUP:
-				DD_Input::update_keyup(main_input, sdlEvent.key.keysym);
+        DD_Input::update_keyup(main_input, sdlEvent.key.keysym);
         break;
       case SDL_MOUSEBUTTONDOWN:
-				DD_Input::update_mouse_button(main_input, sdlEvent.button, true);
+        DD_Input::update_mouse_button(main_input, sdlEvent.button, true);
         break;
       case SDL_MOUSEBUTTONUP:
-				DD_Input::update_mouse_button(main_input, sdlEvent.button, false);
+        DD_Input::update_mouse_button(main_input, sdlEvent.button, false);
         break;
       case SDL_MOUSEMOTION:
-				DD_Input::update_mouse_pos(main_input, sdlEvent.motion);
+        DD_Input::update_mouse_pos(main_input, sdlEvent.motion);
         break;
       case SDL_MOUSEWHEEL:
-				DD_Input::update_mouse_wheel(main_input, sdlEvent.wheel);
+        DD_Input::update_mouse_wheel(main_input, sdlEvent.wheel);
         break;
     }
   }
@@ -789,24 +791,24 @@ void DD_Engine::update(DD_LEvent &_event) {
     main_q.shutdown_queue();
   } else if (e_sig == frame_enter_hash.gethash()) {  // setup new frame
     // clear framebuffer
-    //glClearColor(main_renderer.bgcol[0], main_renderer.bgcol[1],
-                 //main_renderer.bgcol[2], main_renderer.bgcol[3]);
-    //glClear(GL_COLOR_BUFFER_BIT);
+    // glClearColor(main_renderer.bgcol[0], main_renderer.bgcol[1],
+    // main_renderer.bgcol[2], main_renderer.bgcol[3]);
+    // glClear(GL_COLOR_BUFFER_BIT);
 
-    main_timer.update();
+    DD_Time::update();
 
     // start imgui window processing
     ImGui_ImplSdlGL3_NewFrame(main_window);
     // pole SDL events
     updateSDL();
-		// update terminal button presses
+    // update terminal button presses
 
     // run scene graph
-    //ResSpace::updateSceneGraph(&main_res, main_timer.getTimeFloat());
+    // ResSpace::updateSceneGraph(&main_res, main_timer.getTimeFloat());
 
     if (load_screen) {
       // Show load screen
-      //main_renderer.DrawLoadScreen(main_timer.getTimeFloat());
+      // main_renderer.DrawLoadScreen(main_timer.getTimeFloat());
     } else {
       // send next event in sequence
       // terminal, VR, AI, level update,

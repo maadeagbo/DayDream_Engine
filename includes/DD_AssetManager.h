@@ -4,11 +4,11 @@
 #include "DD_Camera.h"
 #include "DD_Light.h"
 #include "DD_LuaHooks.h"
+#include "DD_Material.h"
 #include "DD_Model.h"
 #include "DD_Skeleton.h"
 #include "DD_Texture2D.h"
 #include "DD_Types.h"
-#include "DD_Material.h"
 #include "freelist.h"
 
 #ifndef ASSETS_CONTAINER_MAX_SIZE

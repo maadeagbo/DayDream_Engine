@@ -42,7 +42,7 @@ struct DD_Engine {
   void startup_lua();
   void Launch();
   void Load();
-	void register_lfuncs();
+  void register_lfuncs();
   bool LevelSelect(const size_t w = 600, const size_t h = 600);
   void Run();
   inline SDL_Window* GetWin() { return main_window; }
@@ -61,12 +61,11 @@ struct DD_Engine {
   SDL_GLContext main_glcontext;
   lua_State* main_lstate;
 
-  DD_Timer main_timer;
   InputData main_input;
   DD_Queue main_q;
   DD_Physics main_physics;
-  
-	PushFunc q_push;
+
+  PushFunc q_push;
   DD_FuncBuff main_fb;
   size_t num_lvls;
   int current_lvl;

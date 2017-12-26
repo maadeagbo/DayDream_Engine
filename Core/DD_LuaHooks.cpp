@@ -192,6 +192,14 @@ lua_State *init_lua_state() {
 
     // Add global variables for use in scripts
     set_lua_global(L, "ROOT_DIR", ROOT_DIR);
+
+#ifdef _WIN32
+    set_lua_global(L, "WIN32", true);
+    set_lua_global(L, "LINUX", false);
+#elif __linux__
+    set_lua_global(L, "WIN32", false);
+    set_lua_global(L, "LINUX", true);
+#endif
   }
   return L;
 }
@@ -468,7 +476,7 @@ void parse_table(lua_State *L, DD_FuncBuff *fb, const int tabs) {
       }
       case LUA_TNUMBER: {
         if (lua_isinteger(L, -1)) {
-					int64_t val = (int64_t)lua_tointeger(L, -1);
+          int64_t val = (int64_t)lua_tointeger(L, -1);
           lua_pushvalue(L, -2);  // copy the key
           _key.format("%s", lua_tostring(L, -1));
           lua_pop(L, 1);  // remove copy key
@@ -515,7 +523,7 @@ void print_table(lua_State *L, const int tabs) {
       if (lua_isinteger(L, -2)) {  // integer
         int64_t val = (int64_t)lua_tointeger(L, -2);
         printf("key(int) : %s\n", lua_tostring(L, -1));
-        printf("\t%d \n", val);
+        printf("\t%ld \n", val);
         lua_pop(L, 1);  // remove copy key
       } else {          // float
         float val = (float)lua_tonumber(L, -2);
@@ -553,7 +561,7 @@ void print_buffer(DD_FuncBuff &fb) {
         printf("\t%s : %.3f\n", k.str(), v.v_float);
         break;
       case VType::INT:
-        printf("\t%s : %d\n", k.str(), v.v_int);
+        printf("\t%s : %ld\n", k.str(), v.v_int);
         break;
       case VType::STRING:
         printf("\t%s : %s\n", k.str(), v.v_strptr.str());

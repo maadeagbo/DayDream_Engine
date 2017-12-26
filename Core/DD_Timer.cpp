@@ -1,28 +1,41 @@
 #include "DD_Timer.h"
 #include "Pow2Assert.h"
 
+#define HISTORY_MAX 30
+
+namespace {
+float ftime[HISTORY_MAX];
+float time_scale;
+float time_in_secs;
+float avg_ftime;
+bool is_paused;
+bool init_history;
+uint64_t time_in_nano;
+uint64_t time_start;
+}
+
 #ifdef __linux__
 #include <time.h>
 #include <unistd.h>
 #include <x86intrin.h>
 
-inline u64 RDTSC() {
+inline uint64_t RDTSC() {
   unsigned int hi, lo;
   // ask the compiler to read the assembler code
   // assign the register holding the lower part of the 64-bit number to low
   // and vice-versa to high
   __asm__ __volatile__("rdtsc" : "=a"(lo), "=d"(hi));
-  return ((u64)hi << 32) | lo;
+  return ((uint64_t)hi << 32) | lo;
 }
 
 // Calculate cycles per nanosecond
 double SetCyclesPerNanoSec() {
   // pure c-struct need keyword
   struct timespec beginTS, endTS, diffTS;
-  u64 _begin = 0, _end = 0;
+  uint64_t _begin = 0, _end = 0;
   clock_gettime(CLOCK_MONOTONIC_RAW, &beginTS);
   _begin = RDTSC();
-  u64 i;
+  uint64_t i;
   for (i = 0; i < 1000000; i++)
     ;
   _end = RDTSC();
@@ -30,15 +43,28 @@ double SetCyclesPerNanoSec() {
   // calculate difference in time for "for loop" to run
   diffTS.tv_sec = endTS.tv_sec - beginTS.tv_sec;
   diffTS.tv_nsec = endTS.tv_nsec - beginTS.tv_nsec;
-  const u64 elaspedNanoSecs = diffTS.tv_sec * 1000000000LL + diffTS.tv_nsec;
+  const uint64_t elaspedNanoSecs =
+      diffTS.tv_sec * 1000000000LL + diffTS.tv_nsec;
 
   return (double)(_end - _begin) / (double)elaspedNanoSecs;
 }
 
-namespace Timer {
+// DD_Timer::DD_Timer()
+//     : m_time_scale(1.0),
+//       m_time_sec(0.0f),
+//       m_avg_ft(0.f),
+//       m_is_paused(false),
+//       m_sethist(false),
+//       m_time_nano(0) {
+//   m_start_time = Timer::GetHiResTime();
+// }
+
+// DD_Timer::~DD_Timer() {}
+
+namespace DD_Time {
 // return high resolution time in nanoseconds
-u64 GetHiResTime() {
-  u64 hrTime = 0;
+uint64_t GetHiResTime() {
+  uint64_t hrTime = 0;
   timespec now;
   clock_gettime(CLOCK_MONOTONIC_RAW, &now);
   hrTime = (now.tv_sec * 1000000000L) + now.tv_nsec;
@@ -49,34 +75,22 @@ u64 GetHiResTime() {
 // Put CPU to sleep
 void sleep(size_t milliseconds) { usleep(milliseconds); }
 // Convert positive floating point seconds to uint64 nanoseconds
-u64 SecsToNanoSecs(float seconds) {
+uint64_t SecsToNanoSecs(float seconds) {
   POW2_VERIFY_MSG(seconds >= 0.0f, "Cannot convert negative float", 0);
   float nanosecs = seconds * 1000000000.0f;
-  return (u64)nanosecs;
+  return (uint64_t)nanosecs;
 }
 // Converts uint64 nanoseconds to float seconds (WARNING: can overflow)
-float NanoSecsToSecs(u64 nanosecs) {
-  u64 tempMicro = nanosecs / 1000LL;
+float NanoSecsToSecs(uint64_t nanosecs) {
+  uint64_t tempMicro = nanosecs / 1000LL;
   return (float)tempMicro / 1000000.0f;
 }
-// Converts uint64 nanoseconds to u64 milliseconds
-u64 NanoSecsToMilli64(u64 nanosecs) {
-  u64 tempMicro = nanosecs / 1000LL;
+// Converts uint64 nanoseconds to uint64_t milliseconds
+uint64_t NanoSecsToMilli64(uint64_t nanosecs) {
+  uint64_t tempMicro = nanosecs / 1000LL;
   return tempMicro / 1000LL;
 }
 }
-
-DD_Timer::DD_Timer()
-    : m_time_scale(1.0),
-      m_time_sec(0.0f),
-      m_avg_ft(0.f),
-      m_is_paused(false),
-      m_sethist(false),
-      m_time_nano(0) {
-  m_start_time = Timer::GetHiResTime();
-}
-
-DD_Timer::~DD_Timer() {}
 
 #else  // windows
 
@@ -88,24 +102,18 @@ DD_Timer::~DD_Timer() {}
 #include <windows.h>
 
 namespace {
-u64 TIMER_START;
+uint64_t TIMER_START;
 }
 
-namespace Timer {
-void LoadStart() { TIMER_START = GetHiResTime(); }
-
-float GetDeltaTime() {
-  u64 time_n = GetHiResTime() - TIMER_START;
-  return NanoSecsToSecs(time_n);
-}
+namespace DD_Time {
 
 // return cpu cycles
-u64 GetHiResTime() {
+uint64_t GetHiResTime() {
   LARGE_INTEGER now, freq;
   QueryPerformanceCounter(&now);
   QueryPerformanceFrequency(&freq);
 
-  return ((u64)now.QuadPart * 1000000000LL) / (u64)freq.QuadPart;
+  return ((uint64_t)now.QuadPart * 1000000000LL) / (uint64_t)freq.QuadPart;
 }
 
 // Put CPU to sleep
@@ -116,86 +124,170 @@ void sleep(float seconds) {
 }
 
 // Convert positive floating point seconds to uint64 nanoseconds
-u64 SecsToNanoSecs(float seconds) {
+uint64_t SecsToNanoSecs(float seconds) {
   POW2_VERIFY_MSG(seconds >= 0.0f, "Cannot convert negative float", 0);
   float nanosecs = seconds * 1000000000.0f;
-  return (u64)nanosecs;
+  return (uint64_t)nanosecs;
 }
 // Converts uint64 nanoseconds to float seconds (WARNING: can overflow)
-float NanoSecsToSecs(u64 nanosecs) {
-  u64 tempMicro = nanosecs / 1000LL;
+float NanoSecsToSecs(uint64_t nanosecs) {
+  uint64_t tempMicro = nanosecs / 1000LL;
   return (float)tempMicro / 1000000.0f;
 }
-// Converts uint64 nanoseconds to u64 milliseconds
-u64 NanoSecsToMilli64(u64 nanosecs) {
-  u64 tempMicro = nanosecs / 1000LL;
+// Converts uint64 nanoseconds to uint64_t milliseconds
+uint64_t NanoSecsToMilli64(uint64_t nanosecs) {
+  uint64_t tempMicro = nanosecs / 1000LL;
   return tempMicro / 1000LL;
 }
 }
 
-DD_Timer::DD_Timer()
-    : m_time_scale(1.0),
-      m_time_sec(0.0f),
-      m_avg_ft(0.f),
-      m_is_paused(false),
-      m_sethist(false),
-      m_time_nano(0) {
-  m_start_time = Timer::GetHiResTime();
-  timeBeginPeriod(1);
-}
+// DD_Timer::DD_Timer()
+//     : m_time_scale(1.0),
+//       m_time_sec(0.0f),
+//       m_avg_ft(0.f),
+//       m_is_paused(false),
+//       m_sethist(false),
+//       m_time_nano(0) {
+//   m_start_time = Timer::GetHiResTime();
+//   timeBeginPeriod(1);
+// }
 
-DD_Timer::~DD_Timer() { timeEndPeriod(1); }
+// DD_Timer::~DD_Timer() { timeEndPeriod(1); }
 
 #endif  // if on windows platform
 
-// called once per frame with real measured frame time in delta seconds
-void DD_Timer::update(const float fixedrate) {
-  u64 temp = m_time_nano;
-  if (!m_is_paused) {
-    m_time_nano = Timer::GetHiResTime() - m_start_time;
-    m_time_sec = Timer::NanoSecsToSecs(m_time_nano);
+void DD_Time::initialize() {
+  time_start = GetHiResTime();
+  time_scale = 1.f;
+  time_in_nano = 0;
+  time_in_secs = 0.f;
+  avg_ftime = 0.f;
+  is_paused = false;
+  init_history = true;
 
-    if (fixedrate < 0.f) {
-      float _t = Timer::NanoSecsToSecs(m_time_nano - temp);
-      if (!m_sethist) {
-        m_sethist = true;
-        initHistory(_t);
-      }
-      updateHistory(_t);
-    } else {
-      if (!m_sethist) {
-        m_sethist = true;
-        initHistory(fixedrate);
-      }
-      updateHistory(fixedrate);
+  // for windows maybe:
+  // timeBeginPeriod(1); // init
+  // timeEndPeriod(1);   // exit
+}
+
+void DD_Time::update() {
+  auto update_hist = [&](const float frame_time) {
+    for (size_t i = HISTORY_MAX - 1; i > 0; i--) {
+      ftime[i] = ftime[i - 1];
     }
+    ftime[0] = frame_time;
+    // update avg
+    avg_ftime = 0;
+    for (size_t i = 0; i < HISTORY_MAX; i++) {
+      avg_ftime += ftime[i];
+    }
+    avg_ftime /= HISTORY_MAX;
+  };
+
+  uint64_t temp = time_in_nano;
+  if (!is_paused) {
+    // calculate current time in seconds and nanoseconds
+    time_in_nano = GetHiResTime() - time_start;
+    time_in_secs = NanoSecsToSecs(time_in_nano);
+
+    // update framerate history
+    float _t = NanoSecsToSecs(time_in_nano - temp);
+    if (init_history) {
+      init_history = false;
+      for (size_t i = 0; i < HISTORY_MAX; i++) {
+        ftime[i] = _t;
+      }
+    }
+    update_hist(_t);
   }
 }
 
-// Used for debugging
-// Single step through time
-void DD_Timer::singleStep() {
+void DD_Time::singleStep() {
+  auto update_hist = [&](const float frame_time) {
+    for (size_t i = HISTORY_MAX - 1; i > 0; i--) {
+      ftime[i] = ftime[i - 1];
+    }
+    ftime[0] = frame_time;
+    // update avg
+    avg_ftime = 0;
+    for (size_t i = 0; i < HISTORY_MAX; i++) {
+      avg_ftime += ftime[i];
+    }
+    avg_ftime /= HISTORY_MAX;
+  };
+  // Used for debugging
+  // Single step through time
   // add one "ideal" frame interval and scale by time scale
-  if (m_is_paused) {
-    m_time_nano += Timer::SecsToNanoSecs((1.0f / 30.0f) * m_time_scale);
+  if (is_paused) {
+    time_in_nano += SecsToNanoSecs((1.0f / 60.0f) * time_scale);
+    time_in_secs = NanoSecsToSecs(time_in_nano);
+    // update framerate history
+    update_hist((1.0f / 60.0f) * time_scale);
   }
 }
 
-void DD_Timer::initHistory(const float value) {
-  for (size_t i = 0; i < Timer::f_hist; i++) {
-    m_ft[i] = value;
-  }
-}
+void DD_Time::pause() { is_paused = true; }
 
-void DD_Timer::updateHistory(const float frame_time) {
-  for (size_t i = Timer::f_hist - 1; i > 0; i--) {
-    m_ft[i] = m_ft[i - 1];
-  }
-  m_ft[0] = frame_time;
-  // update avg
-  m_avg_ft = 0;
-  for (size_t i = 0; i < Timer::f_hist; i++) {
-    m_avg_ft += m_ft[i];
-  }
-  m_avg_ft /= Timer::f_hist;
-}
+void DD_Time::unpause() { is_paused = false; }
+
+void DD_Time::set_scale(const float _scale) { time_scale = _scale; }
+
+uint64_t DD_Time::get_time() { return time_in_nano; }
+
+float DD_Time::get_time_float() { return time_in_secs; }
+
+float DD_Time::get_frame_time() { return ftime[0]; }
+
+float DD_Time::get_avg_frame_fime() { return avg_ftime; }
+
+// // called once per frame with real measured frame time in delta seconds
+// void DD_Timer::update(const float fixedrate) {
+//   uint64_t temp = m_time_nano;
+//   if (!m_is_paused) {
+//     m_time_nano = Timer::GetHiResTime() - m_start_time;
+//     m_time_sec = Timer::NanoSecsToSecs(m_time_nano);
+
+//     if (fixedrate < 0.f) {
+//       float _t = Timer::NanoSecsToSecs(m_time_nano - temp);
+//       if (!m_sethist) {
+//         m_sethist = true;
+//         initHistory(_t);
+//       }
+//       updateHistory(_t);
+//     } else {
+//       if (!m_sethist) {
+//         m_sethist = true;
+//         initHistory(fixedrate);
+//       }
+//       updateHistory(fixedrate);
+//     }
+//   }
+// }
+
+// // Used for debugging
+// // Single step through time
+// void DD_Timer::singleStep() {
+//   // add one "ideal" frame interval and scale by time scale
+//   if (m_is_paused) {
+//     m_time_nano += Timer::SecsToNanoSecs((1.0f / 30.0f) * m_time_scale);
+//   }
+// }
+
+// void DD_Timer::initHistory(const float value) {
+//   for (size_t i = 0; i < Timer::f_hist; i++) {
+//     m_ft[i] = value;
+//   }
+// }
+
+// void DD_Timer::updateHistory(const float frame_time) {
+//   for (size_t i = Timer::f_hist - 1; i > 0; i--) {
+//     m_ft[i] = m_ft[i - 1];
+//   }
+//   m_ft[0] = frame_time;
+//   // update avg
+//   m_avg_ft = 0;
+//   for (size_t i = 0; i < Timer::f_hist; i++) {
+//     m_avg_ft += m_ft[i];
+//   }
+//   m_avg_ft /= Timer::f_hist;
+// }

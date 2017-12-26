@@ -6,9 +6,15 @@ local inputs =
 }
 
 local function test_01()
-	arg = {
-		["path"] = "C:/Users/Moses/Documents/DayDream_Engine/Resource/Meshes/primitives/cube.ddm"
-	}
+	if WIN32 then
+		arg = {
+			["path"] = "C:/Users/Moses/Documents/DayDream_Engine/Resource/Meshes/primitives/cube.ddm"
+		}
+	elseif LINUX then
+		arg = {
+			["path"] = "/home/maadeagbo/Documents/DayDream_Engine/Resource/Meshes/primitives/cube.ddm"
+		}
+	end
 	mkey = load_ddm(arg);
 	print("Created mesh: "..mkey)
 	arg = {
