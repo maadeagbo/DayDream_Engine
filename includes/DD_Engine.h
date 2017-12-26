@@ -61,7 +61,6 @@ struct DD_Engine {
   SDL_GLContext main_glcontext;
   lua_State* main_lstate;
 
-  InputData main_input;
   DD_Queue main_q;
   DD_Physics main_physics;
 

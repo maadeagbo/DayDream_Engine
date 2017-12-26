@@ -9,17 +9,15 @@ do
 	main_character = base_hero:new({name = "Slayer"})
     enemies = {}
 
-	function create_agent( enitity )
+	function make_person( enitity )
 		--e =	{}
-        e = {
-		    ["event_id"] = "agent_creation",
-            ["agent.name"] = enitity.name,
-            ["agent.pos.x"] = enitity.position[1],
-            ["agent.pos.y"] = enitity.position[2],
-            ["agent.pos.z"] = enitity.position[3],
-            ["agent.alive"] = enitity.alive
-        }
-		res_new_agent(e)
+    e = {
+      ["agent.name"] = enitity.name,
+      ["agent.pos.x"] = enitity.position[1],
+      ["agent.pos.y"] = enitity.position[2],
+      ["agent.pos.z"] = enitity.position[3],
+      ["agent.alive"] = enitity.alive
+    }
 	end
 
     function DeadWorld:init( map )
@@ -27,13 +25,13 @@ do
 		print("Deadworld init called\n")
 		main_character.position = { 0.0, 1.0, -2.0 }
 		main_character.alive = true
-		create_agent(main_character)
+		make_person(main_character)
 
         -- spawn some monsters
         for i=1,5 do
             new_name = string.format("monster_%d",i)
             enemies[i] = base_monster:new({name = new_name, alive = true})
-			create_agent(enemies[i])
+			make_person(enemies[i])
         end
     end
 

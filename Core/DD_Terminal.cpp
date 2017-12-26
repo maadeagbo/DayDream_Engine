@@ -49,6 +49,8 @@ bool restart_reg_search = true;
 unsigned num_regex_matches = 0;
 unsigned last_tabbed = 0;
 unsigned matched_expr[CMD_HIST_SIZE];
+
+DD_FuncBuff fb;
 }
 
 void DD_Terminal::flipDebugFlag() { DEBUG_ON ^= 1; }
@@ -201,7 +203,23 @@ DD_Event DD_Terminal::getInput(DD_Event& event) {
 }
 //*/
 
-void DD_Terminal::get_input(DD_LEvent& _event) {}
+void DD_Terminal::get_input(DD_LEvent& _event) {
+	InputData idata = DD_Input::get_input();
+
+	last_button_press += DD_Time::get_frame_time();
+	if (idata.keys[DD_Keys::UP_KEY].active && last_button_press > 0.15f) {
+		up_pressed = true;
+		last_button_press = 0.f;
+	}
+	if (idata.keys[DD_Keys::DOWN_KEY].active && last_button_press > 0.15f) {
+		down_pressed = true;
+		last_button_press = 0.f;
+	}
+	if (idata.keys[DD_Keys::TAB_Key].active && last_button_press > 0.15f) {
+		tab_pressed = true;
+		last_button_press = 0.f;
+	}
+}
 
 void DD_Terminal::inTerminalHistory() {
   write_out_history = true;  // prevents wiping terminal history on exit
@@ -267,6 +285,16 @@ void DD_Terminal::outTerminalHistory() {
     io_handle.writeLine("\n");
     io_handle.writeLine(cmd_history[i]);
   }
+}
+
+int script_print(lua_State * L) {
+	parse_lua_events(L, fb);
+	const char *str = fb.get_func_val<const char>("output");
+	
+	// print script output
+	if (str) DD_Terminal::post(str);
+	
+	return 0;
 }
 
 ImColor colorCodeOutput(const char* entry) {

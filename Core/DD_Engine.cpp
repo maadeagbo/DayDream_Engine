@@ -26,8 +26,9 @@ const cbuff<32> frame_enter_hash("frame_init");
 const cbuff<32> frame_exit_hash("frame_exit");
 const cbuff<32> load_hash("load_screen");
 const cbuff<32> lvl_init_hash("_lvl_init_done");
-const cbuff<32> lvl_asset_hash("_asset_init");
+const cbuff<32> lvl_asset_hash("_load_resource_done");
 const cbuff<32> terminal_hash("poll_terminal");
+const cbuff<32> process_terminal_hash("process_terminal");
 const cbuff<32> init_screen_hash("init_screen");
 }  // namespace
 
@@ -344,26 +345,7 @@ void DD_Engine::Load() {
   SysEventHandler _sh;
   PushFunc push_func = std::bind(&DD_Queue::push, &main_q, arg_1);
   q_push = push_func;
-  /*
-  EngineMode init_options = EngineMode::DD_NOT_SET;
-  init_options = (engine_mode_flags[0])
-                ? EngineMode(init_options | EngineMode::DD_VSYNC)
-                : init_options;
-  init_options = (engine_mode_flags[1])
-                ? EngineMode(init_options | EngineMode::DD_FULLSCREEN)
-                : init_options;
-  init_options = (engine_mode_flags[2])
-                ? EngineMode(init_options | EngineMode::DD_SECOND_DISPLAY)
-                : init_options;
-  init_options = (engine_mode_flags[3])
-                ? EngineMode(init_options | EngineMode::DD_NO_CONSOLE)
-                : init_options;
 
-  openWindow(window_w, window_h, init_options);
-  // set useful lua globals
-  set_lua_global(main_lstate, "SCR_W", window_w);
-  set_lua_global(main_lstate, "SCR_H", window_h);
-//*/
   // initialize time
   DD_Time::initialize();
 
@@ -437,7 +419,7 @@ void DD_Engine::Load() {
   // terminal input callback
   _sh = std::bind(&DD_Terminal::get_input, std::placeholders::_1);
   main_q.register_sys_func(sys_terminal_hash, _sh);
-  main_q.subscribe(getCharHash("input"), sys_terminal_hash);
+  main_q.subscribe(terminal_hash.gethash(), sys_terminal_hash);
 
   // add engine callback
   _sh = std::bind(&DD_Engine::update, this, arg_1);
@@ -445,7 +427,8 @@ void DD_Engine::Load() {
   main_q.subscribe(exit_hash.gethash(), sys_engine_hash);
   main_q.subscribe(frame_enter_hash.gethash(), sys_engine_hash);
   main_q.subscribe(frame_exit_hash.gethash(), sys_engine_hash);
-  main_q.subscribe(load_hash.gethash(), sys_engine_hash);
+	main_q.subscribe(load_hash.gethash(), sys_engine_hash);
+	main_q.subscribe(lvl_asset_hash.gethash(), sys_engine_hash);
   main_q.subscribe(init_screen_hash.gethash(), sys_engine_hash);
 
   // load terminal history
@@ -453,6 +436,8 @@ void DD_Engine::Load() {
 }
 
 void DD_Engine::register_lfuncs() {
+	// add DD_Terminal print func
+	add_func_to_scripts(main_lstate, script_print, "dd_print");
   // add DD_MeshData creation function
   add_func_to_scripts(main_lstate, dd_assets_create_mesh, "load_ddm");
   // camera creation
@@ -466,7 +451,7 @@ void DD_Engine::register_lfuncs() {
 void DD_Engine::updateSDL() {
   // get keyboard events
   SDL_Event sdlEvent;
-  DD_Input::new_frame(main_input);
+  DD_Input::new_frame();
   while (SDL_PollEvent(&sdlEvent)) {
     // imgui process event
     ImGui_ImplSdlGL3_ProcessEvent(&sdlEvent);
@@ -477,26 +462,27 @@ void DD_Engine::updateSDL() {
         break;
       /* Look for a keypress */
       case SDL_KEYDOWN:
-        DD_Input::update_keydown(main_input, sdlEvent.key.keysym);
+        DD_Input::update_keydown(sdlEvent.key.keysym);
+				// reveal terminal
         if (sdlEvent.key.keysym.scancode == SDL_SCANCODE_GRAVE) {
           DD_Terminal::flipDebugFlag();
           flag_debug ^= 1;
         }
         break;
       case SDL_KEYUP:
-        DD_Input::update_keyup(main_input, sdlEvent.key.keysym);
+        DD_Input::update_keyup(sdlEvent.key.keysym);
         break;
       case SDL_MOUSEBUTTONDOWN:
-        DD_Input::update_mouse_button(main_input, sdlEvent.button, true);
+        DD_Input::update_mouse_button(sdlEvent.button, true);
         break;
       case SDL_MOUSEBUTTONUP:
-        DD_Input::update_mouse_button(main_input, sdlEvent.button, false);
+        DD_Input::update_mouse_button(sdlEvent.button, false);
         break;
       case SDL_MOUSEMOTION:
-        DD_Input::update_mouse_pos(main_input, sdlEvent.motion);
+        DD_Input::update_mouse_pos(sdlEvent.motion);
         break;
       case SDL_MOUSEWHEEL:
-        DD_Input::update_mouse_wheel(main_input, sdlEvent.wheel);
+        DD_Input::update_mouse_wheel(sdlEvent.wheel);
         break;
     }
   }
@@ -517,11 +503,8 @@ void DD_Engine::Run() {
   q_push(_event);
 
   // add async level assets load
-
-  // add async level init
-  _event.active = 0;
-  _event.handle = "_async_call";
-  // q_push(_event);
+	_event.handle = main_q.res_call;
+	q_push(_event);
 
   // add frame update
   _event.active = 0;
@@ -840,6 +823,10 @@ void DD_Engine::update(DD_LEvent &_event) {
     new_event.handle = main_q.check_future;
     q_push(new_event);
 
+		// process terminal
+		new_event.handle = terminal_hash;
+		q_push(new_event);
+
     if (load_screen) {
       // Show load screen
       // main_renderer.DrawLoadScreen(main_timer.getTimeFloat());
@@ -869,16 +856,20 @@ void DD_Engine::update(DD_LEvent &_event) {
 
   } else if (e_sig == load_hash.gethash()) {  // load screen
     load_screen ^= 1;
-  } else if (e_sig == terminal_hash.gethash()) {  // process queue
+  } else if (e_sig == process_terminal_hash.gethash()) {  // process queue
     bool more_cmds = true;
     while (more_cmds) {
       const char *cmd = DD_Terminal::pollBuffer();
       more_cmds = execTerminal(cmd);
     }
-  } else if (e_sig == lvl_init_hash.gethash()) {  // set level attributes
+  } else if (e_sig == lvl_init_hash.gethash()) {  // post lvl init function
     // add functionality to set active skybox in scripts
     // add function from DD_Engine that sets: main_renderer.m_lvl_cubMap
-  }
+  } else if (e_sig == lvl_asset_hash.gethash()) {  // post resource load
+		// add async level init
+		_event.handle = main_q.lvl_call_i;
+		q_push(_event);
+	}
 }
 
 /*

@@ -6,6 +6,8 @@ int mouse_y = 0;
 int mouse_lastx = 0;
 int mouse_lasty = 0;
 bool flag_first_mouse = false;
+
+InputData global_input;
 }  // namespace
 
 /// \brief Modify keyboard keys
@@ -13,8 +15,7 @@ bool flag_first_mouse = false;
 /// \param sdlk SDL2 key code
 /// \param b_flag
 /// \param i_flag
-void edit_key(InputData& idata, SDL_Keysym& key, const bool b_flag,
-              const int i_flag);
+void edit_key(SDL_Keysym& key, const bool b_flag, const int i_flag);
 
 /*
 inputBuff* DD_Input_::GetInput() {
@@ -64,35 +65,34 @@ glm::vec2 DD_Input_::filterMouseInput(glm::vec2 frame_in) {
 //*/
 
 namespace DD_Input {
-void new_frame(InputData& input_data) {
+void new_frame() {
   // reset key order tracker
-  input_data.order_tracker = 0;
+  global_input.order_tracker = 0;
   // reset scroll wheel tracker
-  input_data.keys[(unsigned)DD_Keys::MOUSE_SCROLL].order = 0;
+  global_input.keys[(unsigned)DD_Keys::MOUSE_SCROLL].order = 0;
 }
 
-void update_keyup(InputData& input_data, SDL_Keysym& key) {
-  edit_key(input_data, key, true, input_data.order_tracker);
-  input_data.order_tracker++;
+void update_keyup(SDL_Keysym& key) {
+  edit_key(key, true, global_input.order_tracker);
+  global_input.order_tracker++;
 }
 
-void update_keydown(InputData& input_data, SDL_Keysym& key) {
-  edit_key(input_data, key, false, input_data.order_tracker);
-  input_data.order_tracker++;
+void update_keydown(SDL_Keysym& key) {
+  edit_key(key, false, global_input.order_tracker);
+  global_input.order_tracker++;
 }
 
-void update_mouse_button(InputData& input_data, SDL_MouseButtonEvent& key,
-                         const bool b_flag) {
+void update_mouse_button(SDL_MouseButtonEvent& key, const bool b_flag) {
   if (b_flag) {
     switch (key.button) {
       case SDL_BUTTON_LEFT:
-        input_data.keys[(unsigned)DD_Keys::MOUSE_LEFT].active = true;
+        global_input.keys[(unsigned)DD_Keys::MOUSE_LEFT].active = true;
         break;
       case SDL_BUTTON_MIDDLE:
-        input_data.keys[(unsigned)DD_Keys::MOUSE_MIDDLE].active = true;
+        global_input.keys[(unsigned)DD_Keys::MOUSE_MIDDLE].active = true;
         break;
       case SDL_BUTTON_RIGHT:
-        input_data.keys[(unsigned)DD_Keys::MOUSE_RIGHT].active = true;
+        global_input.keys[(unsigned)DD_Keys::MOUSE_RIGHT].active = true;
         break;
       default:
         break;
@@ -100,13 +100,13 @@ void update_mouse_button(InputData& input_data, SDL_MouseButtonEvent& key,
   } else {
     switch (key.button) {
       case SDL_BUTTON_LEFT:
-        input_data.keys[(unsigned)DD_Keys::MOUSE_LEFT].active = false;
+        global_input.keys[(unsigned)DD_Keys::MOUSE_LEFT].active = false;
         break;
       case SDL_BUTTON_MIDDLE:
-        input_data.keys[(unsigned)DD_Keys::MOUSE_MIDDLE].active = false;
+        global_input.keys[(unsigned)DD_Keys::MOUSE_MIDDLE].active = false;
         break;
       case SDL_BUTTON_RIGHT:
-        input_data.keys[(unsigned)DD_Keys::MOUSE_RIGHT].active = false;
+        global_input.keys[(unsigned)DD_Keys::MOUSE_RIGHT].active = false;
         break;
       default:
         break;
@@ -114,7 +114,7 @@ void update_mouse_button(InputData& input_data, SDL_MouseButtonEvent& key,
   }
 }
 
-void update_mouse_pos(InputData& input_data, SDL_MouseMotionEvent& key) {
+void update_mouse_pos(SDL_MouseMotionEvent& key) {
   if (flag_first_mouse) {
     // set up for 1st movement
     mouse_lastx = (int)key.x;
@@ -125,145 +125,148 @@ void update_mouse_pos(InputData& input_data, SDL_MouseMotionEvent& key) {
   mouse_x = (int)key.x;
   mouse_y = (int)key.y;
   // get delta
-  input_data.keys[(unsigned)DD_Keys::MOUSE_YDELTA].order =
+  global_input.keys[(unsigned)DD_Keys::MOUSE_YDELTA].order =
       mouse_lasty - mouse_y;
-  input_data.keys[(unsigned)DD_Keys::MOUSE_XDELTA].order =
+  global_input.keys[(unsigned)DD_Keys::MOUSE_XDELTA].order =
       mouse_lastx - mouse_x;
-  input_data.keys[(unsigned)DD_Keys::MOUSE_Y].order = mouse_y;
-  input_data.keys[(unsigned)DD_Keys::MOUSE_X].order = mouse_x;
+  global_input.keys[(unsigned)DD_Keys::MOUSE_Y].order = mouse_y;
+  global_input.keys[(unsigned)DD_Keys::MOUSE_X].order = mouse_x;
   // set old mouse position
   mouse_lastx = mouse_x;
   mouse_lasty = mouse_y;
 }
 
-void update_mouse_wheel(InputData& input_data, SDL_MouseWheelEvent& key) {
-  input_data.keys[(unsigned)DD_Keys::MOUSE_SCROLL].order = key.y;
+void update_mouse_wheel(SDL_MouseWheelEvent& key) {
+  global_input.keys[(unsigned)DD_Keys::MOUSE_SCROLL].order = key.y;
+}
+
+const InputData & get_input() {
+	return global_input;
 }
 
 }  // namespace DD_Input
 
-void edit_key(InputData& idata, SDL_Keysym& key, const bool b_flag,
-              const int i_flag) {
+void edit_key(SDL_Keysym& key, const bool b_flag, const int i_flag) {
   switch (key.sym) {
     case SDLK_a:
-      idata.keys[(unsigned)DD_Keys::A_Key] = {b_flag, i_flag};
+      global_input.keys[(unsigned)DD_Keys::A_Key] = {b_flag, i_flag};
       break;
     case SDLK_b:
-      idata.keys[(unsigned)DD_Keys::B_Key] = {b_flag, i_flag};
+      global_input.keys[(unsigned)DD_Keys::B_Key] = {b_flag, i_flag};
       break;
     case SDLK_c:
-      idata.keys[(unsigned)DD_Keys::C_Key] = {b_flag, i_flag};
+      global_input.keys[(unsigned)DD_Keys::C_Key] = {b_flag, i_flag};
       break;
     case SDLK_d:
-      idata.keys[(unsigned)DD_Keys::D_Key] = {b_flag, i_flag};
+      global_input.keys[(unsigned)DD_Keys::D_Key] = {b_flag, i_flag};
       break;
     case SDLK_e:
-      idata.keys[(unsigned)DD_Keys::E_Key] = {b_flag, i_flag};
+      global_input.keys[(unsigned)DD_Keys::E_Key] = {b_flag, i_flag};
       break;
     case SDLK_f:
-      idata.keys[(unsigned)DD_Keys::F_Key] = {b_flag, i_flag};
+      global_input.keys[(unsigned)DD_Keys::F_Key] = {b_flag, i_flag};
       break;
     case SDLK_g:
-      idata.keys[(unsigned)DD_Keys::G_Key] = {b_flag, i_flag};
+      global_input.keys[(unsigned)DD_Keys::G_Key] = {b_flag, i_flag};
       break;
     case SDLK_h:
-      idata.keys[(unsigned)DD_Keys::H_Key] = {b_flag, i_flag};
+      global_input.keys[(unsigned)DD_Keys::H_Key] = {b_flag, i_flag};
       break;
     case SDLK_i:
-      idata.keys[(unsigned)DD_Keys::I_Key] = {b_flag, i_flag};
+      global_input.keys[(unsigned)DD_Keys::I_Key] = {b_flag, i_flag};
       break;
     case SDLK_j:
-      idata.keys[(unsigned)DD_Keys::J_Key] = {b_flag, i_flag};
+      global_input.keys[(unsigned)DD_Keys::J_Key] = {b_flag, i_flag};
       break;
     case SDLK_k:
-      idata.keys[(unsigned)DD_Keys::K_Key] = {b_flag, i_flag};
+      global_input.keys[(unsigned)DD_Keys::K_Key] = {b_flag, i_flag};
       break;
     case SDLK_l:
-      idata.keys[(unsigned)DD_Keys::L_Key] = {b_flag, i_flag};
+      global_input.keys[(unsigned)DD_Keys::L_Key] = {b_flag, i_flag};
       break;
     case SDLK_m:
-      idata.keys[(unsigned)DD_Keys::M_Key] = {b_flag, i_flag};
+      global_input.keys[(unsigned)DD_Keys::M_Key] = {b_flag, i_flag};
       break;
     case SDLK_n:
-      idata.keys[(unsigned)DD_Keys::N_Key] = {b_flag, i_flag};
+      global_input.keys[(unsigned)DD_Keys::N_Key] = {b_flag, i_flag};
       break;
     case SDLK_o:
-      idata.keys[(unsigned)DD_Keys::O_Key] = {b_flag, i_flag};
+      global_input.keys[(unsigned)DD_Keys::O_Key] = {b_flag, i_flag};
       break;
     case SDLK_p:
-      idata.keys[(unsigned)DD_Keys::P_Key] = {b_flag, i_flag};
+      global_input.keys[(unsigned)DD_Keys::P_Key] = {b_flag, i_flag};
       break;
     case SDLK_q:
-      idata.keys[(unsigned)DD_Keys::Q_Key] = {b_flag, i_flag};
+      global_input.keys[(unsigned)DD_Keys::Q_Key] = {b_flag, i_flag};
       break;
     case SDLK_r:
-      idata.keys[(unsigned)DD_Keys::R_Key] = {b_flag, i_flag};
+      global_input.keys[(unsigned)DD_Keys::R_Key] = {b_flag, i_flag};
       break;
     case SDLK_s:
-      idata.keys[(unsigned)DD_Keys::S_Key] = {b_flag, i_flag};
+      global_input.keys[(unsigned)DD_Keys::S_Key] = {b_flag, i_flag};
       break;
     case SDLK_t:
-      idata.keys[(unsigned)DD_Keys::T_Key] = {b_flag, i_flag};
+      global_input.keys[(unsigned)DD_Keys::T_Key] = {b_flag, i_flag};
       break;
     case SDLK_u:
-      idata.keys[(unsigned)DD_Keys::U_Key] = {b_flag, i_flag};
+      global_input.keys[(unsigned)DD_Keys::U_Key] = {b_flag, i_flag};
       break;
     case SDLK_v:
-      idata.keys[(unsigned)DD_Keys::V_Key] = {b_flag, i_flag};
+      global_input.keys[(unsigned)DD_Keys::V_Key] = {b_flag, i_flag};
       break;
     case SDLK_w:
-      idata.keys[(unsigned)DD_Keys::W_Key] = {b_flag, i_flag};
+      global_input.keys[(unsigned)DD_Keys::W_Key] = {b_flag, i_flag};
       break;
     case SDLK_x:
-      idata.keys[(unsigned)DD_Keys::X_Key] = {b_flag, i_flag};
+      global_input.keys[(unsigned)DD_Keys::X_Key] = {b_flag, i_flag};
       break;
     case SDLK_y:
-      idata.keys[(unsigned)DD_Keys::Y_Key] = {b_flag, i_flag};
+      global_input.keys[(unsigned)DD_Keys::Y_Key] = {b_flag, i_flag};
       break;
     case SDLK_z:
-      idata.keys[(unsigned)DD_Keys::Z_Key] = {b_flag, i_flag};
+      global_input.keys[(unsigned)DD_Keys::Z_Key] = {b_flag, i_flag};
       break;
     case SDLK_SPACE:
-      idata.keys[(unsigned)DD_Keys::Space_Key] = {b_flag, i_flag};
+      global_input.keys[(unsigned)DD_Keys::Space_Key] = {b_flag, i_flag};
       break;
     case SDLK_KP_ENTER:  // doesn't work
-      idata.keys[(unsigned)DD_Keys::Enter_Key] = {b_flag, i_flag};
+      global_input.keys[(unsigned)DD_Keys::Enter_Key] = {b_flag, i_flag};
       break;
     case SDLK_ESCAPE:
-      idata.keys[(unsigned)DD_Keys::Escape_Key] = {b_flag, i_flag};
+      global_input.keys[(unsigned)DD_Keys::Escape_Key] = {b_flag, i_flag};
       break;
     case SDLK_LALT:
-      idata.keys[(unsigned)DD_Keys::ALT_L_Key] = {b_flag, i_flag};
+      global_input.keys[(unsigned)DD_Keys::ALT_L_Key] = {b_flag, i_flag};
       break;
     case SDLK_LCTRL:
-      idata.keys[(unsigned)DD_Keys::CTRL_L_Key] = {b_flag, i_flag};
+      global_input.keys[(unsigned)DD_Keys::CTRL_L_Key] = {b_flag, i_flag};
       break;
     case SDLK_LSHIFT:
-      idata.keys[(unsigned)DD_Keys::Shift_L_Key] = {b_flag, i_flag};
+      global_input.keys[(unsigned)DD_Keys::Shift_L_Key] = {b_flag, i_flag};
       break;
     case SDLK_RALT:
-      idata.keys[(unsigned)DD_Keys::ALT_R_Key] = {b_flag, i_flag};
+      global_input.keys[(unsigned)DD_Keys::ALT_R_Key] = {b_flag, i_flag};
       break;
     case SDLK_RCTRL:
-      idata.keys[(unsigned)DD_Keys::CTRL_R_Key] = {b_flag, i_flag};
+      global_input.keys[(unsigned)DD_Keys::CTRL_R_Key] = {b_flag, i_flag};
       break;
     case SDLK_RSHIFT:
-      idata.keys[(unsigned)DD_Keys::SHIFT_R_Key] = {b_flag, i_flag};
+      global_input.keys[(unsigned)DD_Keys::SHIFT_R_Key] = {b_flag, i_flag};
       break;
     case SDLK_UP:
-      idata.keys[(unsigned)DD_Keys::UP_KEY] = {b_flag, i_flag};
+      global_input.keys[(unsigned)DD_Keys::UP_KEY] = {b_flag, i_flag};
       break;
     case SDLK_DOWN:
-      idata.keys[(unsigned)DD_Keys::DOWN_KEY] = {b_flag, i_flag};
+      global_input.keys[(unsigned)DD_Keys::DOWN_KEY] = {b_flag, i_flag};
       break;
     case SDLK_RIGHT:
-      idata.keys[(unsigned)DD_Keys::RIGHT_KEY] = {b_flag, i_flag};
+      global_input.keys[(unsigned)DD_Keys::RIGHT_KEY] = {b_flag, i_flag};
       break;
     case SDLK_LEFT:
-      idata.keys[(unsigned)DD_Keys::LEFT_KEY] = {b_flag, i_flag};
+      global_input.keys[(unsigned)DD_Keys::LEFT_KEY] = {b_flag, i_flag};
       break;
     case SDLK_TAB:
-      idata.keys[(unsigned)DD_Keys::TAB_Key] = {b_flag, i_flag};
+      global_input.keys[(unsigned)DD_Keys::TAB_Key] = {b_flag, i_flag};
       break;
     default:
       break;

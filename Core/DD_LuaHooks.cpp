@@ -224,7 +224,7 @@ bool parse_luafile(lua_State *L, const char *filename) {
   }
   if ((err_num = lua_pcall(L, 0, 0, 0)) != 0) {
     handle_error();
-    return false;
+    //return false; // continue executing file thru errors
   }
   return true;
 }

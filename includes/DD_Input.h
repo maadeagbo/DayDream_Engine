@@ -83,27 +83,19 @@ struct InputData {
 };
 
 namespace DD_Input {
-/// \brief Reset key order counter
-void new_frame(InputData& input_data);
-/// \brief Set true boolean flag for key
-/// \param input_data key buffer
-/// \param key
-void update_keyup(InputData& input_data, SDL_Keysym& key);
-/// \brief Set false boolean flag for ke
-/// \param input_data key buffery
-/// \param key
-void update_keydown(InputData& input_data, SDL_Keysym& key);
-/// \brief Set boolean flag for mouse button
-/// \param input_data key buffer
-/// \param key
-void update_mouse_button(InputData& input_data, SDL_MouseButtonEvent& key,
-                         const bool b_flag);
-/// \brief Set mouse x & y integer position
-/// \param input_data key buffer
-/// \param key
-void update_mouse_pos(InputData& input_data, SDL_MouseMotionEvent& key);
-/// \brief Set scroll wheel delta distance (integer)
-/// \param input_data key buffer
-/// \param key
-void update_mouse_wheel(InputData& input_data, SDL_MouseWheelEvent& key);
+/// \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY DD_ENGINE
+void new_frame();
+/// \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY DD_ENGINE
+void update_keyup(SDL_Keysym& key);
+/// \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY DD_ENGINE
+void update_keydown(SDL_Keysym& key);
+/// \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY DD_ENGINE
+void update_mouse_button(SDL_MouseButtonEvent& key, const bool b_flag);
+/// \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY DD_ENGINE
+void update_mouse_pos(SDL_MouseMotionEvent& key);
+/// \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY DD_ENGINE
+void update_mouse_wheel(SDL_MouseWheelEvent& key);
+/// \brief Retrieve input for current frame
+/// \return InputData containing key press information
+const InputData& get_input();
 }  // namespace DD_Input

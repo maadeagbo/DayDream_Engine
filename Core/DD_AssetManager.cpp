@@ -1,6 +1,7 @@
 #include "DD_AssetManager.h"
 #include <omp.h>
 #include "DD_FileIO.h"
+#include "DD_Terminal.h"
 
 namespace {
 // function callback buffer
@@ -128,7 +129,7 @@ int dd_assets_create_agent(lua_State *L) {
           new_agent->mesh.resize(1);
           new_agent->mesh[0].model = mdata->id;
         } else {
-          printf("\tFailed to find mesh <%ld>\n", *mesh_id);
+          DD_Terminal::f_post("[error]  Failed to find mesh <%ld>", *mesh_id);
         }
       }
       // add skeleton for animation
@@ -144,7 +145,8 @@ int dd_assets_create_agent(lua_State *L) {
             skpose->global_pose.resize(sk->bones.size());
             new_agent->mesh[0].sk_flag = true;
           } else {
-            printf("\tFailed to find skeleton <%ld>\n", *sk_id);
+            DD_Terminal::f_post("[error]  Failed to find skeleton <%ld>",
+                                *sk_id);
           }
         }
       }
@@ -156,7 +158,7 @@ int dd_assets_create_agent(lua_State *L) {
           new_agent->parent.parent_id = p_agent->id;
           new_agent->parent.parent_set = true;
         } else {
-          printf("\tFailed to find parent <%ld>\n", *p_id);
+          DD_Terminal::f_post("[error]  Failed to find parent <%ld>", *p_id);
         }
       }
       // add DD_Body to agent and then agent to world
@@ -165,7 +167,7 @@ int dd_assets_create_agent(lua_State *L) {
       lua_pushinteger(L, new_agent->id);
       return 1;
     }
-    printf("Failed to create new agent <%s>\n", agent_id);
+    DD_Terminal::f_post("[error]Failed to create new agent <%s>", agent_id);
   }
   return 0;
 }
@@ -186,9 +188,9 @@ int dd_assets_create_mesh(lua_State *L) {
         return 1;
       }
     }
-    printf("Failed to create new mesh <%s>\n", file);
+    DD_Terminal::f_post("[error]Failed to create new mesh <%s>", file);
   }
-  printf("Failed to create new mesh\n");
+  DD_Terminal::f_post("[error]Failed to create new mesh");
   return 0;
 }
 
@@ -205,9 +207,9 @@ int dd_assets_create_cam(lua_State *L) {
       lua_pushinteger(L, new_cam->id);
       return 1;
     }
-    printf("Failed to create new camera <%s>\n", id);
+    DD_Terminal::f_post("[error]Failed to create new camera <%s>", id);
   }
-  printf("Failed to create new camera\n");
+  DD_Terminal::f_post("[error]Failed to create new camera");
   return 0;
 }
 
@@ -224,9 +226,9 @@ int dd_assets_create_light(lua_State *L) {
       lua_pushinteger(L, new_bulb->id);
       return 1;
     }
-    printf("Failed to create new light <%s>\n", id);
+    DD_Terminal::f_post("[error]Failed to create new light <%s>", id);
   }
-  printf("Failed to create new light\n");
+  DD_Terminal::f_post("[error]Failed to create new light");
   return 0;
 }
 
@@ -288,7 +290,7 @@ DD_MeshData *load_ddm(const char *filename) {
     mdata = spawnDD_MeshData(name.gethash());
   }
   if (!mdata) {  // failed to create object
-    printf("load_ddm::Failed to create DD_MeshData object\n");
+    DD_Terminal::f_post("[error]load_ddm::Failed to create DD_MeshData object");
     return nullptr;
   }
   // set MeshInfo and material data
@@ -541,7 +543,8 @@ obj_mat get_mat_data(DD_IOhandle &_io) {
 DD_Mat *create_material(obj_mat &mat_info) {
   DD_Mat *mat = spawnDD_Mat(mat_info.mat_id.gethash());
   if (!mat) {  // failed to allocate
-    printf("create_material::Failed to create DD_Mat object\n");
+    DD_Terminal::f_post(
+        "[error]create_material::Failed to create DD_Mat object");
     return nullptr;
   }
   mat->base_color = mat_info.diff_raw;

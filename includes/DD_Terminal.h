@@ -17,6 +17,7 @@
 #include <imgui.h>
 #include <imgui_impl_sdl_gl3.h>
 #include "DD_Input.h"
+#include "DD_Timer.h"
 #include "DD_Types.h"
 
 enum class TerminalCmds : unsigned { NULL_CMD = 0x0, RENDER_DEBUG = 0x1 };
@@ -40,3 +41,5 @@ void f_post(const char* format_str, const Args&... args) {
   post(buff);
 }
 }
+
+int script_print(lua_State *L);
