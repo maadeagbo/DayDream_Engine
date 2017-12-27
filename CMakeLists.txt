@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.5.1)
 project (DayDream_Engine_alpha)
+set(DayDream_Engine_alpha_VERSION_MAJOR 3)
+set(DayDream_Engine_alpha_VERSION_MINOR 1)
 
 # set release or debug builds
 if(CMAKE_CONFIGURATION_TYPES)
@@ -85,8 +87,9 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIR})
 
-# add bullet physics
-add_subdirectory(${PROJECT_SOURCE_DIR}/bullet3_287)
+# add graphic library
+#add_subdirectory(${PROJECT_SOURCE_DIR}/graphics_lib)
+include(${PROJECT_SOURCE_DIR}/graphics_lib/CMakeLists.txt)
 
 # include directories for project
 find_path(GLM_PATH glm.hpp
@@ -94,12 +97,6 @@ find_path(GLM_PATH glm.hpp
 	${CMAKE_SOURCE_DIR}/glm/glm)
 if(NOT GLM_PATH)
 	message(FATAL_ERROR "GLM includes not found")
-endif()
-find_path(IMGUI_PATH imgui.h
-	PATHS
-	${CMAKE_CURRENT_SOURCE_DIR}/imgui)
-if(NOT IMGUI_PATH)
-	message(FATAL_ERROR "IMGUI_PATH IMGUI includes not found")
 endif()
 find_path(BULLET_PATH 
 	NAMES btBulletCollisionCommon.h btBulletDynamicsCommon.h
@@ -156,7 +153,7 @@ file(GLOB_RECURSE SOURCES 	"${CMAKE_SOURCE_DIR}/Core/*.cpp"
 							"${CMAKE_SOURCE_DIR}/includes/*.hpp"
 							"${CMAKE_SOURCE_DIR}/includes/*.h"
 							"${CMAKE_SOURCE_DIR}/Core/*.c")
-file(GLOB IMGUI_SRC "${CMAKE_SOURCE_DIR}/imgui/*.cpp")
+# file(GLOB IMGUI_SRC "${CMAKE_SOURCE_DIR}/imgui/*.cpp")
 
 # add defines for engine resources
 add_definitions(
@@ -231,7 +228,6 @@ include_directories(${CMAKE_SOURCE_DIR}/includes
 	${CMAKE_SOURCE_DIR}/glm/
 	${SOIL_PATH}
 	${PROJ_HEADERS}
-	${IMGUI_PATH}
 	${LUA_PATH}
 	${BULLET_PATH}
 	${VRPN_PATH})
@@ -248,7 +244,7 @@ if (UNIX)
 endif()
 
 add_executable(dd_engine
-				${SOURCES} ${PROJECT_SOURCES} ${SHADER_SOURCES} ${IMGUI_SRC}
+				${SOURCES} ${PROJECT_SOURCES} ${SHADER_SOURCES}
 				${SCRIPTS})
 
 if(MSVC)
@@ -308,7 +304,7 @@ if(MINGW)
 # 	endif()
 endif()
 
-# bullet physics libraries
+# bullet physics and graphics libraries
 if(MSVC)
 	set(BULLET_LIB 
 		${PROJECT_SOURCE_DIR}/lib/BulletDynamics.lib
@@ -323,6 +319,23 @@ else()
 		${PROJECT_SOURCE_DIR}/lib/libLinearMath.a
 		${PROJECT_SOURCE_DIR}/lib/libBulletSoftBody.a
 	)
+	find_library(BL_1 BulletDynamics)
+	if(NOT BL_1)
+		message(FATAL_ERROR "BulletDynamics library not found")
+	endif()
+	find_library(BL_2 BulletCollision)
+	if(NOT BL_2)
+		message(FATAL_ERROR "BulletCollision library not found")
+	endif()
+	find_library(BL_3 LinearMath)
+	if(NOT BL_3)
+		message(FATAL_ERROR "LinearMath library not found")
+	endif()
+	find_library(BL_4 BulletSoftBody)
+	if(NOT BL_4)
+		message(FATAL_ERROR "BulletSoftBody library not found")
+	endif()
+	set(BULLET_LIB ${BL_1} ${BL_2} ${BL_3} ${BL_4})
 endif()
 
 if(NOT WIN32)
@@ -330,9 +343,10 @@ if(NOT WIN32)
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -lstdc++fs")
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -lstdc++fs")
 
-	target_link_libraries(dd_engine ${SOIL_LIB} ${OPENGL_gl_LIBRARY} ${BULLET_LIB}
-		${SDL2_LIBRARY} ${VRPN_LIB} ${FREETYPE_LIBRARIES} ${FS_LIB} ${LUA_LIB})
+	target_link_libraries(dd_engine dd_graphics ${SOIL_LIB} ${OPENGL_gl_LIBRARY} ${BULLET_LIB}
+		${SDL2_LIBRARY} ${VRPN_LIB} ${FREETYPE_LIBRARIES} ${FS_LIB} ${LUA_LIB}
+		${DD_GPULIB})
 else()
-	target_link_libraries(dd_engine ${SOIL_LIB} ${OPENGL_gl_LIBRARY} ${BULLET_LIB}
-		${SDL2_LIBRARY} ${VRPN_LIB} ${FREETYPE_LIBRARIES} ${LUA_LIB})
+	target_link_libraries(dd_engine dd_graphics ${SOIL_LIB} ${OPENGL_gl_LIBRARY} ${BULLET_LIB}
+		${SDL2_LIBRARY} ${VRPN_LIB} ${FREETYPE_LIBRARIES} ${LUA_LIB} ${DD_GPULIB})
 endif()

@@ -1,18 +1,18 @@
 #include <SDL.h>
 //#undef main //SDL_main.h is included automatically from SDL.h
 
-#include "DD_Engine.h"
+#include "Engine.h"
 
 int main(int argc, char* argv[]) {
-  DD_Engine ddEngine;
-  ddEngine.Load();
-  ddEngine.startup_lua();
-  bool launch_engine = ddEngine.LevelSelect();
+  ddEngine engine;
+  engine.Load();
+  engine.startup_lua();
+  bool launch_engine = engine.LevelSelect();
 
   if (launch_engine) {
-    ddEngine.Run();
+    engine.Run();
   }
-  ddEngine.cleanUp();
+  engine.cleanUp();
 
   return 0;
 }
