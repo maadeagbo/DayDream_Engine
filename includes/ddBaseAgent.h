@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Model.h"
+#include "ddModel.h"
 
 /// \brief Container for instance manipulation
 struct DD_InstInfo {

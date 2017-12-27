@@ -13,7 +13,7 @@
 *	TODO:	== Add set parent method
 -----------------------------------------------------------------------------*/
 
-#include "Types.h"
+#include "ddIncludes.h"
 
 enum LightType { DIRECTION_L, POINT_L, SPOT_L };
 

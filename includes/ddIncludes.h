@@ -52,11 +52,6 @@
 #include <btBulletCollisionCommon.h>
 #include <btBulletDynamicsCommon.h>
 
-typedef std::uint_fast8_t u8;    // 8-bit unsigned int for fast access
-typedef std::uint_fast32_t u32;  // 32-bit unsigned int for high precision
-typedef std::uint_fast64_t u64;  // 64-bit unsigned int for high precision
-typedef std::int_fast64_t I64;   // 64-bit signed int for high precision
-
 // Enum bitwise flags
 /*
  * std::enable_if will take a boolean and a type (in this case targeting enums)

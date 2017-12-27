@@ -1,14 +1,14 @@
 #pragma once
 
-#include "BaseAgent.h"
-#include "Camera.h"
-#include "Light.h"
+#include "ddBaseAgent.h"
+#include "ddCamera.h"
+#include "ddLight.h"
 #include "LuaHooks.h"
-#include "Material.h"
-#include "Model.h"
-#include "Skeleton.h"
-#include "Texture2D.h"
-#include "Types.h"
+#include "ddMaterial.h"
+#include "ddModel.h"
+#include "ddSkeleton.h"
+#include "ddTexture2D.h"
+#include "ddIncludes.h"
 #include "freelist.h"
 
 #ifndef ASSETS_CONTAINER_MAX_SIZE

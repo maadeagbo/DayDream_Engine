@@ -1,4 +1,4 @@
-#include "Input.h"
+#include "ddInput.h"
 
 namespace {
 int mouse_x = 0;

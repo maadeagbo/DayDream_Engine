@@ -2,13 +2,13 @@
 
 #include "SDL.h"
 
-#include "AssetManager.h"
-#include "EventQueue.h"
-#include "Input.h"
+#include "ddAssetManager.h"
+#include "ddEventQueue.h"
+#include "ddInput.h"
 #include "LuaHooks.h"
-#include "PhysicsEngine.h"
-#include "Timer.h"
-#include "Types.h"
+#include "ddPhysicsEngine.h"
+#include "ddTimer.h"
+#include "ddIncludes.h"
 
 enum class GameState { LOADING, PAUSE, ACTIVE, NUM_STATES };
 

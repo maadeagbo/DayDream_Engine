@@ -12,8 +12,8 @@
 *
 -----------------------------------------------------------------------------*/
 
-#include "Texture2D.h"
-#include "Types.h"
+#include "ddTexture2D.h"
+#include "ddIncludes.h"
 
 enum MaterialType { MULTIPLIER_MAT, DEFAULT_MAT };
 

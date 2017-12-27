@@ -1,4 +1,4 @@
-#include "Light.h"
+#include "ddLight.h"
 
 float LightSpace::CalculateLightVolumeRadius(const DD_Light* lght) {
   float LVR = 0.0f;

@@ -13,7 +13,7 @@
 -----------------------------------------------------------------------------*/
 
 #include <SOIL.h>
-#include "Types.h"
+#include "ddIncludes.h"
 
 // enum TextureType {
 //   ALBEDO,

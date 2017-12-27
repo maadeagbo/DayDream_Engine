@@ -1,6 +1,6 @@
-#include "Engine.h"
-#include "FileIO.h"
-#include "Terminal.h"
+#include "ddEngine.h"
+#include "ddFileIO.h"
+#include "ddTerminal.h"
 
 #define IM_ARRAYSIZE(_ARR) ((int)(sizeof(_ARR) / sizeof(*_ARR)))
 
@@ -16,7 +16,7 @@ std::chrono::milliseconds chrono_msec(1);
 
 const bool UNLOCK_FRAMEPACE = true;
 const size_t FRAME_CAP = 100;
-const u64 SECOND_LL = 1000000000LL;
+const uint64_t SECOND_LL = 1000000000LL;
 
 // int resolution_set[2] = {1400, 800};
 bool engine_mode_flags[] = {true, false, false, false};
@@ -44,7 +44,7 @@ void ddEngine::openWindow(const size_t width, const size_t height,
   window_w = (int)width;
   window_h = (int)height;
 
-  u32 flags = SDL_WINDOW_OPENGL;
+  uint32_t flags = SDL_WINDOW_OPENGL;
   int monitor_choice = 0, vsync_option = 0;
 
   // engine flags
@@ -54,7 +54,7 @@ void ddEngine::openWindow(const size_t width, const size_t height,
   }
   if (bool(mode & EngineMode::DD_NO_CONSOLE)) {
 #ifdef WIN32
-    FreeConsole();
+    //FreeConsole();
 #endif
   }
   if (bool(mode & EngineMode::DD_FULLSCREEN)) {

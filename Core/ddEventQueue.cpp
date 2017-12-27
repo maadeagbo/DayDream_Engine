@@ -1,5 +1,5 @@
-#include "EventQueue.h"
-#include "Terminal.h"
+#include "ddEventQueue.h"
+#include "ddTerminal.h"
 
 namespace {
 cbuff<32> event_id_hash("event_id");

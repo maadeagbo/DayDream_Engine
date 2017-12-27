@@ -17,7 +17,7 @@
 -----------------------------------------------------------------------------*/
 
 #include <SDL.h>
-#include "Types.h"
+#include "ddIncludes.h"
 
 enum DD_Keys {
   A_Key,

@@ -1,7 +1,7 @@
 #include <SDL.h>
 //#undef main //SDL_main.h is included automatically from SDL.h
 
-#include "Engine.h"
+#include "ddEngine.h"
 
 int main(int argc, char* argv[]) {
   ddEngine engine;

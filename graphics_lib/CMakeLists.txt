@@ -1,17 +1,4 @@
 cmake_minimum_required(VERSION 3.5.1)
-project (Graphics_Lib)
-set(Graphics_Lib_VERSION_MAJOR 1)
-set(Graphics_Lib_VERSION_MINOR 0)
-
-# set release or debug builds
-if(CMAKE_CONFIGURATION_TYPES)
-   set(CMAKE_CONFIGURATION_TYPES Release RelWithDebInfo Debug)
-   set(CMAKE_CONFIGURATION_TYPES "${CMAKE_CONFIGURATION_TYPES}" CACHE STRING
-     "Reset the configurations to what we need"
-     FORCE)
- endif()
-set(CMAKE_CXX_STANDARD 11)
-
 
 option(USE_OPENGL "Either OpenGL or Vulkan"	ON)
 

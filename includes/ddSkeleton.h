@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Types.h"
+#include "ddIncludes.h"
 
 #define MAX_JOINTS ((uint8_t)-1)
 
@@ -11,7 +11,7 @@ struct ddJoint {
   /// \brief transform from parent to this joint
   glm::mat4 p_delta;
   cbuff<64> id;
-  u8 parent;
+  uint8_t parent;
 };
 
 /// \brief Simple Skeleton container

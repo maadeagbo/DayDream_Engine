@@ -87,8 +87,11 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIR})
 
-# add graphic library
-#add_subdirectory(${PROJECT_SOURCE_DIR}/graphics_lib)
+# add bullet library
+if(MSVC)
+	add_subdirectory(${PROJECT_SOURCE_DIR}/bullet3_287)
+endif()
+#  add graphic library
 include(${PROJECT_SOURCE_DIR}/graphics_lib/CMakeLists.txt)
 
 # include directories for project
@@ -252,10 +255,7 @@ if(MSVC)
 	set_property(TARGET dd_engine APPEND PROPERTY LINK_FLAGS /STACK:2000000)
 endif()
 
-# set visual studio startup project
-set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-			PROPERTY VS_STARTUP_PROJECT
-			dd_engine)
+
 # add libraries
 find_library(VRPN_LIB vrpn ${CMAKE_CURRENT_SOURCE_DIR}/vrpn_lib_files)
 if(NOT VRPN_LIB)
@@ -337,6 +337,11 @@ else()
 	endif()
 	set(BULLET_LIB ${BL_1} ${BL_2} ${BL_3} ${BL_4})
 endif()
+
+# set visual studio startup project
+set_property(DIRECTORY ${PROJECT_SOURCE_DIR}
+			PROPERTY VS_STARTUP_PROJECT
+			dd_engine)
 
 if(NOT WIN32)
 	# filesystem goes last

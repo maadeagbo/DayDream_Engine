@@ -16,9 +16,9 @@
 
 #include <imgui.h>
 #include <imgui_impl_sdl_gl3.h>
-#include "Input.h"
-#include "Timer.h"
-#include "Types.h"
+#include "ddInput.h"
+#include "ddTimer.h"
+#include "ddIncludes.h"
 
 enum class TerminalCmds : unsigned { NULL_CMD = 0x0, RENDER_DEBUG = 0x1 };
 ENABLE_BITMASK_OPERATORS(TerminalCmds)
