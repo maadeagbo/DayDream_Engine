@@ -8,6 +8,7 @@ GRTAGS
 GSYMS
 GTAGS
 terminal_history.txt
+imgui.ini
 
 #**************** Folders to ignore if unzipped ***************************
 

@@ -272,4 +272,13 @@ class dd_2Darray {
   T* m_data;
 };
 
+#define DD_FOREACH(TYPE, ITER, VAR, ddARRAY)                  \
+TYPE *VAR = nullptr;                                          \
+ITER = 0;                                                     \
+auto _dd_check = [&]( dd_array<TYPE> &ddARRAY ) {             \
+  VAR = (ITER < ddARRAY.size()) ? &ddARRAY[ITER++] : nullptr; \
+  return VAR;                                                 \
+};                                                            \
+while ( _dd_check(ddARRAY) )
+
 #endif  // !DDAYDREAM_CONTAINERS
