@@ -98,9 +98,7 @@ uint64_t NanoSecsToMilli64(uint64_t nanosecs) {
 #define WIN32_LEAN_AND_MEAN 1
 #endif
 
-#include <TimeAPI.h>
 #include <windows.h>
-
 
 namespace ddTime {
 
