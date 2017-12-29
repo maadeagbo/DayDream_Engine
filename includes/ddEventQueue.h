@@ -16,9 +16,9 @@
 -----------------------------------------------------------------------------*/
 
 #include <initializer_list>
+#include "ddIncludes.h"
 #include "ddInput.h"
 #include "ddTimer.h"
-#include "ddIncludes.h"
 
 struct handler_sig {
   handler_sig() {}

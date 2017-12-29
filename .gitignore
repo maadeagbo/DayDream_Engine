@@ -9,6 +9,7 @@ GSYMS
 GTAGS
 terminal_history.txt
 imgui.ini
+logfile.out
 
 #**************** Folders to ignore if unzipped ***************************
 
@@ -20,6 +21,7 @@ SOIL
 SDL2-2.0.7
 lua53_Win64_lib
 bullet3_287
+glfw
 
 #**************** General folders to always ignore ************************
 

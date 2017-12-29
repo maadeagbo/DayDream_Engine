@@ -15,7 +15,7 @@ InputData global_input;
 /// \param sdlk SDL2 key code
 /// \param b_flag
 /// \param i_flag
-void edit_key(SDL_Keysym& key, const bool b_flag, const int i_flag);
+//void edit_key(SDL_Keysym& key, const bool b_flag, const int i_flag);
 
 /*
 inputBuff* DD_Input_::GetInput() {
@@ -72,6 +72,7 @@ void new_frame() {
   global_input.keys[(unsigned)DD_Keys::MOUSE_SCROLL].order = 0;
 }
 
+/*
 void update_keyup(SDL_Keysym& key) {
   edit_key(key, true, global_input.order_tracker);
   global_input.order_tracker++;
@@ -142,8 +143,11 @@ void update_mouse_wheel(SDL_MouseWheelEvent& key) {
 
 const InputData& get_input() { return global_input; }
 
+//*/
+
 }  // namespace ddInput
 
+/*
 void edit_key(SDL_Keysym& key, const bool b_flag, const int i_flag) {
   switch (key.sym) {
     case SDLK_a:
@@ -270,3 +274,4 @@ void edit_key(SDL_Keysym& key, const bool b_flag, const int i_flag) {
       break;
   }
 }
+//*/

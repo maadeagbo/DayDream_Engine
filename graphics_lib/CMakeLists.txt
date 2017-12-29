@@ -1,8 +1,5 @@
 cmake_minimum_required(VERSION 3.5.1)
 
-option(USE_OPENGL "Either OpenGL or Vulkan"	ON)
-
-
 # find_path(IMGUI_PATH imgui.h
 # 	PATHS
 # 	${CMAKE_CURRENT_SOURCE_DIR}/includes)
@@ -35,14 +32,20 @@ file(GLOB_RECURSE DD_GRAPHIC_INC "${CMAKE_SOURCE_DIR}/graphics_lib/includes/*.h"
 # 	)
 # endif()
 
+if (DD_USE_GLFW)
+	set(IMGUI_INC ${CMAKE_SOURCE_DIR}/graphics_lib/source/imgui_impl_glfw_gl3.cpp)
+else()
+	set(IMGUI_INC ${CMAKE_SOURCE_DIR}/graphics_lib/source/imgui_impl_sdl_gl3.cpp)
+endif()
+
 # add_executable(dd_graphics ${GPU_LIB_SOURCES})
-if (USE_OPENGL)
-	add_library(dd_graphics STATIC ${GPU_LIB_SOURCES})
-							# ${CMAKE_SOURCE_DIR}/graphics_lib/source/Graphics_OGL.cpp
-							# ${CMAKE_SOURCE_DIR}/graphics_lib/source/gl_core_4_3.c
-							# ${CMAKE_SOURCE_DIR}/graphics_lib/source/gl_core_4_3.h
-							# ${CMAKE_SOURCE_DIR}/graphics_lib/source/imgui.cpp
-							# ${CMAKE_SOURCE_DIR}/graphics_lib/source/imgui_draw.cpp
-							# ${CMAKE_SOURCE_DIR}/graphics_lib/source/imgui_impl_sdl_gl3.cpp)
+if (NOT DD_GRAPHICS_API_VULKAN)
+	add_library(dd_graphics STATIC #${GPU_LIB_SOURCES})
+							${CMAKE_SOURCE_DIR}/graphics_lib/source/Graphics_OGL.cpp
+							${CMAKE_SOURCE_DIR}/graphics_lib/source/gl_core_4_3.c
+							${CMAKE_SOURCE_DIR}/graphics_lib/source/gl_core_4_3.h
+							${CMAKE_SOURCE_DIR}/graphics_lib/source/imgui.cpp
+							${CMAKE_SOURCE_DIR}/graphics_lib/source/imgui_draw.cpp
+							${IMGUI_INC})
 endif()
 #install(TARGETS dd_graphics DESTINATION lib)

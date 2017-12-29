@@ -491,8 +491,8 @@ dd_array<DDM_Data> get_mesh_data(FbxVData &vdata, dd_array<FbxEData> &edata) {
 #pragma omp parallel
     {
       size_t cnt = 0;
-      int ithread = omp_get_thread_num();
-      int nthreads = omp_get_num_threads();
+      size_t ithread = (size_t)omp_get_thread_num();
+      size_t nthreads = (size_t)omp_get_num_threads();
       for (auto vert = vertbin.begin(); vert != vertbin.end(); ++vert, cnt++) {
         if (cnt % nthreads != ithread) continue;
         setMData(vert->second, vert->first, md, vdata);

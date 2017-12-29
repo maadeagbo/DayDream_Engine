@@ -2,7 +2,7 @@
 #include "ddFileIO.h"
 #include "ddTerminal.h"
 
-#define IM_ARRAYSIZE(_ARR) ((int)(sizeof(_ARR) / sizeof(*_ARR)))
+//#define IM_ARRAYSIZE(_ARR) ((int)(sizeof(_ARR) / sizeof(*_ARR)))
 
 namespace {
 bool windowShouldClose = false;
@@ -39,11 +39,86 @@ void ddEngine::startup_lua() {
   register_lfuncs();
 }
 
-void ddEngine::openWindow(const size_t width, const size_t height,
-                          EngineMode mode) {
+void ddEngine::dd_open_window(const size_t width, const size_t height,
+                              EngineMode mode) {
+  if (DD_GRAPHICS_API == 0) {
+    ddTerminal::post("Graphics API::OpenGL 4.3");
+  } else {
+    ddTerminal::post("Graphics API::Vulkan");
+  }
   window_w = (int)width;
   window_h = (int)height;
 
+  // window_load_SDL2(mode);
+  window_load_GLFW(mode);
+}
+
+void ddEngine::window_load_GLFW(EngineMode mode) {
+  // Initialize the library
+  if (!glfwInit()) {
+    printf("Error::GLFW::Could not initialize library.\n");
+    std::exit(EXIT_FAILURE);
+  }
+  // load OpenGL api
+  if (DD_GRAPHICS_API == 0) {
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+  } else {
+    // load Vulkan api
+  }
+
+  /* Create window */
+  int count;
+  GLFWmonitor *mntr = nullptr;
+  GLFWmonitor **mntrs = glfwGetMonitors(&count);
+
+  // select monitor
+  uint8_t m_selected = 0;
+  if (bool(mode & EngineMode::DD_SECOND_DISPLAY)) {
+    m_selected = 1;
+  }
+  uint8_t mntr_idx = (m_selected >= (uint8_t)count) ? 0 : m_selected;
+  if (bool(mode & EngineMode::DD_FULLSCREEN)) {
+    // set to native resolution
+    get_GLFW_native_res(mntrs, window_w, window_h, mntr_idx);
+    mntr = mntrs[mntr_idx];
+  }
+
+  main_window_glfw =
+      glfwCreateWindow(window_w, window_h, "DayDream Engine", mntr, NULL);
+  if (main_window_glfw == nullptr) {
+    printf("Error::GLFW::Failed to create GLFW window.\n");
+    glfwTerminate();
+    std::exit(EXIT_FAILURE);
+  }
+  // set window position
+  glfwSetWindowPos(main_window_glfw, 100, 100);
+  // glfwSetKeyCallback(handle, key_callback);
+  // glfwSetErrorCallback(error_callback);
+  ImGui_ImplGlfwGL3_Init(main_window_glfw, false);
+
+  glfwMakeContextCurrent(main_window_glfw);
+  /* Set vsync */
+  const int vsyncflag = bool(mode & EngineMode::DD_VSYNC) ? 1 : 0;
+  glfwSwapInterval(vsyncflag);
+
+  if (!DD_GPUFrontEnd::load_api_library(bool(mode & EngineMode::DD_GPU_INFO))) {
+    fprintf(stderr, "Failed to load graphics api library\n");
+    std::exit(EXIT_FAILURE);
+  }
+}
+
+/// \brief Get native monitor resolution
+void ddEngine::get_GLFW_native_res(GLFWmonitor **monitors, int &_w, int &_h,
+                                   const unsigned win_idx) {
+  const GLFWvidmode *mode = glfwGetVideoMode(monitors[win_idx]);
+  _w = mode->width;
+  _h = mode->height;
+}
+
+/*
+void ddEngine::window_load_SDL2(EngineMode mode) {
   uint32_t flags = SDL_WINDOW_OPENGL;
   int monitor_choice = 0, vsync_option = 0;
 
@@ -54,7 +129,7 @@ void ddEngine::openWindow(const size_t width, const size_t height,
   }
   if (bool(mode & EngineMode::DD_NO_CONSOLE)) {
 #ifdef WIN32
-    //FreeConsole();
+// FreeConsole();
 #endif
   }
   if (bool(mode & EngineMode::DD_FULLSCREEN)) {
@@ -83,7 +158,7 @@ void ddEngine::openWindow(const size_t width, const size_t height,
   SDL_GetWindowSize(main_window, &window_w, &window_h);
 
   // Setup ImGui binding
-  ImGui_ImplSdlGL3_Init(main_window);
+  //ImGui_ImplSdlGL3_Init(main_window);
 
   // set opengl version
   // SDL_GL_CONTEXT_CORE gives us only the newer version, deprecated
@@ -96,7 +171,7 @@ void ddEngine::openWindow(const size_t width, const size_t height,
   main_glcontext = SDL_GL_CreateContext(main_window);
   if (main_glcontext == NULL) {
     fprintf(stderr,
-            "Failed to create OpenGL 4.3 context and double buffering\n");
+            "Failed to create Graphics API context and double buffering\n");
     std::exit(EXIT_FAILURE);
   }
   // This makes our buffer swap un-syncronized with the monitor's vertical
@@ -104,30 +179,44 @@ void ddEngine::openWindow(const size_t width, const size_t height,
   SDL_GL_SetSwapInterval(vsync_option);
 
   if (!DD_GPUFrontEnd::load_api_library(bool(mode & EngineMode::DD_GPU_INFO))) {
-    fprintf(stderr, "Failed to load OpenGL generator\n");
+    fprintf(stderr, "Failed to load graphics api library\n");
     std::exit(EXIT_FAILURE);
   }
 }
+//*/
 
 /* Close miscellanious pieces*/
-void ddEngine::cleanUpContexts() {
-  ImGui_ImplSdlGL3_Shutdown();
+void ddEngine::clean_up() {
+  // ImGui_ImplSdlGL3_Shutdown();
+  ImGui_ImplGlfwGL3_Shutdown();
+  // clean_up_SDL();
+  clean_up_GLFW();
+}
+
+/*
+void ddEngine::clean_up_SDL() {
   // delete context
   SDL_GL_DeleteContext(main_glcontext);
   // destroy window
   SDL_DestroyWindow(main_window);
 }
+//*/
+
+void ddEngine::clean_up_GLFW() {
+  // delete context and destroy window
+  glfwDestroyWindow(main_window_glfw);
+}
 
 /// \brief Load correct sub-system based on init_flag
-void ddEngine::Launch() {
+void ddEngine::launch() {
   switch (init_flag) {
     case EngineState::VIEWER:
-      Load();
+      load();
       break;
     case EngineState::WORLD_BUILDER:
       break;
     case EngineState::MAIN:
-      Load();
+      load();
       break;
     default:
       break;
@@ -135,8 +224,8 @@ void ddEngine::Launch() {
 }
 
 /// \brief Select level and set parameters
-bool ddEngine::LevelSelect(const size_t w, const size_t h) {
-  openWindow(w, h, EngineMode::DD_GPU_INFO | EngineMode::DD_VSYNC);
+bool ddEngine::level_select(const size_t w, const size_t h) {
+  dd_open_window(w, h, EngineMode::DD_GPU_INFO | EngineMode::DD_VSYNC);
   // grab levels from startup script
   cbuff<512> startup_script;
   startup_script.format("%sscripts/startup.lua", ROOT_DIR);
@@ -170,10 +259,13 @@ bool ddEngine::LevelSelect(const size_t w, const size_t h) {
   while (!windowShouldClose && !launch) {
     DD_GPUFrontEnd::clear_screen(0.3f, 0.3f, 0.3f, 1.0f);
     // start imgui window processing
-    ImGui_ImplSdlGL3_NewFrame(main_window);
+    // ImGui_ImplSdlGL3_NewFrame(main_window);
+    ImGui_ImplGlfwGL3_NewFrame();
 
     // pole SDL events
-    updateSDL();
+    // update_SDL();
+    // poll GLFW events
+    update_GLFW();
 
     // Query for level to load
     float scrW = (float)w / 1.25f;
@@ -236,15 +328,16 @@ bool ddEngine::LevelSelect(const size_t w, const size_t h) {
     ImGui::End();
     ImGui::Render();
     // swap buffers
-    SDL_GL_SwapWindow(main_window);
+    // SDL_GL_SwapWindow(main_window);
+    glfwSwapBuffers(main_window_glfw);
   }
 
   ddTerminal::clearTerminal();
-  cleanUpContexts();
+  clean_up();
   return launch;
 }
 
-void ddEngine::Load() {
+void ddEngine::load() {
 #ifdef _WIN32
   std::_Ph<1> arg_1 = std::placeholders::_1;
 #else
@@ -356,7 +449,8 @@ void ddEngine::register_lfuncs() {
   add_func_to_scripts(main_lstate, dd_assets_create_agent, "create_agent");
 }
 
-void ddEngine::updateSDL() {
+/*
+void ddEngine::update_SDL() {
   // get keyboard events
   SDL_Event sdlEvent;
   ddInput::new_frame();
@@ -366,9 +460,9 @@ void ddEngine::updateSDL() {
 
     switch (sdlEvent.type) {
       case SDL_QUIT:
-        windowShouldClose = true;
+        main_q.shutdown_queue();
         break;
-      /* Look for a keypress */
+      // Look for a keypress
       case SDL_KEYDOWN:
         ddInput::update_keydown(sdlEvent.key.keysym);
         // reveal terminal
@@ -395,10 +489,18 @@ void ddEngine::updateSDL() {
     }
   }
 }
+//*/
+
+void ddEngine::update_GLFW() {
+  // get events
+  glfwPollEvents();
+  // track close event
+  if (glfwWindowShouldClose(main_window_glfw)) main_q.shutdown_queue();
+}
 
 /* Call in main function to begin up game loop
  */
-void ddEngine::Run() {
+void ddEngine::run() {
   // push some events to kick start the queue
   DD_LEvent _event;
 
@@ -460,7 +562,7 @@ void ddEngine::Run() {
 
   unprocessed_time -= frame_time;
   // pole SDL events
-  updateSDL();
+  update_SDL();
   // run event loop
   ResSpace::updateSceneGraph(&main_res, main_timer.getTimeFloat());
   gameLoop();
@@ -584,11 +686,13 @@ void ddEngine::gameLoop() {
 //*/
 
 /// \brief Clean up engine resources
-void ddEngine::cleanUp() {
+void ddEngine::shutdown() {
   ddTerminal::outTerminalHistory();  // save history
-  cleanUpContexts();
+  clean_up();
   // shutdown SDL2
-  SDL_Quit();
+  // SDL_Quit();
+  // shutdown glfw
+  glfwTerminate();
 }
 
 /*
@@ -704,7 +808,7 @@ void ddEngine::update(DD_LEvent &_event) {
                        ? EngineMode(init_options | EngineMode::DD_NO_CONSOLE)
                        : init_options;
 
-    openWindow(window_w, window_h, init_options);
+    dd_open_window(window_w, window_h, init_options);
     // set useful lua globals
     set_lua_global(main_lstate, "WINDOW_WIDTH", (int64_t)window_w);
     set_lua_global(main_lstate, "WINDOW_HEIGHT", (int64_t)window_h);
@@ -716,9 +820,12 @@ void ddEngine::update(DD_LEvent &_event) {
     printf("Run time: %.5f\r", ddTime::get_time_float());
 
     // start imgui window processing
-    ImGui_ImplSdlGL3_NewFrame(main_window);
+    // ImGui_ImplSdlGL3_NewFrame(main_window);
+    ImGui_ImplGlfwGL3_NewFrame();
     // pole SDL events
-    updateSDL();
+    // update_SDL();
+    // poll GLFW events
+    update_GLFW();
     // update terminal button presses
 
     // run scene graph
@@ -752,7 +859,8 @@ void ddEngine::update(DD_LEvent &_event) {
     // render IMGUI ui
     ImGui::Render();
     // swap buffers
-    SDL_GL_SwapWindow(main_window);
+    // SDL_GL_SwapWindow(main_window);
+    glfwSwapBuffers(main_window_glfw);
 
     // push event for starting next frame
     DD_LEvent new_event;

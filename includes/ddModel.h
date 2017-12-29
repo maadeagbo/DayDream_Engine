@@ -24,9 +24,9 @@
 *
 -----------------------------------------------------------------------------*/
 
+#include "ddIncludes.h"
 #include "ddMaterial.h"
 #include "ddMeshTypes.h"
-#include "ddIncludes.h"
 
 // struct DD_Model {
 //   std::string m_ID;

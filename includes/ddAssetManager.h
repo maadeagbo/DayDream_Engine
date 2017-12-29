@@ -1,14 +1,14 @@
 #pragma once
 
+#include "LuaHooks.h"
 #include "ddBaseAgent.h"
 #include "ddCamera.h"
+#include "ddIncludes.h"
 #include "ddLight.h"
-#include "LuaHooks.h"
 #include "ddMaterial.h"
 #include "ddModel.h"
 #include "ddSkeleton.h"
 #include "ddTexture2D.h"
-#include "ddIncludes.h"
 #include "freelist.h"
 
 #ifndef ASSETS_CONTAINER_MAX_SIZE
@@ -19,13 +19,13 @@
 #define ASSETS_CONTAINER_MIN_SIZE 50
 #endif  // !ASSETS_CONTAINER_MIN_SIZE
 
-#define ASSET_DECL(TYPE)               \
-  TYPE* spawn_##TYPE(const size_t id); \
+#define ASSET_DECL(TYPE)                \
+  TYPE* spawn_##TYPE(const size_t id);  \
   bool destroy_##TYPE(const size_t id); \
   TYPE* find##TYPE(const size_t id);
 
-#define ASSET_DECL_PTR(TYPE)           \
-  TYPE* spawn_##TYPE(const size_t id); \
+#define ASSET_DECL_PTR(TYPE)            \
+  TYPE* spawn_##TYPE(const size_t id);  \
   bool destroy_##TYPE(const size_t id); \
   TYPE* find##TYPE(const size_t id);
 
@@ -40,7 +40,7 @@
     CONTAINER[free_idx].id = id;                   \
     return &CONTAINER[free_idx];                   \
   }                                                \
-  bool destroy_##TYPE(const size_t id) {            \
+  bool destroy_##TYPE(const size_t id) {           \
     if (map_##CONTAINER.count(id) == 0) {          \
       return false;                                \
     } else {                                       \
@@ -69,7 +69,7 @@
     CONTAINER[free_idx].id = id;                   \
     return CONTAINER[free_idx];                    \
   }                                                \
-  bool destroy_##TYPE(const size_t id) {            \
+  bool destroy_##TYPE(const size_t id) {           \
     if (map_##CONTAINER.count(id) == 0) {          \
       return false;                                \
     } else {                                       \

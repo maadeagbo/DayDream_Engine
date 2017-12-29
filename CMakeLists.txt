@@ -75,24 +75,70 @@ if(USE_STATIC_LINKAGE)
 	endforeach(flag_var)
 endif()
 
+# sets module path
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+
 # add paths to freetype lib and sdl2
 if(NOT UNIX)
-	set(ENV{SDL2DIR} ${CMAKE_CURRENT_SOURCE_DIR}/SDL2-2.0.7)
 	set(ENV{FREETYPE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/freetype-2.7)
 	set(ENV{BULLET_ROOT} ${CMAKE_CURRENT_SOURCE_DIR}/bullet3_287)
 endif()
 
-# includes cmake/FindSDL2.cmake and sets module path
-set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
-find_package(SDL2 REQUIRED)
-include_directories(${SDL2_INCLUDE_DIR})
+# set windowing environment
+set(DD_USE_GLFW ON CACHE BOOL "Sets engine to use GLFW3 instead of SDL2" FORCE)
+
+if(NOT DD_USE_GLFW)
+	if (MSVC)
+		# add path to SDL2
+		set(ENV{SDL2DIR} ${CMAKE_CURRENT_SOURCE_DIR}/SDL2-2.0.7)
+	endif()
+	find_package(SDL2 REQUIRED)
+	include_directories(${SDL2_INCLUDE_DIR})
+else()
+	# GLFW 3
+	# add include directory
+	find_path( GLFW_INCLUDE_DIR 
+    NAMES
+        GLFW/glfw3.h
+    HINTS
+        "${CMAKE_CURRENT_SOURCE_DIR}/glfw/include"
+    PATHS
+        "$ENV{PROGRAMFILES}/GLFW/include"
+        "${OPENGL_INCLUDE_DIR}"
+        /usr/openwin/share/include
+        /usr/openwin/include
+        /usr/X11R6/include
+        /usr/include/X11
+        /opt/graphics/OpenGL/include
+        /opt/graphics/OpenGL/contrib/libglfw
+        /usr/local/include
+        /usr/include/GL
+        /usr/include
+    DOC 
+        "The directory where GLFW/glfw3.h resides"
+	)
+	# check if includes where found
+	if (GLFW_INCLUDE_DIR)
+		include_directories(${GLFW_INCLUDE_DIR})
+	else()
+		message(FATAL_ERROR "GLFW includes not found")
+	endif()
+	# add project
+	set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+	set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+	set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+	add_subdirectory(${PROJECT_SOURCE_DIR}/glfw)
+endif()
 
 # add bullet library
 if(MSVC)
 	add_subdirectory(${PROJECT_SOURCE_DIR}/bullet3_287)
 endif()
-#  add graphic library
-include(${PROJECT_SOURCE_DIR}/graphics_lib/CMakeLists.txt)
+
+#  add graphic library and set API
+set(DD_GRAPHICS_API_VULKAN OFF CACHE BOOL "Sets engine to use vulkan api" FORCE)
+add_subdirectory(${PROJECT_SOURCE_DIR}/graphics_lib)
+#include(${PROJECT_SOURCE_DIR}/graphics_lib/CMakeLists.txt)
 
 # include directories for project
 find_path(GLM_PATH glm.hpp
@@ -152,10 +198,10 @@ find_package(Freetype REQUIRED)
 include_directories(${FREETYPE_INCLUDE_DIRS})
 
 # use the file(GLOB...) or file(GLOB_RECURSE...) to grab wildcard src files
-file(GLOB_RECURSE SOURCES 	"${CMAKE_SOURCE_DIR}/Core/*.cpp"
+file(GLOB_RECURSE SOURCES 	"${CMAKE_SOURCE_DIR}/src/*.cpp"
 							"${CMAKE_SOURCE_DIR}/includes/*.hpp"
 							"${CMAKE_SOURCE_DIR}/includes/*.h"
-							"${CMAKE_SOURCE_DIR}/Core/*.c")
+							"${CMAKE_SOURCE_DIR}/src/*.c")
 # file(GLOB IMGUI_SRC "${CMAKE_SOURCE_DIR}/imgui/*.cpp")
 
 # add defines for engine resources
@@ -173,6 +219,11 @@ if (MSVC)
 	add_definitions("-D_SCL_SECURE_NO_WARNINGS")
 	add_definitions("-D_CRT_SECURE_NO_WARNINGS")
 endif()
+if (DD_GRAPHICS_API_VULKAN)
+	add_definitions("-DDD_GRAPHICS_API=1")
+else()
+	add_definitions("-DDD_GRAPHICS_API=0")
+endif()
 
 # use file(GLOB_RECURSE...), add_library(dd_engine...), and
 # source_group(<group name> FILES...) to create folder structure in project
@@ -180,8 +231,8 @@ endif()
 file(GLOB_RECURSE PROJECT_SOURCES
 	LIST_DIRECTORIES false
     "${CMAKE_SOURCE_DIR}/Projects/*.cpp*"
-    "${CMAKE_SOURCE_DIR}/Core/AssetViewer/*.cpp*"
-	"${CMAKE_SOURCE_DIR}/Core/AssetViewer/*.h*"
+    "${CMAKE_SOURCE_DIR}/src/AssetViewer/*.cpp*"
+	"${CMAKE_SOURCE_DIR}/src/AssetViewer/*.h*"
 	"${CMAKE_SOURCE_DIR}/Projects/*.h*")
 
 foreach(_proj_source IN ITEMS ${PROJECT_SOURCES})
@@ -228,6 +279,7 @@ foreach(_proj_source IN ITEMS ${SCRIPTS})
 endforeach()
 
 include_directories(${CMAKE_SOURCE_DIR}/includes
+	${PROJECT_SOURCE_DIR}/graphics_lib/includes
 	${CMAKE_SOURCE_DIR}/glm/
 	${SOIL_PATH}
 	${PROJ_HEADERS}
@@ -292,17 +344,6 @@ elseif(MSVC)
 		message(FATAL_ERROR "Lua library not found")
 	endif()
 endif()
-if(MINGW)
-	find_library(FS_LIB stdc++fs ${MY_GCC_LIB})
-	if(NOT FS_LIB)
-		message(FATAL_ERROR "C++17 File System library not found")
-	endif()
-# elseif(WIN32)
-# 	find_library(FS_LIB stdc++fs)
-# 	if(NOT FS_LIB)
-# 		message(FATAL_ERROR "C++17 File System library not found")
-# 	endif()
-endif()
 
 # bullet physics and graphics libraries
 if(MSVC)
@@ -343,15 +384,23 @@ set_property(DIRECTORY ${PROJECT_SOURCE_DIR}
 			PROPERTY VS_STARTUP_PROJECT
 			dd_engine)
 
+# set windowing library
+if(DD_USE_GLFW)
+	set(WIN_LIB glfw)
+else()
+	set(WIN_LIB ${SDL2_LIBRARY})
+endif()
+
 if(NOT WIN32)
 	# filesystem goes last
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -lstdc++fs")
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -lstdc++fs")
 
-	target_link_libraries(dd_engine dd_graphics ${SOIL_LIB} ${OPENGL_gl_LIBRARY} ${BULLET_LIB}
-		${SDL2_LIBRARY} ${VRPN_LIB} ${FREETYPE_LIBRARIES} ${FS_LIB} ${LUA_LIB}
-		${DD_GPULIB})
+	target_link_libraries(dd_engine ${WIN_LIB} dd_graphics ${OPENGL_gl_LIBRARY} 
+		${BULLET_LIB} ${VRPN_LIB} ${FREETYPE_LIBRARIES} ${FS_LIB} ${DD_GPULIB}
+		${LUA_LIB} ${SOIL_LIB})
 else()
-	target_link_libraries(dd_engine dd_graphics ${SOIL_LIB} ${OPENGL_gl_LIBRARY} ${BULLET_LIB}
-		${SDL2_LIBRARY} ${VRPN_LIB} ${FREETYPE_LIBRARIES} ${LUA_LIB} ${DD_GPULIB})
+	target_link_libraries(dd_engine ${WIN_LIB} dd_graphics ${OPENGL_gl_LIBRARY} 
+		${BULLET_LIB} ${VRPN_LIB} ${FREETYPE_LIBRARIES} ${LUA_LIB} ${DD_GPULIB}
+		${SOIL_LIB} )
 endif()

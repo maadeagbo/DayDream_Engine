@@ -15,10 +15,14 @@
 -----------------------------------------------------------------------------*/
 
 #include <imgui.h>
-#include <imgui_impl_sdl_gl3.h>
+#include <imgui_impl_glfw_gl3.h>
+#include "ddIncludes.h"
 #include "ddInput.h"
 #include "ddTimer.h"
-#include "ddIncludes.h"
+
+#ifdef __linux__
+#pragma GCC diagnostic ignored "-Wformat-security"
+#endif
 
 enum class TerminalCmds : unsigned { NULL_CMD = 0x0, RENDER_DEBUG = 0x1 };
 ENABLE_BITMASK_OPERATORS(TerminalCmds)

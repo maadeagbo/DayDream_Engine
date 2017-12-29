@@ -3,9 +3,9 @@
 // simple template container library
 #include "Container.h"
 // simple string library
-#include "StringLib.h"
 #include <inttypes.h>
 #include <functional>
+#include "StringLib.h"
 
 extern "C" {
 #include "lauxlib.h"

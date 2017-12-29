@@ -16,7 +16,8 @@
 *
 -----------------------------------------------------------------------------*/
 
-#include <SDL.h>
+//#include <SDL.h>
+#include "GLFW/glfw3.h"
 #include "ddIncludes.h"
 
 enum DD_Keys {
@@ -85,6 +86,7 @@ struct InputData {
 namespace ddInput {
 /// \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine
 void new_frame();
+/*
 /// \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine
 void update_keyup(SDL_Keysym& key);
 /// \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine
@@ -95,6 +97,7 @@ void update_mouse_button(SDL_MouseButtonEvent& key, const bool b_flag);
 void update_mouse_pos(SDL_MouseMotionEvent& key);
 /// \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine
 void update_mouse_wheel(SDL_MouseWheelEvent& key);
+//*/
 /// \brief Retrieve input for current frame
 /// \return InputData containing key press information
 const InputData& get_input();
