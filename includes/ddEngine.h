@@ -46,7 +46,6 @@ struct ddEngine {
     dd_assets_cleanup();
   }
 
-  // void clean_up_SDL();
   void clean_up_GLFW();
   void clean_up();
   void startup_lua();
@@ -56,13 +55,10 @@ struct ddEngine {
   bool level_select(const size_t w = 600, const size_t h = 600);
   void run();
   void update(DD_LEvent& _event);
-  // void execScript(std::string script_file);
   bool execTerminal(const char* cmd);
   void dd_open_window(const size_t width, const size_t height,
                       EngineMode mode = EngineMode::DD_NOT_SET);
-  // void window_load_SDL2(EngineMode mode);
   void window_load_GLFW(EngineMode mode);
-  // void update_SDL();
   void update_GLFW();
   void shutdown();
 
@@ -72,9 +68,7 @@ struct ddEngine {
   int window_w, window_h;
   GameState main_state;
   EngineState init_flag;
-  // SDL_Window* main_window;
   GLFWwindow* main_window_glfw;
-  //SDL_GLContext main_glcontext;
   lua_State* main_lstate;
 
   ddQueue main_q;

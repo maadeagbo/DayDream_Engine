@@ -32,10 +32,6 @@ const cbuff<32> process_terminal_hash("process_terminal");
 const cbuff<32> init_screen_hash("init_screen");
 }  // namespace
 
-static void error_callback_glfw(int error, const char *description) {
-  fprintf(stderr, "Error: %s\n", description);
-}
-
 void ddEngine::startup_lua() {
   main_lstate = init_lua_state();
   main_q.set_lua_ptr(main_lstate);
@@ -98,15 +94,8 @@ void ddEngine::window_load_GLFW(EngineMode mode) {
   }
   // set window position
   glfwSetWindowPos(main_window_glfw, 100, 100);
-
-  // set callbacks for input
   glfwSetKeyCallback(main_window_glfw, dd_key_callback);
-  glfwSetCursorPosCallback(main_window_glfw, dd_mouse_pos_callback);
-  glfwSetErrorCallback(error_callback_glfw);
-  glfwSetMouseButtonCallback(main_window_glfw, dd_mouse_click_callback);
-  glfwSetScrollCallback(main_window_glfw, dd_scroll_callback);
-
-  // initialize GLFW3
+  // glfwSetErrorCallback(error_callback);
   ImGui_ImplGlfwGL3_Init(main_window_glfw, false);
 
   glfwMakeContextCurrent(main_window_glfw);
@@ -128,6 +117,74 @@ void ddEngine::get_GLFW_native_res(GLFWmonitor **monitors, int &_w, int &_h,
   _h = mode->height;
 }
 
+/*
+void ddEngine::window_load_SDL2(EngineMode mode) {
+  uint32_t flags = SDL_WINDOW_OPENGL;
+  int monitor_choice = 0, vsync_option = 0;
+
+  // engine flags
+  if (bool(mode & EngineMode::DD_DEBUG)) {
+    flag_debug = true;
+    ddTerminal::flipDebugFlag();
+  }
+  if (bool(mode & EngineMode::DD_NO_CONSOLE)) {
+#ifdef WIN32
+// FreeConsole();
+#endif
+  }
+  if (bool(mode & EngineMode::DD_FULLSCREEN)) {
+    flags |= SDL_WINDOW_FULLSCREEN;
+    // flags |= SDL_WINDOW_FULLSCREEN_DESKTOP; //use this for fake fullscreen
+  }
+  if (bool(mode & EngineMode::DD_SECOND_DISPLAY)) {
+    monitor_choice = 1;
+  }
+  if (bool(mode & EngineMode::DD_VSYNC)) {
+    vsync_option = 1;
+  }
+
+  // init SDL2
+  if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    fprintf(stderr, "Failed to init SDL\n");
+    std::exit(EXIT_FAILURE);
+  }
+  // create centered window (set hints before)
+  // SDL_SetHint(SDL_HINT_RENDER_VSYNC, "1");
+  main_window = SDL_CreateWindow("DayDream Engine Alpha",
+                                 SDL_WINDOWPOS_CENTERED_DISPLAY(monitor_choice),
+                                 SDL_WINDOWPOS_CENTERED_DISPLAY(monitor_choice),
+                                 window_w, window_h, flags);
+  // reset base width and height incase fullscreen set
+  SDL_GetWindowSize(main_window, &window_w, &window_h);
+
+  // Setup ImGui binding
+  //ImGui_ImplSdlGL3_Init(main_window);
+
+  // set opengl version
+  // SDL_GL_CONTEXT_CORE gives us only the newer version, deprecated
+  // functions are disabled
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
+  main_glcontext = SDL_GL_CreateContext(main_window);
+  if (main_glcontext == NULL) {
+    fprintf(stderr,
+            "Failed to create Graphics API context and double buffering\n");
+    std::exit(EXIT_FAILURE);
+  }
+  // This makes our buffer swap un-syncronized with the monitor's vertical
+  // refresh
+  SDL_GL_SetSwapInterval(vsync_option);
+
+  if (!DD_GPUFrontEnd::load_api_library(bool(mode & EngineMode::DD_GPU_INFO))) {
+    fprintf(stderr, "Failed to load graphics api library\n");
+    std::exit(EXIT_FAILURE);
+  }
+}
+//*/
+
 /* Close miscellanious pieces*/
 void ddEngine::clean_up() {
   // ImGui_ImplSdlGL3_Shutdown();
@@ -135,6 +192,15 @@ void ddEngine::clean_up() {
   // clean_up_SDL();
   clean_up_GLFW();
 }
+
+/*
+void ddEngine::clean_up_SDL() {
+  // delete context
+  SDL_GL_DeleteContext(main_glcontext);
+  // destroy window
+  SDL_DestroyWindow(main_window);
+}
+//*/
 
 void ddEngine::clean_up_GLFW() {
   // delete context and destroy window
@@ -383,16 +449,54 @@ void ddEngine::register_lfuncs() {
   add_func_to_scripts(main_lstate, dd_assets_create_agent, "create_agent");
 }
 
+/*
+void ddEngine::update_SDL() {
+  // get keyboard events
+  SDL_Event sdlEvent;
+  ddInput::new_frame();
+  while (SDL_PollEvent(&sdlEvent)) {
+    // imgui process event
+    ImGui_ImplSdlGL3_ProcessEvent(&sdlEvent);
+
+    switch (sdlEvent.type) {
+      case SDL_QUIT:
+        main_q.shutdown_queue();
+        break;
+      // Look for a keypress
+      case SDL_KEYDOWN:
+        ddInput::update_keydown(sdlEvent.key.keysym);
+        // reveal terminal
+        if (sdlEvent.key.keysym.scancode == SDL_SCANCODE_GRAVE) {
+          ddTerminal::flipDebugFlag();
+          flag_debug ^= 1;
+        }
+        break;
+      case SDL_KEYUP:
+        ddInput::update_keyup(sdlEvent.key.keysym);
+        break;
+      case SDL_MOUSEBUTTONDOWN:
+        ddInput::update_mouse_button(sdlEvent.button, true);
+        break;
+      case SDL_MOUSEBUTTONUP:
+        ddInput::update_mouse_button(sdlEvent.button, false);
+        break;
+      case SDL_MOUSEMOTION:
+        ddInput::update_mouse_pos(sdlEvent.motion);
+        break;
+      case SDL_MOUSEWHEEL:
+        ddInput::update_mouse_wheel(sdlEvent.wheel);
+        break;
+    }
+  }
+}
+//*/
+
 void ddEngine::update_GLFW() {
   // get events
   glfwPollEvents();
   // track close event
-  InputData idata = ddInput::get_input();
-  if (idata.keys[(int)DD_Keys::Escape_Key].active) {
-    glfwSetWindowShouldClose(main_window_glfw, GLFW_TRUE);  // default exit
-  }
   if (glfwWindowShouldClose(main_window_glfw)) {
-    windowShouldClose = true;  // for launch screen
+    windowShouldClose = true; // for launch screen
     main_q.shutdown_queue();
   }
 }
@@ -502,6 +606,87 @@ void ddEngine::run() {
 }
   //*/
 }
+/*
+void ddEngine::gameLoop() {
+  switch (main_state) {
+    case GameState::LOADING:
+      // ********* start loading resources to RAM *********
+      if (!load_assets) {
+        if (init_flag == EngineState::VIEWER) {
+          lvl_resource = std::string(ROOT_DIR) + "Core/AssetViewer/assets";
+        }
+        // load resources on separate async thread
+        load_RES = std::async(std::launch::async, ResSpace::Load, &main_res,
+                              lvl_resource.c_str());
+        load_assets = true;
+        loading_lvl = false;
+        ddTerminal::post("[status] Initializing level...\n");
+      } else if (load_assets && !loading_lvl) {
+        // wait for resources to load
+        if (load_RES.wait_for(timespan) == std::future_status::ready) {
+          main_res.queue = &main_q;
+          // load level on separate thread
+          switch (init_flag) {
+            case EngineState::VIEWER:
+              load_LVL = std::async(std::launch::async, &DD_AssetViewer::Load,
+                                    &main_viewer);
+              break;
+            case EngineState::WORLD_BUILDER:
+              break;
+            case EngineState::MAIN:
+              load_LVL = std::async(std::launch::async,
+                                    &ddEngine::InitCurrentLevel, this);
+              break;
+            default:
+              break;
+          }
+          loading_lvl = true;
+          loading_agents = false;
+          ddTerminal::post("[status] Loading assets to RAM...\n");
+        }
+      } else if (loading_lvl && !loading_agents) {
+        if (load_LVL.wait_for(timespan) == std::future_status::ready) {
+          // load agents to RAM on separate thread
+          load_RAM = std::async(std::launch::async,
+                                ResSpace::loadAgentsToMemory, &main_res);
+          loading_agents = true;
+        }
+      }
+      // ********* start loading resources to GPU *********
+      else if (loading_agents && !async_done) {
+        if (load_RAM.wait_for(timespan) == std::future_status::ready) {
+          async_done = true;
+          ddTerminal::post("[status] Loading assets to GPU\n");
+        }
+      } else if (async_done) {
+        if (p_tex_loading) {
+          // load all particle textures
+          p_tex_loading = main_renderer.m_particleSys->Init();
+        } else {
+          // finished loading particle textures
+          if (lvl_agents < main_res.m_num_agents) {
+            ResSpace::loadAgentToGPU(&main_res, lvl_agents);
+            lvl_agents += 1;
+          } else {
+            main_renderer.LoadEngineAssets();
+            ddTerminal::post("[status] Finished loading to GPU\n");
+            main_state = GameState::ACTIVE;
+          }
+        }
+      }
+      break;
+    case GameState::PAUSE:
+      break;
+    case GameState::ACTIVE:
+      // ACTIVE GAME STATE
+      LoadQueue();
+      main_q.ProcessQueue();
+      break;
+    default:
+      break;
+  }
+}
+//*/
 
 /// \brief Clean up engine resources
 void ddEngine::shutdown() {
@@ -512,6 +697,61 @@ void ddEngine::shutdown() {
   // shutdown glfw
   glfwTerminate();
 }
+
+/*
+void ddEngine::LoadQueue() {
+  // THINGS TO DO ONCE PER FRAME IN ORDER
+  float frametime = main_timer.getFrameTime();
+  float gametime = main_timer.getTimeFloat();
+
+  DD_Event inputE;
+  inputE.m_total_runtime = gametime;
+  inputE.m_time = frametime;
+  inputE.m_type = "input";
+  inputE.m_message = main_input.GetInput();
+  main_q.push(inputE);
+
+  DD_Event vrE;
+  vrE.m_total_runtime = gametime;
+  vrE.m_time = frametime;
+  vrE.m_type = "VR";
+  main_q.push(vrE);
+
+  // update Viewer (if active)
+  if (init_flag == EngineState::VIEWER) {
+    DD_Event vrV;
+    vrV.m_total_runtime = gametime;
+    vrV.m_time = frametime;
+    vrV.m_type = "viewer";
+    main_q.push(vrV);
+  }
+
+  // update AI
+  DD_Event aiE;
+  aiE.m_total_runtime = gametime;
+  aiE.m_time = frametime;
+  aiE.m_type = "update_AI";
+  main_q.push(aiE);
+
+  // query for posts
+  main_q.GetPosts("post", frametime, gametime);
+  main_q.GetPosts("post_compute", frametime, gametime);
+
+  // process terminal commands
+  bool more_cmds = true;
+  while (more_cmds) {
+    const char* cmd = ddTerminal::pollBuffer();
+    more_cmds = execTerminal(cmd, frametime);
+  }
+
+  // update animation (last thing to update before rendering)
+  DD_Event animE;
+  animE.m_time = frametime;
+  animE.m_total_runtime = gametime;
+  animE.m_type = "update_animation";
+  main_q.push(animE);
+}
+//*/
 
 // void ddEngine::execScript(std::string script_file) {
 //  ddIO script;
@@ -580,6 +820,7 @@ void ddEngine::update(DD_LEvent &_event) {
     DD_GPUFrontEnd::clear_screen();
 
     ddTime::update();
+    printf("Run time: %.5f\r", ddTime::get_time_float());
 
     // start imgui window processing
     // ImGui_ImplSdlGL3_NewFrame(main_window);
@@ -599,12 +840,6 @@ void ddEngine::update(DD_LEvent &_event) {
     q_push(new_event);
 
     // process terminal
-    InputData idata = ddInput::get_input();
-    if (idata.keys[DD_Keys::TILDE].active) {
-      ddTerminal::flipDebugFlag();
-      flag_debug ^= 1;
-    }
-
     new_event.handle = terminal_hash;
     q_push(new_event);
 
@@ -652,3 +887,36 @@ void ddEngine::update(DD_LEvent &_event) {
     q_push(_event);
   }
 }
+
+/*
+void ddEngine::InitCurrentLevel() {
+  if (init_flag != EngineState::MAIN) {
+    return;
+  }
+
+  DD_GameLevel* lvl = main_lvl[current_lvl];
+  // log dimensions
+  lvl->m_screenH = window_h;
+  lvl->m_screenW = window_w;
+  // log resource bin
+  lvl->res_ptr = &main_res;
+  lvl->Init();
+  // register handlers
+  size_t range = lvl->num_handlers;
+  for (size_t i = 0; i < range; i++) {
+    if (lvl->tickets[i] == "post") {
+      main_q.RegisterPoster(lvl->handlers[i]);
+    } else {
+      main_q.RegisterHandler(lvl->handlers[i], lvl->tickets[i].c_str());
+    }
+  }
+  // skybox
+  if (main_lvl[current_lvl]->m_cubeMapID != "") {
+    main_renderer.m_lvl_cubMap = main_lvl[current_lvl]->m_cubeMapID;
+  }
+  // vr attributes
+  main_renderer.m_scrHorzDist = main_lvl[current_lvl]->m_scrHorzDist;
+  main_renderer.m_scrVertDist = main_lvl[current_lvl]->m_scrVertDist;
+  main_renderer.m_flagDCM = main_lvl[current_lvl]->m_flagDynamicCubeMap;
+}
+//*/

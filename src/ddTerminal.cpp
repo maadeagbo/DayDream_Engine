@@ -200,21 +200,23 @@ DD_Event ddTerminal::getInput(DD_Event& event) {
 //*/
 
 void ddTerminal::get_input(DD_LEvent& _event) {
-  // InputData idata = ddInput::get_input();
+  InputData idata = ddInput::get_input();
 
-  // last_button_press += ddTime::get_frame_time();
-  // if (idata.keys[DD_Keys::UP_KEY].active && last_button_press > 0.15f) {
-  //   up_pressed = true;
-  //   last_button_press = 0.f;
-  // }
-  // if (idata.keys[DD_Keys::DOWN_KEY].active && last_button_press > 0.15f) {
-  //   down_pressed = true;
-  //   last_button_press = 0.f;
-  // }
-  // if (idata.keys[DD_Keys::TAB_Key].active && last_button_press > 0.15f) {
-  //   tab_pressed = true;
-  //   last_button_press = 0.f;
-  // }
+  last_button_press += ddTime::get_frame_time();
+  if (idata.keys[DD_Keys::UP_KEY].active && last_button_press > 0.15f) {
+    printf("Bang\n");
+
+    up_pressed = true;
+    last_button_press = 0.f;
+  }
+  if (idata.keys[DD_Keys::DOWN_KEY].active && last_button_press > 0.15f) {
+    down_pressed = true;
+    last_button_press = 0.f;
+  }
+  if (idata.keys[DD_Keys::TAB_Key].active && last_button_press > 0.15f) {
+    tab_pressed = true;
+    last_button_press = 0.f;
+  }
 }
 
 void ddTerminal::inTerminalHistory() {

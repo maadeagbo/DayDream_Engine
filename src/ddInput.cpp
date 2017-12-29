@@ -15,7 +15,7 @@ InputData global_input;
 /// \param sdlk SDL2 key code
 /// \param b_flag
 /// \param i_flag
-//void edit_key(SDL_Keysym& key, const bool b_flag, const int i_flag);
+void edit_key(int key, const bool b_flag, const int i_flag);
 
 /*
 inputBuff* DD_Input_::GetInput() {
@@ -141,137 +141,208 @@ void update_mouse_wheel(SDL_MouseWheelEvent& key) {
   global_input.keys[(unsigned)DD_Keys::MOUSE_SCROLL].order = key.y;
 }
 
-const InputData& get_input() { return global_input; }
-
 //*/
+
+const InputData& get_input() { return global_input; }
 
 }  // namespace ddInput
 
-/*
-void edit_key(SDL_Keysym& key, const bool b_flag, const int i_flag) {
-  switch (key.sym) {
-    case SDLK_a:
+//*
+void edit_key(int key, const bool b_flag, const int i_flag) {
+  switch (key) {
+    case GLFW_KEY_A:
       global_input.keys[(unsigned)DD_Keys::A_Key] = {b_flag, i_flag};
       break;
-    case SDLK_b:
+    case GLFW_KEY_B:
       global_input.keys[(unsigned)DD_Keys::B_Key] = {b_flag, i_flag};
       break;
-    case SDLK_c:
+    case GLFW_KEY_C:
       global_input.keys[(unsigned)DD_Keys::C_Key] = {b_flag, i_flag};
       break;
-    case SDLK_d:
+    case GLFW_KEY_D:
       global_input.keys[(unsigned)DD_Keys::D_Key] = {b_flag, i_flag};
       break;
-    case SDLK_e:
+    case GLFW_KEY_E:
       global_input.keys[(unsigned)DD_Keys::E_Key] = {b_flag, i_flag};
       break;
-    case SDLK_f:
+    case GLFW_KEY_F:
       global_input.keys[(unsigned)DD_Keys::F_Key] = {b_flag, i_flag};
       break;
-    case SDLK_g:
+    case GLFW_KEY_G:
       global_input.keys[(unsigned)DD_Keys::G_Key] = {b_flag, i_flag};
       break;
-    case SDLK_h:
+    case GLFW_KEY_H:
       global_input.keys[(unsigned)DD_Keys::H_Key] = {b_flag, i_flag};
       break;
-    case SDLK_i:
+    case GLFW_KEY_I:
       global_input.keys[(unsigned)DD_Keys::I_Key] = {b_flag, i_flag};
       break;
-    case SDLK_j:
+    case GLFW_KEY_J:
       global_input.keys[(unsigned)DD_Keys::J_Key] = {b_flag, i_flag};
       break;
-    case SDLK_k:
+    case GLFW_KEY_K:
       global_input.keys[(unsigned)DD_Keys::K_Key] = {b_flag, i_flag};
       break;
-    case SDLK_l:
+    case GLFW_KEY_L:
       global_input.keys[(unsigned)DD_Keys::L_Key] = {b_flag, i_flag};
       break;
-    case SDLK_m:
+    case GLFW_KEY_M:
       global_input.keys[(unsigned)DD_Keys::M_Key] = {b_flag, i_flag};
       break;
-    case SDLK_n:
+    case GLFW_KEY_N:
       global_input.keys[(unsigned)DD_Keys::N_Key] = {b_flag, i_flag};
       break;
-    case SDLK_o:
+    case GLFW_KEY_O:
       global_input.keys[(unsigned)DD_Keys::O_Key] = {b_flag, i_flag};
       break;
-    case SDLK_p:
+    case GLFW_KEY_P:
       global_input.keys[(unsigned)DD_Keys::P_Key] = {b_flag, i_flag};
       break;
-    case SDLK_q:
+    case GLFW_KEY_Q:
       global_input.keys[(unsigned)DD_Keys::Q_Key] = {b_flag, i_flag};
       break;
-    case SDLK_r:
+    case GLFW_KEY_R:
       global_input.keys[(unsigned)DD_Keys::R_Key] = {b_flag, i_flag};
       break;
-    case SDLK_s:
+    case GLFW_KEY_S:
       global_input.keys[(unsigned)DD_Keys::S_Key] = {b_flag, i_flag};
       break;
-    case SDLK_t:
+    case GLFW_KEY_T:
       global_input.keys[(unsigned)DD_Keys::T_Key] = {b_flag, i_flag};
       break;
-    case SDLK_u:
+    case GLFW_KEY_U:
       global_input.keys[(unsigned)DD_Keys::U_Key] = {b_flag, i_flag};
       break;
-    case SDLK_v:
+    case GLFW_KEY_V:
       global_input.keys[(unsigned)DD_Keys::V_Key] = {b_flag, i_flag};
       break;
-    case SDLK_w:
+    case GLFW_KEY_W:
       global_input.keys[(unsigned)DD_Keys::W_Key] = {b_flag, i_flag};
       break;
-    case SDLK_x:
+    case GLFW_KEY_X:
       global_input.keys[(unsigned)DD_Keys::X_Key] = {b_flag, i_flag};
       break;
-    case SDLK_y:
+    case GLFW_KEY_Y:
       global_input.keys[(unsigned)DD_Keys::Y_Key] = {b_flag, i_flag};
       break;
-    case SDLK_z:
+    case GLFW_KEY_Z:
       global_input.keys[(unsigned)DD_Keys::Z_Key] = {b_flag, i_flag};
       break;
-    case SDLK_SPACE:
+    case GLFW_KEY_SPACE:
       global_input.keys[(unsigned)DD_Keys::Space_Key] = {b_flag, i_flag};
       break;
-    case SDLK_KP_ENTER:  // doesn't work
+    case GLFW_KEY_ENTER:
       global_input.keys[(unsigned)DD_Keys::Enter_Key] = {b_flag, i_flag};
       break;
-    case SDLK_ESCAPE:
+    case GLFW_KEY_ESCAPE:
       global_input.keys[(unsigned)DD_Keys::Escape_Key] = {b_flag, i_flag};
       break;
-    case SDLK_LALT:
+    case GLFW_KEY_LEFT_ALT:
       global_input.keys[(unsigned)DD_Keys::ALT_L_Key] = {b_flag, i_flag};
       break;
-    case SDLK_LCTRL:
+    case GLFW_KEY_LEFT_CONTROL:
       global_input.keys[(unsigned)DD_Keys::CTRL_L_Key] = {b_flag, i_flag};
       break;
-    case SDLK_LSHIFT:
+    case GLFW_KEY_LEFT_SHIFT:
       global_input.keys[(unsigned)DD_Keys::Shift_L_Key] = {b_flag, i_flag};
       break;
-    case SDLK_RALT:
+    case GLFW_KEY_RIGHT_ALT:
       global_input.keys[(unsigned)DD_Keys::ALT_R_Key] = {b_flag, i_flag};
       break;
-    case SDLK_RCTRL:
+    case GLFW_KEY_RIGHT_CONTROL:
       global_input.keys[(unsigned)DD_Keys::CTRL_R_Key] = {b_flag, i_flag};
       break;
-    case SDLK_RSHIFT:
+    case GLFW_KEY_RIGHT_SHIFT:
       global_input.keys[(unsigned)DD_Keys::SHIFT_R_Key] = {b_flag, i_flag};
       break;
-    case SDLK_UP:
+    case GLFW_KEY_UP:
       global_input.keys[(unsigned)DD_Keys::UP_KEY] = {b_flag, i_flag};
       break;
-    case SDLK_DOWN:
+    case GLFW_KEY_DOWN:
       global_input.keys[(unsigned)DD_Keys::DOWN_KEY] = {b_flag, i_flag};
       break;
-    case SDLK_RIGHT:
+    case GLFW_KEY_RIGHT:
       global_input.keys[(unsigned)DD_Keys::RIGHT_KEY] = {b_flag, i_flag};
       break;
-    case SDLK_LEFT:
+    case GLFW_KEY_LEFT:
       global_input.keys[(unsigned)DD_Keys::LEFT_KEY] = {b_flag, i_flag};
       break;
-    case SDLK_TAB:
+    case GLFW_KEY_TAB:
       global_input.keys[(unsigned)DD_Keys::TAB_Key] = {b_flag, i_flag};
+      break;
+    case GLFW_KEY_GRAVE_ACCENT:
+      global_input.keys[(unsigned)DD_Keys::TILDE] = {b_flag, i_flag};
       break;
     default:
       break;
   }
 }
 //*/
+
+void dd_key_callback(GLFWwindow* window, int key, int scancode, int action,
+                     int mods) {
+  if (action == GLFW_PRESS) {
+    edit_key(key, true, global_input.order_tracker);  // key down
+  }
+  if (action == GLFW_RELEASE) {
+    edit_key(key, false, global_input.order_tracker);  // key up
+  }
+}
+
+void dd_mouse_pos_callback(GLFWwindow* window, double xpos, double ypos) {
+  if (flag_first_mouse) {
+    // set up for 1st movement
+    mouse_lastx = (int)xpos;
+    mouse_lasty = (int)ypos;
+    flag_first_mouse = false;
+  }
+  // log current mouse movement
+  mouse_x = (int)xpos;
+  mouse_y = (int)ypos;
+  // get delta
+  global_input.keys[(unsigned)DD_Keys::MOUSE_YDELTA].order =
+      mouse_lasty - mouse_y;
+  global_input.keys[(unsigned)DD_Keys::MOUSE_XDELTA].order =
+      mouse_lastx - mouse_x;
+  global_input.keys[(unsigned)DD_Keys::MOUSE_Y].order = mouse_y;
+  global_input.keys[(unsigned)DD_Keys::MOUSE_X].order = mouse_x;
+  // set old mouse position
+  mouse_lastx = mouse_x;
+  mouse_lasty = mouse_y;
+}
+
+void dd_mouse_click_callback(GLFWwindow* window, int button, int action,
+                             int mods) {
+  switch (button) {
+    case GLFW_MOUSE_BUTTON_RIGHT:
+      if (action == GLFW_PRESS) {
+        global_input.keys[(unsigned)DD_Keys::MOUSE_RIGHT].active = true;
+      }
+      if (action == GLFW_RELEASE) {
+        global_input.keys[(unsigned)DD_Keys::MOUSE_RIGHT].active = false;
+      }
+      break;
+    case GLFW_MOUSE_BUTTON_MIDDLE:
+      if (action == GLFW_PRESS) {
+        global_input.keys[(unsigned)DD_Keys::MOUSE_MIDDLE].active = true;
+      }
+      if (action == GLFW_RELEASE) {
+        global_input.keys[(unsigned)DD_Keys::MOUSE_MIDDLE].active = false;
+      }
+      break;
+    case GLFW_MOUSE_BUTTON_LEFT:
+      if (action == GLFW_PRESS) {
+        global_input.keys[(unsigned)DD_Keys::MOUSE_LEFT].active = true;
+      }
+      if (action == GLFW_RELEASE) {
+        global_input.keys[(unsigned)DD_Keys::MOUSE_LEFT].active = false;
+      }
+      break;
+    default:
+      break;
+  }
+}
+
+void dd_scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
+  global_input.keys[(unsigned)DD_Keys::MOUSE_SCROLL].order = (int)yoffset;
+}
