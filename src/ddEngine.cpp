@@ -6,11 +6,6 @@
 
 namespace {
 bool windowShouldClose = false;
-// size_t lvl_agents = 0;
-
-// bool loading_lvl = false, async_done = false, p_tex_loading = true,
-//     loading_agents = false;
-// std::future<void> load_RES, load_RAM, load_LVL;
 std::chrono::milliseconds timespan(10);
 std::chrono::milliseconds chrono_msec(1);
 
@@ -193,11 +188,8 @@ bool ddEngine::level_select(const size_t w, const size_t h) {
   while (!windowShouldClose && !launch) {
     DD_GPUFrontEnd::clear_screen(0.3f, 0.3f, 0.3f, 1.0f);
     // start imgui window processing
-    // ImGui_ImplSdlGL3_NewFrame(main_window);
     ImGui_ImplGlfwGL3_NewFrame();
 
-    // pole SDL events
-    // update_SDL();
     // poll GLFW events
     update_GLFW();
 
@@ -252,12 +244,6 @@ bool ddEngine::level_select(const size_t w, const size_t h) {
         main_q.init_level_scripts(lvls_list[current_lvl]);
       }
     }
-    /*ImGui::Dummy(ImVec2(scrW / 2 - 180 / 2 - 10, 20));
-    ImGui::SameLine();
-    if (ImGui::Button("Launch Asset Viewer", ImVec2(180, 20))) {
-      launch = true;
-      init_flag = EngineState::VIEWER;
-    };*/
 
     ImGui::End();
     ImGui::Render();
@@ -427,104 +413,14 @@ void ddEngine::run() {
   q_push(_event);
 
   main_q.process_queue();
-  /*
-  if (init_flag == EngineState::MAIN) {
-  // get resource for current level
-  lvl_resource = main_lvl[current_lvl]->m_assetFile;
-  }
-
-  const double frame_time = 1.0 / FRAME_CAP;
-  u64 last_update_time = main_timer.getTime();
-  double unprocessed_time = 0.0;
-
-  glClearColor(main_renderer.bgcol[0], main_renderer.bgcol[1],
-          main_renderer.bgcol[2], main_renderer.bgcol[3]);
-  while (!windowShouldClose) {
-  glClear(GL_COLOR_BUFFER_BIT);
-
-  // update time
-  if (UNLOCK_FRAMEPACE) {
-  main_timer.update();
-  } else {
-  main_timer.update((float)frame_time);
-  }
-
-  // fixed frame loop
-  u64 start_time = main_timer.getTime();
-  u64 elapsed_time = start_time - last_update_time;
-  last_update_time = start_time;
-
-  unprocessed_time += elapsed_time / (double)SECOND_LL;
-
-  // start imgui window processing
-  ImGui_ImplSdlGL3_NewFrame(main_window);
-
-  unprocessed_time -= frame_time;
-  // pole SDL events
-  update_SDL();
-  // run event loop
-  ResSpace::updateSceneGraph(&main_res, main_timer.getTimeFloat());
-  gameLoop();
-
-  if (main_state == GameState::ACTIVE) {
-  // add render event
-  float frametime = main_timer.getFrameTime();
-  DD_Event rendE = DD_Event();
-  rendE.m_time = frametime;
-  rendE.m_type = "render";
-  main_q.push(rendE);
-  // add debug (text rendering must be last (gl_blend))
-  if (flag_debug) {
-    DD_Event debugE = DD_Event();
-    debugE.m_time = frametime;
-    debugE.m_type = "debug";
-    main_q.push(debugE);
-  }
-  main_q.ProcessQueue();
-
-  // render IMGUI ui
-  ddTerminal::display((float)window_w, (float)window_h);
-  ImGui::Render();
-  // swap buffers
-  SDL_GL_SwapWindow(main_window);
-  } else if (main_state == GameState::LOADING) {
-  // Show load screen
-  main_renderer.DrawLoadScreen(main_timer.getTimeFloat());
-
-  // render IMGUI ui
-  ddTerminal::display((float)window_w, (float)window_h);
-  ImGui::Render();
-  // swap buffers
-  SDL_GL_SwapWindow(main_window);
-  } else {
-  std::this_thread::sleep_for(chrono_msec);
-  }
-}
-  //*/
 }
 
 /// \brief Clean up engine resources
 void ddEngine::shutdown() {
   ddTerminal::outTerminalHistory();  // save history
-  clean_up();
-  // shutdown SDL2
-  // SDL_Quit();
   // shutdown glfw
   glfwTerminate();
 }
-
-// void ddEngine::execScript(std::string script_file) {
-//  ddIO script;
-//  if (!script.open(script_file.c_str(), ddIOflag::READ)) {
-//    return;
-//  }
-//
-//  const char* line = script.readNextLine();
-//  while (line) {
-//    execTerminal(line);
-//    line = script.readNextLine();
-//  }
-//}
 
 bool ddEngine::execTerminal(const char *cmd) {
   if (cmd) {
@@ -582,10 +478,7 @@ void ddEngine::update(DD_LEvent &_event) {
     ddTime::update();
 
     // start imgui window processing
-    // ImGui_ImplSdlGL3_NewFrame(main_window);
     ImGui_ImplGlfwGL3_NewFrame();
-    // pole SDL events
-    // update_SDL();
     // poll GLFW events
     update_GLFW();
     // update terminal button presses
