@@ -58,10 +58,17 @@ bool load_buffer_data(ddMeshBufferData *&buff_ptr, DDM_Data *ddm_ptr);
 // Delete ddGBuffer data
 void destroy_buffer_data(ddMeshBufferData *&buff_ptr);
 // Create ddInstBufferData from instance size
-bool load_instance_data(ddInstBufferData *idata, const int inst_size);
+bool load_instance_data(ddInstBufferData *&ibuff_ptr, const int inst_size);
 // Delete ddInstBufferData
-bool destroy_instance_data(ddInstBufferData *idata);
+void destroy_instance_data(ddInstBufferData *&ibuff_ptr);
 // Create empty ddVAOData object
+bool create_vao(ddVAOData *&vbuff_ptr);
 // Destroy ddVAOData object
+void destroy_vao(ddVAOData *&vbuff_ptr);
 // Bind ddMeshBufferData and/or ddInstBufferData buffer to ddVAOData object
+void bind_object(ddVAOData *vbuff_ptr, ddInstBufferData *ibuff_ptr,
+                 ddMeshBufferData *buff_ptr);
+// Unbind provided buffers attached to ddVAOData object
+void unbind_object(ddVAOData *vbuff_ptr, ddInstBufferData *ibuff_ptr,
+                   ddMeshBufferData *buff_ptr);
 }
