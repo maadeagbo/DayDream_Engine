@@ -2,20 +2,45 @@
 
 #include "ddModel.h"
 
+/// \brief Container for manipulating transforms
+struct ddBody {
+  /// \brief Assigned on agent creation. Deleted on agent destruction
+  btRigidBody* bt_bod;
+  /// \brief Initialized on mesh import or set to default size (contains scale)
+  btCollisionShape* bt_bbox;
+};
+
+namespace ddBodyFuncs {
+/// \brief Forward direction based on world (0, 0, -1)
+glm::vec3 ForwardDir();
+/// \brief Right direction based on world (0, 0, -1)
+glm::vec3 RightDir();
+/// \brief Up direction based on world (0, 0, -1)
+glm::vec3 UpDir();
+/// \brief Change btRigidBody's velocity
+void UpdateVelocity(const glm::vec3& vel);
+/// \brief Change btRigidBody's position
+void UpdatePosition(const glm::vec3& pos);
+/// \brief Change btRigidBody's rotation
+void UpdateRotation(const glm::vec3& rot);
+/// \brief Change transform's scale
+void UpdateScale(const glm::vec3& _scale);
+/// \brief convert btRigidBody and scale into model matrix
+glm::mat4 getModelMat();
+}
+
 /// \brief Container for instance manipulation
-struct DD_InstInfo {
-  /// \brief model space buffer
-  dd_array<glm::mat4> inst_m4x4;
-  /// \brief color modification buffer
+struct ddInstInfo {
+  /// \brief gpu instance buffer
+  ddInstBufferData* inst_buff;
+  /// \brief instanced color buffer
   dd_array<glm::vec3> inst_v3;
-  /// \brief physics system buffer
-  dd_array<btRigidBody*> inst_body;
+  /// \brief Transform info
+  dd_array<ddBody> body;
 };
 
 /// brief Container for Render settings and buffers
-struct DD_RendInfo {
-  /// \brief gpu buffer handles
-  GPUInfo buffer_info;
+struct ddRendInfo {
   /// \brief matrix buffer for frame manipulation
   dd_array<glm::mat4> f_m4x4;
   /// \brief color buffer for frame manipulation
@@ -35,20 +60,18 @@ struct DD_RendInfo {
 };
 
 /// \brief Represents agents w/ in engine
-struct DD_BaseAgent {
-  DD_BaseAgent();
-  ~DD_BaseAgent();
+struct ddAgent {
+  ddAgent();
+  ~ddAgent();
 
   /// \brief Engine identifier assigned at initialization
   size_t id;
   /// \brief Engine info for scene graph
   ParentInfo parent;
-  /// \brief meshes attached to agent. Also simulates LODs
+  /// \brief meshes attached to agent. Simulates LOD
   dd_array<ModelIDs> mesh;
-  /// \brief Transform attached to agent
-  DD_Body body;
   /// \brief Instance information
-  DD_InstInfo inst_info;
+  ddInstInfo inst;
   /// \brief Render information
-  DD_RendInfo rend_info;
+  ddRendInfo rend;
 };

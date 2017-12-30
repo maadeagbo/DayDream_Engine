@@ -24,9 +24,9 @@
 *
 -----------------------------------------------------------------------------*/
 
+#include "GPUFrontEnd.h"
 #include "ddIncludes.h"
 #include "ddMaterial.h"
-#include "ddMeshTypes.h"
 
 // struct DD_Model {
 //   std::string m_ID;
@@ -45,22 +45,66 @@
 // // void PrintInfo(const DD_Model& mod);
 // }
 
+struct LinePoint {
+  glm::vec4 pos01, pos02;
+};
+
+struct DD_LineAgent {
+  dd_array<LinePoint> lines;
+  dd_array<glm::vec4> m_buffer;
+  glm::vec4 color = glm::vec4(0.2f, 0.2f, 0.2f, 1.f);
+  std::string m_ID = "";
+  bool flag_render = true, m_flagXZ = true;
+  DD_LineAgent(const size_t size = 0) : lines(size) {}
+  inline void FlushLines() {
+    lines.resize(0);
+    m_buffer.resize(0);
+  }
+};
+
+struct BoundingBox {
+  glm::vec3 min, max;
+  glm::vec3 corner1, corner2, corner3, corner4, corner5, corner6, corner7,
+      corner8;
+  dd_array<glm::vec4> buffer = dd_array<glm::vec4>(12 * 2);
+
+  void SetCorners();
+  BoundingBox transformCorners(const glm::mat4 transMat);
+  glm::vec3 UpdateAABB_min();
+  glm::vec3 UpdateAABB_max();
+  glm::vec3 GetFrustumPlaneMin(glm::vec3 norm);
+  glm::vec3 GetFrustumPlaneMax(glm::vec3 norm);
+  void SetLineBuffer();
+};
+
+// Useful glm functions
+glm::vec4 getVec4f(const char* str);
+
+glm::uvec4 getVec4u(const char* str);
+
+glm::vec3 getVec3f(const char* str);
+
+glm::vec2 getVec2f(const char* str);
+
+glm::quat getQuat(const char* str);
+
+std::string Vec4f_Str(const glm::vec4 vIn);
+
+glm::mat4 createMatrix(const glm::vec3& pos, const glm::vec3& rot,
+                       const glm::vec3& scale);
+
+void printGlmMat(glm::mat4 mat);
+
 /// \brief Container for agent mesh information
 struct ModelIDs {
   /// \brief LOD bounds
   float _near = 0.f, _far = 100.f;
   /// \brief Mesh id
   size_t model = -1;
+  /// \brief Handles for gpu object data
+  dd_array<ddVAOData*> vao_handles;
   /// \brief Marks whether the mesh is skinned for animation
   bool sk_flag = false;
-};
-
-/// \brief Container for mesh data stored on GPU
-struct GPUInfo {
-  /// \brief Handles to GPU buffers
-  unsigned vao = 0, inst_vbo = 0, inst_cvbo = 0;
-  /// \brief Flag that marks if the mesh is back on the gpu
-  bool loaded_gpu = false;
 };
 
 /// \brief Data used by render engine for drawing
@@ -70,7 +114,5 @@ struct ddModelData {
   /// \brief Mesh information
   dd_array<DDM_Data> mesh_info;
   /// \brief GPU buffer handles
-  unsigned vbo = 0, ebo = 0;
-  /// \brief Flag that marks if the mesh is back on the gpu
-  bool loaded_gpu = false;
+  dd_array<ddMeshBufferData*> buffers;
 };

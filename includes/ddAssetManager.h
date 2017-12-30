@@ -1,5 +1,6 @@
 #pragma once
 
+#include "GPUFrontEnd.h"
 #include "LuaHooks.h"
 #include "ddBaseAgent.h"
 #include "ddCamera.h"
@@ -22,12 +23,12 @@
 #define ASSET_DECL(TYPE)                \
   TYPE* spawn_##TYPE(const size_t id);  \
   bool destroy_##TYPE(const size_t id); \
-  TYPE* find##TYPE(const size_t id);
+  TYPE* find_##TYPE(const size_t id);
 
 #define ASSET_DECL_PTR(TYPE)            \
   TYPE* spawn_##TYPE(const size_t id);  \
   bool destroy_##TYPE(const size_t id); \
-  TYPE* find##TYPE(const size_t id);
+  TYPE* find_##TYPE(const size_t id);
 
 #define ASSET_DEF(TYPE, CONTAINER)                 \
   TYPE* spawn_##TYPE(const size_t id) {            \
@@ -50,7 +51,7 @@
       return true;                                 \
     }                                              \
   }                                                \
-  TYPE* find##TYPE(const size_t id) {              \
+  TYPE* find_##TYPE(const size_t id) {             \
     if (map_##CONTAINER.count(id) == 0) {          \
       return nullptr;                              \
     } else {                                       \
@@ -75,12 +76,13 @@
     } else {                                       \
       uint32_t idx = map_##CONTAINER[id];          \
       delete CONTAINER[idx];                       \
+      CONTAINER[idx] = nullptr;                    \
       fl_##CONTAINER.release_slot(idx);            \
       map_##CONTAINER.erase(id);                   \
       return true;                                 \
     }                                              \
   }                                                \
-  TYPE* find##TYPE(const size_t id) {              \
+  TYPE* find_##TYPE(const size_t id) {             \
     if (map_##CONTAINER.count(id) == 0) {          \
       return nullptr;                              \
     } else {                                       \
@@ -98,7 +100,7 @@ void dd_assets_initialize(btDiscreteDynamicsWorld* physics_world);
 /// \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine
 void dd_assets_cleanup();
 
-/// \brief Create DD_BaseAgent from lua scripts
+/// \brief Create ddAgent from lua scripts
 /// \param L lua state
 /// \return Number of returned values to lua
 int dd_assets_create_agent(lua_State* L);
@@ -115,7 +117,7 @@ int dd_assets_create_cam(lua_State* L);
 /// \return Number of returned values to lua
 int dd_assets_create_light(lua_State* L);
 
-ASSET_DECL(DD_BaseAgent)
+ASSET_DECL(ddAgent)
 ASSET_DECL(ddCam)
 ASSET_DECL(ddLBulb)
 ASSET_DECL(ddModelData)

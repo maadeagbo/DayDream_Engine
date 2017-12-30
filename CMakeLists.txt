@@ -135,11 +135,6 @@ if(MSVC)
 	add_subdirectory(${PROJECT_SOURCE_DIR}/bullet3_287)
 endif()
 
-#  add graphic library and set API
-set(DD_GRAPHICS_API_VULKAN OFF CACHE BOOL "Sets engine to use vulkan api" FORCE)
-add_subdirectory(${PROJECT_SOURCE_DIR}/graphics_lib)
-#include(${PROJECT_SOURCE_DIR}/graphics_lib/CMakeLists.txt)
-
 # include directories for project
 find_path(GLM_PATH glm.hpp
 	PATHS
@@ -232,8 +227,8 @@ file(GLOB_RECURSE PROJECT_SOURCES
 	LIST_DIRECTORIES false
     "${CMAKE_SOURCE_DIR}/Projects/*.cpp*"
     "${CMAKE_SOURCE_DIR}/src/AssetViewer/*.cpp*"
-	"${CMAKE_SOURCE_DIR}/src/AssetViewer/*.h*"
-	"${CMAKE_SOURCE_DIR}/Projects/*.h*")
+		"${CMAKE_SOURCE_DIR}/src/AssetViewer/*.h*"
+		"${CMAKE_SOURCE_DIR}/Projects/*.h*")
 
 foreach(_proj_source IN ITEMS ${PROJECT_SOURCES})
 	get_filename_component(_source_path "${_proj_source}" PATH)
@@ -286,6 +281,11 @@ include_directories(${CMAKE_SOURCE_DIR}/includes
 	${LUA_PATH}
 	${BULLET_PATH}
 	${VRPN_PATH})
+
+#  add graphic library and set API
+set(DD_GRAPHICS_API_VULKAN OFF CACHE BOOL "Sets engine to use vulkan api" FORCE)
+add_subdirectory(${PROJECT_SOURCE_DIR}/graphics_lib)
+#include(${PROJECT_SOURCE_DIR}/graphics_lib/CMakeLists.txt)
 
 # clang-format
 if (UNIX)

@@ -1,4 +1,4 @@
-#include "ddMeshTypes.h"
+#include "ddModel.h"
 
 /// \brief Set the 8 corners of bounding box
 void BoundingBox::SetCorners() {
@@ -116,8 +116,8 @@ void BoundingBox::SetLineBuffer() {
   //                                    4           3
   // back bottom left		corner 1        . . . . . . .
   // back bottom right	corner 2        . . 8       . . 7
-  // back top right		corner 3        .   . . . . . . .
-  // back top left		corner 4        .   .       .   .
+  // back top right		corner 3          .   . . . . . . .
+  // back top left		corner 4          .   .       .   .
   // front bottom left	corner 5        .   .     2 .   .
   // front bottom right	corner 6      1 . . . . . . .   .
   // front top right		corner 7          . .         . .

@@ -33,9 +33,6 @@
 // lua bindings
 #include "LuaHooks.h"
 
-// OpenGL includes
-#include "GPUFrontEnd.h"
-
 // GLM includes
 #include <glm/fwd.hpp>
 #ifdef _WIN32

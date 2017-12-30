@@ -9,8 +9,8 @@ DD_FuncBuff fb;
 // containers only exist in this translation unit
 btDiscreteDynamicsWorld *p_world = nullptr;
 
-// DD_BaseAgents
-ASSET_CREATE(DD_BaseAgent, b_agents, ASSETS_CONTAINER_MAX_SIZE)
+// ddAgents
+ASSET_CREATE(ddAgent, b_agents, ASSETS_CONTAINER_MAX_SIZE)
 // ddCam
 ASSET_CREATE(ddCam, cams, ASSETS_CONTAINER_MIN_SIZE)
 // ddLBulb
@@ -27,7 +27,7 @@ ASSET_CREATE(ddTex2D, textures, ASSETS_CONTAINER_MAX_SIZE)
 ASSET_CREATE(ddMat, mats, ASSETS_CONTAINER_MAX_SIZE)
 }  // namespace
 
-ASSET_DEF(DD_BaseAgent, b_agents)
+ASSET_DEF(ddAgent, b_agents)
 ASSET_DEF(ddCam, cams)
 ASSET_DEF(ddLBulb, lights)
 ASSET_DEF(ddModelData, meshes)
@@ -92,7 +92,7 @@ ddMat *create_material(obj_mat &mat_info);
 /// \param agent to add rigid body
 /// \param mesh data containing bounding box information
 /// \return True if rigid body is successfully added
-bool add_rigid_body(DD_BaseAgent *agent, ddModelData *mdata);
+bool add_rigid_body(ddAgent *agent, ddModelData *mdata);
 
 void dd_assets_initialize(btDiscreteDynamicsWorld *physics_world) {
   p_world = physics_world;
@@ -110,7 +110,10 @@ void dd_assets_initialize(btDiscreteDynamicsWorld *physics_world) {
 void dd_assets_cleanup() {
   // clean up bullet physics bodies
   for (auto &idx : map_b_agents) {
-    if (b_agents[idx.second].body.bbox) delete b_agents[idx.second].body.bbox;
+    if (b_agents[idx.second].inst.body[0].bt_bbox) {
+      delete b_agents[idx.second].inst.body[0].bt_bbox;
+      b_agents[idx.second].inst.body[0].bt_bbox = nullptr;
+    }
     // if (b_agents[idx.second].body.body) delete
     // b_agents[idx.second].body.body;
   }
@@ -118,32 +121,36 @@ void dd_assets_cleanup() {
 
 int dd_assets_create_agent(lua_State *L) {
   parse_lua_events(L, fb);
-  // get arguments and use them to create DD_BaseAgent
+  // get arguments and use them to create ddAgent
   const char *agent_id = fb.get_func_val<const char>("id");
   int64_t *mesh_id = fb.get_func_val<int64_t>("mesh");
   int64_t *sk_id = fb.get_func_val<int64_t>("skeleton");
   int64_t *p_id = fb.get_func_val<int64_t>("parent");
 
-  DD_BaseAgent *new_agent = nullptr;
+  ddAgent *new_agent = nullptr;
   if (agent_id) {
     size_t out_id = getCharHash(agent_id);
-    new_agent = spawn_DD_BaseAgent(out_id);
+    new_agent = spawn_ddAgent(out_id);
     if (new_agent) {
       // add mesh for render
       ddModelData *mdata = nullptr;
       if (mesh_id) {
-        mdata = findddModelData((size_t)(*mesh_id));
+        mdata = find_ddModelData((size_t)(*mesh_id));
         if (mdata) {
           // modify ModelIDs struct
           new_agent->mesh.resize(1);
           new_agent->mesh[0].model = mdata->id;
+          // modify instance information
+          new_agent->inst.inst_v3.resize(1);
+          new_agent->inst.inst_v3[0] = glm::vec3(1.f);
+          new_agent->inst.body.resize(1);
         } else {
           ddTerminal::f_post("[error]  Failed to find mesh <%ld>", *mesh_id);
         }
       }
       // add skeleton for animation
       if (sk_id) {
-        ddSkeleton *sk = findddSkeleton((size_t)*sk_id);
+        ddSkeleton *sk = find_ddSkeleton((size_t)*sk_id);
         if (sk) {
           // create skeleton pose struct and log in agent
           ddSkeletonPose *skpose = spawn_ddSkeletonPose(new_agent->id);
@@ -161,7 +168,7 @@ int dd_assets_create_agent(lua_State *L) {
       }
       // add parent object
       if (p_id) {
-        DD_BaseAgent *p_agent = findDD_BaseAgent((size_t)*p_id);
+        ddAgent *p_agent = find_ddAgent((size_t)*p_id);
         if (p_agent) {
           // set parent id
           new_agent->parent.parent_id = p_agent->id;
@@ -170,7 +177,7 @@ int dd_assets_create_agent(lua_State *L) {
           ddTerminal::f_post("[error]  Failed to find parent <%ld>", *p_id);
         }
       }
-      // add DD_Body to agent and then agent to world
+      // add ddBody to agent and then agent to world
       add_rigid_body(new_agent, mdata);
       // return agent id
       lua_pushinteger(L, new_agent->id);
@@ -591,7 +598,7 @@ ddMat *create_material(obj_mat &mat_info) {
   return mat;
 }
 
-bool add_rigid_body(DD_BaseAgent *agent, ddModelData *mdata) {
+bool add_rigid_body(ddAgent *agent, ddModelData *mdata) {
   if (!agent) return false;
 
   // set up bounding box
@@ -604,7 +611,7 @@ bool add_rigid_body(DD_BaseAgent *agent, ddModelData *mdata) {
   float h_width = (bb_max.x - bb_min.x) * 0.5f;
   float h_height = (bb_max.y - bb_min.y) * 0.5f;
   float h_depth = (bb_max.z - bb_min.z) * 0.5f;
-  agent->body.bbox = new btBoxShape(
+  agent->inst.body[0].bt_bbox = new btBoxShape(
       btVector3(btScalar(h_width), btScalar(h_height), btScalar(h_depth)));
 
   // set up rigid body constructor
@@ -616,17 +623,18 @@ bool add_rigid_body(DD_BaseAgent *agent, ddModelData *mdata) {
   btScalar mass(0.);
   bool isDynamic = (mass != 0.f);
   btVector3 localInertia(0, 0, 0);
-  if (isDynamic) agent->body.bbox->calculateLocalInertia(mass, localInertia);
+  if (isDynamic)
+    agent->inst.body[0].bt_bbox->calculateLocalInertia(mass, localInertia);
 
   // set up rigid body
   // using motionstate is optional, it provides interpolation capabilities, and
   // only synchronizes 'active' objects
   btDefaultMotionState *myMotionState = new btDefaultMotionState(transform);
   btRigidBody::btRigidBodyConstructionInfo rbInfo(
-      mass, myMotionState, agent->body.bbox, localInertia);
-  agent->body.body = new btRigidBody(rbInfo);
+      mass, myMotionState, agent->inst.body[0].bt_bbox, localInertia);
+  agent->inst.body[0].bt_bod = new btRigidBody(rbInfo);
 
   // add to world
-  p_world->addRigidBody(agent->body.body);
+  p_world->addRigidBody(agent->inst.body[0].bt_bod);
   return true;
 }

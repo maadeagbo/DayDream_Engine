@@ -109,7 +109,7 @@ void ddEngine::window_load_GLFW(EngineMode mode) {
   const int vsyncflag = bool(mode & EngineMode::DD_VSYNC) ? 1 : 0;
   glfwSwapInterval(vsyncflag);
 
-  if (!DD_GPUFrontEnd::load_api_library(bool(mode & EngineMode::DD_GPU_INFO))) {
+  if (!ddGPUFrontEnd::load_api_library(bool(mode & EngineMode::DD_GPU_INFO))) {
     fprintf(stderr, "Failed to load graphics api library\n");
     std::exit(EXIT_FAILURE);
   }
@@ -186,7 +186,7 @@ bool ddEngine::level_select(const size_t w, const size_t h) {
   int wh_idx[2] = {8, 4};
 
   while (!windowShouldClose && !launch) {
-    DD_GPUFrontEnd::clear_screen(0.3f, 0.3f, 0.3f, 1.0f);
+    ddGPUFrontEnd::clear_screen(0.3f, 0.3f, 0.3f, 1.0f);
     // start imgui window processing
     ImGui_ImplGlfwGL3_NewFrame();
 
@@ -473,7 +473,7 @@ void ddEngine::update(DD_LEvent &_event) {
     set_lua_global(main_lstate, "WINDOW_HEIGHT", (int64_t)window_h);
   } else if (e_sig == frame_enter_hash.gethash()) {  // setup new frame
     // clear framebuffer
-    DD_GPUFrontEnd::clear_screen();
+    ddGPUFrontEnd::clear_screen();
 
     ddTime::update();
 
