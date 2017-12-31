@@ -1,3 +1,4 @@
+#include <SOIL.h>
 #include <cstdio>
 #include "../source/gl_core_4_3.h"
 #include "GPUFrontEnd.h"
@@ -16,6 +17,11 @@ struct ddMeshBufferData {
   GLuint index_buffer;
 };
 
+struct ddTextureData {
+  GLuint texture_handle;
+};
+
+// Error processing function for OpenGL calls
 bool check_gl_errors(const char *signature) {
   GLenum err;
   bool flag = false;
@@ -24,6 +30,30 @@ bool check_gl_errors(const char *signature) {
     flag = true;
   }
   return flag;
+}
+
+// Invert image along Y-axis
+// source <Muhammad Mobeen Movania::OpenGL Development Cookbook>
+void flip_image(unsigned char *image, const int width, const int height,
+                const int channels) {
+  // validate parameters
+  if (width < 0 || height < 0 || channels < 0) {
+    fprintf(stderr, "flip_image::Invalid paramters <%d::%d::%d>", width, height,
+            channels);
+    return;
+  }
+  // flip
+  for (int j = 0; j * 2 < height; j++) {
+    int idx_1 = width * channels * j;
+    int idx_2 = width * channels * (height - 1 - j);
+    for (int i = width * channels; i > 0; i--) {
+      unsigned char temp = image[idx_1];
+      image[idx_1] = image[idx_2];
+      image[idx_2] = temp;
+      idx_1++;
+      idx_2++;
+    }
+  }
 }
 
 namespace ddGPUFrontEnd {
@@ -98,9 +128,89 @@ bool load_api_library(const bool display_info) {
   return true;
 }
 
-bool load_buffer_data(ddMeshBufferData *&buff_ptr, DDM_Data *ddm_ptr) {
+void destroy_texture(ddTextureData *&tex_ptr) {
+  if (!tex_ptr) return;
+
+  glDeleteTextures(1, &tex_ptr->texture_handle);
+  check_gl_errors("destroy_texture");
+
+  delete tex_ptr;
+  tex_ptr = nullptr;
+}
+
+bool generate_texture2D_RGBA8_LR(ImageInfo &img) {
+  if (img.tex_buff) destroy_texture(img.tex_buff);
+
+  // store path to img and use Simple OpenGL Image Library to load image to RAM
+  img.internal_format = GL_RGBA8;
+  img.image_format = GL_RGBA8;
+  img.wrap_s = GL_REPEAT;
+  img.wrap_t = GL_REPEAT;
+  img.min_filter = GL_LINEAR_MIPMAP_LINEAR;
+  img.mag_filter = GL_LINEAR;
+
+  // use SOIL to load images
+  const char *path = img.path[0].str();
+  int channels = 0;
+  unsigned char *img_data =
+      SOIL_load_image(path, &img.width, &img.height, &channels, SOIL_LOAD_RGBA);
+
+  if (img_data == NULL) {
+    fprintf(stderr, "generate_texture2D_RGBA8_LR::Failed to open image: %s\n",
+            path);
+    return false;
+  }
+  // flip image (SOIL loads images inverted)
+  flip_image(img_data, img.width, img.height, channels);
+
+  // create handle and texture
+  img.tex_buff = new ddTextureData();
+  if (!img.tex_buff) {
+    fprintf(stderr, "generate_texture2D_RGBA8_LR::RAM load failure\n");
+    return false;
+  }
+  glGenTextures(1, &img.tex_buff->texture_handle);
+  if (check_gl_errors("generate_texture2D_RGBA8_LR::Creating texture")) {
+    return false;
+  }
+
+  // fill texture data
+  glBindTexture(GL_TEXTURE_2D, img.tex_buff->texture_handle);
+  const int num_mipmaps = (int)floor(log2(std::max(img.width, img.height))) + 1;
+  glTexStorage2D(GL_TEXTURE_2D, num_mipmaps, img.internal_format, img.width,
+                 img.height);
+  glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, img.width, img.height,
+                  img.image_format, GL_UNSIGNED_BYTE, img_data);
+  if (check_gl_errors("generate_texture2D_RGBA8_LR::Loading data")) {
+    return false;
+  }
+
+  // texture settings
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, img.wrap_s);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, img.wrap_t);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, img.min_filter);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, img.mag_filter);
+  glGenerateMipmap(GL_TEXTURE_2D);
+  if (check_gl_errors("generate_texture2D_RGBA8_LR::Configuring settings")) {
+    return false;
+  }
+
+  // free memory on RAM
+  SOIL_free_image_data(img_data);
+  glBindTexture(GL_TEXTURE_2D, 0);
+
+  return true;
+}
+
+bool generate_textureCube_RGBA8_LR(ImageInfo &img, const bool empty) {
+  if (img.tex_buff) destroy_texture(img.tex_buff);
+  //
+  return true;
+}
+
+bool load_buffer_data(ddMeshBufferData *&mbuff_ptr, DDM_Data *ddm_ptr) {
   // Create ddMeshBufferData and load gpu w/ buffer data
-  if (buff_ptr) destroy_buffer_data(buff_ptr);
+  if (mbuff_ptr) destroy_buffer_data(mbuff_ptr);
 
   // create and load: vertex and index buffer objects
   GLuint vbo = 0, ebo = 0;
@@ -118,28 +228,28 @@ bool load_buffer_data(ddMeshBufferData *&buff_ptr, DDM_Data *ddm_ptr) {
   if (check_gl_errors("load_buffer_data::Loading buffers")) return false;
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-  buff_ptr = new ddMeshBufferData();
-  if (!buff_ptr) {
+  mbuff_ptr = new ddMeshBufferData();
+  if (!mbuff_ptr) {
     fprintf(stderr, "Failed to create ddMeshBufferData object in RAM\n");
     return false;
   }
-  buff_ptr->vertex_buffer = vbo;
-  buff_ptr->index_buffer = ebo;
+  mbuff_ptr->vertex_buffer = vbo;
+  mbuff_ptr->index_buffer = ebo;
 
   return true;
 }
 
-void destroy_buffer_data(ddMeshBufferData *&buff_ptr) {
+void destroy_buffer_data(ddMeshBufferData *&mbuff_ptr) {
   // free initialized data and destroy buffer object
-  if (!buff_ptr) return;
+  if (!mbuff_ptr) return;
 
-  glDeleteBuffers(1, &buff_ptr->vertex_buffer);
-  glDeleteBuffers(1, &buff_ptr->index_buffer);
+  glDeleteBuffers(1, &mbuff_ptr->vertex_buffer);
+  glDeleteBuffers(1, &mbuff_ptr->index_buffer);
 
   check_gl_errors("destroy_buffer_data");
 
-  delete buff_ptr;
-  buff_ptr = nullptr;
+  delete mbuff_ptr;
+  mbuff_ptr = nullptr;
 }
 
 bool load_instance_data(ddInstBufferData *&ibuff_ptr, const int inst_size) {
@@ -213,14 +323,75 @@ void destroy_vao(ddVAOData *&vbuff_ptr) {
   vbuff_ptr = nullptr;
 }
 
-void bind_object(ddVAOData *vbuff_ptr, ddInstBufferData *ibuff_ptr,
-                 ddMeshBufferData *buff_ptr) {
-  //
-}
+bool bind_object(ddVAOData *vbuff_ptr, ddInstBufferData *ibuff_ptr,
+                 ddMeshBufferData *mbuff_ptr) {
+  if (!vbuff_ptr) {
+    fprintf(stderr, "bind_object::Non-valid ddVAOData pointer.\n");
+    return false;
+  }
+  // Bind valid mesh and instance buffer pointer objects to vertex array
+  glBindVertexArray(vbuff_ptr->vao_handle);
 
-void unbind_object(ddVAOData *vbuff_ptr, ddInstBufferData *ibuff_ptr,
-                   ddMeshBufferData *buff_ptr) {
-  //
+  // mesh buffer
+  if (mbuff_ptr) {
+    glBindBuffer(GL_ARRAY_BUFFER, mbuff_ptr->vertex_buffer);
+    // position
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                          (GLvoid *)0);
+    // normals
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                          (GLvoid *)offsetof(Vertex, normal));
+    // texture coordinates
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                          (GLvoid *)offsetof(Vertex, texCoords));
+    // tangent normals
+    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                          (GLvoid *)offsetof(Vertex, tangent));
+    // indices
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mbuff_ptr->index_buffer);
+
+    if (check_gl_errors("bind_object::mesh buffers")) return false;
+  }
+
+  // instance buffer
+  if (ibuff_ptr) {
+    // Set attribute pointers for matrix (4 times vec4)
+    glBindBuffer(GL_ARRAY_BUFFER, ibuff_ptr->instance_buffer);
+    glEnableVertexAttribArray(4);
+    glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4),
+                          (GLvoid *)0);
+    glEnableVertexAttribArray(5);
+    glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4),
+                          (GLvoid *)(sizeof(glm::vec4)));
+    glEnableVertexAttribArray(6);
+    glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4),
+                          (GLvoid *)(2 * sizeof(glm::vec4)));
+    glEnableVertexAttribArray(7);
+    glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4),
+                          (GLvoid *)(3 * sizeof(glm::vec4)));
+    // colors
+    glBindBuffer(GL_ARRAY_BUFFER, ibuff_ptr->color_instance_buffer);
+    glEnableVertexAttribArray(8);
+    glVertexAttribPointer(8, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3),
+                          (GLvoid *)0);
+    // set divisors for instanced render (1 means process every index per inst)
+    glVertexAttribDivisor(4, 1);
+    glVertexAttribDivisor(5, 1);
+    glVertexAttribDivisor(6, 1);
+    glVertexAttribDivisor(7, 1);
+    glVertexAttribDivisor(8, 1);
+
+    if (check_gl_errors("bind_object::instance buffers")) return false;
+  }
+
+  glBindVertexArray(0);
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+  return true;
 }
 
 }  // namespace ddGPUFrontEnd

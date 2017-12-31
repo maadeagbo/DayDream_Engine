@@ -12,7 +12,7 @@
 *
 -----------------------------------------------------------------------------*/
 
-#include <SOIL.h>
+#include "GPUFrontEnd.h"
 #include "ddIncludes.h"
 
 // enum TextureType {
@@ -34,7 +34,8 @@ enum class TexType : unsigned {
   METAL = 0x10,
   EMISSIVE = 0x20,
   AMBIENT = 0x40,
-  NULL_T = 0x80
+  CUBE = 0x80,
+  NULL_T = 0x100
 };
 ENABLE_BITMASK_OPERATORS(TexType)
 
@@ -87,23 +88,6 @@ ENABLE_BITMASK_OPERATORS(TexType)
 //  private:
 //   bool activated = false;
 // };
-
-struct ImageInfo {
-  /// \brief Handle to GPU buffer
-  unsigned handle;
-  /// \brief width and height
-  unsigned width = 0, height = 0;
-  /// \brief Texture object formet
-  unsigned internal_format;
-  /// \brief Image formet
-  unsigned image_format;
-  /// \brief Wrapping mode along axis
-  unsigned wrap_s, wrap_t, wrap_r;
-  /// \brief filter when pixels < screen pixels
-  unsigned min_filter;
-  /// \brief filter when pixels > screen pixels
-  unsigned mag_filter;
-};
 
 /// \brief Container for 2D textures
 struct ddTex2D {

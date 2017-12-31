@@ -7,6 +7,7 @@
 struct ddVAOData;
 struct ddInstBufferData;
 struct ddMeshBufferData;
+struct ddTextureData;
 
 struct Vertex {
   float position[3] = {0, 0, 0};
@@ -47,16 +48,41 @@ struct DDM_Data {
   size_t mat_id;
 };
 
+struct ImageInfo {
+  /// \brief Handle to GPU buffer
+  ddTextureData *tex_buff;
+  /// \brief width and height
+  int width = 0, height = 0;
+  /// \brief Texture object formet
+  unsigned internal_format;
+  /// \brief Image formet
+  unsigned image_format;
+  /// \brief Wrapping mode along axis
+  unsigned wrap_s, wrap_t, wrap_r;
+  /// \brief filter when pixels < screen pixels
+  unsigned min_filter;
+  /// \brief filter when pixels > screen pixels
+  unsigned mag_filter;
+  /// \brief path to image file
+  cbuff<256> path[6];
+};
+
 namespace ddGPUFrontEnd {
 // Wipe back-buffer screen
 void clear_screen(const float r = 0.f, const float g = 0.f, const float b = 0.f,
                   const float a = 1.f);
 // Initialize Graphics API library
 bool load_api_library(const bool display_info = true);
+// Delete texture data
+void destroy_texture(ddTextureData *&tex_ptr);
+// Create gpu texture data (RBGA8, mip-map linear, Repeats in U & V axis)
+bool generate_texture2D_RGBA8_LR(ImageInfo &img);
+// Create cubemap texture data
+bool generate_textureCube_RGBA8_LR(ImageInfo &img);
 // Create gpu buffer data
-bool load_buffer_data(ddMeshBufferData *&buff_ptr, DDM_Data *ddm_ptr);
+bool load_buffer_data(ddMeshBufferData *&mbuff_ptr, DDM_Data *ddm_ptr);
 // Delete ddGBuffer data
-void destroy_buffer_data(ddMeshBufferData *&buff_ptr);
+void destroy_buffer_data(ddMeshBufferData *&mbuff_ptr);
 // Create ddInstBufferData from instance size
 bool load_instance_data(ddInstBufferData *&ibuff_ptr, const int inst_size);
 // Delete ddInstBufferData
@@ -66,9 +92,6 @@ bool create_vao(ddVAOData *&vbuff_ptr);
 // Destroy ddVAOData object
 void destroy_vao(ddVAOData *&vbuff_ptr);
 // Bind ddMeshBufferData and/or ddInstBufferData buffer to ddVAOData object
-void bind_object(ddVAOData *vbuff_ptr, ddInstBufferData *ibuff_ptr,
-                 ddMeshBufferData *buff_ptr);
-// Unbind provided buffers attached to ddVAOData object
-void unbind_object(ddVAOData *vbuff_ptr, ddInstBufferData *ibuff_ptr,
-                   ddMeshBufferData *buff_ptr);
+bool bind_object(ddVAOData *vbuff_ptr, ddInstBufferData *ibuff_ptr,
+                 ddMeshBufferData *mbuff_ptr);
 }

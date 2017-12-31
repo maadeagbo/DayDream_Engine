@@ -26,7 +26,6 @@
 
 #include "GPUFrontEnd.h"
 #include "ddIncludes.h"
-#include "ddMaterial.h"
 
 // struct DD_Model {
 //   std::string m_ID;
