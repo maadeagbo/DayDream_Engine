@@ -53,6 +53,8 @@ struct ImageInfo {
   ddTextureData *tex_buff;
   /// \brief width and height
   int width = 0, height = 0;
+	/// \brief channels in image (R, G, B, and/or A)
+	int channels = 0;
   /// \brief Texture object formet
   unsigned internal_format;
   /// \brief Image formet
@@ -63,8 +65,15 @@ struct ImageInfo {
   unsigned min_filter;
   /// \brief filter when pixels > screen pixels
   unsigned mag_filter;
+	/// \brief pointer to image data in RAM
+	unsigned char *image_data = nullptr;
   /// \brief path to image file
-  cbuff<256> path[6];
+	cbuff<256> path;
+	cbuff<256> path_left;
+	cbuff<256> path_top;
+	cbuff<256> path_bot;
+	cbuff<256> path_back;
+	cbuff<256> path_front;
 };
 
 namespace ddGPUFrontEnd {
@@ -78,12 +87,12 @@ void destroy_texture(ddTextureData *&tex_ptr);
 // Create gpu texture data (RBGA8, mip-map linear, Repeats in U & V axis)
 bool generate_texture2D_RGBA8_LR(ImageInfo &img);
 // Create cubemap texture data
-bool generate_textureCube_RGBA8_LR(ImageInfo &img);
+bool generate_textureCube_RGBA8_LR(ImageInfo &img, const bool empty = false);
 // Create gpu buffer data
 bool load_buffer_data(ddMeshBufferData *&mbuff_ptr, DDM_Data *ddm_ptr);
 // Delete ddGBuffer data
 void destroy_buffer_data(ddMeshBufferData *&mbuff_ptr);
-// Create ddInstBufferData from instance size
+// Create ddInstBufferData from instance size (must set width & height fields)
 bool load_instance_data(ddInstBufferData *&ibuff_ptr, const int inst_size);
 // Delete ddInstBufferData
 void destroy_instance_data(ddInstBufferData *&ibuff_ptr);

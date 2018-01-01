@@ -11,7 +11,7 @@ function load()
 			["path"] = "/home/maadeagbo/Documents/DayDream_Engine/Resource/Meshes/primitives/cube.ddm"
 		}
 	end
-	mkey = load_ddm(arg);
+	mkey = load_ddm(arg)
 	dd_print( {["output"] = "Created mesh: "..mkey} )
 	arg = {
 		["id"] = "cam_1"

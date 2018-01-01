@@ -64,7 +64,7 @@ struct ddMat {
   /// \brief Specular component
   float spec_value;
   /// \brief Flag for activated textures (bit comparison w/ TexTypes)
-  unsigned texture_flag = 0;
+	TexType texture_flag = TexType::NULL_T;
   /// \brief Flag that marks if the material is loaded on the gpu
   bool loaded_gpu = false;
   /// \brief Flag that marks if color can be modified thru instancing

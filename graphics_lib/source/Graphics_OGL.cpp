@@ -32,30 +32,6 @@ bool check_gl_errors(const char *signature) {
   return flag;
 }
 
-// Invert image along Y-axis
-// source <Muhammad Mobeen Movania::OpenGL Development Cookbook>
-void flip_image(unsigned char *image, const int width, const int height,
-                const int channels) {
-  // validate parameters
-  if (width < 0 || height < 0 || channels < 0) {
-    fprintf(stderr, "flip_image::Invalid paramters <%d::%d::%d>", width, height,
-            channels);
-    return;
-  }
-  // flip
-  for (int j = 0; j * 2 < height; j++) {
-    int idx_1 = width * channels * j;
-    int idx_2 = width * channels * (height - 1 - j);
-    for (int i = width * channels; i > 0; i--) {
-      unsigned char temp = image[idx_1];
-      image[idx_1] = image[idx_2];
-      image[idx_2] = temp;
-      idx_1++;
-      idx_2++;
-    }
-  }
-}
-
 namespace ddGPUFrontEnd {
 
 void clear_screen(const float r, const float g, const float b, const float a) {
@@ -141,27 +117,13 @@ void destroy_texture(ddTextureData *&tex_ptr) {
 bool generate_texture2D_RGBA8_LR(ImageInfo &img) {
   if (img.tex_buff) destroy_texture(img.tex_buff);
 
-  // store path to img and use Simple OpenGL Image Library to load image to RAM
-  img.internal_format = GL_RGBA8;
-  img.image_format = GL_RGBA8;
+  // set up image parameters
+  img.internal_format = GL_RGBA8; // TODO: should set based on channels ?
+  img.image_format = GL_RGBA8;		// TODO: should set based on channels ?
   img.wrap_s = GL_REPEAT;
   img.wrap_t = GL_REPEAT;
   img.min_filter = GL_LINEAR_MIPMAP_LINEAR;
   img.mag_filter = GL_LINEAR;
-
-  // use SOIL to load images
-  const char *path = img.path[0].str();
-  int channels = 0;
-  unsigned char *img_data =
-      SOIL_load_image(path, &img.width, &img.height, &channels, SOIL_LOAD_RGBA);
-
-  if (img_data == NULL) {
-    fprintf(stderr, "generate_texture2D_RGBA8_LR::Failed to open image: %s\n",
-            path);
-    return false;
-  }
-  // flip image (SOIL loads images inverted)
-  flip_image(img_data, img.width, img.height, channels);
 
   // create handle and texture
   img.tex_buff = new ddTextureData();
@@ -174,16 +136,17 @@ bool generate_texture2D_RGBA8_LR(ImageInfo &img) {
     return false;
   }
 
-  // fill texture data
+	// transfer image to GPU then delete from RAM
   glBindTexture(GL_TEXTURE_2D, img.tex_buff->texture_handle);
   const int num_mipmaps = (int)floor(log2(std::max(img.width, img.height))) + 1;
   glTexStorage2D(GL_TEXTURE_2D, num_mipmaps, img.internal_format, img.width,
                  img.height);
   glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, img.width, img.height,
-                  img.image_format, GL_UNSIGNED_BYTE, img_data);
+                  img.image_format, GL_UNSIGNED_BYTE, img.image_data);
   if (check_gl_errors("generate_texture2D_RGBA8_LR::Loading data")) {
     return false;
   }
+	SOIL_free_image_data(img.image_data);
 
   // texture settings
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, img.wrap_s);
@@ -195,8 +158,6 @@ bool generate_texture2D_RGBA8_LR(ImageInfo &img) {
     return false;
   }
 
-  // free memory on RAM
-  SOIL_free_image_data(img_data);
   glBindTexture(GL_TEXTURE_2D, 0);
 
   return true;
@@ -204,7 +165,89 @@ bool generate_texture2D_RGBA8_LR(ImageInfo &img) {
 
 bool generate_textureCube_RGBA8_LR(ImageInfo &img, const bool empty) {
   if (img.tex_buff) destroy_texture(img.tex_buff);
-  //
+
+  // set up image parameters
+  img.internal_format = GL_RGBA8;	// TODO: should set based on channels ?
+  img.image_format = GL_RGBA8;		// TODO: should set based on channels ?
+  img.wrap_s = GL_REPEAT;
+  img.wrap_t = GL_REPEAT;
+  img.wrap_r = GL_REPEAT;
+  img.min_filter = GL_LINEAR;
+  img.mag_filter = GL_LINEAR;
+
+  // create handle and texture
+  img.tex_buff = new ddTextureData();
+  if (!img.tex_buff) {
+    fprintf(stderr, "generate_textureCube_RGBA8_LR::RAM load failure\n");
+    return false;
+  }
+  glGenTextures(1, &img.tex_buff->texture_handle);
+  if (check_gl_errors("generate_textureCube_RGBA8_LR::Creating texture")) {
+    return false;
+  }
+  glBindTexture(GL_TEXTURE_CUBE_MAP, img.tex_buff->texture_handle);
+  glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+
+  // empty flag means generate dummy cubemap texture that will be rendered to
+  if (empty) {
+    glTexStorage2D(GL_TEXTURE_CUBE_MAP, 1, img.internal_format, img.width,
+                   img.height);
+    if (check_gl_errors("generate_textureCube_RGBA8_LR::Creating empty")) {
+      return false;
+    }
+  } else {
+    GLuint targets[] = {
+        GL_TEXTURE_CUBE_MAP_POSITIVE_X, GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+        GL_TEXTURE_CUBE_MAP_POSITIVE_Y, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+        GL_TEXTURE_CUBE_MAP_POSITIVE_Z, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z};
+    // generate cubemap texture, then apply each face based on targets array
+    glTexStorage2D(GL_TEXTURE_CUBE_MAP, 1, img.internal_format, img.width,
+                   img.height);
+		
+		cbuff<100> err_msg;
+    // candidate for omp multi-threading
+    for (int i = 0; i < 6; i++) {
+      cbuff<256> *img_file = nullptr;
+      switch (targets[i]) {
+        case GL_TEXTURE_CUBE_MAP_POSITIVE_X:
+          img_file = &img.path;
+          break;
+        case GL_TEXTURE_CUBE_MAP_NEGATIVE_X:
+          img_file = &img.path_left;
+          break;
+        case GL_TEXTURE_CUBE_MAP_POSITIVE_Y:
+          img_file = &img.path_top;
+          break;
+        case GL_TEXTURE_CUBE_MAP_NEGATIVE_Y:
+          img_file = &img.path_bot;
+          break;
+        case GL_TEXTURE_CUBE_MAP_POSITIVE_Z:
+          img_file = &img.path_back;
+          break;
+        case GL_TEXTURE_CUBE_MAP_NEGATIVE_Z:
+          img_file = &img.path_front;
+          break;
+        default:
+          break;
+      }
+			// transfer image to GPU then delete from RAM
+      glTexSubImage2D(targets[i], 0, 0, 0, img.width, img.height,
+                      img.image_format, GL_UNSIGNED_BYTE, img.image_data);
+			SOIL_free_image_data(img.image_data);
+
+			err_msg.format("generate_textureCube_RGBA8_LR::Loading image <%d>", i);
+			if (check_gl_errors(err_msg.str())) return false;
+    }
+  }
+
+  // texture settings
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, img.wrap_s);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, img.wrap_t);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, img.wrap_r);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, img.min_filter);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, img.mag_filter);
+
+  glBindTexture(GL_TEXTURE_2D, 0);
   return true;
 }
 

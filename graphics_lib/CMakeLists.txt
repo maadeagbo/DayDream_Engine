@@ -37,6 +37,7 @@ endif()
 
 if (NOT DD_GRAPHICS_API_VULKAN)
 	add_library(dd_graphics STATIC
+							${CMAKE_SOURCE_DIR}/graphics_lib/includes/GPUFrontEnd.h
 							${CMAKE_SOURCE_DIR}/graphics_lib/source/Graphics_OGL.cpp
 							${CMAKE_SOURCE_DIR}/graphics_lib/source/gl_core_4_3.c
 							${CMAKE_SOURCE_DIR}/graphics_lib/source/gl_core_4_3.h

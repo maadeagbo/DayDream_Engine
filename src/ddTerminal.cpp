@@ -15,7 +15,7 @@ int terminalCallback(ImGuiTextEditCallbackData* data);
 
 namespace {
 bool filter_ON = false;
-bool DEBUG_ON = false;
+bool RENDER_ON = false;
 bool set_buffer_pos = false;
 bool write_out_history = false;
 
@@ -49,7 +49,7 @@ unsigned matched_expr[CMD_HIST_SIZE];
 DD_FuncBuff fb;
 }
 
-void ddTerminal::flipDebugFlag() { DEBUG_ON ^= 1; }
+void ddTerminal::flipDebugFlag() { RENDER_ON ^= 1; }
 
 /// \brief Post to terminal (currently not thread safe)
 void ddTerminal::post(std::string message) {
@@ -73,8 +73,8 @@ void ddTerminal::display(const float scr_width, const float scr_height) {
   // const float debugY = 0;
   // const float debugW = scr_width - 10.f;
 
-  if (DEBUG_ON) {
-    ImGui::Begin("ddTerminal", &DEBUG_ON, window_flags);
+  if (RENDER_ON) {
+    ImGui::Begin("ddTerminal", &RENDER_ON, window_flags);
 
     // commandline
     ImGui::Separator();
@@ -203,9 +203,11 @@ void ddTerminal::get_input(DD_LEvent& _event) {
   InputData idata = ddInput::get_input();
 
   last_button_press += ddTime::get_frame_time();
-  if (idata.keys[DD_Keys::UP_KEY].active && last_button_press > 0.15f) {
-    printf("Bang\n");
-
+	if (idata.keys[DD_Keys::TILDE].active && last_button_press > 0.15f) {
+		RENDER_ON ^= 1;
+		last_button_press = 0.f;
+	}
+	if (idata.keys[DD_Keys::UP_KEY].active && last_button_press > 0.15f) {
     up_pressed = true;
     last_button_press = 0.f;
   }

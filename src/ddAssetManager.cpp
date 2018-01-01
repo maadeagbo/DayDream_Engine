@@ -1,4 +1,5 @@
 #include "ddAssetManager.h"
+#include <SOIL.h>
 #include <omp.h>
 #include "ddFileIO.h"
 #include "ddTerminal.h"
@@ -88,11 +89,23 @@ obj_mat get_mat_data(ddIO &_io);
 /// \param mat_info obj_mat material information
 /// \return Pointer to created material
 ddMat *create_material(obj_mat &mat_info);
+/// \brief Create new 2D texture
+/// \param path File name of texture
+/// \return Pointer to created texture
+ddTex2D *create_tex2D(const char *path, const char *img_id);
 /// \brief Add agent to physics world
 /// \param agent to add rigid body
 /// \param mesh data containing bounding box information
 /// \return True if rigid body is successfully added
 bool add_rigid_body(ddAgent *agent, ddModelData *mdata);
+// source <Muhammad Mobeen Movania::OpenGL Development Cookbook>
+/// \brief Invert image along Y-axis
+/// \param image Pointer to image on RAM
+/// \param width
+/// \param height
+/// \param channels
+void flip_image(unsigned char *image, const int width, const int height,
+                const int channels);
 
 void dd_assets_initialize(btDiscreteDynamicsWorld *physics_world) {
   p_world = physics_world;
@@ -130,6 +143,16 @@ int dd_assets_create_agent(lua_State *L) {
   ddAgent *new_agent = nullptr;
   if (agent_id) {
     size_t out_id = getCharHash(agent_id);
+
+    // check if agent already exists
+    new_agent = find_ddAgent(out_id);
+    if (new_agent) {
+      ddTerminal::f_post("Duplicate agent <%s>", agent_id);
+      // return agent id
+      lua_pushinteger(L, new_agent->id);
+      return 1;
+    }
+
     new_agent = spawn_ddAgent(out_id);
     if (new_agent) {
       // add mesh for render
@@ -217,7 +240,14 @@ int dd_assets_create_cam(lua_State *L) {
   // get arguments
   const char *id = fb.get_func_val<const char>("id");
   if (id) {
-    new_cam = spawn_ddCam(getCharHash(id));
+    // check if camera already exists otherwise allocate
+    size_t cam_id = getCharHash(id);
+    new_cam = find_ddCam(cam_id);
+    if (new_cam) {
+      ddTerminal::f_post("Duplicate camera <%s>", id);
+    } else {
+      new_cam = spawn_ddCam(cam_id);
+    }
 
     if (new_cam) {
       lua_pushinteger(L, new_cam->id);
@@ -236,7 +266,14 @@ int dd_assets_create_light(lua_State *L) {
   // get arguments
   const char *id = fb.get_func_val<const char>("id");
   if (id) {
-    new_bulb = spawn_ddLBulb(getCharHash(id));
+    // check if light already exist otherwise create new light
+    size_t light_id = getCharHash(id);
+    new_bulb = find_ddLBulb(light_id);
+    if (new_bulb) {
+      ddTerminal::f_post("Duplicate light <%s>", id);
+    } else {
+      new_bulb = spawn_ddLBulb(light_id);
+    }
 
     if (new_bulb) {
       lua_pushinteger(L, new_bulb->id);
@@ -272,6 +309,13 @@ ddModelData *load_ddm(const char *filename) {
       if (strcmp("<name>", line) == 0) {
         line = io_handle.readNextLine();
         name = line;
+
+        // check if Mesh already exists and exit if found
+        mdata = find_ddModelData(name.gethash());
+        if (mdata) {
+          ddTerminal::f_post("Duplicate mesh <%s>", name.str());
+          return mdata;
+        }
       }
       if (strcmp("<buffer>", line) == 0) {
         line = io_handle.readNextLine();
@@ -557,45 +601,105 @@ obj_mat get_mat_data(ddIO &_io) {
 }
 
 ddMat *create_material(obj_mat &mat_info) {
-  ddMat *mat = spawn_ddMat(mat_info.mat_id.gethash());
+  // simple utility function for retrieving index of flag
+  auto get_tex_idx = [](const TexType t_t) {
+    return (size_t)std::log2((double)t_t);
+  };
+	// simple utility function for assigning a texture to material
+	auto set_texture = [&](ddMat *mat, const size_t tex, const TexType t_t) {
+		size_t tex_idx = get_tex_idx(t_t);
+		mat->textures[tex_idx] = tex;
+		mat->texture_flag |= t_t;
+	};
+
+  // check if material already exists
+  ddMat *mat = find_ddMat(mat_info.mat_id.gethash());
+  if (mat) {
+    ddTerminal::f_post("Duplicate material <%s>", mat_info.mat_id.str());
+    return mat;
+  }
+
+  mat = spawn_ddMat(mat_info.mat_id.gethash());
   if (!mat) {  // failed to allocate
     ddTerminal::f_post("[error]create_material::Failed to create ddMat object");
     return nullptr;
   }
+  // set size of texture id container
+  mat->textures.resize(get_tex_idx(TexType::NULL_T));
   mat->base_color = mat_info.diff_raw;
+  cbuff<32> tex_id;
+
   if (mat_info.albedo_flag) {
-    // tex = CreateTexture_OBJMAT(res, mat_info.directory, mat_info.albedo_tex);
-    // mat.AddTexture(tex, TextureType::ALBEDO);
+    ddTex2D *tex =
+        create_tex2D(mat_info.albedo_tex.str(), mat_info.mat_id.str());
+		if (tex) set_texture(mat, tex->id, TexType::ALBEDO);
   }
   if (mat_info.spec_flag) {
-    // tex = CreateTexture_OBJMAT(res, mat_info.directory,
-    // mat_info.specular_tex); mat.AddTexture(tex, TextureType::SPECULAR);
+    ddTex2D *tex =
+        create_tex2D(mat_info.specular_tex.str(), mat_info.mat_id.str());
+		if (tex) set_texture(mat, tex->id, TexType::SPEC);
   }
   if (mat_info.ao_flag) {
-    // tex = CreateTexture_OBJMAT(res, mat_info.directory, mat_info.ao_tex);
-    // mat.AddTexture(tex, TextureType::AO);
+    ddTex2D *tex = create_tex2D(mat_info.ao_tex.str(), mat_info.mat_id.str());
+		if (tex) set_texture(mat, tex->id, TexType::AMBIENT);
   }
   if (mat_info.norm_flag) {
-    // tex = CreateTexture_OBJMAT(res, mat_info.directory, mat_info.normal_tex);
-    // mat.AddTexture(tex, TextureType::NORMAL);
+    ddTex2D *tex =
+        create_tex2D(mat_info.normal_tex.str(), mat_info.mat_id.str());
+		if (tex) set_texture(mat, tex->id, TexType::NORMAL);
   }
   if (mat_info.rough_flag) {
-    // tex = CreateTexture_OBJMAT(res, mat_info.directory,
-    // mat_info.roughness_tex); mat.AddTexture(tex, TextureType::ROUGH);
+    ddTex2D *tex =
+        create_tex2D(mat_info.roughness_tex.str(), mat_info.mat_id.str());
+		if (tex) set_texture(mat, tex->id, TexType::ROUGH);
   }
   if (mat_info.metal_flag) {
-    // tex = CreateTexture_OBJMAT(res, mat_info.directory,
-    // mat_info.metalness_tex); mat.AddTexture(tex, TextureType::METAL);
+    ddTex2D *tex =
+        create_tex2D(mat_info.metalness_tex.str(), mat_info.mat_id.str());
+		if (tex) set_texture(mat, tex->id, TexType::METAL);
   }
   if (mat_info.emit_flag) {
-    // tex = CreateTexture_OBJMAT(res, mat_info.directory,
-    // mat_info.emissive_tex); mat.AddTexture(tex, TextureType::EMISSIVE);
+    ddTex2D *tex =
+        create_tex2D(mat_info.emissive_tex.str(), mat_info.mat_id.str());
+		if (tex) set_texture(mat, tex->id, TexType::EMISSIVE);
   }
   // set multiplier material
-  if (mat_info.multiplier) {
-    // mat.SetMultiplierMaterial(TextureType::ALBEDO);
-  }
+	mat->color_modifier = mat_info.multiplier;
   return mat;
+}
+
+ddTex2D *create_tex2D(const char *path, const char *img_id) {
+  // check if texture already exists
+  size_t tex_id = getCharHash(img_id);
+  ddTex2D *new_tex = find_ddTex2D(tex_id);
+  if (new_tex) {
+    ddTerminal::f_post("Duplicate texture <%s>", img_id);
+    return new_tex;
+  }
+
+  ImageInfo img_info;
+
+  // find and load image to RAM
+  img_info.path = path;
+  img_info.image_data = SOIL_load_image(path, &img_info.width, &img_info.height,
+                                        &img_info.channels, SOIL_LOAD_RGBA);
+  if (!img_info.image_data) {
+    ddTerminal::f_post("[error]create_tex2D::Failed to open image: %s", path);
+    return new_tex;
+  }
+  // flip image (SOIL loads images inverted)
+  flip_image(img_info.image_data, img_info.width, img_info.height,
+             img_info.channels);
+
+  // create texture object and assign img_info
+  new_tex = spawn_ddTex2D(tex_id);
+  if (!new_tex) {  // failed to allocate
+    ddTerminal::f_post("[error]create_tex2D::Failed to create ddTex2D object");
+    return new_tex;
+  }
+  new_tex->image_info = std::move(img_info);
+
+  return new_tex;
 }
 
 bool add_rigid_body(ddAgent *agent, ddModelData *mdata) {
@@ -637,4 +741,26 @@ bool add_rigid_body(ddAgent *agent, ddModelData *mdata) {
   // add to world
   p_world->addRigidBody(agent->inst.body[0].bt_bod);
   return true;
+}
+
+void flip_image(unsigned char *image, const int width, const int height,
+                const int channels) {
+  // validate parameters
+  if (width < 0 || height < 0 || channels < 0) {
+    fprintf(stderr, "flip_image::Invalid paramters <%d::%d::%d>", width, height,
+            channels);
+    return;
+  }
+  // flip
+  for (int j = 0; j * 2 < height; j++) {
+    int idx_1 = width * channels * j;
+    int idx_2 = width * channels * (height - 1 - j);
+    for (int i = width * channels; i > 0; i--) {
+      unsigned char temp = image[idx_1];
+      image[idx_1] = image[idx_2];
+      image[idx_2] = temp;
+      idx_1++;
+      idx_2++;
+    }
+  }
 }

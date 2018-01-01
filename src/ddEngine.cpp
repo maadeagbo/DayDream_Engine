@@ -492,12 +492,6 @@ void ddEngine::update(DD_LEvent &_event) {
     q_push(new_event);
 
     // process terminal
-    InputData idata = ddInput::get_input();
-    if (idata.keys[DD_Keys::TILDE].active) {
-      ddTerminal::flipDebugFlag();
-      flag_debug ^= 1;
-    }
-
     new_event.handle = terminal_hash;
     q_push(new_event);
 
