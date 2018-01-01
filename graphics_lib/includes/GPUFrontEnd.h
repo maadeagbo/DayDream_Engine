@@ -53,8 +53,8 @@ struct ImageInfo {
   ddTextureData *tex_buff;
   /// \brief width and height
   int width = 0, height = 0;
-	/// \brief channels in image (R, G, B, and/or A)
-	int channels = 0;
+  /// \brief channels in image (R, G, B, and/or A)
+  int channels = 0;
   /// \brief Texture object formet
   unsigned internal_format;
   /// \brief Image formet
@@ -65,15 +65,22 @@ struct ImageInfo {
   unsigned min_filter;
   /// \brief filter when pixels > screen pixels
   unsigned mag_filter;
-	/// \brief pointer to image data in RAM
-	unsigned char *image_data = nullptr;
+  /// \brief pointer to image data in RAM
+  // 0 : single / cube right
+  // 1 : cube left
+  // 2 : cube top
+  // 3 : cube bottom
+  // 4 : cube back
+  // 5 : cube front
+  unsigned char *image_data[6] = {nullptr, nullptr, nullptr,
+                                  nullptr, nullptr, nullptr};
   /// \brief path to image file
-	cbuff<256> path;
-	cbuff<256> path_left;
-	cbuff<256> path_top;
-	cbuff<256> path_bot;
-	cbuff<256> path_back;
-	cbuff<256> path_front;
+  cbuff<256> path;
+  cbuff<256> path_left;
+  cbuff<256> path_top;
+  cbuff<256> path_bot;
+  cbuff<256> path_back;
+  cbuff<256> path_front;
 };
 
 namespace ddGPUFrontEnd {

@@ -605,12 +605,12 @@ ddMat *create_material(obj_mat &mat_info) {
   auto get_tex_idx = [](const TexType t_t) {
     return (size_t)std::log2((double)t_t);
   };
-	// simple utility function for assigning a texture to material
-	auto set_texture = [&](ddMat *mat, const size_t tex, const TexType t_t) {
-		size_t tex_idx = get_tex_idx(t_t);
-		mat->textures[tex_idx] = tex;
-		mat->texture_flag |= t_t;
-	};
+  // simple utility function for assigning a texture to material
+  auto set_texture = [&](ddMat *mat, const size_t tex, const TexType t_t) {
+    size_t tex_idx = get_tex_idx(t_t);
+    mat->textures[tex_idx] = tex;
+    mat->texture_flag |= t_t;
+  };
 
   // check if material already exists
   ddMat *mat = find_ddMat(mat_info.mat_id.gethash());
@@ -632,39 +632,39 @@ ddMat *create_material(obj_mat &mat_info) {
   if (mat_info.albedo_flag) {
     ddTex2D *tex =
         create_tex2D(mat_info.albedo_tex.str(), mat_info.mat_id.str());
-		if (tex) set_texture(mat, tex->id, TexType::ALBEDO);
+    if (tex) set_texture(mat, tex->id, TexType::ALBEDO);
   }
   if (mat_info.spec_flag) {
     ddTex2D *tex =
         create_tex2D(mat_info.specular_tex.str(), mat_info.mat_id.str());
-		if (tex) set_texture(mat, tex->id, TexType::SPEC);
+    if (tex) set_texture(mat, tex->id, TexType::SPEC);
   }
   if (mat_info.ao_flag) {
     ddTex2D *tex = create_tex2D(mat_info.ao_tex.str(), mat_info.mat_id.str());
-		if (tex) set_texture(mat, tex->id, TexType::AMBIENT);
+    if (tex) set_texture(mat, tex->id, TexType::AMBIENT);
   }
   if (mat_info.norm_flag) {
     ddTex2D *tex =
         create_tex2D(mat_info.normal_tex.str(), mat_info.mat_id.str());
-		if (tex) set_texture(mat, tex->id, TexType::NORMAL);
+    if (tex) set_texture(mat, tex->id, TexType::NORMAL);
   }
   if (mat_info.rough_flag) {
     ddTex2D *tex =
         create_tex2D(mat_info.roughness_tex.str(), mat_info.mat_id.str());
-		if (tex) set_texture(mat, tex->id, TexType::ROUGH);
+    if (tex) set_texture(mat, tex->id, TexType::ROUGH);
   }
   if (mat_info.metal_flag) {
     ddTex2D *tex =
         create_tex2D(mat_info.metalness_tex.str(), mat_info.mat_id.str());
-		if (tex) set_texture(mat, tex->id, TexType::METAL);
+    if (tex) set_texture(mat, tex->id, TexType::METAL);
   }
   if (mat_info.emit_flag) {
     ddTex2D *tex =
         create_tex2D(mat_info.emissive_tex.str(), mat_info.mat_id.str());
-		if (tex) set_texture(mat, tex->id, TexType::EMISSIVE);
+    if (tex) set_texture(mat, tex->id, TexType::EMISSIVE);
   }
   // set multiplier material
-	mat->color_modifier = mat_info.multiplier;
+  mat->color_modifier = mat_info.multiplier;
   return mat;
 }
 
@@ -681,14 +681,15 @@ ddTex2D *create_tex2D(const char *path, const char *img_id) {
 
   // find and load image to RAM
   img_info.path = path;
-  img_info.image_data = SOIL_load_image(path, &img_info.width, &img_info.height,
-                                        &img_info.channels, SOIL_LOAD_RGBA);
-  if (!img_info.image_data) {
+  img_info.image_data[0] =
+      SOIL_load_image(path, &img_info.width, &img_info.height,
+                      &img_info.channels, SOIL_LOAD_RGBA);
+  if (!img_info.image_data[0]) {
     ddTerminal::f_post("[error]create_tex2D::Failed to open image: %s", path);
     return new_tex;
   }
   // flip image (SOIL loads images inverted)
-  flip_image(img_info.image_data, img_info.width, img_info.height,
+  flip_image(img_info.image_data[0], img_info.width, img_info.height,
              img_info.channels);
 
   // create texture object and assign img_info

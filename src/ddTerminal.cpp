@@ -203,11 +203,11 @@ void ddTerminal::get_input(DD_LEvent& _event) {
   InputData idata = ddInput::get_input();
 
   last_button_press += ddTime::get_frame_time();
-	if (idata.keys[DD_Keys::TILDE].active && last_button_press > 0.15f) {
-		RENDER_ON ^= 1;
-		last_button_press = 0.f;
-	}
-	if (idata.keys[DD_Keys::UP_KEY].active && last_button_press > 0.15f) {
+  if (idata.keys[DD_Keys::TILDE].active && last_button_press > 0.15f) {
+    RENDER_ON ^= 1;
+    last_button_press = 0.f;
+  }
+  if (idata.keys[DD_Keys::UP_KEY].active && last_button_press > 0.15f) {
     up_pressed = true;
     last_button_press = 0.f;
   }

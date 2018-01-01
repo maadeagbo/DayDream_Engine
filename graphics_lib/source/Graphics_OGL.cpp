@@ -118,8 +118,8 @@ bool generate_texture2D_RGBA8_LR(ImageInfo &img) {
   if (img.tex_buff) destroy_texture(img.tex_buff);
 
   // set up image parameters
-  img.internal_format = GL_RGBA8; // TODO: should set based on channels ?
-  img.image_format = GL_RGBA8;		// TODO: should set based on channels ?
+  img.internal_format = GL_RGBA8;  // TODO: should set based on channels ?
+  img.image_format = GL_RGBA8;     // TODO: should set based on channels ?
   img.wrap_s = GL_REPEAT;
   img.wrap_t = GL_REPEAT;
   img.min_filter = GL_LINEAR_MIPMAP_LINEAR;
@@ -136,17 +136,18 @@ bool generate_texture2D_RGBA8_LR(ImageInfo &img) {
     return false;
   }
 
-	// transfer image to GPU then delete from RAM
+  // transfer image to GPU then delete from RAM
   glBindTexture(GL_TEXTURE_2D, img.tex_buff->texture_handle);
   const int num_mipmaps = (int)floor(log2(std::max(img.width, img.height))) + 1;
   glTexStorage2D(GL_TEXTURE_2D, num_mipmaps, img.internal_format, img.width,
                  img.height);
   glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, img.width, img.height,
-                  img.image_format, GL_UNSIGNED_BYTE, img.image_data);
+                  img.image_format, GL_UNSIGNED_BYTE, img.image_data[0]);
   if (check_gl_errors("generate_texture2D_RGBA8_LR::Loading data")) {
     return false;
   }
-	SOIL_free_image_data(img.image_data);
+  SOIL_free_image_data(img.image_data[0]);
+  img.image_data[0] = nullptr;
 
   // texture settings
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, img.wrap_s);
@@ -167,8 +168,8 @@ bool generate_textureCube_RGBA8_LR(ImageInfo &img, const bool empty) {
   if (img.tex_buff) destroy_texture(img.tex_buff);
 
   // set up image parameters
-  img.internal_format = GL_RGBA8;	// TODO: should set based on channels ?
-  img.image_format = GL_RGBA8;		// TODO: should set based on channels ?
+  img.internal_format = GL_RGBA8;  // TODO: should set based on channels ?
+  img.image_format = GL_RGBA8;     // TODO: should set based on channels ?
   img.wrap_s = GL_REPEAT;
   img.wrap_t = GL_REPEAT;
   img.wrap_r = GL_REPEAT;
@@ -203,40 +204,18 @@ bool generate_textureCube_RGBA8_LR(ImageInfo &img, const bool empty) {
     // generate cubemap texture, then apply each face based on targets array
     glTexStorage2D(GL_TEXTURE_CUBE_MAP, 1, img.internal_format, img.width,
                    img.height);
-		
-		cbuff<100> err_msg;
+
+    cbuff<100> err_msg;
     // candidate for omp multi-threading
     for (int i = 0; i < 6; i++) {
-      cbuff<256> *img_file = nullptr;
-      switch (targets[i]) {
-        case GL_TEXTURE_CUBE_MAP_POSITIVE_X:
-          img_file = &img.path;
-          break;
-        case GL_TEXTURE_CUBE_MAP_NEGATIVE_X:
-          img_file = &img.path_left;
-          break;
-        case GL_TEXTURE_CUBE_MAP_POSITIVE_Y:
-          img_file = &img.path_top;
-          break;
-        case GL_TEXTURE_CUBE_MAP_NEGATIVE_Y:
-          img_file = &img.path_bot;
-          break;
-        case GL_TEXTURE_CUBE_MAP_POSITIVE_Z:
-          img_file = &img.path_back;
-          break;
-        case GL_TEXTURE_CUBE_MAP_NEGATIVE_Z:
-          img_file = &img.path_front;
-          break;
-        default:
-          break;
-      }
-			// transfer image to GPU then delete from RAM
+      // transfer image to GPU then delete from RAM
       glTexSubImage2D(targets[i], 0, 0, 0, img.width, img.height,
-                      img.image_format, GL_UNSIGNED_BYTE, img.image_data);
-			SOIL_free_image_data(img.image_data);
+                      img.image_format, GL_UNSIGNED_BYTE, img.image_data[i]);
+      SOIL_free_image_data(img.image_data[i]);
+      img.image_data[i] = nullptr;
 
-			err_msg.format("generate_textureCube_RGBA8_LR::Loading image <%d>", i);
-			if (check_gl_errors(err_msg.str())) return false;
+      err_msg.format("generate_textureCube_RGBA8_LR::Loading image <%d>", i);
+      if (check_gl_errors(err_msg.str())) return false;
     }
   }
 
