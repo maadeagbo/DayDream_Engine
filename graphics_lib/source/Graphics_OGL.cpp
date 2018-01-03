@@ -1,6 +1,6 @@
 #include <SOIL.h>
 #include <cstdio>
-#include "../source/gl_core_4_3.h"
+#include "gl_core_4_3.h"
 #include "GPUFrontEnd.h"
 
 struct ddVAOData {
