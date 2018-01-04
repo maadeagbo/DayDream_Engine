@@ -1,7 +1,7 @@
 #pragma once
 #include <inttypes.h>
 #include <glm/glm.hpp>
-#include "Container.h"
+#include <memory>
 #include "StringLib.h"
 
 struct ddVAOData;
@@ -72,8 +72,7 @@ struct ImageInfo {
   // 3 : cube bottom
   // 4 : cube back
   // 5 : cube front
-  unsigned char *image_data[6] = {nullptr, nullptr, nullptr,
-                                  nullptr, nullptr, nullptr};
+  std::unique_ptr<unsigned char> image_data[6];
   /// \brief path to image file
   cbuff<256> path;
   cbuff<256> path_left;

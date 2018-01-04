@@ -104,8 +104,8 @@ bool add_rigid_body(ddAgent *agent, ddModelData *mdata);
 /// \param width
 /// \param height
 /// \param channels
-void flip_image(unsigned char *image, const int width, const int height,
-                const int channels);
+void flip_image(unsigned char *image, std::unique_ptr<unsigned char> &img_ptr,
+                const int width, const int height, const int channels);
 
 void dd_assets_initialize(btDiscreteDynamicsWorld *physics_world) {
   p_world = physics_world;
@@ -681,16 +681,19 @@ ddTex2D *create_tex2D(const char *path, const char *img_id) {
 
   // find and load image to RAM
   img_info.path = path;
-  img_info.image_data[0] =
-      SOIL_load_image(path, &img_info.width, &img_info.height,
-                      &img_info.channels, SOIL_LOAD_RGBA);
-  if (!img_info.image_data[0]) {
+  unsigned char *temp;
+  temp = SOIL_load_image(path, &img_info.width, &img_info.height,
+                         &img_info.channels, SOIL_LOAD_RGBA);
+  if (!temp) {
     ddTerminal::f_post("[error]create_tex2D::Failed to open image: %s", path);
     return new_tex;
   }
-  // flip image (SOIL loads images inverted)
-  flip_image(img_info.image_data[0], img_info.width, img_info.height,
-             img_info.channels);
+  // flip image (SOIL loads images inverted) and delete temp img
+  img_info.image_data[0].reset(
+      new unsigned char[img_info.width * img_info.height]);
+  flip_image(temp, img_info.image_data[0], img_info.width,
+             img_info.height, img_info.channels);
+	SOIL_free_image_data(temp);
 
   // create texture object and assign img_info
   new_tex = spawn_ddTex2D(tex_id);
@@ -744,8 +747,8 @@ bool add_rigid_body(ddAgent *agent, ddModelData *mdata) {
   return true;
 }
 
-void flip_image(unsigned char *image, const int width, const int height,
-                const int channels) {
+void flip_image(unsigned char *image, std::unique_ptr<unsigned char> &img_ptr,
+                const int width, const int height, const int channels) {
   // validate parameters
   if (width < 0 || height < 0 || channels < 0) {
     fprintf(stderr, "flip_image::Invalid paramters <%d::%d::%d>", width, height,
@@ -757,9 +760,10 @@ void flip_image(unsigned char *image, const int width, const int height,
     int idx_1 = width * channels * j;
     int idx_2 = width * channels * (height - 1 - j);
     for (int i = width * channels; i > 0; i--) {
-      unsigned char temp = image[idx_1];
-      image[idx_1] = image[idx_2];
-      image[idx_2] = temp;
+      // unsigned char temp = image[idx_1];
+      // image[idx_1] = image[idx_2];
+      // image[idx_2] = temp;
+      img_ptr.get()[idx_2] = image[idx_1];
       idx_1++;
       idx_2++;
     }

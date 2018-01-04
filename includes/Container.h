@@ -4,6 +4,7 @@
 #ifdef DAYDREAM_CONTAINERS
 
 #include <algorithm>
+#include <memory>
 #include "Pow2Assert.h"
 
 /*
@@ -272,13 +273,16 @@ class dd_2Darray {
   T* m_data;
 };
 
-#define DD_FOREACH(TYPE, ITER, VAR, ddARRAY)                    \
-  TYPE* VAR = nullptr;                                          \
-  ITER = 0;                                                     \
-  auto _dd_check = [&](dd_array<TYPE>& ddARRAY) {               \
-    VAR = (ITER < ddARRAY.size()) ? &ddARRAY[ITER++] : nullptr; \
-    return VAR;                                                 \
-  };                                                            \
-  while (_dd_check(ddARRAY))
+
+template <typename T>
+struct _dd_iter {
+	size_t i;
+	T* ptr;
+};
+
+#define DD_FOREACH(TYPE, VAR, ddARRAY)                                       \
+  for (_dd_iter<TYPE> VAR = {0, ddARRAY.size() > 0 ? &ddARRAY[0] : nullptr}; \
+       VAR.i < ddARRAY.size();                                               \
+       VAR.ptr = ((ddARRAY.size() > ++VAR.i) ? &ddARRAY[VAR.i] : nullptr))
 
 #endif  // !DDAYDREAM_CONTAINERS

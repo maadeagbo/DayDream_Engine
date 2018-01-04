@@ -94,8 +94,15 @@ if (OPENMP_FOUND)
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
+# add graphics lib
+find_library(GRAPHICS_LIB dd_graphics ${CMAKE_CURRENT_SOURCE_DIR}/../lib)
+if(NOT GRAPHICS_LIB)
+  message(FATAL_ERROR "dd_graphics library not found")
+endif()
+
 # use the file(GLOB...) or file(GLOB_RECURSE...) to grab wildcard src files
 file(GLOB_RECURSE SOURCES 	"${CMAKE_SOURCE_DIR}/src/*.cpp"
+														"${CMAKE_SOURCE_DIR}/utility/*.cpp"
 														"${CMAKE_SOURCE_DIR}/include/*.h"
 														"${CMAKE_SOURCE_DIR}/src/*.c")
 
@@ -129,8 +136,45 @@ foreach(_proj_source IN ITEMS ${SHADER_SOURCES})
 	source_group("${_source_path_rel}" FILES "${_proj_source}")
 endforeach()
 
+# GLFW 3
+# add include directory
+find_path( GLFW_INCLUDE_DIR 
+	NAMES
+			GLFW/glfw3.h
+	HINTS
+			"${CMAKE_CURRENT_SOURCE_DIR}/../glfw/include"
+	PATHS
+			"$ENV{PROGRAMFILES}/GLFW/include"
+			"${OPENGL_INCLUDE_DIR}"
+			/usr/openwin/share/include
+			/usr/openwin/include
+			/usr/X11R6/include
+			/usr/include/X11
+			/opt/graphics/OpenGL/include
+			/opt/graphics/OpenGL/contrib/libglfw
+			/usr/local/include
+			/usr/include/GL
+			/usr/include
+	DOC 
+			"The directory where GLFW/glfw3.h resides"
+)
+# check if includes where found
+if (GLFW_INCLUDE_DIR)
+	include_directories(${GLFW_INCLUDE_DIR})
+else()
+	message(FATAL_ERROR "GLFW includes not found")
+endif()
+
+# add project
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+add_subdirectory(${PROJECT_SOURCE_DIR}/../glfw
+									"${CMAKE_CURRENT_BINARY_DIR}/glfwlib_build")
+
 include_directories(${CMAKE_SOURCE_DIR}/include 
 										${CMAKE_SOURCE_DIR}/utility
+										${CMAKE_SOURCE_DIR}/../graphics_lib/includes
 										${CMAKE_SOURCE_DIR}/../glm/)
 
 # clang-format
@@ -151,4 +195,4 @@ set_property(DIRECTORY ${PROJECT_SOURCE_DIR}
 			PROPERTY VS_STARTUP_PROJECT
 			dd_shader_reflect)
 
-target_link_libraries(dd_shader_reflect ${OPENGL_gl_LIBRARY})
+target_link_libraries(dd_shader_reflect ${GRAPHICS_LIB} glfw ${OPENGL_gl_LIBRARY})

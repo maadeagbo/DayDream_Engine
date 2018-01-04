@@ -6,6 +6,14 @@
 
 struct ddShaderHandle;
 
+struct ddQueryInfo {
+	ddQueryInfo() {}
+  ddQueryInfo(const int loc, const char* n, const char* t)
+      : location(loc), name(n), type(t) {}
+  int location = -1;
+  cbuff<64> name;
+  cbuff<64> type;
+};
 const char* get_uniform_type(unsigned type);
 
 struct ddShader {
@@ -21,12 +29,12 @@ struct ddShader {
   void create_comp_shader(const char* filePath);
   /// \brief Create geometry shader
   void create_geom_shader(const char* filePath);
+  /// \brief Retrieve attributes from the shader program
+  dd_array<ddQueryInfo> query_shader_attributes();
   /// \brief
-  void query_shader_attributes();
-  /// \brief
-  void query_uniforms();
+  dd_array<ddQueryInfo> query_uniforms();
   /// \brief Make this shader active
-  void Use();
+  void use();
 
   cbuff<256> id;
   cbuff<256> vs;

@@ -91,13 +91,6 @@ ENABLE_BITMASK_OPERATORS(TexType)
 
 /// \brief Container for 2D textures
 struct ddTex2D {
-  ~ddTex2D() {
-    if (image_info.image_data) {  // free memory just in case still allocated
-      for (unsigned i = 0; i < 6; i++) {
-        delete image_info.image_data[i];
-      }
-    }
-  }
   /// \brief Engine identifier assigned at initialization
   size_t id;
   /// \brief Type of texture

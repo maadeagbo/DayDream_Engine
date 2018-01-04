@@ -1,7 +1,6 @@
-#include <SOIL.h>
 #include <cstdio>
-#include "gl_core_4_3.h"
 #include "GPUFrontEnd.h"
+#include "gl_core_4_3.h"
 
 struct ddVAOData {
   GLuint vao_handle;
@@ -21,16 +20,18 @@ struct ddTextureData {
   GLuint texture_handle;
 };
 
+namespace {
 // Error processing function for OpenGL calls
 bool check_gl_errors(const char *signature) {
   GLenum err;
   bool flag = false;
   while ((err = glGetError()) != GL_NO_ERROR) {
-    fprintf(stderr, "%s::OpenGL error: %d", signature, err);
+    fprintf(stderr, "%s::OpenGL error: %d\n", signature, err);
     flag = true;
   }
   return flag;
 }
+}  // namespace
 
 namespace ddGPUFrontEnd {
 
@@ -142,11 +143,10 @@ bool generate_texture2D_RGBA8_LR(ImageInfo &img) {
   glTexStorage2D(GL_TEXTURE_2D, num_mipmaps, img.internal_format, img.width,
                  img.height);
   glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, img.width, img.height,
-                  img.image_format, GL_UNSIGNED_BYTE, img.image_data[0]);
+                  img.image_format, GL_UNSIGNED_BYTE, img.image_data[0].get());
   if (check_gl_errors("generate_texture2D_RGBA8_LR::Loading data")) {
     return false;
   }
-  SOIL_free_image_data(img.image_data[0]);
   img.image_data[0] = nullptr;
 
   // texture settings
@@ -210,8 +210,8 @@ bool generate_textureCube_RGBA8_LR(ImageInfo &img, const bool empty) {
     for (int i = 0; i < 6; i++) {
       // transfer image to GPU then delete from RAM
       glTexSubImage2D(targets[i], 0, 0, 0, img.width, img.height,
-                      img.image_format, GL_UNSIGNED_BYTE, img.image_data[i]);
-      SOIL_free_image_data(img.image_data[i]);
+                      img.image_format, GL_UNSIGNED_BYTE,
+                      img.image_data[i].get());
       img.image_data[i] = nullptr;
 
       err_msg.format("generate_textureCube_RGBA8_LR::Loading image <%d>", i);
