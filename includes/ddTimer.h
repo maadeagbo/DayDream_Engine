@@ -53,7 +53,7 @@ namespace Timer {
 
 namespace ddTime {
 
-uint64_t GetHiResTime();
+uint64_t GetHiResTime(const bool start_end = true);
 void sleep(float seconds);
 uint64_t SecsToNanoSecs(float seconds);
 float NanoSecsToSecs(uint64_t nanosecs);

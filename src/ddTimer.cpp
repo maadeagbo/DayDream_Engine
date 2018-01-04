@@ -49,6 +49,30 @@ double SetCyclesPerNanoSec() {
   return (double)(_end - _begin) / (double)elaspedNanoSecs;
 }
 
+inline uint64_t rdtsc_Start() {
+  unsigned int cycles_high, cycles_low;
+  __asm__ __volatile__(
+    "CPUID\n\t" 
+    "RDTSC\n\t" 
+    "mov %%edx, %0\n\t" 
+    "mov %%eax, %1\n\t": "=r" (cycles_high), "=r" (cycles_low):: 
+    "%rax", "%rbx", "%rcx", "%rdx"
+  );
+  return ((uint64_t)cycles_high << 32) | cycles_low; 
+}
+
+inline uint64_t rdtsc_End() {
+  unsigned int cycles_high, cycles_low;
+  __asm__ __volatile__(
+    "RDTSCP\n\t" 
+    "mov %%edx, %0\n\t" 
+    "mov %%eax, %1\n\t" 
+    "CPUID\n\t": "=r" (cycles_high), "=r" (cycles_low):: 
+    "%rax", "%rbx", "%rcx", "%rdx"
+  );
+  return ((uint64_t)cycles_high << 32) | cycles_low; 
+}
+
 // ddTimer::ddTimer()
 //     : m_time_scale(1.0),
 //       m_time_sec(0.0f),
@@ -63,13 +87,12 @@ double SetCyclesPerNanoSec() {
 
 namespace ddTime {
 // return high resolution time in nanoseconds
-uint64_t GetHiResTime() {
-  uint64_t hrTime = 0;
-  timespec now;
-  clock_gettime(CLOCK_MONOTONIC_RAW, &now);
-  hrTime = (now.tv_sec * 1000000000L) + now.tv_nsec;
-
-  return hrTime;
+uint64_t GetHiResTime(const bool start_end) {
+  // uint64_t hrTime = 0;
+  // timespec now;
+  // clock_gettime(CLOCK_MONOTONIC_RAW, &now);
+  // hrTime = (now.tv_sec * 1000000000L) + now.tv_nsec;
+  return start_end ? rdtsc_Start() : rdtsc_End();
 }
 
 // Put CPU to sleep
@@ -103,7 +126,7 @@ uint64_t NanoSecsToMilli64(uint64_t nanosecs) {
 namespace ddTime {
 
 // return cpu cycles
-uint64_t GetHiResTime() {
+uint64_t GetHiResTime(const bool start_end) {
   LARGE_INTEGER now, freq;
   QueryPerformanceCounter(&now);
   QueryPerformanceFrequency(&freq);

@@ -172,7 +172,7 @@ set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 add_subdirectory(${PROJECT_SOURCE_DIR}/../glfw
 									"${CMAKE_CURRENT_BINARY_DIR}/glfwlib_build")
 
-include_directories(${CMAKE_SOURCE_DIR}/include 
+include_directories(${CMAKE_SOURCE_DIR}/include
 										${CMAKE_SOURCE_DIR}/utility
 										${CMAKE_SOURCE_DIR}/../graphics_lib/includes
 										${CMAKE_SOURCE_DIR}/../glm/)

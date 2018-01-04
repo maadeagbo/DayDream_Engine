@@ -7,12 +7,12 @@
 struct ddShaderHandle;
 
 struct ddQueryInfo {
-	ddQueryInfo() {}
-  ddQueryInfo(const int loc, const char* n, const char* t)
-      : location(loc), name(n), type(t) {}
+  ddQueryInfo() {}
+  ddQueryInfo(const int loc, const char* n, unsigned t)
+      : location(loc), type(t), name(n) {}
   int location = -1;
+  unsigned type;
   cbuff<64> name;
-  cbuff<64> type;
 };
 const char* get_uniform_type(unsigned type);
 

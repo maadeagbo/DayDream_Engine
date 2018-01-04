@@ -66,8 +66,10 @@ const char *get_uniform_type(unsigned type) {
       return UNIFORM_TO_STRING(GL_FLOAT_MAT4);
     case GL_SAMPLER_2D:
       return UNIFORM_TO_STRING(GL_SAMPLER_2D);
+    case GL_SAMPLER_CUBE:
+      return UNIFORM_TO_STRING(GL_SAMPLER_CUBE);
     default:
-      return UNIFORM_TO_STRING("NOT LISTED");
+      return UNIFORM_TO_STRING(<NOT LISTED>);
   }
 }
 
@@ -117,8 +119,8 @@ void ddShader::create_vert_shader(const char *filePath) {
   if (handle && compile_shader(&vertex_shader, s_code.c_str(), s_type)) {
     link_shader(&vertex_shader, s_type, &handle->program);
   }
-	POW2_VERIFY_MSG(!check_gl_errors("create_vert_shader"),
-									"Failed %s shader link", s_type);
+  POW2_VERIFY_MSG(!check_gl_errors("create_vert_shader"),
+                  "Failed %s shader link", s_type);
 }
 
 void ddShader::create_frag_shader(const char *filePath) {
@@ -132,8 +134,8 @@ void ddShader::create_frag_shader(const char *filePath) {
   if (handle && compile_shader(&frag_shader, s_code.c_str(), s_type)) {
     link_shader(&frag_shader, s_type, &handle->program);
   }
-	POW2_VERIFY_MSG(!check_gl_errors("create_frag_shader"),
-									"Failed %s shader link", s_type);
+  POW2_VERIFY_MSG(!check_gl_errors("create_frag_shader"),
+                  "Failed %s shader link", s_type);
 }
 
 void ddShader::create_comp_shader(const char *filePath) {
@@ -147,8 +149,8 @@ void ddShader::create_comp_shader(const char *filePath) {
   if (handle && compile_shader(&comp_shader, s_code.c_str(), s_type)) {
     link_shader(&comp_shader, s_type, &handle->program);
   }
-	POW2_VERIFY_MSG(!check_gl_errors("create_comp_shader"),
-									"Failed %s shader link", s_type);
+  POW2_VERIFY_MSG(!check_gl_errors("create_comp_shader"),
+                  "Failed %s shader link", s_type);
 }
 
 void ddShader::create_geom_shader(const char *filePath) {
@@ -162,8 +164,8 @@ void ddShader::create_geom_shader(const char *filePath) {
   if (handle && compile_shader(&geom_shader, s_code.c_str(), s_type)) {
     link_shader(&geom_shader, s_type, &handle->program);
   }
-	POW2_VERIFY_MSG(!check_gl_errors("create_geom_shader"),
-									"Failed %s shader link", s_type);
+  POW2_VERIFY_MSG(!check_gl_errors("create_geom_shader"),
+                  "Failed %s shader link", s_type);
 }
 
 dd_array<ddQueryInfo> ddShader::query_shader_attributes() {
@@ -185,15 +187,22 @@ dd_array<ddQueryInfo> ddShader::query_shader_attributes() {
     // get attribute information and store in ddQueryInfo
     GLint name_length = results[0] + 1;
     char *name = new char[name_length];
-    glGetProgramResourceName(handle->program, GL_UNIFORM, i, name_length, NULL,
-                             name);
-    info[i] = {(int)results[2], name, get_uniform_type(results[1])};
+    glGetProgramResourceName(handle->program, GL_PROGRAM_INPUT, i, name_length,
+                             NULL, name);
+    info[i] = {(int)results[2], name, (unsigned)results[1]};
     delete[] name;
   }
   return info;
 }
 
 dd_array<ddQueryInfo> ddShader::query_uniforms() {
+  auto replace_char = [&](char *str_ptr, char old_c, char new_c) {
+    while (*str_ptr) {
+      if (*str_ptr == old_c) *str_ptr = new_c;
+      str_ptr++;
+    }
+  };
+
   dd_array<ddQueryInfo> info;
   if (!handle) return info;
 
@@ -212,9 +221,11 @@ dd_array<ddQueryInfo> ddShader::query_uniforms() {
     // get uniform information and store in ddQueryInfo
     GLint name_length = results[0] + 1;
     char *name = new char[name_length];
+
     glGetProgramResourceName(handle->program, GL_UNIFORM, i, name_length, NULL,
                              name);
-    info[i] = {(int)results[2], name, get_uniform_type(results[1])};
+    replace_char(name, '.', '_');  // fix: struct uniforms
+    info[i] = {(int)results[2], name, (unsigned)results[1]};
     delete[] name;
   }
   return info;
