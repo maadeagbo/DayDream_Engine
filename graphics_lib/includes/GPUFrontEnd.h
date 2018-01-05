@@ -72,7 +72,8 @@ struct ImageInfo {
   // 3 : cube bottom
   // 4 : cube back
   // 5 : cube front
-  std::unique_ptr<unsigned char> image_data[6];
+  unsigned char *image_data[6] = {nullptr, nullptr, nullptr,
+                                  nullptr, nullptr, nullptr};
   /// \brief path to image file
   cbuff<256> path;
   cbuff<256> path_left;
@@ -109,4 +110,4 @@ void destroy_vao(ddVAOData *&vbuff_ptr);
 // Bind ddMeshBufferData and/or ddInstBufferData buffer to ddVAOData object
 bool bind_object(ddVAOData *vbuff_ptr, ddInstBufferData *ibuff_ptr,
                  ddMeshBufferData *mbuff_ptr);
-}
+}  // namespace ddGPUFrontEnd

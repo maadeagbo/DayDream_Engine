@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <SOIL.h>
 #include "GPUFrontEnd.h"
 #include "gl_core_4_3.h"
 
@@ -143,10 +144,11 @@ bool generate_texture2D_RGBA8_LR(ImageInfo &img) {
   glTexStorage2D(GL_TEXTURE_2D, num_mipmaps, img.internal_format, img.width,
                  img.height);
   glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, img.width, img.height,
-                  img.image_format, GL_UNSIGNED_BYTE, img.image_data[0].get());
+                  img.image_format, GL_UNSIGNED_BYTE, img.image_data[0]);
   if (check_gl_errors("generate_texture2D_RGBA8_LR::Loading data")) {
     return false;
   }
+	SOIL_free_image_data(img.image_data[0]);
   img.image_data[0] = nullptr;
 
   // texture settings
@@ -211,7 +213,8 @@ bool generate_textureCube_RGBA8_LR(ImageInfo &img, const bool empty) {
       // transfer image to GPU then delete from RAM
       glTexSubImage2D(targets[i], 0, 0, 0, img.width, img.height,
                       img.image_format, GL_UNSIGNED_BYTE,
-                      img.image_data[i].get());
+                      img.image_data[i]);
+			SOIL_free_image_data(img.image_data[i]);
       img.image_data[i] = nullptr;
 
       err_msg.format("generate_textureCube_RGBA8_LR::Loading image <%d>", i);
