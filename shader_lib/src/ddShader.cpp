@@ -73,30 +73,6 @@ const char *get_uniform_type(unsigned type) {
   }
 }
 
-ddShader::~ddShader() {
-  // delete shader and atached programs
-  if (!handle) return;
-
-  // Query the number of attached shaders
-  GLint num_shaders = 0;
-  glGetProgramiv(handle->program, GL_ATTACHED_SHADERS, &num_shaders);
-
-  // Get the shader names
-  GLuint *shader_handles = new GLuint[num_shaders];
-  glGetAttachedShaders(handle->program, num_shaders, NULL, shader_handles);
-
-  // Delete the shaders
-  for (int i = 0; i < num_shaders; i++) {
-    glDeleteShader(shader_handles[i]);
-  }
-
-  // Delete the program
-  glDeleteProgram(handle->program);
-  check_gl_errors("shader_deconstructor");
-
-  delete[] shader_handles;
-}
-
 void ddShader::init() {
   handle = new ddShaderHandle();
   if (!handle) {
@@ -106,6 +82,34 @@ void ddShader::init() {
   handle->program = glCreateProgram();
   POW2_VERIFY_MSG(!check_gl_errors("init"), "Failed to create shader program",
                   0);
+}
+
+void ddShader::cleanup() {
+	// delete shader and atached programs
+	if (!handle) return;
+
+	// Query the number of attached shaders
+	GLint num_shaders = 0;
+	glGetProgramiv(handle->program, GL_ATTACHED_SHADERS, &num_shaders);
+	check_gl_errors("shader_deconstructor_c");
+
+	// Get the shader names
+	GLuint *shader_handles = new GLuint[num_shaders];
+	glGetAttachedShaders(handle->program, num_shaders, NULL, shader_handles);
+	check_gl_errors("shader_deconstructor_b");
+
+	// Delete the shaders
+	for (int i = 0; i < num_shaders; i++) {
+		glDeleteShader(shader_handles[i]);
+	}
+	check_gl_errors("shader_deconstructor_a");
+
+	// Delete the program
+	glDeleteProgram(handle->program);
+	check_gl_errors("shader_deconstructor");
+
+	delete[] shader_handles;
+	//delete handle;
 }
 
 void ddShader::create_vert_shader(const char *filePath) {
@@ -175,6 +179,8 @@ dd_array<ddQueryInfo> ddShader::query_shader_attributes() {
   GLint num_attribs = 0;
   glGetProgramInterfaceiv(handle->program, GL_PROGRAM_INPUT,
                           GL_ACTIVE_RESOURCES, &num_attribs);
+	POW2_VERIFY_MSG(!check_gl_errors("query_shader_attributes"),
+									"Failed to retrieve # of attributes");
 
   // loop thru attributes
   info.resize(num_attribs);
@@ -183,12 +189,16 @@ dd_array<ddQueryInfo> ddShader::query_shader_attributes() {
     GLint results[3];
     glGetProgramResourceiv(handle->program, GL_PROGRAM_INPUT, i, 3, properties,
                            3, NULL, results);
+		POW2_VERIFY_MSG(!check_gl_errors("query_shader_attributes"),
+										"Failed to retrieve program input <%d>", i);
 
     // get attribute information and store in ddQueryInfo
     GLint name_length = results[0] + 1;
     char *name = new char[name_length];
     glGetProgramResourceName(handle->program, GL_PROGRAM_INPUT, i, name_length,
                              NULL, name);
+		POW2_VERIFY_MSG(!check_gl_errors("query_shader_attributes"),
+										"Failed to retrieve resource name <%d>", i);
     info[i] = {(int)results[2], name, (unsigned)results[1]};
     delete[] name;
   }
@@ -209,6 +219,8 @@ dd_array<ddQueryInfo> ddShader::query_uniforms() {
   GLint num_uniforms = 0;
   glGetProgramInterfaceiv(handle->program, GL_UNIFORM, GL_ACTIVE_RESOURCES,
                           &num_uniforms);
+	POW2_VERIFY_MSG(!check_gl_errors("query_shader_uniforms"),
+									"Failed to retrieve # of uniforms");
 
   // loop thru uniforms
   info.resize(num_uniforms);
@@ -217,6 +229,8 @@ dd_array<ddQueryInfo> ddShader::query_uniforms() {
     GLint results[4];
     glGetProgramResourceiv(handle->program, GL_UNIFORM, i, 4, properties, 4,
                            NULL, results);
+		POW2_VERIFY_MSG(!check_gl_errors("query_shader_uniforms"),
+										"Failed to retrieve uniform <%d>", i);
 
     // get uniform information and store in ddQueryInfo
     GLint name_length = results[0] + 1;
@@ -224,6 +238,8 @@ dd_array<ddQueryInfo> ddShader::query_uniforms() {
 
     glGetProgramResourceName(handle->program, GL_UNIFORM, i, name_length, NULL,
                              name);
+		POW2_VERIFY_MSG(!check_gl_errors("query_shader_uniforms"),
+										"Failed to retrieve uniform name <%d>", i);
     replace_char(name, '.', '_');  // fix: struct uniforms
     info[i] = {(int)results[2], name, (unsigned)results[1]};
     delete[] name;

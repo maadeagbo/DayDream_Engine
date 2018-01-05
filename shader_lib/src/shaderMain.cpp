@@ -162,7 +162,8 @@ int main(const int argc, const char *argv[]) {
   }
   printf("\n");
 
-  // close hidden window and exit
+  // close resources and exit
+	shader.cleanup();
   glfwTerminate();
   return 0;
 }
@@ -276,6 +277,7 @@ void test_reflect_func(const char *outfile, const char *e_name, bool app) {
     if (info.i != shader_info.size() - 1) out << ",\n";
   }
   out << "\n};\n";
+	shader.cleanup();
 
   return;
 }
