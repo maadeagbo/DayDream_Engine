@@ -236,6 +236,45 @@ void ddShader::use() {
   glUseProgram(handle->program);
 }
 
+void ddShader::set_uniform(const int loc, const int data) {
+  glUniform1i(loc, (GLint)data);
+}
+
+void ddShader::set_uniform(const int loc, const float data) {
+  glUniform1f(loc, (GLfloat)data);
+}
+
+void ddShader::set_uniform(const int loc, const bool flag) {
+  glUniform1i(loc, (GLboolean)flag);
+}
+
+void ddShader::set_uniform(const int loc, const glm::vec2& data) {
+  glUniform2f(loc, data.x, data.y);
+}
+
+void ddShader::set_uniform(const int loc, const glm::vec3& data) {
+  glUniform3f(loc, data.x, data.y, data.z);
+}
+
+void ddShader::set_uniform(const int loc, const glm::vec4& data) {
+  glUniform4f(loc, data.x, data.y, data.z, data.w);
+}
+
+void ddShader::set_uniform(const int loc, const glm::mat3& data) {
+  glUniformMatrix4fv(loc, 1, GL_FALSE, &data[0][0]);
+}
+
+void ddShader::set_uniform(const int loc, const glm::mat4& data) {
+  glUniformMatrix4fv(loc, 1, GL_FALSE, &data[0][0]);
+}
+
+int ddShader::get_uniform_loc(const char* name) {
+  if (!handle) {
+    POW2_VERIFY_MSG(false, "get_uniform_loc::Handle uninitialized", 0);
+  }
+  return glGetUniformLocation(handle->program, name);
+}
+
 std::string read_shader_file(const char *filename) {
   std::ifstream file(filename);
   if (file.is_open()) {

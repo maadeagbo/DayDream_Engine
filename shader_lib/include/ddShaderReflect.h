@@ -1,6 +1,6 @@
 // Enums for managing shader uniforms
 
-enum class RE_Light : unsigned {
+enum class RE_Light : int {
   MVP_m4x4 = 0,
   DrawSky_b = 1,
   LightVolume_b = 2,
@@ -25,7 +25,7 @@ enum class RE_Light : unsigned {
   ShadowMap_b = 21
 };
 
-enum class RE_GBuffer : unsigned {
+enum class RE_GBuffer : int {
   enable_clip1_b = 0,
   MVP_m4x4 = 1,
   multiplierMat_b = 2,
@@ -40,7 +40,7 @@ enum class RE_GBuffer : unsigned {
   useDebug_b = 11
 };
 
-enum class RE_PostPr : unsigned {
+enum class RE_PostPr : int {
   MVP_m4x4 = 0,
   SampleShadow_b = 1,
   flip_y_coord_b = 2,
@@ -63,37 +63,37 @@ enum class RE_PostPr : unsigned {
   direction_flag_v2 = 19
 };
 
-enum class RE_Text : unsigned {
+enum class RE_Text : int {
   projection_m4x4 = 0,
   text_smp2d = 1,
   textColor_v3 = 2
 };
 
-enum class RE_PingP : unsigned {
+enum class RE_PingP : int {
   ColorTex_smp2d = 0
 };
 
-enum class RE_Lumin : unsigned {
+enum class RE_Lumin : int {
   img_input_img2D = 0,
   img_output_img2D = 1,
   computeLum_b = 2
 };
 
-enum class RE_Line : unsigned {
+enum class RE_Line : int {
   MVP_m4x4 = 0,
   color_v4 = 1
 };
 
-enum class RE_LightSt : unsigned {
+enum class RE_LightSt : int {
   MVP_m4x4 = 0
 };
 
-enum class RE_Shadow : unsigned {
+enum class RE_Shadow : int {
   MVP_m4x4 = 0,
   LightSpace_m4x4 = 1
 };
 
-enum class RE_ShadowSk : unsigned {
+enum class RE_ShadowSk : int {
   MVP_m4x4 = 0,
   LightSpace_m4x4 = 1
 };

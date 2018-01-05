@@ -36,12 +36,20 @@ struct ddShader {
   /// \brief Make this shader active
   void use();
 
+  void set_uniform(const int loc, const int data);
+  void set_uniform(const int loc, const float data);
+  void set_uniform(const int loc, const bool flag);
+  void set_uniform(const int loc, const glm::vec2& data);
+  void set_uniform(const int loc, const glm::vec3& data);
+  void set_uniform(const int loc, const glm::vec4& data);
+  void set_uniform(const int loc, const glm::mat3& data);
+  void set_uniform(const int loc, const glm::mat4& data);
+
   cbuff<256> id;
   cbuff<256> vs;
   cbuff<256> fs;
   cbuff<256> gs;
   cbuff<256> cs;
   ddShaderHandle* handle = nullptr;
-  std::map<cbuff<64>, unsigned> uniform_loc;
-  unsigned get_uniform_loc(const char* name);
+  int get_uniform_loc(const char* name);
 };

@@ -265,7 +265,7 @@ void test_reflect_func(const char *outfile, const char *e_name, bool app) {
 
   printf("Uniforms:\n");
   // retrieve uniform info and output enum
-  out << "enum class " << e_name << " : unsigned {\n";
+  out << "enum class " << e_name << " : int {\n";
   shader_info = shader.query_uniforms();
   DD_FOREACH(ddQueryInfo, info, shader_info) {
     const char *suffix = uniform_suffix((GLint)info.ptr->type);
@@ -302,7 +302,7 @@ void output_reflection(ddShader &shader, ShFlags flags, const char* fname,
 
   printf("\nUniforms:\n");
   // retrieve uniform info and output enum
-  out << "enum class " << ename << " : unsigned {\n";
+  out << "enum class " << ename << " : int {\n";
   shader_info = shader.query_uniforms();
   DD_FOREACH(ddQueryInfo, info, shader_info) {
     const char *suffix = uniform_suffix((GLint)info.ptr->type);
