@@ -11,7 +11,17 @@ std::ofstream create_file(const char *name, const bool append);
 // return suffix for uniform type based on string
 const char *uniform_suffix(GLint type);
 // test function for creating header
-void create_default_reflect_header();
+void test_reflect_func(const char *outfile, const char *e_name, bool app);
+
+struct ShFlags {
+  bool vs = false;
+  bool fs = false;
+  bool gs = false;
+  bool cs = false;
+};
+// output uniform reflection enums
+void output_reflection(ddShader &shader, ShFlags flags, const char* fname, 
+                       const char *ename, bool append);
 
 int main(const int argc, const char *argv[]) {
   // process input argument
@@ -19,10 +29,10 @@ int main(const int argc, const char *argv[]) {
   help =
       "Shader Reflection Creator::Creates enums with type suffix and prefix "
       "names based on glsl shader uniforms (also exhibits secondary function of "
-      "debugging shaders).\n\t-h Help info\n\t-a Append to file\n\t-f Path to "
-      "shader\n\t-o Enum name";
-  cbuff<512> arg_str;
-  if (argc < 5) {
+      "debugging shaders).\n\t-h Help info\n\t-a Append to file\n\t-f fragment "
+      "shader\n\t-v vertex shader\n\t-c compute shader\n\t-g geometry shader\n\t"
+      "-e Enum name\n\t-o output file name\n\t-t run default test";
+  if (argc < 2) {
     printf("%s\n", help.str());
     return 1;
   }
@@ -30,13 +40,127 @@ int main(const int argc, const char *argv[]) {
   init_glfw();
 
   // initialize OpenGL
-  if (!ddGPUFrontEnd::load_api_library()) {
+  if (!ddGPUFrontEnd::load_api_library(false)) {
     fprintf(stderr, "Failed to load graphics api library\n");
     std::exit(EXIT_FAILURE);
   }
 
-  // run default
-  create_default_reflect_header();
+  cbuff<512> file_str;
+  bool append_file = false;
+  bool run_defualt_test = false;
+  bool enum_set = false;
+  bool file_set = false;
+  ShFlags flags;
+  cbuff<64> enum_name;
+  ddShader shader;
+  // parse arguments
+  printf("Reflect args:\n");
+  int i = 1;
+  while (i < argc) {
+    const char *str = argv[i];
+    switch (*str) {
+      case '-':
+        str++;
+        switch (*str) {
+          case 'a':
+            append_file = true;
+            printf("- Append enum to file\n");
+            break;
+          case 'e':
+            enum_name = (i + 1 < argc) ? argv[i + 1] : "unset_enum";
+            printf("- Enum set: %s\n", enum_name.str());
+            enum_set = true;
+            break;
+          case 'v':
+            shader.vs = (i + 1 < argc) ? argv[i + 1] : "vs_unset";
+            printf("- Vertex: %s\n", shader.vs.str());
+            flags.vs = true;
+            break;
+          case 'f':
+            shader.fs = (i + 1 < argc) ? argv[i + 1] : "fs_unset";
+            printf("- Fragment: %s\n", shader.fs.str());
+            flags.fs = true;
+            break;
+          case 'g':
+            shader.gs = (i + 1 < argc) ? argv[i + 1] : "gs_unset";
+            printf("- Geometry: %s\n", shader.gs.str());
+            flags.gs = true;
+            break;
+          case 'c':
+            shader.cs = (i + 1 < argc) ? argv[i + 1] : "cs_unset";
+            printf("- Compute: %s\n", shader.cs.str());
+            flags.cs = true;
+            break;
+          case 'o':
+            file_str = (i + 1 < argc) ? argv[i + 1] : "out_file.txt";
+            printf("- File output: %s\n", file_str.str());
+            file_set = true;
+            break;
+          case 't':
+            run_defualt_test = true;
+            printf("- Default test execution\n");
+            break;
+          case 'h':
+            printf("%s\n", help.str());
+            return 0;
+            break;
+          default:
+            break;
+        } 
+        break;
+      default:
+        break;
+    }
+    i++;
+  }
+  printf("\n");
+
+  if (run_defualt_test) {
+    test_reflect_func("test.h", "test_e", append_file);
+  } else {
+    if (!file_set || !enum_set) {
+      if (!file_set) fprintf(stderr, "File not provided\n");
+      if (!enum_set) fprintf(stderr, "Enum name not provided\n");
+      return 2;
+    }
+    if (flags.vs && flags.gs && flags.fs) {
+      // vertex, geometry, & fragment shader
+      ShFlags f;
+      f.vs = f.gs = f.fs = true;
+      output_reflection(shader, f, file_str.str(), enum_name.str(), append_file);
+    }
+    else if (flags.vs && flags.fs) {
+      // vertex & fragment shader
+      ShFlags f;
+      f.vs = f.fs = true;
+      output_reflection(shader, f, file_str.str(), enum_name.str(), append_file);
+    }
+    else if (flags.vs) {
+      // vertex
+      ShFlags f;
+      f.vs = true;
+      output_reflection(shader, f, file_str.str(), enum_name.str(), append_file);
+    }
+    else if (flags.gs) {
+      // geometry
+      ShFlags f;
+      f.gs = true;
+      output_reflection(shader, f, file_str.str(), enum_name.str(), append_file);
+    }
+    else if (flags.fs) {
+      // fragment
+      ShFlags f;
+      f.fs = true;
+      output_reflection(shader, f, file_str.str(), enum_name.str(), append_file);
+    }
+    if (flags.cs) {
+      // compute shader
+      ShFlags f;
+      f.cs = true;
+      output_reflection(shader, f, file_str.str(), enum_name.str(), append_file);
+    }
+  }
+  printf("\n");
 
   // close hidden window and exit
   glfwTerminate();
@@ -77,7 +201,9 @@ std::ofstream create_file(const char *name, const bool append) {
   std::ofstream out_file(name, ios_flag);
 
   POW2_VERIFY_MSG(out_file.is_open(), "create_file::Failed to create file", 0);
-  out_file << "// Enums for managing shader uniforms\n\n";
+
+  if (!append) out_file << "// Enums for managing shader uniforms\n\n";
+  
   return out_file;
 }
 
@@ -109,12 +235,14 @@ const char *uniform_suffix(GLint type) {
       return "_smp2d";
     case GL_SAMPLER_CUBE:
       return "_smpCube";
+    case GL_IMAGE_2D:
+      return "_img2D";
     default:
-      return "_";
+      return "_UNKNOWN";
   }
 }
 
-void create_default_reflect_header() {
+void test_reflect_func(const char *outfile, const char *e_name, bool app) {
   ddShader shader;
   shader.init();
 
@@ -124,24 +252,24 @@ void create_default_reflect_header() {
   file.format("%s%s", SHADER_DIR, "Lighting_F.frag");
   shader.create_frag_shader(file.str());
 
-  file.format("%sinclude/%s", ROOT_DIR, "ddShaderReflect.h");
-  std::ofstream out = create_file(file.str(), false);
+  file.format("%sinclude/%s", ROOT_DIR, outfile);
+  std::ofstream out = create_file(file.str(), app);
 
   printf("Attributes:\n");
   // retrieve info atrribute info
   dd_array<ddQueryInfo> shader_info = shader.query_shader_attributes();
   DD_FOREACH(ddQueryInfo, info, shader_info) {
     const char *suffix = uniform_suffix((GLint)info.ptr->type);
-    printf("%d::%s%s\n", info.ptr->location, info.ptr->name.str(), suffix);
+    printf("- %d::%s%s\n", info.ptr->location, info.ptr->name.str(), suffix);
   }
 
   printf("Uniforms:\n");
   // retrieve uniform info and output enum
-  out << "enum class shaderTest : unsigned {\n";
+  out << "enum class " << e_name << " : unsigned {\n";
   shader_info = shader.query_uniforms();
   DD_FOREACH(ddQueryInfo, info, shader_info) {
     const char *suffix = uniform_suffix((GLint)info.ptr->type);
-    printf("%d::%s%s\n", info.ptr->location, info.ptr->name.str(), suffix);
+    printf("- %d::%s%s\n", info.ptr->location, info.ptr->name.str(), suffix);
     out << "  " << info.ptr->name.str() << suffix << " = "
         << info.ptr->location;
 
@@ -150,4 +278,39 @@ void create_default_reflect_header() {
   out << "\n};\n";
 
   return;
+}
+
+
+void output_reflection(ddShader &shader, ShFlags flags, const char* fname, 
+                       const char *ename, bool append) {
+  shader.init();
+
+  if (flags.vs) shader.create_vert_shader(shader.vs.str());
+  if (flags.gs) shader.create_geom_shader(shader.gs.str());
+  if (flags.fs) shader.create_frag_shader(shader.fs.str());
+  if (flags.cs) shader.create_comp_shader(shader.cs.str());
+
+  std::ofstream out = create_file(fname, append);
+
+  printf("\nAttributes:\n");
+  // retrieve info atrribute info
+  dd_array<ddQueryInfo> shader_info = shader.query_shader_attributes();
+  DD_FOREACH(ddQueryInfo, info, shader_info) {
+    const char *suffix = uniform_suffix((GLint)info.ptr->type);
+    printf("%d::%s%s\n", info.ptr->location, info.ptr->name.str(), suffix);
+  }
+
+  printf("\nUniforms:\n");
+  // retrieve uniform info and output enum
+  out << "enum class " << ename << " : unsigned {\n";
+  shader_info = shader.query_uniforms();
+  DD_FOREACH(ddQueryInfo, info, shader_info) {
+    const char *suffix = uniform_suffix((GLint)info.ptr->type);
+    printf("- %d::%s%s\n", info.ptr->location, info.ptr->name.str(), suffix);
+    out << "  " << info.ptr->name.str() << suffix << " = "
+        << info.ptr->location;
+
+    if (info.i != shader_info.size() - 1) out << ",\n";
+  }
+  out << "\n};\n\n";
 }

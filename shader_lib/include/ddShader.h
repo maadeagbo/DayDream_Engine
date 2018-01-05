@@ -39,8 +39,8 @@ struct ddShader {
   cbuff<256> id;
   cbuff<256> vs;
   cbuff<256> fs;
-  cbuff<256> gm;
-  cbuff<256> cm;
+  cbuff<256> gs;
+  cbuff<256> cs;
   ddShaderHandle* handle = nullptr;
   std::map<cbuff<64>, unsigned> uniform_loc;
   unsigned get_uniform_loc(const char* name);

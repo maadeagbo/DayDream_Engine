@@ -1,6 +1,6 @@
 // Enums for managing shader uniforms
 
-enum class shaderTest : unsigned {
+enum class RE_Light : unsigned {
   MVP_m4x4 = 0,
   DrawSky_b = 1,
   LightVolume_b = 2,
@@ -24,3 +24,77 @@ enum class shaderTest : unsigned {
   screenDimension_v2 = 20,
   ShadowMap_b = 21
 };
+
+enum class RE_GBuffer : unsigned {
+  enable_clip1_b = 0,
+  MVP_m4x4 = 1,
+  multiplierMat_b = 2,
+  tex_albedo_smp2d = 3,
+  tex_specular_smp2d = 4,
+  tex_normal_smp2d = 5,
+  diffuse_v3 = 6,
+  shininess_f = 7,
+  albedoFlag_b = 8,
+  specFlag_b = 9,
+  normalFlag_b = 10,
+  useDebug_b = 11
+};
+
+enum class RE_PostPr : unsigned {
+  MVP_m4x4 = 0,
+  SampleShadow_b = 1,
+  flip_y_coord_b = 2,
+  flip_x_coord_b = 3,
+  uv_rotate_b = 4,
+  rotate_uv_mat_m4x4 = 5,
+  ColorTex_smp2d = 6,
+  ParticleTex_smp2d = 7,
+  rgb2xyz_m3x3 = 8,
+  xyz2rgb_m3x3 = 9,
+  AveLum_f = 10,
+  Exposure_f = 11,
+  White_f = 12,
+  DoToneMap_b = 13,
+  SampleMap_b = 14,
+  Blur_b = 15,
+  GammaCorrect_b = 16,
+  BlendParticle_b = 17,
+  output2D_b = 18,
+  direction_flag_v2 = 19
+};
+
+enum class RE_Text : unsigned {
+  projection_m4x4 = 0,
+  text_smp2d = 1,
+  textColor_v3 = 2
+};
+
+enum class RE_PingP : unsigned {
+  ColorTex_smp2d = 0
+};
+
+enum class RE_Lumin : unsigned {
+  img_input_img2D = 0,
+  img_output_img2D = 1,
+  computeLum_b = 2
+};
+
+enum class RE_Line : unsigned {
+  MVP_m4x4 = 0,
+  color_v4 = 1
+};
+
+enum class RE_LightSt : unsigned {
+  MVP_m4x4 = 0
+};
+
+enum class RE_Shadow : unsigned {
+  MVP_m4x4 = 0,
+  LightSpace_m4x4 = 1
+};
+
+enum class RE_ShadowSk : unsigned {
+  MVP_m4x4 = 0,
+  LightSpace_m4x4 = 1
+};
+
