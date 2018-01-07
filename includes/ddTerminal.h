@@ -21,7 +21,7 @@
 #include "ddTimer.h"
 
 #ifdef __linux__
-//#pragma GCC diagnostic ignored "-Wformat-security"
+#pragma GCC diagnostic ignored "-Wformat-security"
 #endif
 
 enum class TerminalCmds : unsigned { NULL_CMD = 0x0, RENDER_DEBUG = 0x1 };

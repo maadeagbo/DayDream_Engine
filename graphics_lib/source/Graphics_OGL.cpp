@@ -109,7 +109,7 @@ GLuint vr_vao[2] = {0, 0}, vr_vbo[2] = {0, 0};
 GLuint cube_vao = 0, cube_vbo = 0;
 
 // line render
-GLuint line_vao = 0, line_vbo = 0;
+//GLuint line_vao = 0, line_vbo = 0;
 
 // buffer for writing arbitrary pixels
 dd_array<unsigned char> pixel_write_buffer;
@@ -909,8 +909,7 @@ void bind_pass_texture(const ddBufferType type, const unsigned loc,
       break;
     case ddBufferType::CUBE:
       // bind framebuffer texture before draw
-      CubeMapFaces face = (CubeMapFaces)xtra_param;
-      switch (face) {
+      switch ((CubeMapFaces)xtra_param) {
         case CubeMapFaces::RIGHT:
 					bind_cube_target_for_render(GL_TEXTURE_CUBE_MAP_POSITIVE_X);
           break;

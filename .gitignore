@@ -3,6 +3,7 @@
 .mayaSwatches
 *~
 *.tags*
+*.swp
 GPATH
 GRTAGS
 GSYMS

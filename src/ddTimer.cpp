@@ -88,11 +88,12 @@ inline uint64_t rdtsc_End() {
 namespace ddTime {
 // return high resolution time in nanoseconds
 uint64_t GetHiResTime(const bool start_end) {
-  // uint64_t hrTime = 0;
-  // timespec now;
-  // clock_gettime(CLOCK_MONOTONIC_RAW, &now);
-  // hrTime = (now.tv_sec * 1000000000L) + now.tv_nsec;
-  return start_end ? rdtsc_Start() : rdtsc_End();
+  uint64_t hrTime = 0;
+  timespec now;
+  clock_gettime(CLOCK_MONOTONIC_RAW, &now);
+  hrTime = (now.tv_sec * 1000000000L) + now.tv_nsec;
+  return hrTime;
+  //return start_end ? rdtsc_Start() : rdtsc_End();
 }
 
 // Put CPU to sleep
