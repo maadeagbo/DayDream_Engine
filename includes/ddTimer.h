@@ -83,5 +83,5 @@ float get_time_float();
 float get_frame_time();
 /// \brief Get average frame time (average of last 30 frames)
 /// \return
-float get_avg_frame_fime();
+float get_avg_frame_time();
 }  // namespace ddTime

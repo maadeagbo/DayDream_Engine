@@ -1,7 +1,7 @@
 #include "ddTimer.h"
 #include "Pow2Assert.h"
 
-#define TIME_HISTORY_MAX 30
+#define TIME_HISTORY_MAX 60
 
 namespace {
 float dd_ftime[TIME_HISTORY_MAX];
@@ -190,15 +190,13 @@ void ddTime::initialize() {
 
 void ddTime::update() {
   auto update_hist = [&](const float frame_time) {
+		dd_avg_ftime = frame_time;
     for (size_t i = TIME_HISTORY_MAX - 1; i > 0; i--) {
       dd_ftime[i] = dd_ftime[i - 1];
+			dd_avg_ftime += dd_ftime[i];
     }
     dd_ftime[0] = frame_time;
     // update avg
-    dd_avg_ftime = 0;
-    for (size_t i = 0; i < TIME_HISTORY_MAX; i++) {
-      dd_avg_ftime += dd_ftime[i];
-    }
     dd_avg_ftime /= TIME_HISTORY_MAX;
   };
 
@@ -222,16 +220,14 @@ void ddTime::update() {
 
 void ddTime::singleStep() {
   auto update_hist = [&](const float frame_time) {
-    for (size_t i = TIME_HISTORY_MAX - 1; i > 0; i--) {
-      dd_ftime[i] = dd_ftime[i - 1];
-    }
-    dd_ftime[0] = frame_time;
-    // update avg
-    dd_avg_ftime = 0;
-    for (size_t i = 0; i < TIME_HISTORY_MAX; i++) {
-      dd_avg_ftime += dd_ftime[i];
-    }
-    dd_avg_ftime /= TIME_HISTORY_MAX;
+		dd_avg_ftime = frame_time;
+		for (size_t i = TIME_HISTORY_MAX - 1; i > 0; i--) {
+			dd_ftime[i] = dd_ftime[i - 1];
+			dd_avg_ftime += dd_ftime[i];
+		}
+		dd_ftime[0] = frame_time;
+		// update avg
+		dd_avg_ftime /= TIME_HISTORY_MAX;
   };
   // Used for debugging
   // Single step through time
@@ -256,7 +252,7 @@ float ddTime::get_time_float() { return dd_time_in_secs; }
 
 float ddTime::get_frame_time() { return dd_ftime[0]; }
 
-float ddTime::get_avg_frame_fime() { return dd_avg_ftime; }
+float ddTime::get_avg_frame_time() { return dd_avg_ftime; }
 
 // // called once per frame with real measured frame time in delta seconds
 // void ddTimer::update(const float fixedrate) {

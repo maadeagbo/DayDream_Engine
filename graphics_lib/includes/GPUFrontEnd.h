@@ -4,10 +4,29 @@
 #include <memory>
 #include "StringLib.h"
 
+// Buffer declarations (API defined)
 struct ddVAOData;
 struct ddInstBufferData;
 struct ddMeshBufferData;
 struct ddTextureData;
+
+// Frame buffer declarations (API defined)
+enum class ddBufferType : unsigned {
+  GEOM,
+  LIGHT,
+  PARTICLE,
+  SHADOW,
+  CUBE,
+  FILTER,
+  DEFAULT,
+  NUM_TYPES
+};
+struct ddGBuffer;
+struct ddShadowBuffer;
+struct ddLightBuffer;
+struct ddParticleBuffer;
+struct ddCubeMapBuffer;
+struct ddFilterBuffer;
 
 struct Vertex {
   float position[3] = {0, 0, 0};
@@ -48,6 +67,16 @@ struct DDM_Data {
   size_t mat_id;
 };
 
+enum class CubeMapFaces : unsigned {
+  RIGHT = 0,
+  LEFT,
+  TOP,
+  BOTTOM,
+  BACK,
+  FRONT,
+  NUM_FACES
+};
+
 struct ImageInfo {
   /// \brief Handle to GPU buffer
   ddTextureData *tex_buff;
@@ -66,21 +95,9 @@ struct ImageInfo {
   /// \brief filter when pixels > screen pixels
   unsigned mag_filter;
   /// \brief pointer to image data in RAM
-  // 0 : single / cube right
-  // 1 : cube left
-  // 2 : cube top
-  // 3 : cube bottom
-  // 4 : cube back
-  // 5 : cube front
-  unsigned char *image_data[6] = {nullptr, nullptr, nullptr,
-                                  nullptr, nullptr, nullptr};
+  unsigned char *image_data[(unsigned)CubeMapFaces::NUM_FACES];
   /// \brief path to image file
-  cbuff<256> path;
-  cbuff<256> path_left;
-  cbuff<256> path_top;
-  cbuff<256> path_bot;
-  cbuff<256> path_back;
-  cbuff<256> path_front;
+  cbuff<256> path[(unsigned)CubeMapFaces::NUM_FACES];
 };
 
 namespace ddGPUFrontEnd {
@@ -89,12 +106,24 @@ void clear_screen(const float r = 0.f, const float g = 0.f, const float b = 0.f,
                   const float a = 1.f);
 // Initialize Graphics API library
 bool load_api_library(const bool display_info = true);
+
+//*****************************************************************************
+
 // Delete texture data
 void destroy_texture(ddTextureData *&tex_ptr);
 // Create gpu texture data (RBGA8, mip-map linear, Repeats in U & V axis)
+// witdh and height must be set in ImageInfo prior to call
 bool generate_texture2D_RGBA8_LR(ImageInfo &img);
-// Create cubemap texture data
+// Create cubemap texture data (empty -> false means create w/out data)
+// witdh and height must be set in ImageInfo prior to call
 bool generate_textureCube_RGBA8_LR(ImageInfo &img, const bool empty = false);
+// Save image (ignores ImGUI UI if present) of provided buffer and format
+void grab_image_from_buffer(const unsigned frame_buff, const unsigned format,
+                            dd_array<unsigned char> pixel, const unsigned width,
+                            const unsigned height);
+
+//*****************************************************************************
+
 // Create gpu buffer data
 bool load_buffer_data(ddMeshBufferData *&mbuff_ptr, DDM_Data *ddm_ptr);
 // Delete ddGBuffer data
@@ -110,4 +139,42 @@ void destroy_vao(ddVAOData *&vbuff_ptr);
 // Bind ddMeshBufferData and/or ddInstBufferData buffer to ddVAOData object
 bool bind_object(ddVAOData *vbuff_ptr, ddInstBufferData *ibuff_ptr,
                  ddMeshBufferData *mbuff_ptr);
+
+//*****************************************************************************
+
+// Render full screen quad
+void render_quad();
+// Render split screen quad (true = render left quad, false = render right quad)
+void render_split_quad(bool leftside);
+// Render cube map
+void render_cube();
+// Render line segment
+// TODO: change shader to use SSBO for opengl
+// void render_line_segment(dd_array<glm::vec4>& points3d
+
+//*****************************************************************************
+
+// Create geometry frame buffer
+void create_gbuffer(const int width, const int height);
+// Create light frame buffer
+void create_lbuffer(const int width, const int height);
+// Create shadow frame buffer
+void create_sbuffer(const int width, const int height);
+// Create particle frame buffer
+void create_pbuffer(const int width, const int height);
+// Create cube map frame buffer
+void create_cbuffer(const int width, const int height);
+// Create filter image frame buffer
+void create_fbuffer(const int c_width, const int c_height, const int s_width,
+                    const int s_height);
+// Bind framebuffer
+// boolean flag is for choosing to bind color or shadow filter buffer
+// (True = color buffer, false = shadow buffer)
+void bind_framebuffer(const ddBufferType type, const bool color_shadow = true);
+// Bind textures associated w/ framebuffer
+// loc = texture location bound to shader
+// xtra_param -> cube map = CubeMapFaces enum, filter = color(0) or shadow(1),
+// shadow = lighting pass(0) or other(1)
+void bind_pass_texture(const ddBufferType type, const unsigned loc = 0,
+                       const unsigned xtra_param = 0);
 }  // namespace ddGPUFrontEnd

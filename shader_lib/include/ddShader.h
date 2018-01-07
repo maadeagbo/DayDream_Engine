@@ -19,8 +19,8 @@ const char* get_uniform_type(unsigned type);
 struct ddShader {
   /// \brief Initialize shader program
   void init();
-	/// \brief Cleanup shader resources
-	void cleanup();
+  /// \brief Cleanup shader resources
+  void cleanup();
   /// \brief Create vertex shader
   void create_vert_shader(const char* filePath);
   /// \brief Create fragment shader

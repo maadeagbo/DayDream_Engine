@@ -1,5 +1,4 @@
 #include <cstdio>
-#include <SOIL.h>
 #include "GPUFrontEnd.h"
 #include "gl_core_4_3.h"
 
@@ -21,18 +20,111 @@ struct ddTextureData {
   GLuint texture_handle;
 };
 
+//*****************************************************************************
+
+struct ddGBuffer {
+  GLuint deffered_fbo, depth_buf, pos_tex, norm_tex, color_tex, xtra_tex;
+};
+
+struct ddShadowBuffer {
+  GLuint shadow_fbo, depth_buf, shadow_tex, width, height;
+};
+
+struct ddLightBuffer {
+  GLuint light_fbo, depth_buf, color_tex;
+};
+
+struct ddParticleBuffer {
+  GLuint particle_fbo, depth_buf, color_tex;
+};
+
+struct ddCubeMapBuffer {
+  GLuint cube_fbo, depth_buf;
+  ImageInfo cube_texture;
+};
+
+struct ddFilterBuffer {
+  GLuint color_fbo, shadow_fbo, color_tex, shadow_tex;
+};
+
+//*****************************************************************************
+
 namespace {
 // Error processing function for OpenGL calls
-bool check_gl_errors(const char *signature) {
+bool gl_error(const char *signature) {
   GLenum err;
   bool flag = false;
   while ((err = glGetError()) != GL_NO_ERROR) {
-    fprintf(stderr, "%s::OpenGL error: %d\n", signature, err);
+    fprintf(stderr, "%s::OpenGL error::%d\n", signature, err);
     flag = true;
   }
   return flag;
 }
+
+void create_texture2D(const GLenum format, GLuint &tex_handle, const int width,
+                      const int height, GLenum min = GL_LINEAR,
+                      GLenum mag = GL_LINEAR, GLenum wrap_s = GL_REPEAT,
+                      GLenum wrap_t = GL_REPEAT, GLenum wrap_r = GL_REPEAT,
+                      glm::vec4 bcol = glm::vec4(-1), const bool mips = false,
+                      unsigned char *data = nullptr,
+                      GLenum data_formet = GL_RGBA8) {
+  // create texture
+  glGenTextures(1, &tex_handle);
+  glBindTexture(GL_TEXTURE_2D, tex_handle);
+  POW2_VERIFY_MSG(!gl_error("create_texture2D"), "Error generating buffer", 0);
+
+  // texture settings
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap_s);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap_t);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, wrap_r);
+  if (bcol.x >= 0.f) {
+    GLfloat border[] = {bcol.x, bcol.y, bcol.z, bcol.w};
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border);
+  }
+
+  // generate
+  const int num_mipmaps =
+      mips ? (int)floor(log2(std::max(width, height))) + 1 : 1;
+  glTexStorage2D(GL_TEXTURE_2D, num_mipmaps, format, width, height);
+  // fill w/ data
+  if (data) {
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, data_formet,
+                    GL_UNSIGNED_BYTE, data);
+  }
+  // mip maps
+  if (mips) glGenerateMipmap(GL_TEXTURE_2D);
+
+  POW2_VERIFY_MSG(!gl_error("create_texture2D"), "Error generating image2D", 0);
+}
+
+// screen space quad
+GLuint quad_vao = 0, quad_vbo = 0;
+
+// vr split-screen quad
+GLuint vr_vao[2] = {0, 0}, vr_vbo[2] = {0, 0};
+
+// cube map
+GLuint cube_vao = 0, cube_vbo = 0;
+
+// line render
+GLuint line_vao = 0, line_vbo = 0;
+
+// buffer for writing arbitrary pixels
+dd_array<unsigned char> pixel_write_buffer;
+
+// Buffers
+ddGBuffer g_buff;
+ddLightBuffer l_buff;
+ddShadowBuffer s_buff;
+ddParticleBuffer p_buff;
+ddCubeMapBuffer c_buff;
+ddFilterBuffer f_buff;
+
 }  // namespace
+
+//*****************************************************************************
 
 namespace ddGPUFrontEnd {
 
@@ -106,11 +198,13 @@ bool load_api_library(const bool display_info) {
   return true;
 }
 
+//*****************************************************************************
+
 void destroy_texture(ddTextureData *&tex_ptr) {
   if (!tex_ptr) return;
 
   glDeleteTextures(1, &tex_ptr->texture_handle);
-  check_gl_errors("destroy_texture");
+  gl_error("destroy_texture");
 
   delete tex_ptr;
   tex_ptr = nullptr;
@@ -133,33 +227,14 @@ bool generate_texture2D_RGBA8_LR(ImageInfo &img) {
     fprintf(stderr, "generate_texture2D_RGBA8_LR::RAM load failure\n");
     return false;
   }
-  glGenTextures(1, &img.tex_buff->texture_handle);
-  if (check_gl_errors("generate_texture2D_RGBA8_LR::Creating texture")) {
-    return false;
-  }
 
-  // transfer image to GPU then delete from RAM
-  glBindTexture(GL_TEXTURE_2D, img.tex_buff->texture_handle);
-  const int num_mipmaps = (int)floor(log2(std::max(img.width, img.height))) + 1;
-  glTexStorage2D(GL_TEXTURE_2D, num_mipmaps, img.internal_format, img.width,
-                 img.height);
-  glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, img.width, img.height,
-                  img.image_format, GL_UNSIGNED_BYTE, img.image_data[0]);
-  if (check_gl_errors("generate_texture2D_RGBA8_LR::Loading data")) {
-    return false;
-  }
-	SOIL_free_image_data(img.image_data[0]);
-  img.image_data[0] = nullptr;
-
-  // texture settings
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, img.wrap_s);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, img.wrap_t);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, img.min_filter);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, img.mag_filter);
-  glGenerateMipmap(GL_TEXTURE_2D);
-  if (check_gl_errors("generate_texture2D_RGBA8_LR::Configuring settings")) {
-    return false;
-  }
+  // create image
+  create_texture2D(img.internal_format, img.tex_buff->texture_handle, img.width,
+                   img.height, img.min_filter, img.mag_filter, img.wrap_s,
+                   img.wrap_t, GL_REPEAT, glm::vec4(-1.f), true,
+                   img.image_data[0], img.image_format);
+  // SOIL_free_image_data(img.image_data[0]);
+  // img.image_data[0] = nullptr;
 
   glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -185,17 +260,24 @@ bool generate_textureCube_RGBA8_LR(ImageInfo &img, const bool empty) {
     return false;
   }
   glGenTextures(1, &img.tex_buff->texture_handle);
-  if (check_gl_errors("generate_textureCube_RGBA8_LR::Creating texture")) {
+  if (gl_error("generate_textureCube_RGBA8_LR::Creating texture")) {
     return false;
   }
   glBindTexture(GL_TEXTURE_CUBE_MAP, img.tex_buff->texture_handle);
+  // texture settings
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, img.wrap_s);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, img.wrap_t);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, img.wrap_r);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, img.min_filter);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, img.mag_filter);
   glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
   // empty flag means generate dummy cubemap texture that will be rendered to
   if (empty) {
+    // generate
     glTexStorage2D(GL_TEXTURE_CUBE_MAP, 1, img.internal_format, img.width,
                    img.height);
-    if (check_gl_errors("generate_textureCube_RGBA8_LR::Creating empty")) {
+    if (gl_error("generate_textureCube_RGBA8_LR::Creating empty")) {
       return false;
     }
   } else {
@@ -212,25 +294,27 @@ bool generate_textureCube_RGBA8_LR(ImageInfo &img, const bool empty) {
     for (int i = 0; i < 6; i++) {
       // transfer image to GPU then delete from RAM
       glTexSubImage2D(targets[i], 0, 0, 0, img.width, img.height,
-                      img.image_format, GL_UNSIGNED_BYTE,
-                      img.image_data[i]);
-			SOIL_free_image_data(img.image_data[i]);
-      img.image_data[i] = nullptr;
+                      img.image_format, GL_UNSIGNED_BYTE, img.image_data[i]);
+      // SOIL_free_image_data(img.image_data[i]);
+      // img.image_data[i] = nullptr;
 
       err_msg.format("generate_textureCube_RGBA8_LR::Loading image <%d>", i);
-      if (check_gl_errors(err_msg.str())) return false;
+      if (gl_error(err_msg.str())) return false;
     }
   }
-
-  // texture settings
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, img.wrap_s);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, img.wrap_t);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, img.wrap_r);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, img.min_filter);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, img.mag_filter);
-
   glBindTexture(GL_TEXTURE_2D, 0);
   return true;
+}
+
+void grab_image_from_buffer(const unsigned frame_buff, const unsigned format,
+                            dd_array<unsigned char> pixels,
+                            const unsigned width, const unsigned height) {
+  // bind buffer for read
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, (GLuint)frame_buff);
+  glReadPixels(0, 0, width, height, (GLenum)format, GL_UNSIGNED_BYTE,
+               &pixels[0]);
+  POW2_VERIFY_MSG(!gl_error("grab_image_from_buffer"), "Failed to screen grab",
+                  0);
 }
 
 bool load_buffer_data(ddMeshBufferData *&mbuff_ptr, DDM_Data *ddm_ptr) {
@@ -241,7 +325,7 @@ bool load_buffer_data(ddMeshBufferData *&mbuff_ptr, DDM_Data *ddm_ptr) {
   GLuint vbo = 0, ebo = 0;
   glGenBuffers(1, &vbo);
   glGenBuffers(1, &ebo);
-  if (check_gl_errors("load_buffer_data::Creating buffers")) return false;
+  if (gl_error("load_buffer_data::Creating buffers")) return false;
 
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
   glBufferData(GL_ARRAY_BUFFER, ddm_ptr->data.sizeInBytes(), &ddm_ptr->data[0],
@@ -250,7 +334,7 @@ bool load_buffer_data(ddMeshBufferData *&mbuff_ptr, DDM_Data *ddm_ptr) {
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, ddm_ptr->indices.sizeInBytes(),
                &ddm_ptr->indices[0], GL_STATIC_DRAW);
 
-  if (check_gl_errors("load_buffer_data::Loading buffers")) return false;
+  if (gl_error("load_buffer_data::Loading buffers")) return false;
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 
   mbuff_ptr = new ddMeshBufferData();
@@ -271,7 +355,7 @@ void destroy_buffer_data(ddMeshBufferData *&mbuff_ptr) {
   glDeleteBuffers(1, &mbuff_ptr->vertex_buffer);
   glDeleteBuffers(1, &mbuff_ptr->index_buffer);
 
-  check_gl_errors("destroy_buffer_data");
+  gl_error("destroy_buffer_data");
 
   delete mbuff_ptr;
   mbuff_ptr = nullptr;
@@ -284,7 +368,7 @@ bool load_instance_data(ddInstBufferData *&ibuff_ptr, const int inst_size) {
   GLuint inst_m4x4 = 0, inst_v3 = 0;
   glGenBuffers(1, &inst_m4x4);
   glGenBuffers(1, &inst_v3);
-  if (check_gl_errors("load_instance_data::Creating buffers")) return false;
+  if (gl_error("load_instance_data::Creating buffers")) return false;
 
   glBindBuffer(GL_ARRAY_BUFFER, inst_m4x4);
   glBufferData(GL_ARRAY_BUFFER, inst_size * sizeof(glm::mat4), NULL,
@@ -293,7 +377,7 @@ bool load_instance_data(ddInstBufferData *&ibuff_ptr, const int inst_size) {
   glBufferData(GL_ARRAY_BUFFER, inst_size * sizeof(glm::vec3), NULL,
                GL_DYNAMIC_DRAW);
 
-  if (check_gl_errors("load_buffer_data::Loading buffers")) return false;
+  if (gl_error("load_buffer_data::Loading buffers")) return false;
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 
   ibuff_ptr = new ddInstBufferData();
@@ -313,7 +397,7 @@ void destroy_instance_data(ddInstBufferData *&ibuff_ptr) {
 
   glDeleteBuffers(1, &ibuff_ptr->instance_buffer);
   glDeleteBuffers(1, &ibuff_ptr->color_instance_buffer);
-  check_gl_errors("destroy_instance_data");
+  gl_error("destroy_instance_data");
 
   delete ibuff_ptr;
   ibuff_ptr = nullptr;
@@ -325,7 +409,7 @@ bool create_vao(ddVAOData *&vbuff_ptr) {
   // create vertex array object
   GLuint vao = 0;
   glGenVertexArrays(1, &vao);
-  if (check_gl_errors("create_vao")) return false;
+  if (gl_error("create_vao")) return false;
 
   vbuff_ptr = new ddVAOData();
   if (!vbuff_ptr) {
@@ -342,7 +426,7 @@ void destroy_vao(ddVAOData *&vbuff_ptr) {
 
   // destroy vertex array object
   glDeleteVertexArrays(1, &vbuff_ptr->vao_handle);
-  check_gl_errors("destroy_vao");
+  gl_error("destroy_vao");
 
   delete vbuff_ptr;
   vbuff_ptr = nullptr;
@@ -379,7 +463,7 @@ bool bind_object(ddVAOData *vbuff_ptr, ddInstBufferData *ibuff_ptr,
     // indices
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mbuff_ptr->index_buffer);
 
-    if (check_gl_errors("bind_object::mesh buffers")) return false;
+    if (gl_error("bind_object::mesh buffers")) return false;
   }
 
   // instance buffer
@@ -410,13 +494,459 @@ bool bind_object(ddVAOData *vbuff_ptr, ddInstBufferData *ibuff_ptr,
     glVertexAttribDivisor(7, 1);
     glVertexAttribDivisor(8, 1);
 
-    if (check_gl_errors("bind_object::instance buffers")) return false;
+    if (gl_error("bind_object::instance buffers")) return false;
   }
 
   glBindVertexArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
   return true;
+}
+
+void render_quad() {
+  if (quad_vao == 0) {
+    // create quad VAO for rendering
+    GLfloat quad_verts[] = {
+        // Positions (3) & Texture Coords (2)
+        -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+        1.0f,  1.0f, 0.0f, 1.0f, 1.0f, 1.0f,  -1.0f, 0.0f, 1.0f, 0.0f,
+    };
+    // set up Plane VAO for post processing shader
+    glGenVertexArrays(1, &quad_vao);
+    glGenBuffers(1, &quad_vbo);
+    POW2_VERIFY_MSG(!gl_error("render_quad"), "Error generating quad buffers",
+                    0);
+
+    // fill vbo
+    glBindVertexArray(quad_vao);
+    glBindBuffer(GL_ARRAY_BUFFER, quad_vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(quad_verts), quad_verts,
+                 GL_STATIC_DRAW);
+    POW2_VERIFY_MSG(!gl_error("render_quad"), "Error sending data to buffers",
+                    0);
+
+    // bind attributes to VAO
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat),
+                          (GLvoid *)0);
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat),
+                          (GLvoid *)(3 * sizeof(GLfloat)));
+    POW2_VERIFY_MSG(!gl_error("render_quad"), "Error binding attributes", 0);
+  }
+  // draw
+  glBindVertexArray(quad_vao);
+  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+  glBindVertexArray(0);
+}
+
+void render_split_quad(bool leftside) {
+  if (vr_vao[0] == 0) {
+    // create split quad vao for rendering
+    GLfloat vr_left[] = {
+        // Positions (3) & Texture Coords (2)
+        -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+        0.0f,  1.0f, 0.0f, 1.0f, 1.0f, 0.0f,  -1.0f, 0.0f, 1.0f, 0.0f,
+    };
+    GLfloat vr_right[] = {
+        // Positions (3) & Texture Coords (2)
+        0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+        1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+    };
+    // setup 2 plane vao's
+    glGenVertexArrays(2, vr_vao);
+    glGenBuffers(2, vr_vbo);
+    POW2_VERIFY_MSG(!gl_error("render_split_quad"),
+                    "Error generating quad buffers", 0);
+
+    for (unsigned i = 0; i < 2; i++) {
+      // fill i-th vbo & set attributes in vao
+      glBindVertexArray(vr_vao[i]);
+      glBindBuffer(GL_ARRAY_BUFFER, vr_vbo[i]);
+
+      GLfloat *data = (i == 0) ? vr_left : vr_right;
+
+      glBufferData(GL_ARRAY_BUFFER, sizeof(vr_left), data, GL_STATIC_DRAW);
+      POW2_VERIFY_MSG(!gl_error("render_split_quad"),
+                      "Error sending data to buffers <%u>", i);
+
+      glEnableVertexAttribArray(0);
+      glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat),
+                            (GLvoid *)0);
+      glEnableVertexAttribArray(2);
+      glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat),
+                            (GLvoid *)(3 * sizeof(GLfloat)));
+      POW2_VERIFY_MSG(!gl_error("render_split_quad"),
+                      "Error binding attributes <%u>", i);
+    }
+    // draw
+    if (leftside) {
+      glBindVertexArray(vr_vao[0]);
+      glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    } else {
+      glBindVertexArray(vr_vao[1]);
+      glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    }
+    glBindVertexArray(0);
+  }
+}
+
+void render_cube() {
+  if (cube_vao == 0) {
+    GLfloat box_verts[] = {
+        // Positions (3)
+        -1.0f, 1.0f,  -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  -1.0f, -1.0f,
+        1.0f,  -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, -1.0f, 1.0f,  -1.0f,
+
+        -1.0f, -1.0f, 1.0f,  -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  -1.0f,
+        -1.0f, 1.0f,  -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, -1.0f, 1.0f,
+
+        1.0f,  -1.0f, -1.0f, 1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,  1.0f,
+        1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f, -1.0f,
+
+        -1.0f, -1.0f, 1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,  1.0f,  1.0f,
+        1.0f,  1.0f,  1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f, -1.0f, 1.0f,
+
+        -1.0f, 1.0f,  -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,
+        1.0f,  1.0f,  1.0f,  -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f,
+
+        -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, -1.0f,
+        1.0f,  -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f};
+    // setup cube vao for rendering
+    glGenVertexArrays(1, &cube_vao);
+    glGenBuffers(1, &cube_vbo);
+    POW2_VERIFY_MSG(!gl_error("render_cube"), "Error generating cube buffers",
+                    0);
+
+    // fill vbo
+    glBindVertexArray(cube_vao);
+    glBindBuffer(GL_ARRAY_BUFFER, cube_vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(box_verts), box_verts, GL_STATIC_DRAW);
+    POW2_VERIFY_MSG(!gl_error("render_cube"), "Error sending data to buffer",
+                    0);
+
+    // set position attribute
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat),
+                          (GLvoid *)0);
+  }
+  // draw
+  glBindVertexArray(cube_vao);
+  glDrawArrays(GL_TRIANGLES, 0, 36);
+  glBindVertexArray(0);
+}
+
+void create_gbuffer(const int width, const int height) {
+  // create and bind fbo
+  glGenFramebuffers(1, &g_buff.deffered_fbo);
+  glBindFramebuffer(GL_FRAMEBUFFER, g_buff.deffered_fbo);
+
+  // create depth/stencil buffer
+  glGenRenderbuffers(1, &g_buff.depth_buf);
+  glBindRenderbuffer(GL_RENDERBUFFER, g_buff.depth_buf);
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
+
+  // position, normal, color textures
+  create_texture2D(GL_RGBA16F, g_buff.pos_tex, width, height);
+  create_texture2D(GL_RGBA16F, g_buff.norm_tex, width, height);
+  create_texture2D(GL_RGBA16F, g_buff.color_tex, width, height);
+
+  // attach images and depth to framebuffer
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
+                            GL_RENDERBUFFER, g_buff.depth_buf);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                         g_buff.pos_tex, 0);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D,
+                         g_buff.norm_tex, 0);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D,
+                         g_buff.color_tex, 0);
+  GLenum drawBuffers[] = {GL_NONE, GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1,
+                          GL_COLOR_ATTACHMENT2};
+  glDrawBuffers(4, drawBuffers);
+
+  // check for errors
+  GLenum success = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+  POW2_VERIFY_MSG(success == GL_FRAMEBUFFER_COMPLETE,
+                  "GBuffer creation failure", 0);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void create_lbuffer(const int width, const int height) {
+  // create and bind fbo
+  glGenFramebuffers(1, &l_buff.light_fbo);
+  glBindFramebuffer(GL_FRAMEBUFFER, l_buff.light_fbo);
+
+  // create depth/stencil buffer
+  glGenRenderbuffers(1, &l_buff.depth_buf);
+  glBindRenderbuffer(GL_RENDERBUFFER, l_buff.depth_buf);
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
+
+  // color texture
+  create_texture2D(GL_RGBA16F, l_buff.color_tex, width, height);
+
+  // attach image and depth to framebuffer
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
+                            GL_RENDERBUFFER, l_buff.depth_buf);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                         l_buff.color_tex, 0);
+  GLenum drawBuffers[] = {GL_NONE, GL_COLOR_ATTACHMENT0};
+  glDrawBuffers(2, drawBuffers);
+
+  // check for errors
+  GLenum success = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+  POW2_VERIFY_MSG(success == GL_FRAMEBUFFER_COMPLETE,
+                  "LBuffer creation failure", 0);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void create_sbuffer(const int width, const int height) {
+  // create and bind fbo
+  s_buff.width = width;
+  s_buff.height = height;
+  glm::vec4 border = glm::vec4(1.f);
+  glGenFramebuffers(1, &s_buff.shadow_fbo);
+  glBindFramebuffer(GL_FRAMEBUFFER, s_buff.shadow_fbo);
+
+  // create depth32 buffer
+  glGenRenderbuffers(1, &s_buff.depth_buf);
+  glBindRenderbuffer(GL_RENDERBUFFER, s_buff.depth_buf);
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32, width, height);
+
+  // color texture
+  create_texture2D(GL_RG32F, s_buff.shadow_tex, width, height,
+                   GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_CLAMP_TO_BORDER,
+                   GL_CLAMP_TO_BORDER, GL_CLAMP_TO_BORDER, border, true);
+
+  // attach image and depth to framebuffer
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                            GL_RENDERBUFFER, s_buff.depth_buf);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                         s_buff.shadow_tex, 0);
+  GLenum drawBuffers[] = {GL_COLOR_ATTACHMENT0};
+  glDrawBuffers(1, drawBuffers);
+
+  // check for errors
+  GLenum success = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+  POW2_VERIFY_MSG(success == GL_FRAMEBUFFER_COMPLETE,
+                  "SBuffer creation failure", 0);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void create_pbuffer(const int width, const int height) {
+  // create and bind fbo
+  glGenFramebuffers(1, &p_buff.particle_fbo);
+  glBindFramebuffer(GL_FRAMEBUFFER, p_buff.particle_fbo);
+
+  // create depth/stencil buffer
+  glGenRenderbuffers(1, &p_buff.depth_buf);
+  glBindRenderbuffer(GL_RENDERBUFFER, p_buff.depth_buf);
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
+
+  // color texture
+  create_texture2D(GL_RGBA16F, p_buff.color_tex, width, height);
+
+  // attach image and depth to framebuffer
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
+                            GL_RENDERBUFFER, p_buff.depth_buf);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                         p_buff.color_tex, 0);
+
+  GLenum drawBuffers[] = {GL_NONE, GL_COLOR_ATTACHMENT0};
+  glDrawBuffers(2, drawBuffers);
+
+  // check for errors
+  GLenum success = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+  POW2_VERIFY_MSG(success == GL_FRAMEBUFFER_COMPLETE,
+                  "PBuffer creation failure", 0);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void create_cbuffer(const int width, const int height) {
+  // create and bind fbo
+  glGenFramebuffers(1, &c_buff.cube_fbo);
+  glBindFramebuffer(GL_FRAMEBUFFER, c_buff.cube_fbo);
+
+  // create empty cube map texture for rendering to
+  c_buff.cube_texture.width = width;
+  c_buff.cube_texture.height = height;
+  generate_textureCube_RGBA8_LR(c_buff.cube_texture, true);
+
+  // create depth/stencil buffer
+  glGenRenderbuffers(1, &c_buff.depth_buf);
+  glBindRenderbuffer(GL_RENDERBUFFER, c_buff.depth_buf);
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
+
+  // attach depth to framebuffer
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
+                            GL_RENDERBUFFER, c_buff.depth_buf);
+  GLenum drawBuffers[] = {GL_NONE, GL_COLOR_ATTACHMENT0};
+  glDrawBuffers(2, drawBuffers);
+
+  // check for errors
+  GLenum success = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+  POW2_VERIFY_MSG(success == GL_FRAMEBUFFER_COMPLETE,
+                  "CBuffer creation failure", 0);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void create_fbuffer(const int c_width, const int c_height, const int s_width,
+                    const int s_height) {
+  glm::vec4 border = glm::vec4(1.f);
+  // create and bind color fbo
+  glGenFramebuffers(1, &f_buff.color_fbo);
+  glBindFramebuffer(GL_FRAMEBUFFER, f_buff.color_fbo);
+
+  // color texture
+  create_texture2D(GL_RGBA16F, f_buff.color_tex, c_width, c_height);
+
+  // attach image to color framebuffer
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                         f_buff.color_tex, 0);
+  GLenum drawBuffers[] = {GL_COLOR_ATTACHMENT0};
+  glDrawBuffers(1, drawBuffers);
+
+  // check for errors
+  GLenum success = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+  POW2_VERIFY_MSG(success == GL_FRAMEBUFFER_COMPLETE, "FBuffer::color failure",
+                  0);
+
+  // create and bind shadow fbo
+  glGenFramebuffers(1, &f_buff.shadow_fbo);
+  glBindFramebuffer(GL_FRAMEBUFFER, f_buff.shadow_fbo);
+
+  // depth texture
+  create_texture2D(GL_RG32F, f_buff.shadow_tex, s_width, s_height,
+                   GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_CLAMP_TO_BORDER,
+                   GL_CLAMP_TO_BORDER, GL_CLAMP_TO_BORDER, border, true);
+
+  // attach image to shadow framebuffer
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D,
+                         f_buff.shadow_tex, 0);
+  GLenum drawBuffers2[] = {GL_NONE, GL_COLOR_ATTACHMENT1};
+  glDrawBuffers(2, drawBuffers2);
+
+  // check for errors
+  success = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+  POW2_VERIFY_MSG(success == GL_FRAMEBUFFER_COMPLETE, "FBuffer::shadow failure",
+                  0);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void bind_framebuffer(const ddBufferType type, const bool color_shadow) {
+  switch (type) {
+    case ddBufferType::GEOM:
+      glBindFramebuffer(GL_FRAMEBUFFER, g_buff.deffered_fbo);
+      break;
+    case ddBufferType::LIGHT:
+      glBindFramebuffer(GL_FRAMEBUFFER, l_buff.light_fbo);
+      break;
+    case ddBufferType::SHADOW:
+      glBindFramebuffer(GL_FRAMEBUFFER, s_buff.shadow_fbo);
+      break;
+    case ddBufferType::PARTICLE:
+      glBindFramebuffer(GL_FRAMEBUFFER, p_buff.particle_fbo);
+      break;
+    case ddBufferType::CUBE:
+      glBindFramebuffer(GL_FRAMEBUFFER, c_buff.cube_fbo);
+      break;
+    case ddBufferType::FILTER:
+      if (color_shadow) {
+        glBindFramebuffer(GL_FRAMEBUFFER, f_buff.color_fbo);
+      } else {
+        glBindFramebuffer(GL_FRAMEBUFFER, f_buff.shadow_fbo);
+      }
+      break;
+    case ddBufferType::DEFAULT:
+      glBindFramebuffer(GL_FRAMEBUFFER, 0);
+      break;
+    default:
+      POW2_VERIFY_MSG(false, "Error binding frame buffer <%u>", (unsigned)type);
+      break;
+  }
+}
+
+void bind_cube_target_for_render(GLenum target) {
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, target,
+                         c_buff.cube_texture.tex_buff->texture_handle, 0);
+  POW2_VERIFY_MSG(!gl_error("render_to_cube_map"), "Error writing cube map %u",
+                  (unsigned)target);
+}
+
+void bind_pass_texture(const ddBufferType type, const unsigned loc,
+                       const unsigned xtra_param) {
+  switch (type) {
+    case ddBufferType::GEOM:
+      // position (shader location 0)
+      glActiveTexture(GL_TEXTURE0);
+      glBindTexture(GL_TEXTURE_2D, g_buff.pos_tex);
+      // color (shader location 1)
+      glActiveTexture(GL_TEXTURE1);
+      glBindTexture(GL_TEXTURE_2D, g_buff.color_tex);
+      // normal (shader location 2)
+      glActiveTexture(GL_TEXTURE2);
+      glBindTexture(GL_TEXTURE_2D, g_buff.norm_tex);
+      break;
+    case ddBufferType::LIGHT:
+      // color (shader location 0)
+      glActiveTexture(GL_TEXTURE0);
+      glBindTexture(GL_TEXTURE_2D, l_buff.color_tex);
+      break;
+    case ddBufferType::SHADOW:
+      if (xtra_param == 0) {
+        // light pass (probably shader location 3)
+        glActiveTexture(GL_TEXTURE0 + loc);
+        glBindTexture(GL_TEXTURE_2D, s_buff.shadow_tex);
+      } else {
+        // generic pass (shader location 0)
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, s_buff.shadow_tex);
+      }
+      break;
+    case ddBufferType::PARTICLE:
+      // color (shader location 1)
+      glActiveTexture(GL_TEXTURE1);
+      glBindTexture(GL_TEXTURE_2D, p_buff.color_tex);
+      break;
+    case ddBufferType::CUBE:
+      // bind framebuffer texture before draw
+      CubeMapFaces face = (CubeMapFaces)xtra_param;
+      switch (face) {
+        case CubeMapFaces::RIGHT:
+					bind_cube_target_for_render(GL_TEXTURE_CUBE_MAP_POSITIVE_X);
+          break;
+        case CubeMapFaces::LEFT:
+					bind_cube_target_for_render(GL_TEXTURE_CUBE_MAP_NEGATIVE_X);
+          break;
+        case CubeMapFaces::TOP:
+					bind_cube_target_for_render(GL_TEXTURE_CUBE_MAP_POSITIVE_Z);
+          break;
+        case CubeMapFaces::BOTTOM:
+					bind_cube_target_for_render(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z);
+          break;
+        case CubeMapFaces::BACK:
+					bind_cube_target_for_render(GL_TEXTURE_CUBE_MAP_POSITIVE_Y);
+          break;
+        case CubeMapFaces::FRONT:
+					bind_cube_target_for_render(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y);
+          break;
+        default:
+          POW2_VERIFY_MSG(false, "Invalid cube map face to render to <%u>",
+                          xtra_param);
+          break;
+      }
+      break;
+    case ddBufferType::FILTER:
+			// make texture 0 active (texture to run algorithm on)
+			glActiveTexture(GL_TEXTURE0);
+      break;
+    case ddBufferType::DEFAULT:
+      glBindTexture(GL_TEXTURE_2D, 0);
+      break;
+    default:
+      POW2_VERIFY_MSG(false, "Error binding buffer textures <%u>",
+                      (unsigned)type);
+      break;
+  }
 }
 
 }  // namespace ddGPUFrontEnd

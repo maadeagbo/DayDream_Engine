@@ -104,6 +104,8 @@ struct ModelIDs {
   dd_array<ddVAOData*> vao_handles;
   /// \brief Marks whether the mesh is skinned for animation
   bool sk_flag = false;
+	/// \brief Marks if model should cast shadow
+	bool cast_shadow = true;
 };
 
 /// \brief Data used by render engine for drawing

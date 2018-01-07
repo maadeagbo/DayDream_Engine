@@ -688,7 +688,7 @@ ddTex2D *create_tex2D(const char *path, const char *img_id) {
   ImageInfo img_info;
 
   // find and load image to RAM
-  img_info.path = path;
+  img_info.path[0] = path;
   img_info.image_data[0] =
       SOIL_load_image(path, &img_info.width, &img_info.height,
                       &img_info.channels, SOIL_LOAD_RGBA);

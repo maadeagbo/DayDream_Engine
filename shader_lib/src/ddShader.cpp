@@ -27,7 +27,7 @@ void link_shader(GLuint *s_handle, const char *s_type, GLuint *program);
 
 // Error processing function for OpenGL calls
 namespace {
-bool check_gl_errors(const char *signature) {
+bool gl_error(const char *signature) {
   GLenum err;
   bool flag = false;
   while ((err = glGetError()) != GL_NO_ERROR) {
@@ -80,96 +80,92 @@ void ddShader::init() {
   }
   handle->program = 0;
   handle->program = glCreateProgram();
-  POW2_VERIFY_MSG(!check_gl_errors("init"), "Failed to create shader program",
-                  0);
+  POW2_VERIFY_MSG(!gl_error("init"), "Failed to create shader program", 0);
 }
 
 void ddShader::cleanup() {
-	// delete shader and atached programs
-	if (!handle) return;
+  // delete shader and atached programs
+  if (!handle) return;
 
-	// Query the number of attached shaders
-	GLint num_shaders = 0;
-	glGetProgramiv(handle->program, GL_ATTACHED_SHADERS, &num_shaders);
-	check_gl_errors("shader_deconstructor_c");
+  // Query the number of attached shaders
+  GLint num_shaders = 0;
+  glGetProgramiv(handle->program, GL_ATTACHED_SHADERS, &num_shaders);
 
-	// Get the shader names
-	GLuint *shader_handles = new GLuint[num_shaders];
-	glGetAttachedShaders(handle->program, num_shaders, NULL, shader_handles);
-	check_gl_errors("shader_deconstructor_b");
+  // Get the shader names
+  GLuint *shader_handles = new GLuint[num_shaders];
+  glGetAttachedShaders(handle->program, num_shaders, NULL, shader_handles);
 
-	// Delete the shaders
-	for (int i = 0; i < num_shaders; i++) {
-		glDeleteShader(shader_handles[i]);
-	}
-	check_gl_errors("shader_deconstructor_a");
+  // Delete the shaders
+  for (int i = 0; i < num_shaders; i++) {
+    glDeleteShader(shader_handles[i]);
+  }
 
-	// Delete the program
-	glDeleteProgram(handle->program);
-	check_gl_errors("shader_deconstructor");
+  // Delete the program
+  glDeleteProgram(handle->program);
+	POW2_VERIFY_MSG(!gl_error("shader_delete"), "Failed to delete elements", 0);
 
-	delete[] shader_handles;
-	//delete handle;
+  delete[] shader_handles;
+  // delete handle;
 }
 
 void ddShader::create_vert_shader(const char *filePath) {
   const char *s_type = "VERTEX";
   std::string s_code = read_shader_file(filePath).c_str();
   GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-  POW2_VERIFY_MSG(!check_gl_errors("create_vert_shader"),
-                  "Failed %s shader init", s_type);
+  POW2_VERIFY_MSG(!gl_error("create_vert_shader"), "Failed %s shader init",
+                  s_type);
 
   // compile and link shader
   if (handle && compile_shader(&vertex_shader, s_code.c_str(), s_type)) {
     link_shader(&vertex_shader, s_type, &handle->program);
   }
-  POW2_VERIFY_MSG(!check_gl_errors("create_vert_shader"),
-                  "Failed %s shader link", s_type);
+  POW2_VERIFY_MSG(!gl_error("create_vert_shader"), "Failed %s shader link",
+                  s_type);
 }
 
 void ddShader::create_frag_shader(const char *filePath) {
   const char *s_type = "FRAGMENT";
   std::string s_code = read_shader_file(filePath).c_str();
   GLuint frag_shader = glCreateShader(GL_FRAGMENT_SHADER);
-  POW2_VERIFY_MSG(!check_gl_errors("create_frag_shader"),
-                  "Failed %s shader init", s_type);
+  POW2_VERIFY_MSG(!gl_error("create_frag_shader"), "Failed %s shader init",
+                  s_type);
 
   // compile and link shader
   if (handle && compile_shader(&frag_shader, s_code.c_str(), s_type)) {
     link_shader(&frag_shader, s_type, &handle->program);
   }
-  POW2_VERIFY_MSG(!check_gl_errors("create_frag_shader"),
-                  "Failed %s shader link", s_type);
+  POW2_VERIFY_MSG(!gl_error("create_frag_shader"), "Failed %s shader link",
+                  s_type);
 }
 
 void ddShader::create_comp_shader(const char *filePath) {
   const char *s_type = "COMPUTE";
   std::string s_code = read_shader_file(filePath).c_str();
   GLuint comp_shader = glCreateShader(GL_COMPUTE_SHADER);
-  POW2_VERIFY_MSG(!check_gl_errors("create_comp_shader"),
-                  "Failed %s shader init", s_type);
+  POW2_VERIFY_MSG(!gl_error("create_comp_shader"), "Failed %s shader init",
+                  s_type);
 
   // compile and link shader
   if (handle && compile_shader(&comp_shader, s_code.c_str(), s_type)) {
     link_shader(&comp_shader, s_type, &handle->program);
   }
-  POW2_VERIFY_MSG(!check_gl_errors("create_comp_shader"),
-                  "Failed %s shader link", s_type);
+  POW2_VERIFY_MSG(!gl_error("create_comp_shader"), "Failed %s shader link",
+                  s_type);
 }
 
 void ddShader::create_geom_shader(const char *filePath) {
   const char *s_type = "GEOMETRY";
   std::string s_code = read_shader_file(filePath).c_str();
   GLuint geom_shader = glCreateShader(GL_GEOMETRY_SHADER);
-  POW2_VERIFY_MSG(!check_gl_errors("create_geom_shader"),
-                  "Failed %s shader init", s_type);
+  POW2_VERIFY_MSG(!gl_error("create_geom_shader"), "Failed %s shader init",
+                  s_type);
 
   // compile and link shader
   if (handle && compile_shader(&geom_shader, s_code.c_str(), s_type)) {
     link_shader(&geom_shader, s_type, &handle->program);
   }
-  POW2_VERIFY_MSG(!check_gl_errors("create_geom_shader"),
-                  "Failed %s shader link", s_type);
+  POW2_VERIFY_MSG(!gl_error("create_geom_shader"), "Failed %s shader link",
+                  s_type);
 }
 
 dd_array<ddQueryInfo> ddShader::query_shader_attributes() {
@@ -179,8 +175,8 @@ dd_array<ddQueryInfo> ddShader::query_shader_attributes() {
   GLint num_attribs = 0;
   glGetProgramInterfaceiv(handle->program, GL_PROGRAM_INPUT,
                           GL_ACTIVE_RESOURCES, &num_attribs);
-	POW2_VERIFY_MSG(!check_gl_errors("query_shader_attributes"),
-									"Failed to retrieve # of attributes");
+  POW2_VERIFY_MSG(!gl_error("query_shader_attributes"),
+                  "Failed to retrieve # of attributes");
 
   // loop thru attributes
   info.resize(num_attribs);
@@ -189,16 +185,16 @@ dd_array<ddQueryInfo> ddShader::query_shader_attributes() {
     GLint results[3];
     glGetProgramResourceiv(handle->program, GL_PROGRAM_INPUT, i, 3, properties,
                            3, NULL, results);
-		POW2_VERIFY_MSG(!check_gl_errors("query_shader_attributes"),
-										"Failed to retrieve program input <%d>", i);
+    POW2_VERIFY_MSG(!gl_error("query_shader_attributes"),
+                    "Failed to retrieve program input <%d>", i);
 
     // get attribute information and store in ddQueryInfo
     GLint name_length = results[0] + 1;
     char *name = new char[name_length];
     glGetProgramResourceName(handle->program, GL_PROGRAM_INPUT, i, name_length,
                              NULL, name);
-		POW2_VERIFY_MSG(!check_gl_errors("query_shader_attributes"),
-										"Failed to retrieve resource name <%d>", i);
+    POW2_VERIFY_MSG(!gl_error("query_shader_attributes"),
+                    "Failed to retrieve resource name <%d>", i);
     info[i] = {(int)results[2], name, (unsigned)results[1]};
     delete[] name;
   }
@@ -219,8 +215,8 @@ dd_array<ddQueryInfo> ddShader::query_uniforms() {
   GLint num_uniforms = 0;
   glGetProgramInterfaceiv(handle->program, GL_UNIFORM, GL_ACTIVE_RESOURCES,
                           &num_uniforms);
-	POW2_VERIFY_MSG(!check_gl_errors("query_shader_uniforms"),
-									"Failed to retrieve # of uniforms");
+  POW2_VERIFY_MSG(!gl_error("query_shader_uniforms"),
+                  "Failed to retrieve # of uniforms");
 
   // loop thru uniforms
   info.resize(num_uniforms);
@@ -229,8 +225,8 @@ dd_array<ddQueryInfo> ddShader::query_uniforms() {
     GLint results[4];
     glGetProgramResourceiv(handle->program, GL_UNIFORM, i, 4, properties, 4,
                            NULL, results);
-		POW2_VERIFY_MSG(!check_gl_errors("query_shader_uniforms"),
-										"Failed to retrieve uniform <%d>", i);
+    POW2_VERIFY_MSG(!gl_error("query_shader_uniforms"),
+                    "Failed to retrieve uniform <%d>", i);
 
     // get uniform information and store in ddQueryInfo
     GLint name_length = results[0] + 1;
@@ -238,8 +234,8 @@ dd_array<ddQueryInfo> ddShader::query_uniforms() {
 
     glGetProgramResourceName(handle->program, GL_UNIFORM, i, name_length, NULL,
                              name);
-		POW2_VERIFY_MSG(!check_gl_errors("query_shader_uniforms"),
-										"Failed to retrieve uniform name <%d>", i);
+    POW2_VERIFY_MSG(!gl_error("query_shader_uniforms"),
+                    "Failed to retrieve uniform name <%d>", i);
     replace_char(name, '.', '_');  // fix: struct uniforms
     info[i] = {(int)results[2], name, (unsigned)results[1]};
     delete[] name;
@@ -264,27 +260,27 @@ void ddShader::set_uniform(const int loc, const bool flag) {
   glUniform1i(loc, (GLboolean)flag);
 }
 
-void ddShader::set_uniform(const int loc, const glm::vec2& data) {
+void ddShader::set_uniform(const int loc, const glm::vec2 &data) {
   glUniform2f(loc, data.x, data.y);
 }
 
-void ddShader::set_uniform(const int loc, const glm::vec3& data) {
+void ddShader::set_uniform(const int loc, const glm::vec3 &data) {
   glUniform3f(loc, data.x, data.y, data.z);
 }
 
-void ddShader::set_uniform(const int loc, const glm::vec4& data) {
+void ddShader::set_uniform(const int loc, const glm::vec4 &data) {
   glUniform4f(loc, data.x, data.y, data.z, data.w);
 }
 
-void ddShader::set_uniform(const int loc, const glm::mat3& data) {
+void ddShader::set_uniform(const int loc, const glm::mat3 &data) {
   glUniformMatrix4fv(loc, 1, GL_FALSE, &data[0][0]);
 }
 
-void ddShader::set_uniform(const int loc, const glm::mat4& data) {
+void ddShader::set_uniform(const int loc, const glm::mat4 &data) {
   glUniformMatrix4fv(loc, 1, GL_FALSE, &data[0][0]);
 }
 
-int ddShader::get_uniform_loc(const char* name) {
+int ddShader::get_uniform_loc(const char *name) {
   if (!handle) {
     POW2_VERIFY_MSG(false, "get_uniform_loc::Handle uninitialized", 0);
   }
@@ -299,9 +295,7 @@ std::string read_shader_file(const char *filename) {
     file.close();
     return isstr.str();
   }
-  std::string msg = "read_shader_file::Could not open: ";
-  msg += filename;
-  POW2_VERIFY_MSG(false, msg.c_str(), 0);
+  POW2_VERIFY_MSG(false, "read_shader_file::Could not open: %s", filename);
   return "";
 }
 
@@ -325,9 +319,8 @@ bool compile_shader(GLuint *s_handle, const GLchar *s_code,
       log_str = log;
       delete[] log;
     }
-    std::string msg = std::string(s_type) + " shader compilation failed!\n" +
-                      "Error log:\n" + log_str;
-    POW2_VERIFY_MSG(false, msg.c_str(), 0);
+    POW2_VERIFY_MSG(false, "%s shader compilation failed!\nError log: %s",
+                    s_type, log_str.c_str());
   }
   return true;
 }
@@ -349,8 +342,7 @@ void link_shader(GLuint *s_handle, const char *s_type, GLuint *program) {
       log_str = log;
       delete[] log;
     }
-    std::string msg = std::string(s_type) + " shader link failed!\n" +
-                      "Error log:\n" + log_str;
-    POW2_VERIFY_MSG(false, msg.c_str(), 0);
+    POW2_VERIFY_MSG(false, "%s shader linkage failed!\nError log: %s", s_type,
+                    log_str.c_str());
   }
 }

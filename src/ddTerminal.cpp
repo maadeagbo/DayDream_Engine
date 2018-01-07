@@ -76,6 +76,13 @@ void ddTerminal::display(const float scr_width, const float scr_height) {
   if (RENDER_ON) {
     ImGui::Begin("ddTerminal", &RENDER_ON, window_flags);
 
+		// time information
+		ImGui::Separator();
+		float ft = ddTime::get_avg_frame_time();
+		float fps = 1.f / ft;
+		float gt = ddTime::get_time_float();
+		ImGui::Text("Frame time: %.5f (%.1f FPS) || UpTime: %.5f", ft, fps, gt);
+
     // commandline
     ImGui::Separator();
     const char* msg = (!filter_ON) ? "Filter history" : "Enter commands";
