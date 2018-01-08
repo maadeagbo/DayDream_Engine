@@ -34,7 +34,7 @@ struct freelist {
   /// \brief Debug information on list contents
   void print_freelist();
   /// \brief Size of list
-  inline uint32_t size() const { return list.size(); }
+  inline uint32_t size() const { return (uint32_t)list.size(); }
   /// \brief Check if index if free
   /// \return True if slot is free
   inline bool is_free(uint32_t idx) const { return (list[idx] & 1U) == 0; }

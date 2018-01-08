@@ -33,13 +33,19 @@
 // lua bindings
 #include "LuaHooks.h"
 
-// GLM includes
-#include <glm/fwd.hpp>
-#ifdef _WIN32
+#ifdef WIN32
 #define GLM_FORCE_CXX98
 #define GLM_FORCE_CXX11
-#define GLM_FORCE_CXX14  // removes non-standard extensions warnings
+#define GLM_FORCE_CXX14 
+#define GLM_FORCE_PURE
+#pragma warning(disable : 4201) // removes non-standard extensions warnings
 #endif
+
+#ifdef _MSC_VER
+#pragma warning(push, 0) // disable warnings (low level)
+#endif
+
+// GLM includes
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -48,6 +54,10 @@
 // Bullet Physics include
 #include <btBulletCollisionCommon.h>
 #include <btBulletDynamicsCommon.h>
+
+#ifdef _MSC_VER
+#pragma warning(pop) // enable (high level) warning back
+#endif
 
 // Enum bitwise flags
 /*

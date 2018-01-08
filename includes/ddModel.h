@@ -99,7 +99,7 @@ struct ModelIDs {
   /// \brief LOD bounds
   float _near = 0.f, _far = 100.f;
   /// \brief Mesh id
-  size_t model = -1;
+  size_t model;
   /// \brief Handles for gpu object data
   dd_array<ddVAOData*> vao_handles;
   /// \brief Marks whether the mesh is skinned for animation

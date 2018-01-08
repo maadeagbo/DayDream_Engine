@@ -1,5 +1,12 @@
 #pragma once
 #include <inttypes.h>
+#ifdef WIN32
+#define GLM_FORCE_CXX98
+#define GLM_FORCE_CXX11
+#define GLM_FORCE_CXX14 
+#define GLM_FORCE_PURE
+#pragma warning(disable : 4201) // removes non-standard extensions warnings
+#endif
 #include <glm/glm.hpp>
 #include <memory>
 #include "StringLib.h"
@@ -9,6 +16,7 @@ struct ddVAOData;
 struct ddInstBufferData;
 struct ddMeshBufferData;
 struct ddTextureData;
+struct ddStorageBufferData;
 
 // Frame buffer declarations (API defined)
 enum class ddBufferType : unsigned {
@@ -139,6 +147,23 @@ void destroy_vao(ddVAOData *&vbuff_ptr);
 // Bind ddMeshBufferData and/or ddInstBufferData buffer to ddVAOData object
 bool bind_object(ddVAOData *vbuff_ptr, ddInstBufferData *ibuff_ptr,
                  ddMeshBufferData *mbuff_ptr);
+// Destroy ddStorageBufferData object
+void destroy_storage_buffer(ddStorageBufferData *&sbuff_ptr);
+// Create ddStorageBufferData buffer
+bool create_storage_buffer(ddStorageBufferData *&sbuff_ptr,
+                           const unsigned byte_size);
+// Bind storage buffer object
+void bind_storage_buffer(const unsigned location,
+                         const ddStorageBufferData *sbuff_ptr);
+// Fill in dynamically allocated (on gpu) instance buffer
+// true = instance m4x4, false = color vec3
+void set_instance_buffer_contents(const ddInstBufferData *ibuff_ptr,
+                                  bool inst_col, const unsigned byte_size,
+                                  const unsigned offset, void *data);
+// Fill in dynamically allocated (on gpu) shader storage buffer
+void set_storage_buffer_contents(const ddStorageBufferData *sbuff_ptr,
+                                 const unsigned byte_size,
+                                 const unsigned offset, void *data);
 
 //*****************************************************************************
 
@@ -210,17 +235,10 @@ void set_face_cull(const bool backface = true);
 // Enable or disable shader clip plane
 void toggle_clip_plane(bool flag = false);
 
-// Bind arbitrary texture to location
-void bind_texture(const unsigned location, const unsigned tex_handle);
-// (OpenGL specific) Bind shader storage buffer object
-void bind_ssbo_ogl(const unsigned location, const unsigned buff_hnadle);
-
-// Fill in gpu buffer w/ data
-void set_buffer_subdata(const unsigned buff_handle, const unsigned offset,
-                        const unsigned byte_size, void *data);
+// Bind arbitrary texture to shader location
+void bind_texture(const unsigned location, ddTextureData *tex_data);
 
 // Draw ddVAOObject instanced
 void draw_instanced_vao(const ddVAOData *vao, const unsigned num_indices,
-                        const unsigned draw_offset,
                         const unsigned instance_size);
 }  // namespace ddGPUFrontEnd

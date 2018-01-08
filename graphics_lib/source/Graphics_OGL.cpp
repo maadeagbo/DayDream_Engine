@@ -20,6 +20,10 @@ struct ddTextureData {
   GLuint texture_handle;
 };
 
+struct ddStorageBufferData {
+  GLuint storage_handle;
+};
+
 //*****************************************************************************
 
 struct ddGBuffer {
@@ -71,7 +75,7 @@ void create_texture2D(const GLenum format, GLuint &tex_handle, const int width,
   // create texture
   glGenTextures(1, &tex_handle);
   glBindTexture(GL_TEXTURE_2D, tex_handle);
-  POW2_VERIFY_MSG(!gl_error("create_texture2D"), "Error generating buffer", 0);
+  POW2_VERIFY_MSG(!gl_error("create_texture2D"), "Error generating buffer");
 
   // texture settings
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min);
@@ -96,7 +100,7 @@ void create_texture2D(const GLenum format, GLuint &tex_handle, const int width,
   // mip maps
   if (mips) glGenerateMipmap(GL_TEXTURE_2D);
 
-  POW2_VERIFY_MSG(!gl_error("create_texture2D"), "Error generating image2D", 0);
+  POW2_VERIFY_MSG(!gl_error("create_texture2D"), "Error generating image2D");
 }
 
 // screen space quad
@@ -313,9 +317,10 @@ void grab_image_from_buffer(const unsigned frame_buff, const unsigned format,
   glBindFramebuffer(GL_READ_FRAMEBUFFER, (GLuint)frame_buff);
   glReadPixels(0, 0, width, height, (GLenum)format, GL_UNSIGNED_BYTE,
                &pixels[0]);
-  POW2_VERIFY_MSG(!gl_error("grab_image_from_buffer"), "Failed to screen grab",
-                  0);
+  POW2_VERIFY_MSG(!gl_error("grab_image_from_buffer"), "Failed to screen grab");
 }
+
+//*****************************************************************************
 
 bool load_buffer_data(ddMeshBufferData *&mbuff_ptr, DDM_Data *ddm_ptr) {
   // Create ddMeshBufferData and load gpu w/ buffer data
@@ -503,6 +508,78 @@ bool bind_object(ddVAOData *vbuff_ptr, ddInstBufferData *ibuff_ptr,
   return true;
 }
 
+void destroy_storage_buffer(ddStorageBufferData *&sbuff_ptr) {
+  // destroy buffer and destroy buffer object
+  if (!sbuff_ptr) return;
+
+  glDeleteBuffers(1, &sbuff_ptr->storage_handle);
+
+  gl_error("destroy_storage_buffer");
+
+  delete sbuff_ptr;
+  sbuff_ptr = nullptr;
+}
+
+bool create_storage_buffer(ddStorageBufferData *&sbuff_ptr,
+                           const unsigned byte_size) {
+  if (sbuff_ptr) destroy_storage_buffer(sbuff_ptr);
+
+  // create shader storage buffer object
+  GLuint ssbo = 0;
+  glGenBuffers(1, &ssbo);
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
+  glBufferData(GL_SHADER_STORAGE_BUFFER, byte_size, NULL, GL_DYNAMIC_DRAW);
+  if (gl_error("create_storage_buffer")) return false;
+
+  sbuff_ptr = new ddStorageBufferData();
+  if (!sbuff_ptr) {
+    fprintf(stderr, "Failed to create ddStorageBufferData object in RAM\n");
+    return false;
+  }
+  sbuff_ptr->storage_handle = ssbo;
+
+  return true;
+}
+
+void bind_storage_buffer(const unsigned location,
+                         const ddStorageBufferData *sbuff_ptr) {
+  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, location,
+                   sbuff_ptr->storage_handle);
+}
+
+void set_instance_buffer_contents(const ddInstBufferData *ibuff_ptr,
+                                  bool inst_col, const unsigned byte_size,
+                                  const unsigned offset, void *data) {
+  POW2_VERIFY_MSG(ibuff_ptr != nullptr, "Instance buffer is null");
+
+  if (inst_col) {
+    // fill in instance buffer
+    glBindBuffer(GL_ARRAY_BUFFER, ibuff_ptr->instance_buffer);
+    glBufferSubData(GL_ARRAY_BUFFER, offset, byte_size, data);
+    POW2_VERIFY_MSG(!gl_error("set_instance_buffer_contents"),
+                    "Instance buffer not set");
+  } else {
+    // fill in color buffer
+    glBindBuffer(GL_ARRAY_BUFFER, ibuff_ptr->color_instance_buffer);
+    glBufferSubData(GL_ARRAY_BUFFER, offset, byte_size, data);
+    POW2_VERIFY_MSG(!gl_error("set_instance_buffer_contents"),
+                    "Color buffer not set");
+  }
+}
+
+void set_storage_buffer_contents(const ddStorageBufferData *sbuff_ptr,
+                                 const unsigned byte_size,
+                                 const unsigned offset, void *data) {
+  POW2_VERIFY_MSG(sbuff_ptr != nullptr, "Storage buffer is null");
+
+  // Fill in shader storage buffer object
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, sbuff_ptr->storage_handle);
+  glBufferSubData(GL_SHADER_STORAGE_BUFFER, offset, byte_size, data);
+  POW2_VERIFY_MSG(!gl_error("set_storage_buffer_contents"), "SSBO not set");
+}
+
+//*****************************************************************************
+
 void render_quad() {
   if (quad_vao == 0) {
     // create quad VAO for rendering
@@ -514,16 +591,14 @@ void render_quad() {
     // set up Plane VAO for post processing shader
     glGenVertexArrays(1, &quad_vao);
     glGenBuffers(1, &quad_vbo);
-    POW2_VERIFY_MSG(!gl_error("render_quad"), "Error generating quad buffers",
-                    0);
+    POW2_VERIFY_MSG(!gl_error("render_quad"), "Error generating quad buffers");
 
     // fill vbo
     glBindVertexArray(quad_vao);
     glBindBuffer(GL_ARRAY_BUFFER, quad_vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(quad_verts), quad_verts,
                  GL_STATIC_DRAW);
-    POW2_VERIFY_MSG(!gl_error("render_quad"), "Error sending data to buffers",
-                    0);
+    POW2_VERIFY_MSG(!gl_error("render_quad"), "Error sending data to buffers");
 
     // bind attributes to VAO
     glEnableVertexAttribArray(0);
@@ -532,7 +607,7 @@ void render_quad() {
     glEnableVertexAttribArray(2);
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat),
                           (GLvoid *)(3 * sizeof(GLfloat)));
-    POW2_VERIFY_MSG(!gl_error("render_quad"), "Error binding attributes", 0);
+    POW2_VERIFY_MSG(!gl_error("render_quad"), "Error binding attributes");
   }
   // draw
   glBindVertexArray(quad_vao);
@@ -557,7 +632,7 @@ void render_split_quad(bool leftside) {
     glGenVertexArrays(2, vr_vao);
     glGenBuffers(2, vr_vbo);
     POW2_VERIFY_MSG(!gl_error("render_split_quad"),
-                    "Error generating quad buffers", 0);
+                    "Error generating quad buffers");
 
     for (unsigned i = 0; i < 2; i++) {
       // fill i-th vbo & set attributes in vao
@@ -615,15 +690,13 @@ void render_cube() {
     // setup cube vao for rendering
     glGenVertexArrays(1, &cube_vao);
     glGenBuffers(1, &cube_vbo);
-    POW2_VERIFY_MSG(!gl_error("render_cube"), "Error generating cube buffers",
-                    0);
+    POW2_VERIFY_MSG(!gl_error("render_cube"), "Error generating cube buffers");
 
     // fill vbo
     glBindVertexArray(cube_vao);
     glBindBuffer(GL_ARRAY_BUFFER, cube_vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(box_verts), box_verts, GL_STATIC_DRAW);
-    POW2_VERIFY_MSG(!gl_error("render_cube"), "Error sending data to buffer",
-                    0);
+    POW2_VERIFY_MSG(!gl_error("render_cube"), "Error sending data to buffer");
 
     // set position attribute
     glEnableVertexAttribArray(0);
@@ -667,7 +740,7 @@ void create_gbuffer(const int width, const int height) {
   // check for errors
   GLenum success = glCheckFramebufferStatus(GL_FRAMEBUFFER);
   POW2_VERIFY_MSG(success == GL_FRAMEBUFFER_COMPLETE,
-                  "GBuffer creation failure", 0);
+                  "GBuffer creation failure");
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
@@ -695,7 +768,7 @@ void create_lbuffer(const int width, const int height) {
   // check for errors
   GLenum success = glCheckFramebufferStatus(GL_FRAMEBUFFER);
   POW2_VERIFY_MSG(success == GL_FRAMEBUFFER_COMPLETE,
-                  "LBuffer creation failure", 0);
+                  "LBuffer creation failure");
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
@@ -728,7 +801,7 @@ void create_sbuffer(const int width, const int height) {
   // check for errors
   GLenum success = glCheckFramebufferStatus(GL_FRAMEBUFFER);
   POW2_VERIFY_MSG(success == GL_FRAMEBUFFER_COMPLETE,
-                  "SBuffer creation failure", 0);
+                  "SBuffer creation failure");
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
@@ -757,7 +830,7 @@ void create_pbuffer(const int width, const int height) {
   // check for errors
   GLenum success = glCheckFramebufferStatus(GL_FRAMEBUFFER);
   POW2_VERIFY_MSG(success == GL_FRAMEBUFFER_COMPLETE,
-                  "PBuffer creation failure", 0);
+                  "PBuffer creation failure");
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
@@ -785,7 +858,7 @@ void create_cbuffer(const int width, const int height) {
   // check for errors
   GLenum success = glCheckFramebufferStatus(GL_FRAMEBUFFER);
   POW2_VERIFY_MSG(success == GL_FRAMEBUFFER_COMPLETE,
-                  "CBuffer creation failure", 0);
+                  "CBuffer creation failure");
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
@@ -807,8 +880,7 @@ void create_fbuffer(const int c_width, const int c_height, const int s_width,
 
   // check for errors
   GLenum success = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-  POW2_VERIFY_MSG(success == GL_FRAMEBUFFER_COMPLETE, "FBuffer::color failure",
-                  0);
+  POW2_VERIFY_MSG(success == GL_FRAMEBUFFER_COMPLETE, "FBuffer::color failure");
 
   // create and bind shadow fbo
   glGenFramebuffers(1, &f_buff.shadow_fbo);
@@ -827,8 +899,8 @@ void create_fbuffer(const int c_width, const int c_height, const int s_width,
 
   // check for errors
   success = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-  POW2_VERIFY_MSG(success == GL_FRAMEBUFFER_COMPLETE, "FBuffer::shadow failure",
-                  0);
+  POW2_VERIFY_MSG(success == GL_FRAMEBUFFER_COMPLETE,
+                  "FBuffer::shadow failure");
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
@@ -1056,15 +1128,15 @@ void toggle_additive_blend(bool flag) {
 
 void set_depth_mode(const DepthMode mode) {
   switch (mode) {
-		case DepthMode::LESS:
-			glDepthFunc(GL_LESS);
-			break;
-		case DepthMode::LESS_OR_EQUAL:
-			glDepthFunc(GL_LEQUAL);
-			break;
-		case DepthMode::GREATER:
-			glDepthFunc(GL_GREATER);
-			break;
+    case DepthMode::LESS:
+      glDepthFunc(GL_LESS);
+      break;
+    case DepthMode::LESS_OR_EQUAL:
+      glDepthFunc(GL_LEQUAL);
+      break;
+    case DepthMode::GREATER:
+      glDepthFunc(GL_GREATER);
+      break;
     default:
       POW2_VERIFY_MSG(false, "Invalid DepthMode provided <%u>", (unsigned)mode);
       break;
@@ -1072,31 +1144,47 @@ void set_depth_mode(const DepthMode mode) {
 }
 
 void toggle_face_cull(bool flag) {
-	if (flag) {
-		// cull on
-		glEnable(GL_CULL_FACE);
-	} else {
-		// cull off
-		glDisable(GL_CULL_FACE);
-	}
+  if (flag) {
+    // cull on
+    glEnable(GL_CULL_FACE);
+  } else {
+    // cull off
+    glDisable(GL_CULL_FACE);
+  }
 }
 
 void set_face_cull(const bool backface) {
-	if (backface) {
-		glCullFace(GL_BACK);
-	} else {
-		glCullFace(GL_FRONT);
-	}
+  if (backface) {
+    glCullFace(GL_BACK);
+  } else {
+    glCullFace(GL_FRONT);
+  }
 }
 
 void toggle_clip_plane(bool flag) {
-	if (flag) {
-		// clip on
-		glEnable(GL_CLIP_DISTANCE0);
-	} else {
-		// clip off
-		glDisable(GL_CLIP_DISTANCE0);
-	}
+  if (flag) {
+    // clip on
+    glEnable(GL_CLIP_DISTANCE0);
+  } else {
+    // clip off
+    glDisable(GL_CLIP_DISTANCE0);
+  }
+}
+
+void bind_texture(const unsigned location, ddTextureData *tex_data) {
+  glActiveTexture(GL_TEXTURE0 + location);
+  glBindTexture(GL_TEXTURE_2D, tex_data->texture_handle);
+}
+
+void draw_instanced_vao(const ddVAOData *vao, const unsigned num_indices,
+                        const unsigned instance_size) {
+	POW2_VERIFY_MSG(vao != nullptr, "draw_instanced_vao::Null vao provided");
+
+	// bind vao and draw
+	glBindVertexArray(vao->vao_handle);
+	glDrawElementsInstanced(GL_TRIANGLES, (GLsizei)num_indices,
+													GL_UNSIGNED_INT, 0, instance_size);
+	glBindVertexArray(0);
 }
 
 }  // namespace ddGPUFrontEnd

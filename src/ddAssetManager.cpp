@@ -110,14 +110,14 @@ void flip_image(unsigned char *image, const int width, const int height,
 void dd_assets_initialize(btDiscreteDynamicsWorld *physics_world) {
   p_world = physics_world;
   // set free lists
-  fl_b_agents.initialize(b_agents.size());
-  fl_cams.initialize(cams.size());
-  fl_lights.initialize(lights.size());
-  fl_meshes.initialize(meshes.size());
-  fl_skeletons.initialize(skeletons.size());
-  fl_poses.initialize(poses.size());
-  fl_textures.initialize(textures.size());
-  fl_mats.initialize(mats.size());
+  fl_b_agents.initialize((unsigned)b_agents.size());
+  fl_cams.initialize((unsigned)cams.size());
+  fl_lights.initialize((unsigned)lights.size());
+  fl_meshes.initialize((unsigned)meshes.size());
+  fl_skeletons.initialize((unsigned)skeletons.size());
+  fl_poses.initialize((unsigned)poses.size());
+  fl_textures.initialize((unsigned)textures.size());
+  fl_mats.initialize((unsigned)mats.size());
 }
 
 void dd_assets_cleanup() {
@@ -302,7 +302,7 @@ ddModelData *load_ddm(const char *filename) {
   ddIO io_handle;
   dd_array<DDM_Data> out_data;
   dd_array<FbxEData> edata;
-  dd_array<obj_mat> mats;
+  dd_array<obj_mat> o_mats;
   FbxVData vdata;
   cbuff<32> name;
   unsigned mat_idx = 0;
@@ -337,7 +337,7 @@ ddModelData *load_ddm(const char *filename) {
           line = io_handle.readNextLine();
         }
         if (*line == 'm') {  // # of materials
-          mats.resize(getUint(&line[2]));
+          o_mats.resize(getUint(&line[2]));
           line = io_handle.readNextLine();
         }
       }
@@ -349,7 +349,7 @@ ddModelData *load_ddm(const char *filename) {
         ebo_idx += 1;
       }
       if (strcmp("<material>", line) == 0) {
-        mats[mat_idx] = std::move(get_mat_data(io_handle));
+        o_mats[mat_idx] = std::move(get_mat_data(io_handle));
         mat_idx += 1;
       }
       line = io_handle.readNextLine();
@@ -369,7 +369,7 @@ ddModelData *load_ddm(const char *filename) {
     // set path
     mdata->mesh_info[i].path = filename;
     // create material
-    ddMat *mat = create_material(mats[idx]);
+    ddMat *mat = create_material(o_mats[idx]);
     if (mat) {  // set mesh's material id
       mdata->mesh_info[i].mat_id = mat->id;
     } else {

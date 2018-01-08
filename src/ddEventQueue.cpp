@@ -39,8 +39,8 @@ int ddQueue::push_lua(lua_State *_L) {
                                fb.buffer->arg.v_bool);
           break;
         case VType::INT:
-          add_arg_LEvent<int>(&_event, fb.buffer[i].arg_name.str(),
-                              fb.buffer->arg.v_int);
+          add_arg_LEvent<int64_t>(&_event, fb.buffer[i].arg_name.str(),
+                                  fb.buffer->arg.v_int);
           break;
         case VType::FLOAT:
           add_arg_LEvent<float>(&_event, fb.buffer[i].arg_name.str(),

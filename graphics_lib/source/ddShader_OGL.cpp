@@ -41,7 +41,7 @@ bool gl_error(const char *signature) {
 }  // namespace
 
 const char *get_uniform_type(unsigned type) {
-  switch (type) {
+  /*switch (type) {
     case GL_FLOAT:
       return UNIFORM_TO_STRING(GL_FLOAT);
     case GL_FLOAT_VEC2:
@@ -70,7 +70,39 @@ const char *get_uniform_type(unsigned type) {
       return UNIFORM_TO_STRING(GL_SAMPLER_CUBE);
     default:
       return UNIFORM_TO_STRING(<NOT LISTED>);
-  }
+  }*/
+	switch (type) {
+		case GL_FLOAT:
+			return "_f";
+		case GL_FLOAT_VEC2:
+			return "_v2";
+		case GL_FLOAT_VEC3:
+			return "_v3";
+		case GL_FLOAT_VEC4:
+			return "_v4";
+		case GL_DOUBLE:
+			return "_d";
+		case GL_INT:
+			return "_i";
+		case GL_UNSIGNED_INT:
+			return "_ui";
+		case GL_BOOL:
+			return "_b";
+		case GL_FLOAT_MAT2:
+			return "_m2x2";
+		case GL_FLOAT_MAT3:
+			return "_m3x3";
+		case GL_FLOAT_MAT4:
+			return "_m4x4";
+		case GL_SAMPLER_2D:
+			return "_smp2d";
+		case GL_SAMPLER_CUBE:
+			return "_smpCube";
+		case GL_IMAGE_2D:
+			return "_img2D";
+		default:
+			return "_UNKNOWN";
+	}
 }
 
 void ddShader::init() {

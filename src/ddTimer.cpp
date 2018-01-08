@@ -100,7 +100,7 @@ uint64_t GetHiResTime(const bool start_end) {
 void sleep(size_t milliseconds) { usleep(milliseconds); }
 // Convert positive floating point seconds to uint64 nanoseconds
 uint64_t SecsToNanoSecs(float seconds) {
-  POW2_VERIFY_MSG(seconds >= 0.0f, "Cannot convert negative float", 0);
+  POW2_VERIFY_MSG(seconds >= 0.0f, "Cannot convert negative float");
   float nanosecs = seconds * 1000000000.0f;
   return (uint64_t)nanosecs;
 }
@@ -144,7 +144,7 @@ void sleep(float seconds) {
 
 // Convert positive floating point seconds to uint64 nanoseconds
 uint64_t SecsToNanoSecs(float seconds) {
-  POW2_VERIFY_MSG(seconds >= 0.0f, "Cannot convert negative float", 0);
+  POW2_VERIFY_MSG(seconds >= 0.0f, "Cannot convert negative float");
   float nanosecs = seconds * 1000000000.0f;
   return (uint64_t)nanosecs;
 }
