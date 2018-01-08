@@ -177,4 +177,50 @@ void bind_framebuffer(const ddBufferType type, const bool color_shadow = true);
 // shadow = lighting pass(0) or other(1)
 void bind_pass_texture(const ddBufferType type, const unsigned loc = 0,
                        const unsigned xtra_param = 0);
+// Bind framebuffers and copy depth from in -> out
+void blit_depth_buffer(const ddBufferType in_type, const ddBufferType out_type,
+                       const unsigned width, const unsigned height);
+
+//*****************************************************************************
+
+// Set framebuffer viewport dimensions for render
+void set_viewport(const unsigned width, const unsigned height);
+// Clear color buffer for framebuffer
+void clear_color_buffer();
+// Clear depth buffer for framebuffer
+void clear_depth_buffer();
+// Clear stencil buffer for framebuffer
+void clear_stencil_buffer();
+// Enable or disable framebuffer depth mask
+void toggle_depth_mask(bool flag = false);
+// Enable or disable framebuffer depth test
+void toggle_depth_test(bool flag = false);
+// Enable or disable framebuffer stencil test
+void toggle_stencil_test(bool flag = false);
+// Enable or disable framebuffer additive blending
+void toggle_additive_blend(bool flag = false);
+
+enum DepthMode { LESS_OR_EQUAL, GREATER, LESS };
+// Set how depth testing function behaves
+void set_depth_mode(const DepthMode mode);
+// Enable or disable triangle face cull
+void toggle_face_cull(bool flag = false);
+// Set backface or frontface culling
+void set_face_cull(const bool backface = true);
+// Enable or disable shader clip plane
+void toggle_clip_plane(bool flag = false);
+
+// Bind arbitrary texture to location
+void bind_texture(const unsigned location, const unsigned tex_handle);
+// (OpenGL specific) Bind shader storage buffer object
+void bind_ssbo_ogl(const unsigned location, const unsigned buff_hnadle);
+
+// Fill in gpu buffer w/ data
+void set_buffer_subdata(const unsigned buff_handle, const unsigned offset,
+                        const unsigned byte_size, void *data);
+
+// Draw ddVAOObject instanced
+void draw_instanced_vao(const ddVAOData *vao, const unsigned num_indices,
+                        const unsigned draw_offset,
+                        const unsigned instance_size);
 }  // namespace ddGPUFrontEnd

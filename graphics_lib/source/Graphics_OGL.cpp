@@ -109,7 +109,7 @@ GLuint vr_vao[2] = {0, 0}, vr_vbo[2] = {0, 0};
 GLuint cube_vao = 0, cube_vbo = 0;
 
 // line render
-//GLuint line_vao = 0, line_vbo = 0;
+// GLuint line_vao = 0, line_vbo = 0;
 
 // buffer for writing arbitrary pixels
 dd_array<unsigned char> pixel_write_buffer;
@@ -911,22 +911,22 @@ void bind_pass_texture(const ddBufferType type, const unsigned loc,
       // bind framebuffer texture before draw
       switch ((CubeMapFaces)xtra_param) {
         case CubeMapFaces::RIGHT:
-					bind_cube_target_for_render(GL_TEXTURE_CUBE_MAP_POSITIVE_X);
+          bind_cube_target_for_render(GL_TEXTURE_CUBE_MAP_POSITIVE_X);
           break;
         case CubeMapFaces::LEFT:
-					bind_cube_target_for_render(GL_TEXTURE_CUBE_MAP_NEGATIVE_X);
+          bind_cube_target_for_render(GL_TEXTURE_CUBE_MAP_NEGATIVE_X);
           break;
         case CubeMapFaces::TOP:
-					bind_cube_target_for_render(GL_TEXTURE_CUBE_MAP_POSITIVE_Z);
+          bind_cube_target_for_render(GL_TEXTURE_CUBE_MAP_POSITIVE_Z);
           break;
         case CubeMapFaces::BOTTOM:
-					bind_cube_target_for_render(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z);
+          bind_cube_target_for_render(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z);
           break;
         case CubeMapFaces::BACK:
-					bind_cube_target_for_render(GL_TEXTURE_CUBE_MAP_POSITIVE_Y);
+          bind_cube_target_for_render(GL_TEXTURE_CUBE_MAP_POSITIVE_Y);
           break;
         case CubeMapFaces::FRONT:
-					bind_cube_target_for_render(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y);
+          bind_cube_target_for_render(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y);
           break;
         default:
           POW2_VERIFY_MSG(false, "Invalid cube map face to render to <%u>",
@@ -935,8 +935,8 @@ void bind_pass_texture(const ddBufferType type, const unsigned loc,
       }
       break;
     case ddBufferType::FILTER:
-			// make texture 0 active (texture to run algorithm on)
-			glActiveTexture(GL_TEXTURE0);
+      // make texture 0 active (texture to run algorithm on)
+      glActiveTexture(GL_TEXTURE0);
       break;
     case ddBufferType::DEFAULT:
       glBindTexture(GL_TEXTURE_2D, 0);
@@ -946,6 +946,157 @@ void bind_pass_texture(const ddBufferType type, const unsigned loc,
                       (unsigned)type);
       break;
   }
+}
+
+void blit_depth_buffer(const ddBufferType in_type, const ddBufferType out_type,
+                       const unsigned width, const unsigned height) {
+  // set buffer in & out
+  switch (in_type) {
+    case ddBufferType::GEOM:
+      glBindFramebuffer(GL_READ_FRAMEBUFFER, g_buff.deffered_fbo);
+      break;
+    case ddBufferType::LIGHT:
+      glBindFramebuffer(GL_READ_FRAMEBUFFER, l_buff.light_fbo);
+      break;
+    case ddBufferType::SHADOW:
+      glBindFramebuffer(GL_READ_FRAMEBUFFER, s_buff.shadow_fbo);
+      break;
+    case ddBufferType::PARTICLE:
+      glBindFramebuffer(GL_READ_FRAMEBUFFER, p_buff.particle_fbo);
+      break;
+    case ddBufferType::CUBE:
+      glBindFramebuffer(GL_READ_FRAMEBUFFER, c_buff.cube_fbo);
+      break;
+    case ddBufferType::DEFAULT:
+      glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+      break;
+    default:
+      POW2_VERIFY_MSG(false, "Invalid in_buffer <%u>", (unsigned)in_type);
+      break;
+  }
+  switch (out_type) {
+    case ddBufferType::GEOM:
+      glBindFramebuffer(GL_DRAW_FRAMEBUFFER, g_buff.deffered_fbo);
+      break;
+    case ddBufferType::LIGHT:
+      glBindFramebuffer(GL_DRAW_FRAMEBUFFER, l_buff.light_fbo);
+      break;
+    case ddBufferType::SHADOW:
+      glBindFramebuffer(GL_DRAW_FRAMEBUFFER, s_buff.shadow_fbo);
+      break;
+    case ddBufferType::PARTICLE:
+      glBindFramebuffer(GL_DRAW_FRAMEBUFFER, p_buff.particle_fbo);
+      break;
+    case ddBufferType::CUBE:
+      glBindFramebuffer(GL_DRAW_FRAMEBUFFER, c_buff.cube_fbo);
+      break;
+    case ddBufferType::DEFAULT:
+      glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+      break;
+    default:
+      POW2_VERIFY_MSG(false, "Invalid out_buffer <%u>", (unsigned)out_type);
+      break;
+  }
+  glBlitFramebuffer(0, 0, width, height, 0, 0, (GLint)width, (GLint)height,
+                    GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+  POW2_VERIFY_MSG(!gl_error("blit_depth"), "Error: blit", (unsigned)out_type);
+}
+
+void set_viewport(const unsigned width, const unsigned height) {
+  glViewport(0, 0, (GLsizei)width, (GLsizei)height);
+}
+
+void clear_color_buffer() { glClear(GL_COLOR_BUFFER_BIT); }
+
+void clear_depth_buffer() { glClear(GL_DEPTH_BUFFER_BIT); }
+
+void clear_stencil_buffer() { glClear(GL_STENCIL_BUFFER_BIT); }
+
+void toggle_depth_mask(bool flag) {
+  if (flag) {
+    // mask on
+    glDepthMask(GL_TRUE);
+  } else {
+    // mask off
+    glDepthMask(GL_FALSE);
+  }
+}
+
+void toggle_depth_test(bool flag) {
+  if (flag) {
+    // test on
+    glEnable(GL_DEPTH_TEST);
+  } else {
+    // test off
+    glDisable(GL_DEPTH_TEST);
+  }
+}
+
+void toggle_stencil_test(bool flag) {
+  if (flag) {
+    // test on
+    glEnable(GL_STENCIL_TEST);
+  } else {
+    // test off
+    glDisable(GL_STENCIL_TEST);
+  }
+}
+
+void toggle_additive_blend(bool flag) {
+  if (flag) {
+    // additive blend on
+    glBlendFunc(GL_ONE, GL_ONE);
+    glEnable(GL_BLEND);
+    glBlendEquation(GL_FUNC_ADD);
+  } else {
+    // disble blending
+    glDisable(GL_BLEND);
+  }
+}
+
+void set_depth_mode(const DepthMode mode) {
+  switch (mode) {
+		case DepthMode::LESS:
+			glDepthFunc(GL_LESS);
+			break;
+		case DepthMode::LESS_OR_EQUAL:
+			glDepthFunc(GL_LEQUAL);
+			break;
+		case DepthMode::GREATER:
+			glDepthFunc(GL_GREATER);
+			break;
+    default:
+      POW2_VERIFY_MSG(false, "Invalid DepthMode provided <%u>", (unsigned)mode);
+      break;
+  }
+}
+
+void toggle_face_cull(bool flag) {
+	if (flag) {
+		// cull on
+		glEnable(GL_CULL_FACE);
+	} else {
+		// cull off
+		glDisable(GL_CULL_FACE);
+	}
+}
+
+void set_face_cull(const bool backface) {
+	if (backface) {
+		glCullFace(GL_BACK);
+	} else {
+		glCullFace(GL_FRONT);
+	}
+}
+
+void toggle_clip_plane(bool flag) {
+	if (flag) {
+		// clip on
+		glEnable(GL_CLIP_DISTANCE0);
+	} else {
+		// clip off
+		glDisable(GL_CLIP_DISTANCE0);
+	}
 }
 
 }  // namespace ddGPUFrontEnd
