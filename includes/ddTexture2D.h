@@ -89,12 +89,12 @@ ENABLE_BITMASK_OPERATORS(TexType)
 //   bool activated = false;
 // };
 
-/// \brief Container for 2D textures
+/**
+ *  \brief Container for 2D textures
+ */
 struct ddTex2D {
-  /// \brief Engine identifier assigned at initialization
+  /** \brief Engine identifier assigned at initialization */
   size_t id;
-  /// \brief Type of texture
-  // TexType type = TexType::NULL_T;
-  /// \brief Image information on GPU and RAM
+  /** \brief Image information on GPU and RAM */
   ImageInfo image_info;
 };

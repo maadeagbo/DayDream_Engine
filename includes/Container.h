@@ -39,7 +39,7 @@ class dd_array {
   dd_array(const size_t size = 0) : _size(size) {
     if (size != 0) {
       m_data = new T[size]();
-      POW2_VERIFY_MSG(m_data != nullptr, "New operator failed :: 1D");
+      POW2_VERIFY_MSG(m_data != nullptr, "New operator failed :: 1D", 0);
     } else {
       m_data = nullptr;
     }
@@ -71,13 +71,13 @@ class dd_array {
 
   // returns T from 1D array
   T& operator[](const size_t FirstIndex) {
-    POW2_VERIFY_MSG(FirstIndex < _size, "Index out of bounds :: 1D");
+    POW2_VERIFY_MSG(FirstIndex < _size, "Index out of bounds :: 1D", 0);
     return m_data[FirstIndex];
   }
 
   // returns const T from 1D array
   T& operator[](const size_t FirstIndex) const {
-    POW2_VERIFY_MSG(FirstIndex < _size, "Index out of bounds :: 1D");
+    POW2_VERIFY_MSG(FirstIndex < _size, "Index out of bounds :: 1D", 0);
     return m_data[FirstIndex];
   }
 
@@ -158,7 +158,7 @@ class dd_2Darray {
       : m_row(Row), m_column(Column) {
     if (Row != 0 && Column != 0) {
       m_data = new T[(Row * Column)]();
-      POW2_VERIFY_MSG(m_data != nullptr, "New operator failed :: 1D");
+      POW2_VERIFY_MSG(m_data != nullptr, "New operator failed :: 1D", 0);
     } else {
       m_data = nullptr;
     }
@@ -195,13 +195,13 @@ class dd_2Darray {
   // return 2D data
   T& GetElement(size_t FirstIndex, size_t SecondIndex) {
     POW2_VERIFY_MSG((FirstIndex * m_column + SecondIndex) < (m_column * m_row),
-                    "Index out of bounds :: 2D");
+                    "Index out of bounds :: 2D", 0);
     return m_data[(FirstIndex * m_column) + SecondIndex];
   }
   // return const 2D data
   T& GetElement(size_t FirstIndex, size_t SecondIndex) const {
     POW2_VERIFY_MSG((FirstIndex * m_column + SecondIndex) < (m_column * m_row),
-                    "Index out of bounds :: 2D");
+                    "Index out of bounds :: 2D", 0);
     return m_data[(FirstIndex * m_column) + SecondIndex];
   }
 
@@ -273,11 +273,10 @@ class dd_2Darray {
   T* m_data;
 };
 
-
 template <typename T>
 struct _dd_iter {
-	size_t i;
-	T* ptr;
+  size_t i;
+  T* ptr;
 };
 
 #define DD_FOREACH(TYPE, VAR, ddARRAY)                                       \

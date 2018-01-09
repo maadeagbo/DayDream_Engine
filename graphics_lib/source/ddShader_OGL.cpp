@@ -208,7 +208,7 @@ dd_array<ddQueryInfo> ddShader::query_shader_attributes() {
   glGetProgramInterfaceiv(handle->program, GL_PROGRAM_INPUT,
                           GL_ACTIVE_RESOURCES, &num_attribs);
   POW2_VERIFY_MSG(!gl_error("query_shader_attributes"),
-                  "Failed to retrieve # of attributes");
+                  "Failed to retrieve # of attributes", 0);
 
   // loop thru attributes
   info.resize(num_attribs);
@@ -248,7 +248,7 @@ dd_array<ddQueryInfo> ddShader::query_uniforms() {
   glGetProgramInterfaceiv(handle->program, GL_UNIFORM, GL_ACTIVE_RESOURCES,
                           &num_uniforms);
   POW2_VERIFY_MSG(!gl_error("query_shader_uniforms"),
-                  "Failed to retrieve # of uniforms");
+                  "Failed to retrieve # of uniforms", 0);
 
   // loop thru uniforms
   info.resize(num_uniforms);

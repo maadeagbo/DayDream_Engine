@@ -96,26 +96,38 @@
   freelist fl_##CONTAINER;                    \
   dd_array<TYPE> CONTAINER(C_SIZE);
 
-/// \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine
+/**
+ * \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine
+ */
 void dd_assets_initialize(btDiscreteDynamicsWorld* physics_world);
-/// \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine
+/**
+ * \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine
+ */
 void dd_assets_cleanup();
 
-/// \brief Create ddAgent from lua scripts
-/// \param L lua state
-/// \return Number of returned values to lua
+/**
+ * \brief Create ddAgent from lua scripts
+ * \param L lua state
+ * \return Number of returned values to lua
+ */
 int dd_assets_create_agent(lua_State* L);
-/// \brief Create ddModelData from lua scripts
-/// \param L lua state
-/// \return Number of returned values to lua
+/**
+ * \brief Create ddModelData from lua scripts
+ * \param L lua state
+ * \return Number of returned values to lua
+ */
 int dd_assets_create_mesh(lua_State* L);
-/// \brief Create ddCam from lua scripts
-/// \param L lua state
-/// \return Number of returned values to lua
+/**
+ * \brief Create ddCam from lua scripts
+ * \param L lua state
+ * \return Number of returned values to lua
+ */
 int dd_assets_create_cam(lua_State* L);
-/// \brief Create ddLBulb from lua scripts
-/// \param L lua state
-/// \return Number of returned values to lua
+/**
+ * \brief Create ddLBulb from lua scripts
+ * \param L lua state
+ * \return Number of returned values to lua
+ */
 int dd_assets_create_light(lua_State* L);
 
 ASSET_DECL(ddAgent)

@@ -54,8 +54,10 @@ struct cbuff {
 };
 
 namespace StrSpace {
-/// \brief Take a string buffer and return a tokenized cbuff array
-/// WARNING: strToSplit will be cut off if greater than 512 chars
+/**
+ * \brief Take a string buffer and return a tokenized cbuff array
+ * WARNING: strToSplit will be cut off if greater than 512 chars
+ */
 template <const unsigned T>
 dd_array<cbuff<T>> tokenize512(const char* strToSplit, const char* delim) {
   char buff[512];

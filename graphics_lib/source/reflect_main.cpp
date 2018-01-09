@@ -27,7 +27,8 @@ std::string fix_slashes(const char *file) {
   char bad_s = '/';
   char good_s = '\\';
 #else
-  char bad_s = '\'; char good_s = ' /';
+  char bad_s = '\\'; 
+  char good_s = '/';
 #endif  // _WIN32
 
   std::string out_str = file;

@@ -8,7 +8,7 @@
 #include "ddIncludes.h"
 
 /**
-        Struct for 6-sided frustum
+ * \brief Struct for 6-sided frustum
 */
 struct FrustumBox {
   glm::vec3 points[6];
@@ -102,25 +102,45 @@ struct FrustumBox {
 // void PrintInfo(const ddCamera& cam);
 // }
 
-/// \brief Describes camera attributes
+/**
+ * \brief Describes camera attributes
+ */
 struct ddCam {
-  /// \brief Engine identifier assigned at initialization
+  /**
+   * \brief Engine identifier assigned at initialization
+   */
   size_t id;
-  /// \brief Engine info for scene graph
+  /**
+   * \brief Engine info for scene graph
+   */
   ParentInfo parent;
-  /// \brief Horizontal field of view
+  /**
+   * \brief Horizontal field of view
+   */
   float fovh = 0.f;
-  /// \brief Near plane
+  /**
+   * \brief Near plane
+   */
   float n_plane = 0.f;
-  /// \brief Far plane
+  /**
+   * \brief Far plane
+   */
   float f_plane = 100.f;
-  /// \brief VR camera left/right eye distance in meters
+  /**
+   * \brief VR camera left/right eye distance in meters
+   */
   float eye_dist = 0.f;
-  /// \brief Frustum information. Set up at initialization (position: 0, 0, 0)
+  /**
+   * \brief Frustum information. Set up at initialization (position: 0, 0, 0)
+   */
   FrustumBox cam_frustum;
 
-  /// \brief Marks instance as active camera
+  /**
+   * \brief Marks instance as active camera
+   */
   bool active = false;
-  /// \brief Marks camera as stereoscopic
+  /**
+   * \brief Marks camera as stereoscopic
+   */
   bool vr_flag = false;
 };

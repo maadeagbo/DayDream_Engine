@@ -21,15 +21,15 @@ void ddPhysics::cleanup_world() {
   clear_all_rigidbodies();
   // delete world and its components
   delete world;
-	world = nullptr;
+  world = nullptr;
   delete solver;
-	solver = nullptr;
+  solver = nullptr;
   delete broad_phase;
-	broad_phase = nullptr;
+  broad_phase = nullptr;
   delete dispatcher;
-	dispatcher = nullptr;
+  dispatcher = nullptr;
   delete collision_config;
-	collision_config = nullptr;
+  collision_config = nullptr;
 }
 
 void ddPhysics::clear_all_rigidbodies() {

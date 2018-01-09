@@ -7,17 +7,27 @@ class ddPhysics {
   ddPhysics();
   ~ddPhysics();
 
-  /// \brief Initializes the necessary modules for Bullet Physics
+  /**
+   * \brief Initializes the necessary modules for Bullet Physics
+   */
   void initialize_world();
-  /// \brief Close Bullet Physics world
+  /**
+   * \brief Close Bullet Physics world
+   */
   void cleanup_world();
-  /// \brief Remove all rigid bodies from world
+  /**
+   * \brief Remove all rigid bodies from world
+   */
   void clear_all_rigidbodies();
-  /// \brief Step thru world simulation at 1/60th of a second
-  /// \param dt Time of last frame
+  /**
+   * \brief Step thru world simulation at 1/60th of a second
+   * \param dt Time of last frame
+   */
   void step_simulate(const float dt);
 
-  /// \brief Bullet physics world
+  /**
+   * \brief Bullet physics world
+   */
   btDiscreteDynamicsWorld *world;
 
  private:

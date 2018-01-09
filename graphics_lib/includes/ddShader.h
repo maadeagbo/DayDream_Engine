@@ -3,9 +3,9 @@
 #ifdef WIN32
 #define GLM_FORCE_CXX98
 #define GLM_FORCE_CXX11
-#define GLM_FORCE_CXX14 
+#define GLM_FORCE_CXX14
 #define GLM_FORCE_PURE
-#pragma warning(disable : 4201) // removes non-standard extensions warnings
+#pragma warning(disable : 4201)  // removes non-standard extensions warnings
 #endif
 #include <glm/glm.hpp>
 #include <map>

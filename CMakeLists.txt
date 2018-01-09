@@ -396,13 +396,13 @@ if(NOT WIN32)
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -lstdc++fs")
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -lstdc++fs")
 
-	target_link_libraries(dd_engine ${WIN_LIB} dd_graphics ${OPENGL_gl_LIBRARY} 
-		${BULLET_LIB} ${VRPN_LIB} ${FREETYPE_LIBRARIES} ${FS_LIB} ${DD_GPULIB}
-		${LUA_LIB} ${SOIL_LIB})
+	target_link_libraries(dd_engine ${WIN_LIB} dd_graphics dd_shader 
+		${OPENGL_gl_LIBRARY} ${BULLET_LIB} ${VRPN_LIB} ${FREETYPE_LIBRARIES} 
+		${FS_LIB} ${DD_GPULIB} ${LUA_LIB} ${SOIL_LIB})
 else()
-	target_link_libraries(dd_engine ${WIN_LIB} dd_graphics ${OPENGL_gl_LIBRARY} 
-		${BULLET_LIB} ${VRPN_LIB} ${FREETYPE_LIBRARIES} ${LUA_LIB} ${DD_GPULIB}
-		${SOIL_LIB} )
+	target_link_libraries(dd_engine ${WIN_LIB} dd_graphics dd_shader 
+		${OPENGL_gl_LIBRARY} ${BULLET_LIB} ${VRPN_LIB} ${FREETYPE_LIBRARIES} 
+		${LUA_LIB} ${DD_GPULIB} ${SOIL_LIB} )
 endif()
 
 # Shader reflection executable

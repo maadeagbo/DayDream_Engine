@@ -85,7 +85,7 @@ struct InputData {
 };
 
 namespace ddInput {
-/// \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine
+/** \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine */
 void new_frame();
 
 /*
@@ -100,21 +100,24 @@ void update_mouse_pos(SDL_MouseMotionEvent& key);
 /// \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine
 void update_mouse_wheel(SDL_MouseWheelEvent& key);
 //*/
-/// \brief Retrieve input for current frame
-/// \return InputData containing key press information
+
+/**
+ * \brief Retrieve input for current frame
+ * \return InputData containing key press information
+ */
 const InputData& get_input();
 }  // namespace ddInput
 
-/* \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine */
+/** \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine */
 void dd_key_callback(GLFWwindow* window, int key, int scancode, int action,
                      int mods);
 
-/* \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine */
+/** \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine */
 void dd_mouse_pos_callback(GLFWwindow* window, double xpos, double ypos);
 
-/* \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine */
+/** \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine */
 void dd_mouse_click_callback(GLFWwindow* window, int button, int action,
                              int mods);
 
-/* \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine */
+/** \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine */
 void dd_scroll_callback(GLFWwindow* window, double xoffset, double yoffset);

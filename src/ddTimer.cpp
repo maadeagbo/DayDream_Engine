@@ -52,25 +52,23 @@ double SetCyclesPerNanoSec() {
 inline uint64_t rdtsc_Start() {
   unsigned int cycles_high, cycles_low;
   __asm__ __volatile__(
-    "CPUID\n\t" 
-    "RDTSC\n\t" 
-    "mov %%edx, %0\n\t" 
-    "mov %%eax, %1\n\t": "=r" (cycles_high), "=r" (cycles_low):: 
-    "%rax", "%rbx", "%rcx", "%rdx"
-  );
-  return ((uint64_t)cycles_high << 32) | cycles_low; 
+      "CPUID\n\t"
+      "RDTSC\n\t"
+      "mov %%edx, %0\n\t"
+      "mov %%eax, %1\n\t"
+      : "=r"(cycles_high), "=r"(cycles_low)::"%rax", "%rbx", "%rcx", "%rdx");
+  return ((uint64_t)cycles_high << 32) | cycles_low;
 }
 
 inline uint64_t rdtsc_End() {
   unsigned int cycles_high, cycles_low;
   __asm__ __volatile__(
-    "RDTSCP\n\t" 
-    "mov %%edx, %0\n\t" 
-    "mov %%eax, %1\n\t" 
-    "CPUID\n\t": "=r" (cycles_high), "=r" (cycles_low):: 
-    "%rax", "%rbx", "%rcx", "%rdx"
-  );
-  return ((uint64_t)cycles_high << 32) | cycles_low; 
+      "RDTSCP\n\t"
+      "mov %%edx, %0\n\t"
+      "mov %%eax, %1\n\t"
+      "CPUID\n\t"
+      : "=r"(cycles_high), "=r"(cycles_low)::"%rax", "%rbx", "%rcx", "%rdx");
+  return ((uint64_t)cycles_high << 32) | cycles_low;
 }
 
 // ddTimer::ddTimer()
@@ -93,14 +91,14 @@ uint64_t GetHiResTime(const bool start_end) {
   clock_gettime(CLOCK_MONOTONIC_RAW, &now);
   hrTime = (now.tv_sec * 1000000000L) + now.tv_nsec;
   return hrTime;
-  //return start_end ? rdtsc_Start() : rdtsc_End();
+  // return start_end ? rdtsc_Start() : rdtsc_End();
 }
 
 // Put CPU to sleep
 void sleep(size_t milliseconds) { usleep(milliseconds); }
 // Convert positive floating point seconds to uint64 nanoseconds
 uint64_t SecsToNanoSecs(float seconds) {
-  POW2_VERIFY_MSG(seconds >= 0.0f, "Cannot convert negative float");
+  POW2_VERIFY_MSG(seconds >= 0.0f, "Cannot convert negative float", 0);
   float nanosecs = seconds * 1000000000.0f;
   return (uint64_t)nanosecs;
 }
@@ -191,10 +189,10 @@ void ddTime::initialize() {
 
 void ddTime::update() {
   auto update_hist = [&](const float frame_time) {
-		dd_avg_ftime = frame_time;
+    dd_avg_ftime = frame_time;
     for (size_t i = TIME_HISTORY_MAX - 1; i > 0; i--) {
       dd_ftime[i] = dd_ftime[i - 1];
-			dd_avg_ftime += dd_ftime[i];
+      dd_avg_ftime += dd_ftime[i];
     }
     dd_ftime[0] = frame_time;
     // update avg
@@ -221,14 +219,14 @@ void ddTime::update() {
 
 void ddTime::singleStep() {
   auto update_hist = [&](const float frame_time) {
-		dd_avg_ftime = frame_time;
-		for (size_t i = TIME_HISTORY_MAX - 1; i > 0; i--) {
-			dd_ftime[i] = dd_ftime[i - 1];
-			dd_avg_ftime += dd_ftime[i];
-		}
-		dd_ftime[0] = frame_time;
-		// update avg
-		dd_avg_ftime /= TIME_HISTORY_MAX;
+    dd_avg_ftime = frame_time;
+    for (size_t i = TIME_HISTORY_MAX - 1; i > 0; i--) {
+      dd_ftime[i] = dd_ftime[i - 1];
+      dd_avg_ftime += dd_ftime[i];
+    }
+    dd_ftime[0] = frame_time;
+    // update avg
+    dd_avg_ftime /= TIME_HISTORY_MAX;
   };
   // Used for debugging
   // Single step through time
