@@ -52,11 +52,11 @@ struct ddShader {
   void set_uniform(const int loc, const glm::mat3& data);
   void set_uniform(const int loc, const glm::mat4& data);
 
-  cbuff<256> id;
-  cbuff<256> vs;
-  cbuff<256> fs;
-  cbuff<256> gs;
-  cbuff<256> cs;
+	size_t id = 0;
+  cbuff<256> vs = "";
+  cbuff<256> fs = "";
+  cbuff<256> gs = "";
+  cbuff<256> cs = "";
   ddShaderHandle* handle = nullptr;
   int get_uniform_loc(const char* name);
 };

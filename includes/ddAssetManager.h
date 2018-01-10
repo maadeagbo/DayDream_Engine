@@ -106,29 +106,9 @@ void dd_assets_initialize(btDiscreteDynamicsWorld* physics_world);
 void dd_assets_cleanup();
 
 /**
- * \brief Create ddAgent from lua scripts
- * \param L lua state
- * \return Number of returned values to lua
+ * \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine
  */
-int dd_assets_create_agent(lua_State* L);
-/**
- * \brief Create ddModelData from lua scripts
- * \param L lua state
- * \return Number of returned values to lua
- */
-int dd_assets_create_mesh(lua_State* L);
-/**
- * \brief Create ddCam from lua scripts
- * \param L lua state
- * \return Number of returned values to lua
- */
-int dd_assets_create_cam(lua_State* L);
-/**
- * \brief Create ddLBulb from lua scripts
- * \param L lua state
- * \return Number of returned values to lua
- */
-int dd_assets_create_light(lua_State* L);
+void dd_assets_log_lua_func(lua_State *L);
 
 ASSET_DECL(ddAgent)
 ASSET_DECL(ddCam)

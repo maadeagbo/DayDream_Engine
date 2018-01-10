@@ -87,7 +87,7 @@ enum class CubeMapFaces : unsigned {
 
 struct ImageInfo {
   /// \brief Handle to GPU buffer
-  ddTextureData *tex_buff;
+  ddTextureData *tex_buff = nullptr;
   /// \brief width and height
   int width = 0, height = 0;
   /// \brief channels in image (R, G, B, and/or A)
@@ -122,6 +122,9 @@ void destroy_texture(ddTextureData *&tex_ptr);
 // Create gpu texture data (RBGA8, mip-map linear, Repeats in U & V axis)
 // witdh and height must be set in ImageInfo prior to call
 bool generate_texture2D_RGBA8_LR(ImageInfo &img);
+// Create gpu texture data (RBGA16f, mip-map linear, Repeats in U & V axis)
+// witdh and height must be set in ImageInfo prior to call
+bool generate_texture2D_RGBA16F_LR(ImageInfo &img);
 // Create cubemap texture data (empty -> false means create w/out data)
 // witdh and height must be set in ImageInfo prior to call
 bool generate_textureCube_RGBA8_LR(ImageInfo &img, const bool empty = false);

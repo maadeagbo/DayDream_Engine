@@ -285,7 +285,7 @@ void ddQueue::process_queue() {
 void ddQueue::init_level_scripts(const char *script_id) {
   // find level functions
   cbuff<256> file_name;
-  file_name.format("%sscripts/%s.lua", ROOT_DIR, script_id);
+  file_name.format("%s/scripts/%s.lua", RESOURCE_DIR, script_id);
   bool file_found = parse_luafile(L, file_name.str());
   if (file_found) {
     int global_ref = get_lua_ref(L, nullptr, script_id);
@@ -316,7 +316,7 @@ void ddQueue::init_level_scripts(const char *script_id) {
                        file_name.str());
   }
   // find load function
-  file_name.format("%sscripts/%s_assets.lua", ROOT_DIR, script_id);
+  file_name.format("%s/scripts/%s_assets.lua", RESOURCE_DIR, script_id);
   file_found = parse_luafile(L, file_name.str());
   if (file_found) {
     int func_ref = get_lua_ref(L, nullptr, "load");

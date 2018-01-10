@@ -13,6 +13,7 @@
 #include "ddInput.h"
 #include "ddPhysicsEngine.h"
 #include "ddTimer.h"
+#include "ddRenderEngine.h"
 
 enum class GameState { LOADING, PAUSE, ACTIVE, NUM_STATES };
 

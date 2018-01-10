@@ -96,6 +96,7 @@ void create_texture2D(const GLenum format, GLuint &tex_handle, const int width,
   if (data) {
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, data_formet,
                     GL_UNSIGNED_BYTE, data);
+		POW2_VERIFY_MSG(!gl_error("create_texture2D"), "Error generating storage", 0);
   }
   // mip maps
   if (mips) glGenerateMipmap(GL_TEXTURE_2D);
@@ -218,8 +219,8 @@ bool generate_texture2D_RGBA8_LR(ImageInfo &img) {
   if (img.tex_buff) destroy_texture(img.tex_buff);
 
   // set up image parameters
-  img.internal_format = GL_RGBA8;  // TODO: should set based on channels ?
-  img.image_format = GL_RGBA8;     // TODO: should set based on channels ?
+  img.internal_format = GL_RGBA8;
+  img.image_format = GL_RGBA;     // TODO: should set based on channels ?
   img.wrap_s = GL_REPEAT;
   img.wrap_t = GL_REPEAT;
   img.min_filter = GL_LINEAR_MIPMAP_LINEAR;
@@ -245,12 +246,43 @@ bool generate_texture2D_RGBA8_LR(ImageInfo &img) {
   return true;
 }
 
+bool generate_texture2D_RGBA16F_LR(ImageInfo & img) {
+	if (img.tex_buff) destroy_texture(img.tex_buff);
+
+	// set up image parameters
+	img.internal_format = GL_RGBA16F;
+	img.image_format = GL_RGBA;     // TODO: should set based on channels ?
+	img.wrap_s = GL_REPEAT;
+	img.wrap_t = GL_REPEAT;
+	img.min_filter = GL_LINEAR_MIPMAP_LINEAR;
+	img.mag_filter = GL_LINEAR;
+
+	// create handle and texture
+	img.tex_buff = new ddTextureData();
+	if (!img.tex_buff) {
+		fprintf(stderr, "generate_texture2D_RGBA8_LR::RAM load failure\n");
+		return false;
+	}
+
+	// create image
+	create_texture2D(img.internal_format, img.tex_buff->texture_handle, img.width,
+									 img.height, img.min_filter, img.mag_filter, img.wrap_s,
+									 img.wrap_t, GL_REPEAT, glm::vec4(-1.f), true,
+									 img.image_data[0], img.image_format);
+	// SOIL_free_image_data(img.image_data[0]);
+	// img.image_data[0] = nullptr;
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	return true;
+}
+
 bool generate_textureCube_RGBA8_LR(ImageInfo &img, const bool empty) {
   if (img.tex_buff) destroy_texture(img.tex_buff);
 
   // set up image parameters
-  img.internal_format = GL_RGBA8;  // TODO: should set based on channels ?
-  img.image_format = GL_RGBA8;     // TODO: should set based on channels ?
+  img.internal_format = GL_RGBA8;
+  img.image_format = GL_RGBA;     // TODO: should set based on channels ?
   img.wrap_s = GL_REPEAT;
   img.wrap_t = GL_REPEAT;
   img.wrap_r = GL_REPEAT;
@@ -1181,6 +1213,7 @@ void bind_texture(const unsigned location, ddTextureData *tex_data) {
   glActiveTexture(GL_TEXTURE0 + location);
   glBindTexture(GL_TEXTURE_2D, tex_data->texture_handle);
 }
+
 
 void draw_instanced_vao(const ddVAOData *vao, const unsigned num_indices,
                         const unsigned instance_size) {

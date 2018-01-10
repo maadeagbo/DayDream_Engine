@@ -278,6 +278,7 @@ dd_array<ddQueryInfo> ddShader::query_uniforms() {
 void ddShader::use() {
   POW2_VERIFY_MSG(handle, "use::Shader program is null", 0);
   glUseProgram(handle->program);
+	POW2_VERIFY_MSG(!gl_error("use"), "Error making shader active", 0);
 }
 
 void ddShader::set_uniform(const int loc, const int data) {

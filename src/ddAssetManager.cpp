@@ -62,6 +62,37 @@ struct FbxEData {
   unsigned mat_idx;
 };
 
+/**
+ * \brief Create ddAgent from lua scripts
+ * \param L lua state
+ * \return Number of returned values to lua
+ */
+int dd_assets_create_agent(lua_State* L);
+/**
+ * \brief Create ddModelData from lua scripts
+ * \param L lua state
+ * \return Number of returned values to lua
+ */
+int dd_assets_create_mesh(lua_State* L);
+/**
+ * \brief Create ddCam from lua scripts
+ * \param L lua state
+ * \return Number of returned values to lua
+ */
+int dd_assets_create_cam(lua_State* L);
+/**
+ * \brief Create ddLBulb from lua scripts
+ * \param L lua state
+ * \return Number of returned values to lua
+ */
+int dd_assets_create_light(lua_State* L);
+/**
+ * \brief Create ddTex2D from lua scripts
+ * \param L lua state
+ * \return Number of returned values to lua
+ */
+int dd_assets_create_texture(lua_State* L);
+
 /// \brief Parse ddm file and load to ram
 /// \param filename Path to .ddm file
 /// \return ddModelData of input ddm file
@@ -138,6 +169,19 @@ void dd_assets_cleanup() {
       }
     }
   }
+}
+
+void dd_assets_log_lua_func(lua_State *L) {
+	// mesh creation
+	add_func_to_scripts(L, dd_assets_create_mesh, "load_ddm");
+	// camera creation
+	add_func_to_scripts(L, dd_assets_create_cam, "create_cam");
+	// light creation
+	add_func_to_scripts(L, dd_assets_create_light, "create_light");
+	// agent creation
+	add_func_to_scripts(L, dd_assets_create_agent, "create_agent");
+	// texture creation
+	add_func_to_scripts(L, dd_assets_create_texture, "create_texture");
 }
 
 int dd_assets_create_agent(lua_State *L) {
@@ -219,6 +263,7 @@ int dd_assets_create_agent(lua_State *L) {
   return 0;
 }
 
+
 int dd_assets_create_mesh(lua_State *L) {
   parse_lua_events(L, fb);
   ddModelData *new_mdata = nullptr;
@@ -240,6 +285,7 @@ int dd_assets_create_mesh(lua_State *L) {
   ddTerminal::f_post("[error]Failed to create new mesh");
   return 0;
 }
+
 
 int dd_assets_create_cam(lua_State *L) {
   parse_lua_events(L, fb);
@@ -267,6 +313,7 @@ int dd_assets_create_cam(lua_State *L) {
   return 0;
 }
 
+
 int dd_assets_create_light(lua_State *L) {
   parse_lua_events(L, fb);
   // get arguments and use them to create ddLBulb
@@ -291,6 +338,29 @@ int dd_assets_create_light(lua_State *L) {
   }
   ddTerminal::f_post("[error]Failed to create new light");
   return 0;
+}
+
+
+int dd_assets_create_texture(lua_State * L) {
+	parse_lua_events(L, fb);
+	// get arguments and use them to create ddLTex2D
+	ddTex2D *tex = nullptr;
+	// get arguments
+	const char *t_id = fb.get_func_val<const char>("id");
+	const char *path = fb.get_func_val<const char>("path");
+
+	if (t_id && path) {
+		tex = create_tex2D(path, t_id);
+
+		if (tex) {
+			// return generated texture id
+			lua_pushinteger(L, tex->id);
+			return 1;
+		}
+		ddTerminal::f_post("[error]Failed to create new texture <%s>", path);
+	}
+	ddTerminal::post("[error]Failed to create new texture");
+	return 0;
 }
 
 ddModelData *load_ddm(const char *filename) {
@@ -685,7 +755,11 @@ ddTex2D *create_tex2D(const char *path, const char *img_id) {
     return new_tex;
   }
 
+	// initialize
   ImageInfo img_info;
+	for (size_t i = 0; i < 6; i++) {
+		img_info.image_data[i] = nullptr;
+	}
 
   // find and load image to RAM
   img_info.path[0] = path;
@@ -703,6 +777,9 @@ ddTex2D *create_tex2D(const char *path, const char *img_id) {
   // create texture object and assign img_info
   new_tex = spawn_ddTex2D(tex_id);
   if (!new_tex) {  // failed to allocate
+		// delete soil image
+		SOIL_free_image_data(img_info.image_data[0]);
+		// report
     ddTerminal::f_post("[error]create_tex2D::Failed to create ddTex2D object");
     return new_tex;
   }

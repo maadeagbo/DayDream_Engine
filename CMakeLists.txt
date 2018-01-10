@@ -201,13 +201,13 @@ file(GLOB_RECURSE SOURCES 	"${CMAKE_SOURCE_DIR}/src/*.cpp"
 
 # add defines for engine resources
 add_definitions(
-	"-DROOT_DIR=\"${CMAKE_SOURCE_DIR}/\""
-	"-DRESOURCE_DIR=\"${CMAKE_SOURCE_DIR}/Resource/\""
-	"-DSHADER_DIR=\"${CMAKE_SOURCE_DIR}/Resource/Shaders/\""
-	"-DMESH_DIR=\"${CMAKE_SOURCE_DIR}/Resource/Meshes/\""
-	"-DTEX_DIR=\"${CMAKE_SOURCE_DIR}/Resource/Textures/\""
-	"-DPROJECT_DIR=\"${CMAKE_SOURCE_DIR}/Projects/\""
-	"-DFONTS_DIR=\"${CMAKE_SOURCE_DIR}/Resource/Fonts/\""
+	"-DROOT_DIR=\"${CMAKE_SOURCE_DIR}\""
+	"-DRESOURCE_DIR=\"${CMAKE_SOURCE_DIR}/Resource\""
+	"-DSHADER_DIR=\"${CMAKE_SOURCE_DIR}/Resource/Shaders\""
+	"-DMESH_DIR=\"${CMAKE_SOURCE_DIR}/Resource/Meshes\""
+	"-DTEX_DIR=\"${CMAKE_SOURCE_DIR}/Resource/Textures\""
+	"-DPROJECT_DIR=\"${CMAKE_SOURCE_DIR}/Projects\""
+	"-DFONTS_DIR=\"${CMAKE_SOURCE_DIR}/Resource/Fonts\""
 )
 if (MSVC)
 	# warning that pop up for strtok & fopen & std::copy

@@ -233,7 +233,7 @@ void ddTerminal::inTerminalHistory() {
   // read saved terminal history
   ddIO io_handle;
   cbuff<256> infile;
-  infile.format("%s%s", RESOURCE_DIR, "terminal_history.txt");
+  infile.format("%s/%s", RESOURCE_DIR, "terminal_history.txt");
   if (!io_handle.open(infile.str(), ddIOflag::READ)) {
     return;
   }
@@ -264,7 +264,7 @@ void ddTerminal::outTerminalHistory() {
   // write out terminal history
   ddIO io_handle;
   cbuff<256> outfile;
-  outfile.format("%s%s", RESOURCE_DIR, "terminal_history.txt");
+  outfile.format("%s/%s", RESOURCE_DIR, "terminal_history.txt");
   if (!io_handle.open(outfile.str(), ddIOflag::WRITE)) {
     return;
   }

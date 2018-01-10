@@ -36,6 +36,9 @@ void ddEngine::startup_lua() {
   main_q.set_lua_ptr(main_lstate);
 
   register_lfuncs();
+
+	// register globals from ddRenderer 
+	ddRenderer::init_lua_globals(main_lstate);
 }
 
 void ddEngine::dd_open_window(const size_t width, const size_t height,
@@ -100,6 +103,7 @@ void ddEngine::window_load_GLFW(EngineMode mode) {
   glfwSetErrorCallback(error_callback_glfw);
   glfwSetMouseButtonCallback(main_window_glfw, dd_mouse_click_callback);
   glfwSetScrollCallback(main_window_glfw, dd_scroll_callback);
+	glfwSetCharCallback(main_window_glfw, ImGui_ImplGlfwGL3_CharCallback);
 
   // initialize GLFW3
   ImGui_ImplGlfwGL3_Init(main_window_glfw, false);
@@ -157,7 +161,7 @@ bool ddEngine::level_select(const size_t w, const size_t h) {
   dd_open_window(w, h, EngineMode::DD_GPU_INFO | EngineMode::DD_VSYNC);
   // grab levels from startup script
   cbuff<512> startup_script;
-  startup_script.format("%sscripts/startup.lua", ROOT_DIR);
+  startup_script.format("%s/scripts/startup.lua", RESOURCE_DIR);
   bool file_loaded = parse_luafile(main_lstate, startup_script.str());
 
   // create array of levels
@@ -359,14 +363,8 @@ void ddEngine::load() {
 void ddEngine::register_lfuncs() {
   // add ddTerminal print func
   add_func_to_scripts(main_lstate, script_print, "dd_print");
-  // add ddModelData creation function
-  add_func_to_scripts(main_lstate, dd_assets_create_mesh, "load_ddm");
-  // camera creation
-  add_func_to_scripts(main_lstate, dd_assets_create_cam, "create_cam");
-  // light creation
-  add_func_to_scripts(main_lstate, dd_assets_create_light, "create_light");
-  // agent creation
-  add_func_to_scripts(main_lstate, dd_assets_create_agent, "create_agent");
+  // add asset function
+	dd_assets_log_lua_func(main_lstate);
 }
 
 void ddEngine::update_GLFW() {
@@ -418,6 +416,8 @@ void ddEngine::run() {
 /// \brief Clean up engine resources
 void ddEngine::shutdown() {
   ddTerminal::outTerminalHistory();  // save history
+	// render engine
+	ddRenderer::shutdown();
   // shutdown glfw
   glfwTerminate();
 }
@@ -471,6 +471,13 @@ void ddEngine::update(DD_LEvent &_event) {
     // set useful lua globals
     set_lua_global(main_lstate, "WINDOW_WIDTH", (int64_t)window_w);
     set_lua_global(main_lstate, "WINDOW_HEIGHT", (int64_t)window_h);
+
+		// initialize rendering engine
+		ddRenderer::initialize((unsigned)window_w, (unsigned)window_h);
+
+		// initialize selected level's assets for render
+		ddRenderer::level_init();
+
   } else if (e_sig == frame_enter_hash.gethash()) {  // setup new frame
     // clear framebuffer
     ddGPUFrontEnd::clear_screen();
@@ -481,7 +488,6 @@ void ddEngine::update(DD_LEvent &_event) {
     ImGui_ImplGlfwGL3_NewFrame();
     // poll GLFW events
     update_GLFW();
-    // update terminal button presses
 
     // run scene graph
     // ResSpace::updateSceneGraph(&main_res, main_timer.getTimeFloat());
@@ -497,7 +503,7 @@ void ddEngine::update(DD_LEvent &_event) {
 
     if (load_screen) {
       // Show load screen
-      // main_renderer.DrawLoadScreen(main_timer.getTimeFloat());
+			ddRenderer::render_load_screen();
 
       // send frame exit event
       new_event.handle = frame_exit_hash;
