@@ -289,7 +289,7 @@ void dd_key_callback(GLFWwindow* window, int key, int scancode, int action,
   if (action == GLFW_RELEASE) {
     edit_key(key, false, global_input.order_tracker);  // key up
   }
-	ImGui_ImplGlfwGL3_KeyCallback(window, key, scancode, action, mods);
+  ImGui_ImplGlfwGL3_KeyCallback(window, key, scancode, action, mods);
 }
 
 void dd_mouse_pos_callback(GLFWwindow* window, double xpos, double ypos) {
@@ -344,11 +344,11 @@ void dd_mouse_click_callback(GLFWwindow* window, int button, int action,
     default:
       break;
   }
-	ImGui_ImplGlfwGL3_MouseButtonCallback(window, button, action, mods);
+  ImGui_ImplGlfwGL3_MouseButtonCallback(window, button, action, mods);
 }
 
 void dd_scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
   global_input.keys[(unsigned)DD_Keys::MOUSE_SCROLL].order = (int)yoffset;
 
-	ImGui_ImplGlfwGL3_ScrollCallback(window, xoffset, yoffset);
+  ImGui_ImplGlfwGL3_ScrollCallback(window, xoffset, yoffset);
 }

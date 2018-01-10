@@ -1,11 +1,11 @@
 #include "ddRenderEngine.h"
+#include <SOIL.h>
 #include "GPUFrontEnd.h"
 #include "ddAssetManager.h"
 #include "ddFileIO.h"
 #include "ddShader.h"
 #include "ddShaderReflect.h"
 #include "ddTerminal.h"
-#include <SOIL.h>
 
 enum class ShaderType : unsigned { VERT = 0, FRAG, COMP, GEOM };
 
@@ -208,12 +208,12 @@ void initialize(const unsigned width, const unsigned height) {
 
   // set up load screen texture(s)
   ddTex2D *tex = find_ddTex2D(load_screen_tex.gethash());
-  POW2_VERIFY_MSG(tex != nullptr, "Load screen texture not found");
+  POW2_VERIFY_MSG(tex != nullptr, "Load screen texture not found", 0);
   bool success = ddGPUFrontEnd::generate_texture2D_RGBA8_LR(tex->image_info);
-	POW2_VERIFY_MSG(success == true, "Load screen texture not generated");
-	// cleanup ram
-	SOIL_free_image_data(tex->image_info.image_data[0]);
-	tex->image_info.image_data[0] = nullptr;
+  POW2_VERIFY_MSG(success == true, "Load screen texture not generated", 0);
+  // cleanup ram
+  SOIL_free_image_data(tex->image_info.image_data[0]);
+  tex->image_info.image_data[0] = nullptr;
 
   // set up load screen MVP matrices
   load_rot_mat = glm::mat4();
@@ -222,16 +222,7 @@ void initialize(const unsigned width, const unsigned height) {
       glm::scale(load_scale_mat, glm::vec3(width_factor, 1.0, 1.0));
   load_scale_mat = glm::scale(load_scale_mat, glm::vec3(0.1f));
   load_trans_mat = glm::translate(glm::mat4(), glm::vec3(0.9f, -0.85f, 0.0f));
-}
 
-void shutdown() {
-  // shaders
-  for (auto &idx : map_shaders) {
-    shaders[idx.second].cleanup();
-  }
-}
-
-void level_init() {
   // load all shaders
   for (auto &idx : map_shaders) {
     ddShader *sh = &shaders[idx.second];
@@ -257,34 +248,41 @@ void level_init() {
   }
 }
 
+void shutdown() {
+  // shaders
+  for (auto &idx : map_shaders) {
+    shaders[idx.second].cleanup();
+  }
+}
+
 void render_load_screen() {
   // rotate load circle
   if (ddTime::get_time_float() > load_ticks + 0.1f) {
     load_ticks = ddTime::get_time_float();
-    load_rot_mat = glm::rotate(load_rot_mat, glm::radians(-30.f),
-                               glm::vec3(0.f, 0.f, 1.f));
+    load_rot_mat =
+        glm::rotate(load_rot_mat, glm::radians(30.f), glm::vec3(0.f, 0.f, 1.f));
   }
 
   // get shader
   ddShader *sh = find_ddShader(postp_sh.gethash());
-  POW2_VERIFY_MSG(sh != nullptr, "Post processing shader missing");
-	sh->use();
+  POW2_VERIFY_MSG(sh != nullptr, "Post processing shader missing", 0);
+  sh->use();
 
   // set uniforms
   sh->set_uniform((int)RE_PostPr::MVP_m4x4,
                   load_trans_mat * load_scale_mat * load_rot_mat);
-	sh->set_uniform((int)RE_PostPr::DoToneMap_b, false);
-	sh->set_uniform((int)RE_PostPr::AveLum_f, 1.f);
-	sh->set_uniform((int)RE_PostPr::Exposure_f, 0.75f);
-	sh->set_uniform((int)RE_PostPr::White_f, 0.97f);
+  sh->set_uniform((int)RE_PostPr::DoToneMap_b, false);
+  sh->set_uniform((int)RE_PostPr::AveLum_f, 1.f);
+  sh->set_uniform((int)RE_PostPr::Exposure_f, 0.75f);
+  sh->set_uniform((int)RE_PostPr::White_f, 0.97f);
 
-	// bind texture
-	ddTex2D *tex = find_ddTex2D(load_screen_tex.gethash());
-	POW2_VERIFY_MSG(tex != nullptr, "Load screen texture missing");
-	ddGPUFrontEnd::bind_texture(0, tex->image_info.tex_buff);
-	sh->set_uniform((int)RE_PostPr::ColorTex_smp2d, 0);
+  // bind texture
+  ddTex2D *tex = find_ddTex2D(load_screen_tex.gethash());
+  POW2_VERIFY_MSG(tex != nullptr, "Load screen texture missing", 0);
+  ddGPUFrontEnd::bind_texture(0, tex->image_info.tex_buff);
+  sh->set_uniform((int)RE_PostPr::ColorTex_smp2d, 0);
 
-	ddGPUFrontEnd::render_quad();
+  ddGPUFrontEnd::render_quad();
 }
 
 }  // namespace ddRenderer

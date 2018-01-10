@@ -187,19 +187,18 @@ bool check_stack_nil(lua_State *L, int idx) {
 lua_State *init_lua_state() {
   lua_State *L = luaL_newstate();  // opens lua
   if (L) {
-    luaL_openlibs(L);                  // opens standard libraries
-		cbuff<256> s_dir;
-		s_dir.format("%s/", ROOT_DIR);
-		append_package_path(L, s_dir.str());  // add root path to scripts
+    luaL_openlibs(L);  // opens standard libraries
+    cbuff<256> s_dir;
+    s_dir.format("%s/", ROOT_DIR);
+    append_package_path(L, s_dir.str());  // add root path to scripts
 
     // Add global variables for use in scripts
-		set_lua_global(L, "ROOT_DIR", ROOT_DIR);
-		s_dir.format("%s/%s", RESOURCE_DIR, "scripts");
-		set_lua_global(L, "SCRIPTS_DIR", s_dir.str());
+    set_lua_global(L, "ROOT_DIR", ROOT_DIR);
+    s_dir.format("%s/%s", RESOURCE_DIR, "scripts");
+    set_lua_global(L, "SCRIPTS_DIR", s_dir.str());
 
-
-		s_dir.format("%s/", RESOURCE_DIR);
-		append_package_path(L, s_dir.str());  
+    s_dir.format("%s/", RESOURCE_DIR);
+    append_package_path(L, s_dir.str());
 
 #ifdef _WIN32
     set_lua_global(L, "WIN32", true);

@@ -12,8 +12,8 @@
 #include "ddIncludes.h"
 #include "ddInput.h"
 #include "ddPhysicsEngine.h"
-#include "ddTimer.h"
 #include "ddRenderEngine.h"
+#include "ddTimer.h"
 
 enum class GameState { LOADING, PAUSE, ACTIVE, NUM_STATES };
 
@@ -44,7 +44,7 @@ struct ddEngine {
     lua_close(main_lstate);
     main_physics.cleanup_world();
     // clean up assets
-    dd_assets_cleanup();
+    ddAssets::cleanup();
   }
 
   void clean_up_GLFW();

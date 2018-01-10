@@ -37,8 +37,8 @@ void ddEngine::startup_lua() {
 
   register_lfuncs();
 
-	// register globals from ddRenderer 
-	ddRenderer::init_lua_globals(main_lstate);
+  // register globals from ddRenderer
+  ddRenderer::init_lua_globals(main_lstate);
 }
 
 void ddEngine::dd_open_window(const size_t width, const size_t height,
@@ -103,7 +103,7 @@ void ddEngine::window_load_GLFW(EngineMode mode) {
   glfwSetErrorCallback(error_callback_glfw);
   glfwSetMouseButtonCallback(main_window_glfw, dd_mouse_click_callback);
   glfwSetScrollCallback(main_window_glfw, dd_scroll_callback);
-	glfwSetCharCallback(main_window_glfw, ImGui_ImplGlfwGL3_CharCallback);
+  glfwSetCharCallback(main_window_glfw, ImGui_ImplGlfwGL3_CharCallback);
 
   // initialize GLFW3
   ImGui_ImplGlfwGL3_Init(main_window_glfw, false);
@@ -278,7 +278,7 @@ void ddEngine::load() {
   main_physics.initialize_world();
 
   // Initialize resource manager
-  dd_assets_initialize(main_physics.world);
+  ddAssets::initialize(main_physics.world);
 
   // set up math/physics library
   // DD_MathLib::setResourceBin(&main_res);
@@ -353,6 +353,7 @@ void ddEngine::load() {
   main_q.subscribe(frame_enter_hash.gethash(), sys_engine_hash);
   main_q.subscribe(frame_exit_hash.gethash(), sys_engine_hash);
   main_q.subscribe(load_hash.gethash(), sys_engine_hash);
+  main_q.subscribe(lvl_init_hash.gethash(), sys_engine_hash);
   main_q.subscribe(lvl_asset_hash.gethash(), sys_engine_hash);
   main_q.subscribe(init_screen_hash.gethash(), sys_engine_hash);
 
@@ -364,7 +365,7 @@ void ddEngine::register_lfuncs() {
   // add ddTerminal print func
   add_func_to_scripts(main_lstate, script_print, "dd_print");
   // add asset function
-	dd_assets_log_lua_func(main_lstate);
+  ddAssets::log_lua_func(main_lstate);
 }
 
 void ddEngine::update_GLFW() {
@@ -416,8 +417,8 @@ void ddEngine::run() {
 /// \brief Clean up engine resources
 void ddEngine::shutdown() {
   ddTerminal::outTerminalHistory();  // save history
-	// render engine
-	ddRenderer::shutdown();
+  // render engine
+  ddRenderer::shutdown();
   // shutdown glfw
   glfwTerminate();
 }
@@ -472,11 +473,8 @@ void ddEngine::update(DD_LEvent &_event) {
     set_lua_global(main_lstate, "WINDOW_WIDTH", (int64_t)window_w);
     set_lua_global(main_lstate, "WINDOW_HEIGHT", (int64_t)window_h);
 
-		// initialize rendering engine
-		ddRenderer::initialize((unsigned)window_w, (unsigned)window_h);
-
-		// initialize selected level's assets for render
-		ddRenderer::level_init();
+    // initialize rendering engine
+    ddRenderer::initialize((unsigned)window_w, (unsigned)window_h);
 
   } else if (e_sig == frame_enter_hash.gethash()) {  // setup new frame
     // clear framebuffer
@@ -503,7 +501,7 @@ void ddEngine::update(DD_LEvent &_event) {
 
     if (load_screen) {
       // Show load screen
-			ddRenderer::render_load_screen();
+      ddRenderer::render_load_screen();
 
       // send frame exit event
       new_event.handle = frame_exit_hash;
@@ -539,6 +537,10 @@ void ddEngine::update(DD_LEvent &_event) {
   } else if (e_sig == lvl_init_hash.gethash()) {  // post lvl init function
     // add functionality to set active skybox in scripts
     // add function from ddEngine that sets: main_renderer.m_lvl_cubMap
+
+    // load assets to gpu
+    ddAssets::load_to_gpu();
+
   } else if (e_sig == lvl_asset_hash.gethash()) {  // post resource load
     // add async level init
     _event.handle = main_q.lvl_call_i;

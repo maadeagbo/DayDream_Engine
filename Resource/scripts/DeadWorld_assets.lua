@@ -9,6 +9,22 @@ function load()
 	mkey = load_ddm(arg)
 	dd_print( {["output"] = "Created mesh: "..mkey} )
 	
+	arg["path"] = ROOT_DIR.."/Resource/Meshes/primitives/cylinder_10.ddm"
+	mkey = load_ddm(arg)
+	dd_print( {["output"] = "Created mesh: "..mkey} )
+
+	arg["path"] = ROOT_DIR.."/Resource/Meshes/primitives/plane.ddm"
+	mkey = load_ddm(arg)
+	dd_print( {["output"] = "Created mesh: "..mkey} )
+
+	arg["path"] = ROOT_DIR.."/Resource/Meshes/primitives/sphere_10.ddm"
+	mkey = load_ddm(arg)
+	dd_print( {["output"] = "Created mesh: "..mkey} )
+
+	arg["path"] = ROOT_DIR.."/Resource/Meshes/primitives/tempmesh.ddm"
+	mkey = load_ddm(arg)
+	dd_print( {["output"] = "Created mesh: "..mkey} )
+
 	-- camera
 	arg = {
 		["id"] = "cam_1"

@@ -96,19 +96,26 @@
   freelist fl_##CONTAINER;                    \
   dd_array<TYPE> CONTAINER(C_SIZE);
 
+namespace ddAssets {
 /**
  * \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine
  */
-void dd_assets_initialize(btDiscreteDynamicsWorld* physics_world);
+void initialize(btDiscreteDynamicsWorld* physics_world);
 /**
  * \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine
  */
-void dd_assets_cleanup();
+void cleanup();
 
 /**
  * \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine
  */
-void dd_assets_log_lua_func(lua_State *L);
+void log_lua_func(lua_State* L);
+
+/**
+ * \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine
+ */
+void load_to_gpu();
+};
 
 ASSET_DECL(ddAgent)
 ASSET_DECL(ddCam)
