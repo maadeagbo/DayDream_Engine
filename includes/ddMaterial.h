@@ -59,7 +59,7 @@ struct ddMat {
   size_t id;
   /// \brief Diffuse color
   glm::vec4 base_color;
-  /// \brief Attached textures (engine ids)
+  /// \brief Attached textures (indexed w/ TexType enum)
   dd_array<size_t> textures;
   /// \brief Specular component
   float spec_value;

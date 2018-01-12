@@ -111,9 +111,9 @@ struct ddCam {
    */
   size_t id;
   /**
-   * \brief Engine info for scene graph
+   * \brief Object camera is attached to
    */
-  ParentInfo parent;
+  size_t parent;
   /**
    * \brief Horizontal field of view
    */
@@ -130,6 +130,10 @@ struct ddCam {
    * \brief VR camera left/right eye distance in meters
    */
   float eye_dist = 0.f;
+  /**
+   * \brief VR camera left/right eye distance in meters
+   */
+  unsigned width = 0, height = 0;
   /**
    * \brief Frustum information. Set up at initialization (position: 0, 0, 0)
    */

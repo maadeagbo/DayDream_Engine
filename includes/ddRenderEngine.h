@@ -25,4 +25,9 @@ void shutdown();
  * \brief Render load screen
  */
 void render_load_screen();
+
+/*
+* \brief Render 3D meshes in world
+*/
+void draw_world();
 };

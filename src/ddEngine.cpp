@@ -20,6 +20,8 @@ const cbuff<32> exit_hash("sys_exit");
 const cbuff<32> frame_enter_hash("frame_init");
 const cbuff<32> frame_exit_hash("frame_exit");
 const cbuff<32> load_hash("load_screen");
+const cbuff<32> draw_hash("draw_world");
+const cbuff<32> physics_hash("physics_step");
 const cbuff<32> lvl_init_hash("_lvl_init_done");
 const cbuff<32> lvl_asset_hash("_load_resource_done");
 const cbuff<32> terminal_hash("poll_terminal");
@@ -355,7 +357,9 @@ void ddEngine::load() {
   main_q.subscribe(load_hash.gethash(), sys_engine_hash);
   main_q.subscribe(lvl_init_hash.gethash(), sys_engine_hash);
   main_q.subscribe(lvl_asset_hash.gethash(), sys_engine_hash);
-  main_q.subscribe(init_screen_hash.gethash(), sys_engine_hash);
+	main_q.subscribe(init_screen_hash.gethash(), sys_engine_hash);
+	main_q.subscribe(draw_hash.gethash(), sys_engine_hash);
+	main_q.subscribe(physics_hash.gethash(), sys_engine_hash);
 
   // load terminal history
   ddTerminal::inTerminalHistory();
@@ -385,6 +389,9 @@ void ddEngine::update_GLFW() {
 /* Call in main function to begin up game loop
  */
 void ddEngine::run() {
+	// set certain default parameters for assets
+	ddAssets::default_params(window_w, window_h);
+
   // push some events to kick start the queue
   DD_LEvent _event;
 
@@ -419,6 +426,8 @@ void ddEngine::shutdown() {
   ddTerminal::outTerminalHistory();  // save history
   // render engine
   ddRenderer::shutdown();
+	// clean up assets
+	ddAssets::cleanup();
   // shutdown glfw
   glfwTerminate();
 }
@@ -510,7 +519,23 @@ void ddEngine::update(DD_LEvent &_event) {
       // send next event in sequence
       // terminal, VR, AI, level update,
       // post update (periodic update for scripts),
-      // physics, animation, render, frame exit
+      // physics, animation, render
+
+			// send lvl update event
+			new_event.handle = main_q.lvl_call;
+			q_push(new_event);
+
+			// send physics event
+			new_event.handle = physics_hash;
+			q_push(new_event);
+
+			// send render event
+			new_event.handle = draw_hash;
+			q_push(new_event);
+
+			// send frame exit event
+			new_event.handle = frame_exit_hash;
+			q_push(new_event);
     }
   } else if (e_sig == frame_exit_hash.gethash()) {  // exit frame
     // query terminal
@@ -528,7 +553,7 @@ void ddEngine::update(DD_LEvent &_event) {
 
   } else if (e_sig == load_hash.gethash()) {  // load screen
     load_screen ^= 1;
-  } else if (e_sig == process_terminal_hash.gethash()) {  // process queue
+  } else if (e_sig == process_terminal_hash.gethash()) {  // process terminal
     bool more_cmds = true;
     while (more_cmds) {
       const char *cmd = ddTerminal::pollBuffer();
@@ -541,9 +566,21 @@ void ddEngine::update(DD_LEvent &_event) {
     // load assets to gpu
     ddAssets::load_to_gpu();
 
+		// turn off load screen
+		DD_LEvent new_event;
+		new_event.handle = load_hash;
+		q_push(new_event);
+
   } else if (e_sig == lvl_asset_hash.gethash()) {  // post resource load
     // add async level init
-    _event.handle = main_q.lvl_call_i;
-    q_push(_event);
-  }
+		DD_LEvent new_event;
+		new_event.handle = main_q.lvl_call_i;
+    q_push(new_event);
+	} else if (e_sig == draw_hash.gethash()) {			// draw call
+		// render 3D world
+		ddRenderer::draw_world();
+	} else if (e_sig == physics_hash.gethash()) {		// physics update
+		// physics simulation
+		main_physics.step_simulate(ddTime::get_avg_frame_time());
+	}
 }

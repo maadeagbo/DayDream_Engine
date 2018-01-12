@@ -585,7 +585,7 @@ void set_instance_buffer_contents(const ddInstBufferData *ibuff_ptr,
                                   const unsigned offset, void *data) {
   POW2_VERIFY_MSG(ibuff_ptr != nullptr, "Instance buffer is null", 0);
 
-  if (inst_col) {
+  if (!inst_col) {
     // fill in instance buffer
     glBindBuffer(GL_ARRAY_BUFFER, ibuff_ptr->instance_buffer);
     glBufferSubData(GL_ARRAY_BUFFER, offset, byte_size, data);

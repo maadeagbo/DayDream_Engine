@@ -200,7 +200,6 @@ void ddQueue::process_queue() {
     // check if event is level call
     else if (_event.handle == lvl_call) {
       callback_lua(L, _event, fb, lvl_update.func_id, lvl_update.global_id);
-      // produce event after call (blank event or spatial event)
     }
     // check if event is lvl init call
     else if (_event.handle == lvl_call_i) {

@@ -116,6 +116,12 @@ struct ParentInfo {
 };
 
 // System handles
-
 const size_t sys_engine_hash = getCharHash("ddEngine");
 const size_t sys_terminal_hash = getCharHash("ddTerminal");
+
+/** \brief Useful world characteristics */
+static const glm::vec3 world_front = glm::vec3(0.f, 0.f, -1.f);
+static const glm::vec3 global_Xv3 = glm::vec3(1.f, 0.f, 0.f);
+static const glm::vec3 global_Yv3 = glm::vec3(0.f, 1.f, 0.f);
+static const glm::vec3 global_Zv3 = glm::vec3(0.f, 0.f, 1.f);
+static const glm::vec4 global_Wv4 = glm::vec4(0.f, 0.f, 0.f, 1.f);

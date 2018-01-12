@@ -279,3 +279,15 @@ int get_lua_object(lua_State *L);
  * \brief Add simple c/c++ functions to lua scripts
  */
 void add_func_to_scripts(lua_State *L, lua_CFunction func, const char *name);
+
+/**
+ * \brief Add glm::vec3 to stack
+ */
+void push_vec3_to_lua(lua_State *L, const float x, const float y,
+                      const float z);
+
+/**
+ * \brief Add glm::vec4 to stack
+ */
+void push_vec4_to_lua(lua_State *L, const float x, const float y, const float z,
+                      const float w);

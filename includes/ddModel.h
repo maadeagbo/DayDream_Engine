@@ -100,6 +100,8 @@ struct ModelIDs {
   float _near = 0.f, _far = 100.f;
   /// \brief Mesh id
   size_t model;
+	/// \brief Material id
+	dd_array<size_t> material;
   /// \brief Handles for gpu object data
   dd_array<ddVAOData*> vao_handles;
   /// \brief Marks whether the mesh is skinned for animation

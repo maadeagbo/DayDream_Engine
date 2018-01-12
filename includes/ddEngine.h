@@ -43,8 +43,6 @@ struct ddEngine {
   ~ddEngine() {
     lua_close(main_lstate);
     main_physics.cleanup_world();
-    // clean up assets
-    ddAssets::cleanup();
   }
 
   void clean_up_GLFW();

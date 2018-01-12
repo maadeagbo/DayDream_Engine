@@ -2,89 +2,97 @@
 
 #include "ddModel.h"
 
-/**
- * \brief Container for manipulating transforms
- */
+/** \brief Container for manipulating transforms */
 struct ddBody {
   /**
    * \brief Assigned on agent creation. Deleted on agent destruction
    */
-  btRigidBody* bt_bod;
+  btRigidBody *bt_bod = nullptr;
   /**
-   * \brief Initialized on mesh import or set to default size (contains scale)
+   * \brief Initialized on mesh import or set to default size
    */
-  btCollisionShape* bt_bbox;
+  //btCollisionShape *bt_bbox = nullptr;
+	/**
+   * \brief Modify object scale (and affect physics using btCollisionShape)
+   */
+	glm::vec3 scale = glm::vec3(1.f);
 };
 
 namespace ddBodyFuncs {
+	/** \brief Simple axis-alligned bounding box */
+	struct AABB { glm::vec3 min, max; };
+/**
+ * \brief Local-space position
+ */
+glm::vec3 pos(const ddBody *bod);
+/**
+ * \brief World-space position
+ */
+glm::vec3 pos_ws(const ddBody *bod);
+/**
+ * \brief Local-space rotation
+ */
+glm::quat rot(const ddBody *bod);
+/**
+ * \brief World-space rotation
+ */
+glm::quat rot_ws(const ddBody *bod);
 /**
  * \brief Forward direction based on world (0, 0, -1)
  */
-glm::vec3 ForwardDir();
+glm::vec3 forward_dir(const ddBody *bod, const glm::quat q);
 /**
  * \brief Right direction based on world (0, 0, -1)
  */
-glm::vec3 RightDir();
+glm::vec3 right_dir(ddBody *bod);
 /**
  * \brief Up direction based on world (0, 0, -1)
  */
-glm::vec3 UpDir();
+glm::vec3 up_dir(ddBody *bod);
 /**
  * \brief Change btRigidBody's velocity
  */
-void UpdateVelocity(const glm::vec3& vel);
+void update_velocity(ddBody *bod, const glm::vec3& vel);
 /**
  * \brief Change btRigidBody's position
  */
-void UpdatePosition(const glm::vec3& pos);
+void update_pos(ddBody *bod, const glm::vec3& pos);
 /**
- * \brief Change btRigidBody's rotation
+ * \brief Change btRigidBody's local rotation
  */
-void UpdateRotation(const glm::vec3& rot);
+void rotate(ddBody *bod, const glm::vec3& _euler);
 /**
  * \brief Change transform's scale
  */
-void UpdateScale(const glm::vec3& _scale);
+void update_scale(ddBody *bod, const glm::vec3& _scale);
 /**
- * \brief convert btRigidBody and scale into model matrix
+ * \brief convert btRigidBody and scale into model matrix (uses world-space)
  */
-glm::mat4 getModelMat();
+glm::mat4 get_model_mat(ddBody *bod);
+/**
+ * \brief Get AABB from btRigidBody
+ */
+AABB get_aabb(ddBody *bod);
 }
 
-/**
- * \brief Container for instance manipulation
- */
+/** \brief Container for instance manipulation */
 struct ddInstInfo {
   /**
    * \brief gpu instance buffer
    */
-  ddInstBufferData* inst_buff;
+  ddInstBufferData* inst_buff = nullptr;
+  /**
+   * \brief instanced matrix buffer
+   */
+  dd_array<glm::mat4> m4x4 = dd_array<glm::mat4>(1);
   /**
    * \brief instanced color buffer
    */
-  dd_array<glm::vec3> inst_v3;
-  /**
-   * \brief Transform info
-   */
-  dd_array<ddBody> body;
+  dd_array<glm::vec3> v3 = dd_array<glm::vec3>(1);
 };
 
-/**
- * brief Container for Render settings and buffers
- */
+/** \brief Container for Render settings and buffers */
 struct ddRendInfo {
-  /**
-   * \brief matrix buffer for frame manipulation
-   */
-  dd_array<glm::mat4> f_m4x4;
-  /**
-   * \brief color buffer for frame manipulation
-   */
-  dd_array<glm::vec3> f_v3;
-  /**
-   * \brief indices into matrix buffer for frame manipulation
-   */
-  dd_array<unsigned> f_cull;
   /**
    * \brief per frame global pose matrix for rendering
    */
@@ -134,4 +142,8 @@ struct ddAgent {
    * \brief Render information
    */
   ddRendInfo rend;
+	/**
+	* \brief Transform info
+	*/
+	ddBody body;
 };

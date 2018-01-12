@@ -105,7 +105,10 @@ void initialize(btDiscreteDynamicsWorld* physics_world);
  * \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine
  */
 void cleanup();
-
+/**
+ * \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine
+ */
+void default_params(const unsigned scr_width, const unsigned scr_height);
 /**
  * \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine
  */
@@ -115,7 +118,23 @@ void log_lua_func(lua_State* L);
  * \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine
  */
 void load_to_gpu();
-};
+
+/**
+ * \brief Get currently active camera (selects to 1st active camera it finds)
+ */
+ddCam* get_active_cam();
+
+};  // namespace ddAssets
+
+namespace ddSceneManager {
+
+/**
+ * \brief Cull objects outside of camera frustum
+ * \return returns array if agent ids
+ */
+void cull_objects(const FrustumBox fr, const glm::mat4 view_m,
+                  dd_array<ddAgent*>& _agents);
+}  // namespace ddSceneManager
 
 ASSET_DECL(ddAgent)
 ASSET_DECL(ddCam)
