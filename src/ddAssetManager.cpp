@@ -104,6 +104,7 @@ int get_agent_rot_ls(lua_State *L);
 int get_agent_rot_ws(lua_State *L);
 int set_agent_pos(lua_State *L);
 int set_agent_rot(lua_State *L);
+int set_agent_scale(lua_State *L);
 
 /// \brief Parse ddm file and load to ram
 /// \param filename Path to .ddm file
@@ -232,6 +233,8 @@ void log_lua_func(lua_State *L) {
   add_func_to_scripts(L, get_agent_rot_ls, "get_agent_ls_rot");
   // manipulate agent information
   add_func_to_scripts(L, set_agent_pos, "set_agent_pos");
+  add_func_to_scripts(L, set_agent_rot, "set_agent_rot");
+  add_func_to_scripts(L, set_agent_scale, "set_agent_scale");
 }
 
 void load_to_gpu() {
@@ -307,76 +310,75 @@ ddCam *get_active_cam() {
 namespace ddSceneManager {
 
 void cull_objects(const FrustumBox fr, const glm::mat4 view_m,
-									dd_array<ddAgent*>& _agents) {
-	/** \brief Get max corner of AAABB based on frustum face normal */
-	auto max_aabb_corner = [](ddBodyFuncs::AABB bbox, const glm::vec3 normal) {
-		glm::vec3 new_max = bbox.min;
-		if (normal.x >= 0) {
-			new_max.x = bbox.max.x;
-		}
-		if (normal.y >= 0) {
-			new_max.y = bbox.max.y;
-		}
-		if (normal.z >= 0) {
-			new_max.z = bbox.max.z;
-		}
-		return new_max;
-	};
-	/** \brief Get min corner of AAABB based on frustum face normal */
-	auto min_aabb_corner = [](ddBodyFuncs::AABB bbox, const glm::vec3 normal) {
-		glm::vec3 new_min = bbox.max;
-		if (normal.x >= 0) {
-			new_min.x = bbox.min.x;
-		}
-		if (normal.y >= 0) {
-			new_min.y = bbox.min.y;
-		}
-		if (normal.z >= 0) {
-			new_min.z = bbox.min.z;
-		}
-		return new_min;
-	};
-	/** \brief Frustum cull function */
-	auto cpu_frustum_cull = [&](ddBodyFuncs::AABB bbox) {
-		for (unsigned i = 0; i < 6; i++) {
-			glm::vec3 fr_norm = fr.normals[i];
-			float fr_dist = fr.d[i];
-			// check if positive vertex is outside (positive vert depends on normal 
-			// of the plane) 
-			glm::vec3 max_vert = max_aabb_corner(bbox, fr_norm);
-			// if _dist is negative, point is located behind frustum plane (reject)
-			float _dist = glm::dot(fr_norm, max_vert) + fr_dist;
-			if (_dist < 0.0001f) {
-				return false; // must not fail any plane test
-			}
-		}
-		return true;
-	};
+                  dd_array<ddAgent *> &_agents) {
+  /** \brief Get max corner of AAABB based on frustum face normal */
+  auto max_aabb_corner = [](ddBodyFuncs::AABB bbox, const glm::vec3 normal) {
+    glm::vec3 new_max = bbox.min;
+    if (normal.x >= 0) {
+      new_max.x = bbox.max.x;
+    }
+    if (normal.y >= 0) {
+      new_max.y = bbox.max.y;
+    }
+    if (normal.z >= 0) {
+      new_max.z = bbox.max.z;
+    }
+    return new_max;
+  };
+  /** \brief Get min corner of AAABB based on frustum face normal
+  auto min_aabb_corner = [](ddBodyFuncs::AABB bbox, const glm::vec3 normal) {
+    glm::vec3 new_min = bbox.max;
+    if (normal.x >= 0) {
+      new_min.x = bbox.min.x;
+    }
+    if (normal.y >= 0) {
+      new_min.y = bbox.min.y;
+    }
+    if (normal.z >= 0) {
+      new_min.z = bbox.min.z;
+    }
+    return new_min;
+  };
+  */
+  /** \brief Frustum cull function */
+  auto cpu_frustum_cull = [&](ddBodyFuncs::AABB bbox) {
+    for (unsigned i = 0; i < 6; i++) {
+      glm::vec3 fr_norm = fr.normals[i];
+      float fr_dist = fr.d[i];
+      // check if positive vertex is outside (positive vert depends on normal
+      // of the plane)
+      glm::vec3 max_vert = max_aabb_corner(bbox, fr_norm);
+      // if _dist is negative, point is located behind frustum plane (reject)
+      float _dist = glm::dot(fr_norm, max_vert) + fr_dist;
+      if (_dist < 0.0001f) {
+        return false;  // must not fail any plane test
+      }
+    }
+    return true;
+  };
 
-	// null the array
-	DD_FOREACH(ddAgent*, ag, _agents) {
-		*ag.ptr = nullptr;
-	}
-  
-	// can be performed w/ compute shader
-	// delegating to cpu for now
-	unsigned ag_tracker = 0;
+  // null the array
+  DD_FOREACH(ddAgent *, ag, _agents) { *ag.ptr = nullptr; }
+
+  // can be performed w/ compute shader
+  // delegating to cpu for now
+  unsigned ag_tracker = 0;
   for (auto &idx : map_b_agents) {
     ddAgent *ag = &b_agents[idx.second];
 
     // check if agent has mesh
     if (ag->mesh.size() > 0) {
       // get AABB from physics
-			ddBodyFuncs::AABB bbox = ddBodyFuncs::get_aabb(&ag->body);
-			if (cpu_frustum_cull(bbox)) {
-				// add agent to current list
-				_agents[ag_tracker] = ag;
-			}
+      ddBodyFuncs::AABB bbox = ddBodyFuncs::get_aabb(&ag->body);
+      if (cpu_frustum_cull(bbox)) {
+        // add agent to current list
+        _agents[ag_tracker] = ag;
+      }
     } else {
       // agents w/out models get automatic pass
-			_agents[ag_tracker] = ag;
+      _agents[ag_tracker] = ag;
     }
-		ag_tracker++;
+    ag_tracker++;
   }
 }
 }  // namespace ddSceneManager
@@ -414,11 +416,11 @@ int dd_assets_create_agent(lua_State *L) {
           // modify ModelIDs struct
           new_agent->mesh.resize(1);
           new_agent->mesh[0].model = mdata->id;
-					// initialize material buffer
-					new_agent->mesh[0].material.resize(mdata->mesh_info.size());
-					DD_FOREACH(DDM_Data, data, mdata->mesh_info) {
-						new_agent->mesh[0].material[data.i] = data.ptr->mat_id;
-					}
+          // initialize material buffer
+          new_agent->mesh[0].material.resize(mdata->mesh_info.size());
+          DD_FOREACH(DDM_Data, data, mdata->mesh_info) {
+            new_agent->mesh[0].material[data.i] = data.ptr->mat_id;
+          }
         } else {
           ddTerminal::f_post("[error]  Failed to find mesh <%ld>", *mesh_id);
         }
@@ -681,11 +683,32 @@ int set_agent_rot(lua_State *L) {
     ddAgent *ag = find_ddAgent((size_t)(*id));
     if (ag) {
       // set agent rotation based on arguments
-      glm::vec3 new_rot = glm::vec3(*_x, *_y, *_z);
+      glm::vec3 new_rot =
+          glm::vec3(glm::radians(*_x), glm::radians(*_y), glm::radians(*_z));
       ddBodyFuncs::rotate(&ag->body, new_rot);
     }
   }
   ddTerminal::post("[error]Failed to set agent rotation");
+  return 0;
+}
+
+int set_agent_scale(lua_State *L) {
+  parse_lua_events(L, fb);
+
+  int64_t *id = fb.get_func_val<int64_t>("id");
+  float *_x = fb.get_func_val<float>("x");
+  float *_y = fb.get_func_val<float>("y");
+  float *_z = fb.get_func_val<float>("z");
+
+  if (id && _x && _y && _z) {
+    ddAgent *ag = find_ddAgent((size_t)(*id));
+    if (ag) {
+      // set agent scale based on arguments
+      glm::vec3 new_scale = glm::vec3(*_x, *_y, *_z);
+      ddBodyFuncs::update_scale(&ag->body, new_scale);
+    }
+  }
+  ddTerminal::post("[error]Failed to set agent scale");
   return 0;
 }
 

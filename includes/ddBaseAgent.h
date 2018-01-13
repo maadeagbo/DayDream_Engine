@@ -11,16 +11,18 @@ struct ddBody {
   /**
    * \brief Initialized on mesh import or set to default size
    */
-  //btCollisionShape *bt_bbox = nullptr;
-	/**
-   * \brief Modify object scale (and affect physics using btCollisionShape)
-   */
-	glm::vec3 scale = glm::vec3(1.f);
+  // btCollisionShape *bt_bbox = nullptr;
+  /**
+* \brief Modify object scale (and affect physics using btCollisionShape)
+*/
+  glm::vec3 scale = glm::vec3(1.f);
 };
 
 namespace ddBodyFuncs {
-	/** \brief Simple axis-alligned bounding box */
-	struct AABB { glm::vec3 min, max; };
+/** \brief Simple axis-alligned bounding box */
+struct AABB {
+  glm::vec3 min, max;
+};
 /**
  * \brief Local-space position
  */
@@ -52,19 +54,19 @@ glm::vec3 up_dir(ddBody *bod);
 /**
  * \brief Change btRigidBody's velocity
  */
-void update_velocity(ddBody *bod, const glm::vec3& vel);
+void update_velocity(ddBody *bod, const glm::vec3 &vel);
 /**
  * \brief Change btRigidBody's position
  */
-void update_pos(ddBody *bod, const glm::vec3& pos);
+void update_pos(ddBody *bod, const glm::vec3 &pos);
 /**
  * \brief Change btRigidBody's local rotation
  */
-void rotate(ddBody *bod, const glm::vec3& _euler);
+void rotate(ddBody *bod, const glm::vec3 &_euler);
 /**
  * \brief Change transform's scale
  */
-void update_scale(ddBody *bod, const glm::vec3& _scale);
+void update_scale(ddBody *bod, const glm::vec3 &_scale);
 /**
  * \brief convert btRigidBody and scale into model matrix (uses world-space)
  */
@@ -80,7 +82,7 @@ struct ddInstInfo {
   /**
    * \brief gpu instance buffer
    */
-  ddInstBufferData* inst_buff = nullptr;
+  ddInstBufferData *inst_buff = nullptr;
   /**
    * \brief instanced matrix buffer
    */
@@ -142,8 +144,8 @@ struct ddAgent {
    * \brief Render information
    */
   ddRendInfo rend;
-	/**
-	* \brief Transform info
-	*/
-	ddBody body;
+  /**
+  * \brief Transform info
+  */
+  ddBody body;
 };

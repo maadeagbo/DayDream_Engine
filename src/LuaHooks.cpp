@@ -656,10 +656,10 @@ void add_func_to_scripts(lua_State *L, lua_CFunction func, const char *name) {
 void push_vec3_to_lua(lua_State *L, const float x, const float y,
                       const float z) {
   lua_newtable(L);  // create new table and put on top of stack
-	
-	luaL_checkstack(L, 2, "too many arguments"); // check stack size
-  
-	// set fields
+
+  luaL_checkstack(L, 2, "too many arguments");  // check stack size
+
+  // set fields
   lua_pushnumber(L, x);
   lua_setfield(L, -2, "x");
   lua_pushnumber(L, y);
@@ -670,19 +670,19 @@ void push_vec3_to_lua(lua_State *L, const float x, const float y,
 
 void push_vec4_to_lua(lua_State *L, const float x, const float y, const float z,
                       const float w) {
-	lua_newtable(L);  // create new table and put on top of stack
+  lua_newtable(L);  // create new table and put on top of stack
 
-	luaL_checkstack(L, 2, "too many arguments"); // check stack size
+  luaL_checkstack(L, 2, "too many arguments");  // check stack size
 
-																							 // set fields
-	lua_pushnumber(L, x);
-	lua_setfield(L, -2, "x");
-	lua_pushnumber(L, y);
-	lua_setfield(L, -2, "y");
-	lua_pushnumber(L, z);
-	lua_setfield(L, -2, "z");
-	lua_pushnumber(L, w);
-	lua_setfield(L, -2, "w");
+  // set fields
+  lua_pushnumber(L, x);
+  lua_setfield(L, -2, "x");
+  lua_pushnumber(L, y);
+  lua_setfield(L, -2, "y");
+  lua_pushnumber(L, z);
+  lua_setfield(L, -2, "z");
+  lua_pushnumber(L, w);
+  lua_setfield(L, -2, "w");
 }
 
 void append_package_path(lua_State *L, const char *path) {

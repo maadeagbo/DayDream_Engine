@@ -3,7 +3,7 @@
 do
 	base_hero = require "scripts.Hero"
 	base_monster = require "scripts.Monster"
-	da = require "scripts.DeadWorld_assets"
+	--require "scripts.DeadWorld_assets"
 
 	DeadWorld = {}
 
@@ -51,8 +51,8 @@ do
 			end
 		end
 
-		cam_pos = get_agent_ws_pos( {["id"] = deadworld_asset["cam_agent_id"]} )
-		out = { ["output"] = string.format("Cam pos = %.3f, %.3f, %.3f", 
+		cam_pos = get_agent_ws_pos( {["id"] = deadworld_asset["box"]} )
+		out = { ["output"] = string.format("Box pos = %.3f, %.3f, %.3f", 
 			cam_pos["x"], cam_pos["y"], cam_pos["z"]) 
 		}
 		dd_print({["output"] = "Deadworld post called"})

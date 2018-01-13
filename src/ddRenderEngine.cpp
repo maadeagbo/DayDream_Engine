@@ -280,7 +280,7 @@ void shutdown() {
 
 void render_load_screen() {
   // rotate load circle
-  if (ddTime::get_time_float() > load_ticks + 0.1f) {
+  if (ddTime::get_time_float() > load_ticks + 0.05f) {
     load_ticks = ddTime::get_time_float();
     load_rot_mat =
         glm::rotate(load_rot_mat, glm::radians(30.f), global_Yv3 + global_Zv3);
@@ -304,7 +304,7 @@ void render_load_screen() {
   POW2_VERIFY_MSG(tex != nullptr, "Load screen texture missing", 0);
   ddGPUFrontEnd::bind_texture(0, tex->image_info.tex_buff);
   sh->set_uniform((int)RE_PostPr::ColorTex_smp2d, 0);
-	sh->set_uniform((int)RE_PostPr::SampleMap_b, true);
+  sh->set_uniform((int)RE_PostPr::SampleMap_b, true);
 
   ddGPUFrontEnd::render_quad();
 }
@@ -467,7 +467,7 @@ void draw_scene(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m) {
   // bind texture
   ddGPUFrontEnd::bind_pass_texture(ddBufferType::GEOM);
   sh->set_uniform((int)RE_PostPr::ColorTex_smp2d, 0);
-  //sh->set_uniform((int)RE_PostPr::SampleMap_b, true);
+  // sh->set_uniform((int)RE_PostPr::SampleMap_b, true);
 
   ddGPUFrontEnd::render_quad();
 
@@ -480,6 +480,7 @@ void gbuffer_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m) {
   ddGPUFrontEnd::clear_color_buffer();
   ddGPUFrontEnd::clear_depth_buffer();
   ddGPUFrontEnd::toggle_depth_test(true);
+  ddGPUFrontEnd::toggle_face_cull(false);
   ddGPUFrontEnd::set_face_cull();
   // clipping (if necessary)
   ddGPUFrontEnd::toggle_clip_plane();
@@ -529,7 +530,7 @@ void render_static(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
     POW2_VERIFY_MSG(sh != nullptr, "Couldn't locate geometry shader", 0);
     sh->use();
   }
-  sh->set_uniform((int)RE_GBuffer::enable_clip1_b, false);  // always off
+  // sh->set_uniform((int)RE_GBuffer::enable_clip1_b, false);  // always off
 
   // get mesh information
   DD_FOREACH(ModelIDs, mdl_id, agent->mesh) {
@@ -575,7 +576,7 @@ void render_static(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
 
         // matrices
         agent->inst.m4x4[0] = glm::mat4();  // identity
-        glm::mat4 norm_m = glm::transpose(glm::inverse(agent->inst.m4x4[0]));
+        // glm::mat4 norm_m = glm::transpose(glm::inverse(agent->inst.m4x4[0]));
         // sh->set_uniform((int)RE_GBuffer::) normal matrix
         glm::mat4 model_m = ddBodyFuncs::get_model_mat(&agent->body);
         sh->set_uniform((int)RE_GBuffer::MVP_m4x4,
