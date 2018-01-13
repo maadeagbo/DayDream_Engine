@@ -285,6 +285,7 @@ void render_load_screen() {
     load_rot_mat =
         glm::rotate(load_rot_mat, glm::radians(30.f), global_Yv3 + global_Zv3);
   }
+	ddGPUFrontEnd::toggle_depth_test(false);
 
   // get shader
   ddShader *sh = find_ddShader(postp_sh.gethash());
@@ -449,6 +450,8 @@ void draw_scene(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m) {
   // hdri tone mapping
 
   // debug (maybe)
+	ddGPUFrontEnd::toggle_depth_test(false);
+
   ddShader *sh = find_ddShader(postp_sh.gethash());
   POW2_VERIFY_MSG(sh != nullptr, "Post processing shader missing", 0);
   sh->use();
@@ -467,7 +470,7 @@ void draw_scene(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m) {
   // bind texture
   ddGPUFrontEnd::bind_pass_texture(ddBufferType::GEOM);
   sh->set_uniform((int)RE_PostPr::ColorTex_smp2d, 0);
-  // sh->set_uniform((int)RE_PostPr::SampleMap_b, true);
+  sh->set_uniform((int)RE_PostPr::SampleMap_b, true);
 
   ddGPUFrontEnd::render_quad();
 

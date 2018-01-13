@@ -543,7 +543,6 @@ void ddEngine::update(DD_LEvent &_event) {
     // render IMGUI ui
     ImGui::Render();
     // swap buffers
-    // SDL_GL_SwapWindow(main_window);
     glfwSwapBuffers(main_window_glfw);
 
     // push event for starting next frame

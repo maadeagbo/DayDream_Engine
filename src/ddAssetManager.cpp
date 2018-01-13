@@ -499,7 +499,8 @@ int dd_assets_create_cam(lua_State *L) {
     // check if camera already exists otherwise allocate
     size_t cam_id = getCharHash(id);
     new_cam = find_ddCam(cam_id);
-    if (new_cam) {
+    ddAgent *ag = find_ddAgent((size_t)(*parent));
+    if (new_cam && ag) {
       ddTerminal::f_post("Duplicate camera <%s>", id);
     } else {
       new_cam = spawn_ddCam(cam_id);
@@ -512,6 +513,9 @@ int dd_assets_create_cam(lua_State *L) {
       new_cam->n_plane = 0.1f;
       new_cam->f_plane = 100.f;
       new_cam->active = true;
+      // rotate agent to face towards the negative z-axis
+      ddBodyFuncs::rotate(
+          &ag->body, glm::vec3(glm::radians(90.f), glm::radians(180.f), 0.f));
     }
 
     if (new_cam) {

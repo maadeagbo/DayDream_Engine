@@ -51,8 +51,8 @@ do
 			end
 		end
 
-		cam_pos = get_agent_ws_pos( {["id"] = deadworld_asset["box"]} )
-		out = { ["output"] = string.format("Box pos = %.3f, %.3f, %.3f", 
+		cam_pos = get_agent_ws_pos( {["id"] = deadworld_asset["cam_ag"]} )
+		out = { ["output"] = string.format("Cam pos = %.3f, %.3f, %.3f", 
 			cam_pos["x"], cam_pos["y"], cam_pos["z"]) 
 		}
 		dd_print({["output"] = "Deadworld post called"})

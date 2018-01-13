@@ -18,8 +18,7 @@ glm::vec3 pos(const ddBody* bod) {
 
 glm::vec3 pos_ws(const ddBody* bod) {
   // world position
-	btTransform tr;
-	bod->bt_bod->getMotionState()->getWorldTransform(tr);
+	btTransform tr = bod->bt_bod->getWorldTransform();
   btVector3 ws = tr.getOrigin();
   return glm::vec3(ws.x(), ws.y(), ws.z());
 }
@@ -33,8 +32,7 @@ glm::quat rot(const ddBody* bod) {
 
 glm::quat rot_ws(const ddBody* bod) {
   // world transform
-  btTransform tr;
-	bod->bt_bod->getMotionState()->getWorldTransform(tr);
+  btTransform tr = bod->bt_bod->getWorldTransform();
   btQuaternion q = tr.getRotation();
   return glm::quat(q.x(), q.y(), q.z(), q.w());
 }
@@ -47,22 +45,19 @@ glm::vec3 forward_dir(const ddBody* bod, const glm::quat q) {
 
 void update_pos(ddBody* bod, const glm::vec3& pos) {
   // local rotation
-  const glm::quat q = ddBodyFuncs::rot_ws(bod);
+  const glm::quat q = ddBodyFuncs::rot(bod);
 
   // set tranform
   btTransform tr;
   tr.setOrigin(btVector3(pos.x, pos.y, pos.z));
   tr.setRotation(btQuaternion(q.x, q.y, q.z, q.z));
-  bod->bt_bod->getMotionState()->setWorldTransform(tr);
+  bod->bt_bod->setWorldTransform(tr);
 }
 
 void rotate(ddBody* bod, const glm::vec3& _euler) {
-  // world rotation
-  //const glm::quat l_rot = ddBodyFuncs::rot(bod);
 	btTransform tr;
-	bod->bt_bod->getMotionState()->getWorldTransform(tr);
-  const btQuaternion q1 = tr.getRotation();
-	//bod->bt_bod->getCenterOfMassTransform().getRotation();
+  // local rotation
+  const btQuaternion q1 = bod->bt_bod->getCenterOfMassTransform().getRotation();
   // new rotation
   btQuaternion q2((btScalar)_euler.y, (btScalar)_euler.z, (btScalar)_euler.x);
   q2 *= q1;
@@ -73,7 +68,7 @@ void rotate(ddBody* bod, const glm::vec3& _euler) {
 	tr.setIdentity();
   tr.setOrigin(btVector3(p1.x, p1.y, p1.z));
   tr.setRotation(q2);
-  bod->bt_bod->getMotionState()->setWorldTransform(tr);
+  bod->bt_bod->setWorldTransform(tr);
 }
 
 void update_scale(ddBody* bod, const glm::vec3& _scale) {
