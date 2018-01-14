@@ -508,6 +508,10 @@ void ddEngine::update(DD_LEvent &_event) {
     new_event.handle = terminal_hash;
     q_push(new_event);
 
+		// update per frame script information
+		set_lua_global(main_lstate, "__frame_time", ddTime::get_avg_frame_time());
+		set_lua_global(main_lstate, "__engine_time", ddTime::get_time_float());
+
     if (load_screen) {
       // Show load screen
       ddRenderer::render_load_screen();

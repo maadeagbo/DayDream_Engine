@@ -496,7 +496,7 @@ void draw_scene(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
   sh->set_uniform((int)RE_PostPr::output2D_b, false);
 
   // bind texture
-  ddGPUFrontEnd::bind_pass_texture(ddBufferType::GEOM);
+  ddGPUFrontEnd::bind_pass_texture(ddBufferType::LIGHT);
   sh->set_uniform((int)RE_PostPr::ColorTex_smp2d, 0);
   sh->set_uniform((int)RE_PostPr::SampleMap_b, true);
 
@@ -688,6 +688,13 @@ void light_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
     sh->set_uniform((int)RE_Light::Light_position_v3,
                     glm::vec3(parent_mat * glm::vec4(blb->position, 1.f)));
 		sh->set_uniform((int)RE_Light::Light_type_i, (int)blb->type);
+		sh->set_uniform((int)RE_Light::Light_direction_v3, blb->direction);
+		sh->set_uniform((int)RE_Light::Light_color_v3, blb->color);
+		sh->set_uniform((int)RE_Light::Light_linear_f, blb->linear);
+		sh->set_uniform((int)RE_Light::Light_quadratic_f, blb->quadratic);
+		sh->set_uniform((int)RE_Light::Light_cutoff_i_f, blb->cutoff_i);
+		sh->set_uniform((int)RE_Light::Light_cutoff_o_f, blb->cutoff_o);
+		sh->set_uniform((int)RE_Light::Light_spotExponent_f, blb->spot_exp);
 
     // calculate model matrix for light _light volume = plane approximation)
     float lv_radius = calc_lightvolume_radius(blb);

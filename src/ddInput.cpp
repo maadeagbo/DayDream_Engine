@@ -147,6 +147,29 @@ void update_mouse_wheel(SDL_MouseWheelEvent& key) {
 
 const InputData& get_input() { return global_input; }
 
+void send_input_to_lua(lua_State* L) {
+	/** \brief Each key in the table will be another 2-item table. This sets it*/
+	auto set_table_field = [&](const char *id, const bool flag, const int val) {
+		//
+	};
+
+  // create table and fill up w/ InputData
+  /*
+	lua_newtable(L);  // create new table and put on top of stack
+  luaL_checkstack(L, 2, "too many arguments");  // check stack size
+
+  // set fields
+  lua_pushnumber(L, x);
+  lua_setfield(L, -2, "x");
+  lua_pushnumber(L, y);
+  lua_setfield(L, -2, "y");
+  lua_pushnumber(L, z);
+  lua_setfield(L, -2, "z");
+
+  lua_setglobal
+		*/
+}
+
 }  // namespace ddInput
 
 //*
