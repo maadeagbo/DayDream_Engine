@@ -169,10 +169,12 @@ void send_upstream_to_lua(lua_State* L) {
   // set fields
   key_flags kf = global_input.keys[(unsigned)DD_Keys::A_Key];
   set_table_field("a", kf.active, kf.order);
-  //lua_pushnumber(L, y);
-  //lua_setfield(L, -2, "y");
-  //lua_pushnumber(L, z);
-  //lua_setfield(L, -2, "z");
+	key_flags kf = global_input.keys[(unsigned)DD_Keys::B_Key];
+	set_table_field("b", kf.active, kf.order);
+	key_flags kf = global_input.keys[(unsigned)DD_Keys::C_Key];
+	set_table_field("c", kf.active, kf.order);
+	key_flags kf = global_input.keys[(unsigned)DD_Keys::D_Key];
+	set_table_field("d", kf.active, kf.order);
 
   lua_setglobal(L, "__dd_input");
 	//*/
