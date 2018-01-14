@@ -129,10 +129,6 @@ struct ddAgent {
    */
   size_t id;
   /**
-   * \brief Engine info for scene graph
-   */
-  ParentInfo parent;
-  /**
    * \brief meshes attached to agent. Simulates LOD
    */
   dd_array<ModelIDs> mesh;

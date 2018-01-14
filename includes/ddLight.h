@@ -92,47 +92,55 @@ struct ddLBulb {
   /**
    * \brief Engine identifier assigned at initialization
    */
-  size_t id;
+  size_t id = 0;
   /**
-   * \brief Engine info for scene graph
+   * \brief Parent index
    */
-  ParentInfo parent;
+  size_t parent_id;
+	/**
+	* \brief Parent index
+	*/
+	bool parent_set = false;
   /**
    * \brief Sets shader lighting equation
    */
-  LightType type;
+  LightType type = LightType::DIRECTION_L;
   /**
    * \brief Normalized vector for directional and spot lights
    */
-  glm::vec3 direction;
+  glm::vec3 direction = glm::vec3(-1.0f);
   /**
    * \brief Location of light
    */
-  glm::vec3 position;
+  glm::vec3 position = glm::vec3(0.f, 10.f, 0.f);
   /**
    * \brief Color of light
    */
-  glm::vec3 color;
+  glm::vec3 color = glm::vec3(1.0f);
+	/**
+   * \brief Light space matrix (set per frame if light produces shadows)
+   */
+  glm::mat4 l_s_m;
   /**
    * \brief Linear falloff compnent
    */
-  float linear;
+  float linear = 0.0007f;
   /**
    * \brief Quadratic falloff component
    */
-  float quadratic;
+  float quadratic = 0.00002f;
   /**
    * \brief Incedence angle cutoff spot light
    */
-  float cutoff_i;
+  float cutoff_i = glm::cos(glm::radians(9.5f));
   /**
    * \brief Out angle cutoff spot light
    */
-  float cutoff_o;
+  float cutoff_o = glm::cos(glm::radians(20.5f));
   /**
    * \brief Spot light exponent
    */
-  float spot_exp;
+  float spot_exp = 40.0f;
   /**
    * \brief Marks light as active
    */

@@ -107,14 +107,6 @@ operator&(Enum lhs, Enum rhs) {
                            static_cast<underlying>(rhs));
 }
 
-/// \brief Cotainer for scene graph
-struct ParentInfo {
-  /// \brief Engine identifier for parent agent
-  size_t parent_id;
-  /// \brief Boolean to set if object is parented
-  bool parent_set = false;
-};
-
 // System handles
 const size_t sys_engine_hash = getCharHash("ddEngine");
 const size_t sys_terminal_hash = getCharHash("ddTerminal");

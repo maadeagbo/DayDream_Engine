@@ -311,6 +311,8 @@ namespace ddSceneManager {
 
 void cull_objects(const FrustumBox fr, const glm::mat4 view_m,
                   dd_array<ddAgent *> &_agents) {
+	POW2_VERIFY(_agents.size() == ASSETS_CONTAINER_MAX_SIZE);
+
   /** \brief Get max corner of AAABB based on frustum face normal */
   auto max_aabb_corner = [](ddBodyFuncs::AABB bbox, const glm::vec3 normal) {
     glm::vec3 new_max = bbox.min;
@@ -381,6 +383,33 @@ void cull_objects(const FrustumBox fr, const glm::mat4 view_m,
     ag_tracker++;
   }
 }
+
+void get_active_lights(dd_array<ddLBulb*>& _lights) {
+	POW2_VERIFY(_lights.size() == ASSETS_CONTAINER_MIN_SIZE);
+
+	// null the array
+	DD_FOREACH(ddLBulb*, blb, _lights) { *blb.ptr = nullptr; }
+
+	unsigned blb_tracker = 0;
+	for (auto &idx : map_lights) {
+		ddLBulb *blb = &lights[idx.second];
+
+		_lights[blb_tracker] = blb->active ? blb : nullptr;
+
+		blb_tracker++;
+	}
+}
+
+ddLBulb *get_shadow_light() {
+	for (auto &idx : map_lights) {
+		ddLBulb *blb = &lights[idx.second];
+		if (blb->active && blb->shadow) {
+			return blb;
+		}
+	}
+	return nullptr;
+}
+
 }  // namespace ddSceneManager
 
 //*****************************************************************************
@@ -447,9 +476,7 @@ int dd_assets_create_agent(lua_State *L) {
       if (p_id) {
         ddAgent *p_agent = find_ddAgent((size_t)*p_id);
         if (p_agent) {
-          // set parent id
-          new_agent->parent.parent_id = p_agent->id;
-          new_agent->parent.parent_set = true;
+          // set parent id / set physics system constraint
         } else {
           ddTerminal::f_post("[error]  Failed to find parent <%ld>", *p_id);
         }
@@ -542,6 +569,8 @@ int dd_assets_create_light(lua_State *L) {
       ddTerminal::f_post("Duplicate light <%s>", id);
     } else {
       new_bulb = spawn_ddLBulb(light_id);
+			// initialize
+			new_bulb->active = true;
     }
 
     if (new_bulb) {

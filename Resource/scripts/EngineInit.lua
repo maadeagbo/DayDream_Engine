@@ -18,6 +18,19 @@ args = {
 }
 cubemap_resolution(args)
 
+-- Light volume plane *********************************************************
+
+args = {
+	["path"] = ROOT_DIR.."/Resource/Meshes/primitives/light_plane.ddm"
+}
+local lplane = load_ddm(args)
+args = {
+	["id"] = "_dd_light_plane",
+	["mesh"] = lplane
+}
+local lplane_id = create_agent(args)
+print("Found and added light plane: "..lplane_id)
+
 -- Shaders ********************************************************************
 
 args = {

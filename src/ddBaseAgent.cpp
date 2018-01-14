@@ -18,7 +18,7 @@ glm::vec3 pos(const ddBody* bod) {
 
 glm::vec3 pos_ws(const ddBody* bod) {
   // world position
-	btTransform tr = bod->bt_bod->getWorldTransform();
+  btTransform tr = bod->bt_bod->getWorldTransform();
   btVector3 ws = tr.getOrigin();
   return glm::vec3(ws.x(), ws.y(), ws.z());
 }
@@ -55,7 +55,7 @@ void update_pos(ddBody* bod, const glm::vec3& pos) {
 }
 
 void rotate(ddBody* bod, const glm::vec3& _euler) {
-	btTransform tr;
+  btTransform tr;
   // local rotation
   const btQuaternion q1 = bod->bt_bod->getCenterOfMassTransform().getRotation();
   // new rotation
@@ -65,7 +65,7 @@ void rotate(ddBody* bod, const glm::vec3& _euler) {
   const glm::vec3 p1 = ddBodyFuncs::pos(bod);
 
   // set new transform
-	tr.setIdentity();
+  tr.setIdentity();
   tr.setOrigin(btVector3(p1.x, p1.y, p1.z));
   tr.setRotation(q2);
   bod->bt_bod->setWorldTransform(tr);
@@ -74,6 +74,10 @@ void rotate(ddBody* bod, const glm::vec3& _euler) {
 void update_scale(ddBody* bod, const glm::vec3& _scale) {
   bod->scale = _scale;
   // set scale in collision shape for physics
+  bod->bt_bod->getCollisionShape()->setLocalScaling(
+      btVector3((btScalar)_scale.x, (btScalar)_scale.y, (btScalar)_scale.z));
+  // btCollisionShape::setLocalScaling()
+  // btCollisionWorld::updateSingleAABB( rigidbody )
 }
 
 glm::mat4 get_model_mat(ddBody* bod) {

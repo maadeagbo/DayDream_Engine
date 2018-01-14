@@ -30,6 +30,12 @@ dd_array<float> lumin_output;
 /** \brief Luminance shader compute divisor */
 const unsigned lumin_divisor = 8;
 
+/** \brief Light plane hash */
+const cbuff<32> light_plane_id = "_dd_light_plane";
+
+/** \brief Flag for controlling shadows */
+bool shadows_on = true;
+
 /** \brief Load screen texture */
 cbuff<32> load_screen_tex = "load_screen";
 /** \brief Load screen matrices */
@@ -45,6 +51,8 @@ unsigned objects_in_frame = 0;
 
 /** \brief frustum cull buffer */
 dd_array<ddAgent *> _agents = dd_array<ddAgent *>(ASSETS_CONTAINER_MAX_SIZE);
+/** \brief active lights buffer */
+dd_array<ddLBulb *> _lights = dd_array<ddLBulb *>(ASSETS_CONTAINER_MIN_SIZE);
 
 /** \brief Main shader ids */
 cbuff<32> geom_sh = "geometry";
@@ -63,14 +71,19 @@ cbuff<32> depthsk_sh = "shadow_skinned";
 glm::mat4 calc_view_matrix(const ddBody *bod);
 glm::mat4 calc_p_proj_matrix(const ddCam *cam);
 FrustumBox get_current_frustum(const ddCam *cam, const ddBody *bod);
+float calc_lightvolume_radius(const ddLBulb *blb);
 
 /** \brief Internal draw function */
-void draw_scene(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m);
+void draw_scene(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
+                const glm::vec3 cam_pos);
 /** \brief Geometry buffer pass */
 void gbuffer_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m);
 /** \brief Static mesh render pass */
 void render_static(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
                    ddAgent *agent, ddLBulb *shadow_light = nullptr);
+/** \brief Light buffer pass */
+void light_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
+                const glm::vec3 cam_pos);
 
 /**
  * \brief Import shader thru lua script
@@ -285,7 +298,7 @@ void render_load_screen() {
     load_rot_mat =
         glm::rotate(load_rot_mat, glm::radians(30.f), global_Yv3 + global_Zv3);
   }
-	ddGPUFrontEnd::toggle_depth_test(false);
+  ddGPUFrontEnd::toggle_depth_test(false);
 
   // get shader
   ddShader *sh = find_ddShader(postp_sh.gethash());
@@ -331,7 +344,7 @@ void draw_world() {
   ddSceneManager::cull_objects(cam_fr, view_m, _agents);
 
   // draw scene
-  draw_scene(view_m, proj_m);
+  draw_scene(view_m, proj_m, ddBodyFuncs::pos_ws(&cam_p->body));
 }
 
 }  // namespace ddRenderer
@@ -432,7 +445,21 @@ FrustumBox get_current_frustum(const ddCam *cam, const ddBody *bod) {
   return frustum;
 }
 
-void draw_scene(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m) {
+float calc_lightvolume_radius(const ddLBulb *blb) {
+  float LVR = 0.0f;
+  float constant = 1.0;
+  float lightMax =
+      std::fmaxf(std::fmaxf(blb->color.r, blb->color.g), blb->color.b);
+  LVR =
+      (-blb->linear + std::sqrt(blb->linear * blb->linear -
+                                4.f * blb->quadratic *
+                                    (constant - lightMax * (256.0f / 5.0f)))) /
+      (2.f * blb->quadratic);
+  return LVR;
+}
+
+void draw_scene(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
+                const glm::vec3 cam_pos) {
   // geometry buffer pass
   gbuffer_pass(cam_view_m, cam_proj_m);
 
@@ -441,6 +468,7 @@ void draw_scene(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m) {
   // shadow pass
 
   // light pass
+  light_pass(cam_view_m, cam_proj_m, cam_pos);
 
   // draw skybox
 
@@ -450,7 +478,7 @@ void draw_scene(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m) {
   // hdri tone mapping
 
   // debug (maybe)
-	ddGPUFrontEnd::toggle_depth_test(false);
+  ddGPUFrontEnd::toggle_depth_test(false);
 
   ddShader *sh = find_ddShader(postp_sh.gethash());
   POW2_VERIFY_MSG(sh != nullptr, "Post processing shader missing", 0);
@@ -508,6 +536,8 @@ void gbuffer_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m) {
     }
   }
   ddGPUFrontEnd::bind_framebuffer(ddBufferType::DEFAULT);
+
+  return;
 }
 
 void render_static(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
@@ -606,5 +636,99 @@ void render_static(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
                                         (unsigned)mdata.ptr->indices.size(), 1);
     }
   }
+  return;
+}
+
+void light_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
+                const glm::vec3 cam_pos) {
+  // get light plane
+  ddAgent *lplane = find_ddAgent(light_plane_id.gethash());
+  POW2_VERIFY_MSG(lplane != nullptr, "Light plane agent not initialized", 0);
+
+  // buffer setup
+  ddGPUFrontEnd::blit_depth_buffer(ddBufferType::GEOM, ddBufferType::LIGHT,
+                                   scr_width, scr_height);
+  ddGPUFrontEnd::toggle_depth_mask();
+  ddGPUFrontEnd::bind_framebuffer(ddBufferType::LIGHT);
+  ddGPUFrontEnd::clear_color_buffer();
+  ddGPUFrontEnd::toggle_additive_blend(true);
+
+  // shader setup
+  ddShader *sh = find_ddShader(light_sh.gethash());
+  POW2_VERIFY_MSG(sh != nullptr, "Light shader queried but not found", 0);
+  sh->use();
+
+  sh->set_uniform((int)RE_Light::viewPos_v3, cam_pos);
+  sh->set_uniform((int)RE_Light::DrawSky_b, false);
+  sh->set_uniform((int)RE_Light::LightVolume_b, false);
+  // bind geometry buffer multipass texture
+  sh->set_uniform((int)RE_Light::PositionTex_smp2d, 0);
+  sh->set_uniform((int)RE_Light::ColorTex_smp2d, 1);
+  sh->set_uniform((int)RE_Light::NormalTex_smp2d, 2);
+  ddGPUFrontEnd::bind_pass_texture(ddBufferType::GEOM);
+
+  // get shadow producing light (if one exists)
+  ddLBulb *shadow_blb = ddSceneManager::get_shadow_light();
+
+  // loop through lights
+  ddSceneManager::get_active_lights(_lights);
+  DD_FOREACH(ddLBulb *, l_b, _lights) {
+    ddLBulb *blb = *l_b.ptr;
+    if (!blb) break;
+
+    // if parent exists, get tranformation
+    glm::mat4 parent_mat;
+    if (blb->parent_set) {
+      ddAgent *blb_p = find_ddAgent(blb->parent_id);
+      POW2_VERIFY_MSG(blb_p != nullptr, "ddLBulb parent set but not found", 0);
+      parent_mat = ddBodyFuncs::get_model_mat(&blb_p->body);
+    }
+
+    // set shader uniforms per light
+    sh->set_uniform((int)RE_Light::Light_position_v3,
+                    glm::vec3(parent_mat * glm::vec4(blb->position, 1.f)));
+		sh->set_uniform((int)RE_Light::Light_type_i, (int)blb->type);
+
+    // calculate model matrix for light _light volume = plane approximation)
+    float lv_radius = calc_lightvolume_radius(blb);
+    glm::mat4 model;
+    model = glm::translate(model, blb->position);
+    model = glm::scale(model, glm::vec3(lv_radius));
+    glm::mat4 light_mvp = cam_proj_m * cam_view_m * parent_mat * model;
+
+    // render
+    switch (blb->type) {
+      case LightType::DIRECTION_L: {
+        if (shadows_on && shadow_blb) {
+          // bind shadow texture
+          ddGPUFrontEnd::bind_pass_texture(ddBufferType::SHADOW, 3, 0);
+          // send light space matrix and activate shadow calculation
+          sh->set_uniform((int)RE_Light::ShadowMap_b, true);
+          sh->set_uniform((int)RE_Light::LSM_m4x4, shadow_blb->l_s_m);
+        }
+        // render full screen quad & turn off shadow calc
+        sh->set_uniform((int)RE_Light::MVP_m4x4, glm::mat4());
+        ddGPUFrontEnd::render_quad();
+
+        sh->set_uniform((int)RE_Light::ShadowMap_b, false);
+        break;
+      }
+      case LightType::POINT_L: {
+        // render using light volume plane
+        break;
+      }
+      case LightType::SPOT_L: {
+        break;
+      }
+      default:
+        break;
+    }
+  }
+
+  // reset
+  ddGPUFrontEnd::toggle_additive_blend();
+  ddGPUFrontEnd::toggle_depth_mask(true);
+  ddGPUFrontEnd::bind_framebuffer(ddBufferType::DEFAULT);
+  ddGPUFrontEnd::bind_pass_texture(ddBufferType::DEFAULT);
   return;
 }

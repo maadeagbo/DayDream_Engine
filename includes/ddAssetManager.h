@@ -129,11 +129,23 @@ ddCam* get_active_cam();
 namespace ddSceneManager {
 
 /**
- * \brief Cull objects outside of camera frustum
- * \return returns array if agent ids
+ * \brief Cull objects outside of camera frustum 
+ * \param _agents must be allocated to size ASSETS_CONTAINER_MAX_SIZE
  */
 void cull_objects(const FrustumBox fr, const glm::mat4 view_m,
                   dd_array<ddAgent*>& _agents);
+
+/**
+ * \brief Get all active lights in scene
+ * \param _lights must be allocated to size ASSETS_CONTAINER_MIN_SIZE
+ */
+void get_active_lights(dd_array<ddLBulb*>& _lights);
+
+/**
+ * \brief Get currently active directional light
+ */
+ddLBulb *get_shadow_light();
+
 }  // namespace ddSceneManager
 
 ASSET_DECL(ddAgent)
