@@ -511,6 +511,7 @@ void ddEngine::update(DD_LEvent &_event) {
 		// update per frame script information
 		set_lua_global(main_lstate, "__frame_time", ddTime::get_avg_frame_time());
 		set_lua_global(main_lstate, "__engine_time", ddTime::get_time_float());
+    ddInput::send_upstream_to_lua(main_lstate);
 
     if (load_screen) {
       // Show load screen

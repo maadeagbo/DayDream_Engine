@@ -40,6 +40,7 @@ void ddPhysics::clear_all_rigidbodies() {
     if (body && body->getMotionState()) {
       delete body->getMotionState();
     }
+    delete body->getCollisionShape();
     world->removeCollisionObject(obj);
     delete obj;
   }

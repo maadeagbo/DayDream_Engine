@@ -340,7 +340,6 @@ void draw_world() {
 
   // get frustum and cull objects
   FrustumBox cam_fr = get_current_frustum(cam, &cam_p->body);
-  unsigned num_agents = 0;
   ddSceneManager::cull_objects(cam_fr, view_m, _agents);
 
   // draw scene

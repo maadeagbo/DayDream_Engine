@@ -110,7 +110,7 @@ const InputData& get_input();
 /**
  * \brief Make available input data to lua script
  */
-void send_input_to_lua(lua_State *L);
+void send_upstream_to_lua(lua_State *L);
 }  // namespace ddInput
 
 /** \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine */

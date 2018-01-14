@@ -55,8 +55,13 @@ do
 		out = { ["output"] = string.format("Cam pos = %.3f, %.3f, %.3f", 
 			cam_pos["x"], cam_pos["y"], cam_pos["z"]) 
 		}
-		dd_print({["output"] = "Deadworld post called"})
-		dd_print(out)
+		--dd_print({["output"] = "Deadworld post called"})
+		--dd_print(out)
+
+		-- input
+		if __dd_input["a"]["active"] then
+			dd_print({["output"] = "bang"})
+		end
 	end
 
 end

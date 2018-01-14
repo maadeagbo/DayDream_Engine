@@ -147,27 +147,35 @@ void update_mouse_wheel(SDL_MouseWheelEvent& key) {
 
 const InputData& get_input() { return global_input; }
 
-void send_input_to_lua(lua_State* L) {
+void send_upstream_to_lua(lua_State* L) {
 	/** \brief Each key in the table will be another 2-item table. This sets it*/
 	auto set_table_field = [&](const char *id, const bool flag, const int val) {
-		//
+		lua_newtable(L);  // create new table and put on top of stack
+    luaL_checkstack(L, 2, "too many arguments");  // check stack size
+
+    lua_pushboolean(L, flag);
+    lua_setfield(L, -2, "active");
+    lua_pushnumber(L, val);
+    lua_setfield(L, -2, "val");
+
+    lua_setfield(L, -2, id);  // save input id to main table
 	};
 
   // create table and fill up w/ InputData
-  /*
+  //*
 	lua_newtable(L);  // create new table and put on top of stack
-  luaL_checkstack(L, 2, "too many arguments");  // check stack size
+  //luaL_checkstack(L, 2, "too many arguments");  // check stack size
 
   // set fields
-  lua_pushnumber(L, x);
-  lua_setfield(L, -2, "x");
-  lua_pushnumber(L, y);
-  lua_setfield(L, -2, "y");
-  lua_pushnumber(L, z);
-  lua_setfield(L, -2, "z");
+  key_flags kf = global_input.keys[(unsigned)DD_Keys::A_Key];
+  set_table_field("a", kf.active, kf.order);
+  //lua_pushnumber(L, y);
+  //lua_setfield(L, -2, "y");
+  //lua_pushnumber(L, z);
+  //lua_setfield(L, -2, "z");
 
-  lua_setglobal
-		*/
+  lua_setglobal(L, "__dd_input");
+	//*/
 }
 
 }  // namespace ddInput

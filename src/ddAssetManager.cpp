@@ -142,6 +142,11 @@ ddTex2D *create_tex2D(const char *path, const char *img_id);
 /// \param mesh data containing bounding box information
 /// \return True if rigid body is successfully added
 bool add_rigid_body(ddAgent *agent, ddModelData *mdata, const float mass = 0.f);
+/** 
+ * \brief Removes rigidbody from physics world 
+ * \param agent contains rigid body
+ */
+void delete_rigid_body(ddAgent *agent);
 // source <Muhammad Mobeen Movania::OpenGL Development Cookbook>
 /// \brief Invert image along Y-axis
 /// \param image Pointer to image on RAM
@@ -169,12 +174,9 @@ void initialize(btDiscreteDynamicsWorld *physics_world) {
 void cleanup() {
   // clean up bullet physics bodies
   for (auto &idx : map_b_agents) {
-    /*if (b_agents[idx.second].body.bt_bbox) {
-      delete b_agents[idx.second].body.bt_bbox;
-      b_agents[idx.second].body.bt_bbox = nullptr;
-    }*/
-    // if (b_agents[idx.second].body.body) delete
-    // b_agents[idx.second].body.body;
+    if (b_agents[idx.second].body.bt_bod) {
+      delete_rigid_body(&b_agents[idx.second]);
+    }
   }
   // cleanup any unfreed images
   for (auto &idx : map_textures) {
@@ -719,6 +721,8 @@ int set_agent_rot(lua_State *L) {
       glm::vec3 new_rot =
           glm::vec3(glm::radians(*_x), glm::radians(*_y), glm::radians(*_z));
       ddBodyFuncs::rotate(&ag->body, new_rot);
+
+      return 0;
     }
   }
   ddTerminal::post("[error]Failed to set agent rotation");
@@ -739,6 +743,8 @@ int set_agent_scale(lua_State *L) {
       // set agent scale based on arguments
       glm::vec3 new_scale = glm::vec3(*_x, *_y, *_z);
       ddBodyFuncs::update_scale(&ag->body, new_scale);
+
+      return 0;
     }
   }
   ddTerminal::post("[error]Failed to set agent scale");
@@ -1207,6 +1213,17 @@ bool add_rigid_body(ddAgent *agent, ddModelData *mdata, const float mass) {
   // add to world
   p_world->addRigidBody(agent->body.bt_bod);
   return true;
+}
+
+void delete_rigid_body(ddAgent *agent) {
+  if (!agent) return;
+  if (!agent->body.bt_bod) return;
+
+  // remove body and delete allocated CollisionShape and MotionState
+  p_world->removeRigidBody(agent->body.bt_bod);
+  delete agent->body.bt_bod->getMotionState();
+  delete agent->body.bt_bod->getCollisionShape();
+  agent->body.bt_bod = nullptr;
 }
 
 void flip_image(unsigned char *image, const int width, const int height,
