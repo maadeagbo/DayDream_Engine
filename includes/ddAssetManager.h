@@ -124,6 +124,10 @@ void load_to_gpu();
  */
 ddCam* get_active_cam();
 
+/**
+ * \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine
+ */
+void remove_rigid_body(ddAgent *ag);
 };  // namespace ddAssets
 
 namespace ddSceneManager {

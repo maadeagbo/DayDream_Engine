@@ -13,7 +13,7 @@ extern "C" {
 #include "lualib.h"
 }
 
-#define MAX_ARG_BUFFER_SIZE 10
+#define MAX_ARG_BUFFER_SIZE 16
 #define MAX_EVENT_ARGS 8
 
 /** \brief class for parsing Varying data struct */
@@ -185,7 +185,7 @@ bool parse_luafile(lua_State *L, const char *filename);
 /**
  * \brief Envoke lua callback function with lua_ref pointer
  */
-DD_FuncBuff callback_lua(lua_State *L, const DD_LEvent levent, int func_ref,
+void callback_lua(lua_State *L, const DD_LEvent levent, int func_ref, DD_FuncBuff &fb,
                          int global_ref = LUA_REFNIL);
 
 /**

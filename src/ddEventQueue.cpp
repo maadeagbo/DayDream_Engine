@@ -201,14 +201,15 @@ void ddQueue::process_queue() {
     }
     // check if event is level call
     else if (_event.handle == lvl_call) {
-      fb = std::move(
-          callback_lua(L, _event, lvl_update.func_id, lvl_update.global_id));
+      callback_lua(L, _event, lvl_update.func_id, fb, lvl_update.global_id);
     }
     // check if event is lvl init call
     else if (_event.handle == lvl_call_i) {
-      // async level init
-      async_lvl_init = std::async(std::launch::async, callback_lua, L, _event,
-                                  lvl_init.func_id, lvl_init.global_id);
+      // async level init (spawn new lua thread)
+      lua_State *L1 = lua_newthread(L);
+      async_lvl_init =
+          std::async(std::launch::async, callback_lua, L1, _event,
+                     lvl_init.func_id, std::ref(fb), lvl_init.global_id);
       // send delay event
       DD_LEvent a_event;
       a_event.handle = check_lvl_async;
@@ -217,9 +218,11 @@ void ddQueue::process_queue() {
     }
     // check if event is resource load call
     else if (_event.handle == res_call) {
-      // async resources load
-      async_resource = std::async(std::launch::async, callback_lua, L, _event,
-                                  lvl_res.func_id, lvl_res.global_id);
+      // async resources load (spawn new lua thread)
+      lua_State *L1 = lua_newthread(L);
+      async_resource =
+          std::async(std::launch::async, callback_lua, L1, _event,
+                     lvl_res.func_id, std::ref(fb), lvl_res.global_id);
       // send delay event
       DD_LEvent a_event;
       a_event.handle = check_res_async;
@@ -236,6 +239,8 @@ void ddQueue::process_queue() {
       switch (async_flag) {
         case 0:  // check level init function
           if (async_lvl_init.wait_for(timespan) == std::future_status::ready) {
+            // pop spawned lua thread
+            lua_pop(L, 1);
             // create completion event
             a_event.handle = "_lvl_init_done";
             push(a_event);
@@ -248,6 +253,8 @@ void ddQueue::process_queue() {
           break;
         case 1:  // check resource load function
           if (async_resource.wait_for(timespan) == std::future_status::ready) {
+            // pop spawned lua thread
+            lua_pop(L, 1);
             // create completion event
             a_event.handle = "_load_resource_done";
             push(a_event);
@@ -275,8 +282,7 @@ void ddQueue::process_queue() {
           // scripts
           if (callback_funcs.count(func_sigs[i]) > 0) {
             handler_sig &handle = callback_funcs[func_sigs[i]];
-            fb = std::move(
-                callback_lua(L, _event, handle.func_id, handle.global_id));
+            callback_lua(L, _event, handle.func_id, fb, handle.global_id);
           }
         }
       }

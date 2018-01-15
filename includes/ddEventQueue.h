@@ -164,8 +164,8 @@ struct ddQueue {
   std::map<size_t, dd_array<size_t>> registered_events;
   std::map<size_t, handler_sig> callback_funcs;
   std::map<size_t, SysEventHandler> sys_funcs;
-  std::future<DD_FuncBuff> async_lvl_init;
-  std::future<DD_FuncBuff> async_resource;
+  std::future<void> async_lvl_init;
+  std::future<void> async_resource;
   handler_sig lvl_init;
   handler_sig lvl_update;
   handler_sig lvl_res;

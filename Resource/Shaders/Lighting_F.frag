@@ -144,7 +144,7 @@ vec4 directionLightModel( vec3 lightDir, vec3 viewDir, vec3 norm, vec4 albedo,
 	vec3 diffuse = color * vec3(albedo) * kd;
 	// specular
 	vec3 halfDir = normalize(lightDir + viewDir);
-	float ks = pow(max(dot(norm, halfDir), 0.0), 40.0);
+	float ks = pow(max(dot(norm, halfDir), 0.0), 20.0);
 	vec3 spec = color * ks * spec_val;
 
 	return vec4((ambient + (diffuse + spec) * shadow), albedo.a);

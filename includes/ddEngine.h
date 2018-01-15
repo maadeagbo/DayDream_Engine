@@ -39,10 +39,6 @@ struct ddEngine {
         current_lvl(0),
         load_screen(false),
         flag_debug(false) {}
-  ~ddEngine() {
-    lua_close(main_lstate);
-    main_physics.cleanup_world();
-  }
 
   void clean_up_GLFW();
   void clean_up();

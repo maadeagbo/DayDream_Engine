@@ -26,9 +26,9 @@ uniform bool multiplierMat = false;
 void main() {
 	vs_out.TexCoord = VertexTexCoord;
 	// cannot be used with instancing
-	//vs_out.Normal = normalize(vec3(Norm * vec4(VertexNormal, 0.0))); 
+	vs_out.Normal = normalize(vec3(Norm * vec4(VertexNormal, 0.0))); 
 	// can be used with instancing
-	vs_out.Normal = normalize(vec3(InstanceMatrix * vec4(VertexNormal, 0.0)));
+	//vs_out.Normal = normalize(vec3(InstanceMatrix * vec4(VertexNormal, 0.0)));
 	vs_out.FragPos = vec3( InstanceMatrix * vec4(VertexPosition, 1.0f));
 	if (multiplierMat) {
 		vs_out.InstanceColor = InstanceColor;

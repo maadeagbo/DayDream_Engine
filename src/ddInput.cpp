@@ -148,124 +148,124 @@ void update_mouse_wheel(SDL_MouseWheelEvent& key) {
 const InputData& get_input() { return global_input; }
 
 void send_upstream_to_lua(lua_State* L) {
-	/** \brief Each key in the table will be another 2-item table. This sets it*/
-	auto set_table_field = [&](const char *id, const bool flag, const int val) {
-		lua_newtable(L);  // create new table and put on top of stack
-    luaL_checkstack(L, 2, "too many arguments");  // check stack size
-
-    lua_pushboolean(L, flag);
-    lua_setfield(L, -2, "active");
-    lua_pushnumber(L, val);
-    lua_setfield(L, -2, "val");
-
-    lua_setfield(L, -2, id);  // save input id to main table
-	};
+  /** \brief Each key in the table will be another 2-item table. This sets it*/
+  auto set_table_field = [&](const char* id, const bool* flag, const int* val) {
+    if (flag) {
+      lua_pushboolean(L, *flag);
+      lua_setfield(L, -2, id);
+    } else {
+      if (val) {
+				lua_pushnumber(L, *val);
+				lua_setfield(L, -2, id);
+      }
+    }
+  };
 
   // create table and fill up w/ InputData
   //*
-	lua_newtable(L);  // create new table and put on top of stack
+  lua_newtable(L);  // create new table and put on top of stack
   luaL_checkstack(L, 2, "too many arguments");  // check stack size
 
   // set fields
   key_flags kf = global_input.keys[(unsigned)DD_Keys::A_Key];
-  set_table_field("a", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::B_Key];
-	set_table_field("b", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::C_Key];
-	set_table_field("c", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::D_Key];
-	set_table_field("d", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::E_Key];
-	set_table_field("e", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::F_Key];
-	set_table_field("f", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::G_Key];
-	set_table_field("g", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::H_Key];
-	set_table_field("h", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::I_Key];
-	set_table_field("i", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::J_Key];
-	set_table_field("j", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::K_Key];
-	set_table_field("k", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::L_Key];
-	set_table_field("l", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::M_Key];
-	set_table_field("m", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::N_Key];
-	set_table_field("n", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::O_Key];
-	set_table_field("o", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::P_Key];
-	set_table_field("p", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::Q_Key];
-	set_table_field("q", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::R_Key];
-	set_table_field("r", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::S_Key];
-	set_table_field("s", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::T_Key];
-	set_table_field("t", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::U_Key];
-	set_table_field("u", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::V_Key];
-	set_table_field("v", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::W_Key];
-	set_table_field("w", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::X_Key];
-	set_table_field("x", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::Y_Key];
-	set_table_field("y", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::Z_Key];
-	set_table_field("z", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::Space_Key];
-	set_table_field("space", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::Enter_Key];
-	set_table_field("enter", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::ALT_L_Key];
-	set_table_field("l_alt", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::CTRL_L_Key];
-	set_table_field("l_ctrl", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::Shift_L_Key];
-	set_table_field("l_shift", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::ALT_R_Key];
-	set_table_field("r_alt", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::CTRL_R_Key];
-	set_table_field("r_ctrl", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::SHIFT_R_Key];
-	set_table_field("r_shift", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::MOUSE_RIGHT];
-	set_table_field("mouse_b_r", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::MOUSE_MIDDLE];
-	set_table_field("mouse_b_m", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::MOUSE_LEFT];
-	set_table_field("mouse_b_l", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::MOUSE_XDELTA];
-	set_table_field("mouse_x_delta", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::MOUSE_YDELTA];
-	set_table_field("mouse_y_delta", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::MOUSE_X];
-	set_table_field("mouse_x", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::MOUSE_Y];
-	set_table_field("mouse_y", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::MOUSE_SCROLL];
-	set_table_field("mouse_scroll", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::UP_KEY];
-	set_table_field("up", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::DOWN_KEY];
-	set_table_field("down", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::LEFT_KEY];
-	set_table_field("left", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::RIGHT_KEY];
-	set_table_field("right", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::TAB_Key];
-	set_table_field("tab", kf.active, kf.order);
-	kf = global_input.keys[(unsigned)DD_Keys::TILDE];
-	set_table_field("grave", kf.active, kf.order);
+  set_table_field("a", &kf.active, nullptr);
+  kf = global_input.keys[(unsigned)DD_Keys::B_Key];
+  set_table_field("b", &kf.active, nullptr);
+  kf = global_input.keys[(unsigned)DD_Keys::C_Key];
+  set_table_field("c", &kf.active, nullptr);
+  kf = global_input.keys[(unsigned)DD_Keys::D_Key];
+  set_table_field("d", &kf.active, nullptr);
+  kf = global_input.keys[(unsigned)DD_Keys::E_Key];
+  set_table_field("e", &kf.active, nullptr);
+  kf = global_input.keys[(unsigned)DD_Keys::F_Key];
+  set_table_field("f", &kf.active, nullptr);
+  kf = global_input.keys[(unsigned)DD_Keys::G_Key];
+  set_table_field("g", &kf.active, nullptr);
+  kf = global_input.keys[(unsigned)DD_Keys::H_Key];
+  set_table_field("h", &kf.active, nullptr);
+  kf = global_input.keys[(unsigned)DD_Keys::I_Key];
+  set_table_field("i", &kf.active, nullptr);
+  kf = global_input.keys[(unsigned)DD_Keys::J_Key];
+  set_table_field("j", &kf.active, nullptr);
+  kf = global_input.keys[(unsigned)DD_Keys::K_Key];
+  set_table_field("k", &kf.active, nullptr);
+  kf = global_input.keys[(unsigned)DD_Keys::L_Key];
+  set_table_field("l", &kf.active, nullptr);
+  kf = global_input.keys[(unsigned)DD_Keys::M_Key];
+  set_table_field("m", &kf.active, nullptr);
+  kf = global_input.keys[(unsigned)DD_Keys::N_Key];
+  set_table_field("n", &kf.active, nullptr);
+  kf = global_input.keys[(unsigned)DD_Keys::O_Key];
+  set_table_field("o", &kf.active, nullptr);
+  kf = global_input.keys[(unsigned)DD_Keys::P_Key];
+  set_table_field("p", &kf.active, nullptr);
+  kf = global_input.keys[(unsigned)DD_Keys::Q_Key];
+  set_table_field("q", &kf.active, nullptr);
+  kf = global_input.keys[(unsigned)DD_Keys::R_Key];
+  set_table_field("r", &kf.active, nullptr);
+  kf = global_input.keys[(unsigned)DD_Keys::S_Key];
+  set_table_field("s", &kf.active, nullptr);
+  kf = global_input.keys[(unsigned)DD_Keys::T_Key];
+  set_table_field("t", &kf.active, nullptr);
+  kf = global_input.keys[(unsigned)DD_Keys::U_Key];
+  set_table_field("u", &kf.active, nullptr);
+  kf = global_input.keys[(unsigned)DD_Keys::V_Key];
+  set_table_field("v", &kf.active, nullptr);
+  kf = global_input.keys[(unsigned)DD_Keys::W_Key];
+  set_table_field("w", &kf.active, nullptr);
+  kf = global_input.keys[(unsigned)DD_Keys::X_Key];
+  set_table_field("x", &kf.active, nullptr);
+  kf = global_input.keys[(unsigned)DD_Keys::Y_Key];
+  set_table_field("y", &kf.active, nullptr);
+  kf = global_input.keys[(unsigned)DD_Keys::Z_Key];
+  set_table_field("z", &kf.active, nullptr);
+  kf = global_input.keys[(unsigned)DD_Keys::Space_Key];
+  set_table_field("space", &kf.active, nullptr);
+  kf = global_input.keys[(unsigned)DD_Keys::Enter_Key];
+  set_table_field("enter", &kf.active, nullptr);
+  kf = global_input.keys[(unsigned)DD_Keys::ALT_L_Key];
+  set_table_field("l_alt", &kf.active, nullptr);
+  kf = global_input.keys[(unsigned)DD_Keys::CTRL_L_Key];
+  set_table_field("l_ctrl", &kf.active, nullptr);
+  kf = global_input.keys[(unsigned)DD_Keys::Shift_L_Key];
+  set_table_field("l_shift", &kf.active, nullptr);
+  kf = global_input.keys[(unsigned)DD_Keys::ALT_R_Key];
+  set_table_field("r_alt", &kf.active, nullptr);
+  kf = global_input.keys[(unsigned)DD_Keys::CTRL_R_Key];
+  set_table_field("r_ctrl", &kf.active, nullptr);
+  kf = global_input.keys[(unsigned)DD_Keys::SHIFT_R_Key];
+  set_table_field("r_shift", &kf.active, nullptr);
+  kf = global_input.keys[(unsigned)DD_Keys::MOUSE_RIGHT];
+  set_table_field("mouse_b_r", &kf.active, nullptr);
+  kf = global_input.keys[(unsigned)DD_Keys::MOUSE_MIDDLE];
+  set_table_field("mouse_b_m", &kf.active, nullptr);
+  kf = global_input.keys[(unsigned)DD_Keys::MOUSE_LEFT];
+  set_table_field("mouse_b_l", &kf.active, nullptr);
+  kf = global_input.keys[(unsigned)DD_Keys::MOUSE_XDELTA];
+  set_table_field("mouse_x_delta", nullptr, &kf.order);
+  kf = global_input.keys[(unsigned)DD_Keys::MOUSE_YDELTA];
+  set_table_field("mouse_y_delta", nullptr, &kf.order);
+  kf = global_input.keys[(unsigned)DD_Keys::MOUSE_X];
+  set_table_field("mouse_x", nullptr, &kf.order);
+  kf = global_input.keys[(unsigned)DD_Keys::MOUSE_Y];
+  set_table_field("mouse_y", nullptr, &kf.order);
+  kf = global_input.keys[(unsigned)DD_Keys::MOUSE_SCROLL];
+  set_table_field("mouse_scroll", nullptr, &kf.order);
+  kf = global_input.keys[(unsigned)DD_Keys::UP_KEY];
+  set_table_field("up", &kf.active, nullptr);
+  kf = global_input.keys[(unsigned)DD_Keys::DOWN_KEY];
+  set_table_field("down", &kf.active, nullptr);
+  kf = global_input.keys[(unsigned)DD_Keys::LEFT_KEY];
+  set_table_field("left", &kf.active, nullptr);
+  kf = global_input.keys[(unsigned)DD_Keys::RIGHT_KEY];
+  set_table_field("right", &kf.active, nullptr);
+  kf = global_input.keys[(unsigned)DD_Keys::TAB_Key];
+  set_table_field("tab", &kf.active, nullptr);
+  kf = global_input.keys[(unsigned)DD_Keys::TILDE];
+  set_table_field("grave", &kf.active, nullptr);
 
   lua_setglobal(L, "__dd_input");
-	//*/
+  //*/
 }
 
 }  // namespace ddInput

@@ -284,6 +284,7 @@ void initialize(const unsigned width, const unsigned height) {
   // light volumes/plane
 	ddAgent *lplane = find_ddAgent(light_plane_id.gethash());
 	POW2_VERIFY_MSG(lplane != nullptr, "Light plane agent not initialized", 0);
+	ddAssets::remove_rigid_body(lplane);
 	lplane->rend.flag_render = false;
 }
 
@@ -482,10 +483,7 @@ void draw_scene(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
 
   // particle pass (copy depth buffer from gbuufer pass)
 
-  // post processing
-  // hdri tone mapping
-
-  // debug (maybe)
+	// post processing
 	//ddGPUFrontEnd::clear_screen(1.0);
   ddGPUFrontEnd::toggle_depth_test(false);
 	ddGPUFrontEnd::toggle_alpha_blend(true);
@@ -494,10 +492,13 @@ void draw_scene(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
   POW2_VERIFY_MSG(sh != nullptr, "Post processing shader missing", 0);
   sh->use();
 
+	// hdri tone mapping
+	sh->set_uniform((int)RE_PostPr::DoToneMap_b, true);
+	sh->set_uniform((int)RE_PostPr::AveLum_f, 1.f);
+
   // set uniforms
   sh->set_uniform((int)RE_PostPr::MVP_m4x4, glm::mat4());
-  sh->set_uniform((int)RE_PostPr::DoToneMap_b, false);
-  sh->set_uniform((int)RE_PostPr::AveLum_f, 1.f);
+	sh->set_uniform((int)RE_PostPr::GammaCorrect_b, true);
   sh->set_uniform((int)RE_PostPr::Exposure_f, 0.75f);
   sh->set_uniform((int)RE_PostPr::White_f, 0.97f);
   sh->set_uniform((int)RE_PostPr::BlendParticle_b, false);
@@ -620,9 +621,9 @@ void render_static(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
 
         // matrices
         agent->inst.m4x4[0] = glm::mat4();  // identity
-        // glm::mat4 norm_m = glm::transpose(glm::inverse(agent->inst.m4x4[0]));
-        // sh->set_uniform((int)RE_GBuffer::) normal matrix
-        glm::mat4 model_m = ddBodyFuncs::get_model_mat(&agent->body);
+				glm::mat4 model_m = ddBodyFuncs::get_model_mat(&agent->body);
+        glm::mat4 norm_m = glm::transpose(glm::inverse(model_m));
+				sh->set_uniform((int)RE_GBuffer::Norm_m4x4, norm_m);
         sh->set_uniform((int)RE_GBuffer::MVP_m4x4,
                         cam_proj_m * cam_view_m * model_m);
 
@@ -695,8 +696,8 @@ void light_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
     }
 
     // set shader uniforms per light
-    sh->set_uniform((int)RE_Light::Light_position_v3,
-                    glm::vec3(parent_mat * glm::vec4(blb->position, 1.f)));
+		glm::vec3 lpos = glm::vec3(parent_mat * glm::vec4(blb->position, 1.f));
+    sh->set_uniform((int)RE_Light::Light_position_v3, lpos);
 		sh->set_uniform((int)RE_Light::Light_type_i, (int)blb->type);
 		sh->set_uniform((int)RE_Light::Light_direction_v3, blb->direction);
 		sh->set_uniform((int)RE_Light::Light_color_v3, blb->color);

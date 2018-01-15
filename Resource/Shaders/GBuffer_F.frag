@@ -32,7 +32,7 @@ uniform bool useDebug = false;
 void main() {	
 	// store values to G buffer
     vec4 color;
-    vec3 spec;
+    float spec;
     vec3 normal;
     // normal
 	if (normalFlag) {
@@ -60,13 +60,13 @@ void main() {
 
     // specular
     if (specFlag) {
-        spec = texture( tex_specular, fs_in.TexCoord ).rgb; 
+        spec = texture( tex_specular, fs_in.TexCoord ).r; 
     } else {
-        spec = vec3(shininess);
+        spec = shininess;
     }
     
     PositionData = vec4(fs_in.FragPos, 1.0);
 	ColorData = vec4(color);
 	if (useDebug) { ColorData = vec4(fs_in.Debug.y, 0.0, 0.0, 1.0); }
-    NormalData = vec4( normal, spec.r);
+    NormalData = vec4( normal, spec);
 }

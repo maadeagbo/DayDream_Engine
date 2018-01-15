@@ -27,7 +27,7 @@ const cbuff<32> lvl_asset_hash("_load_resource_done");
 const cbuff<32> terminal_hash("poll_terminal");
 const cbuff<32> process_terminal_hash("process_terminal");
 const cbuff<32> init_screen_hash("init_screen");
-const cbuff<32> reset_lvl_script_hash("refresh_script");
+const cbuff<32> reset_lvl_script_hash("reset_lvl");
 }  // namespace
 
 static void error_callback_glfw(int error, const char *description) {
@@ -172,7 +172,7 @@ bool ddEngine::level_select(const size_t w, const size_t h) {
     int func_ref = get_lua_ref(main_lstate, nullptr, "generate_levels");
     DD_LEvent init_event;
     init_event.handle = "get_lvls";
-		main_fb = std::move(callback_lua(main_lstate, init_event, func_ref, -1));
+		callback_lua(main_lstate, init_event, func_ref, main_fb, -1);
 
     int64_t *num_levels = main_fb.get_func_val<int64_t>("num_levels");
     if (num_levels) {
@@ -431,6 +431,11 @@ void ddEngine::shutdown() {
   ddAssets::cleanup();
   // shutdown glfw
   glfwTerminate();
+
+	// close lua
+	lua_close(main_lstate);
+	// close physics engine
+	main_physics.cleanup_world();
 }
 
 bool ddEngine::execTerminal(const char *cmd) {

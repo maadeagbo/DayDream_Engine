@@ -276,7 +276,7 @@ void register_callback_lua(lua_State *L, const char *func_sig,
   lua_register(L, func_sig, _func);
 }
 
-DD_FuncBuff callback_lua(lua_State *L, const DD_LEvent levent, int func_ref,
+void callback_lua(lua_State *L, const DD_LEvent levent, int func_ref, DD_FuncBuff &fb,
                          int global_ref) {
   /// \brief print out error func
   int err_num = 0;
@@ -285,26 +285,23 @@ DD_FuncBuff callback_lua(lua_State *L, const DD_LEvent levent, int func_ref,
     lua_pop(L, 1);
   };
 
-	// buffer
-	DD_FuncBuff fb;
-
   // retrieve function
   if (global_ref > 0) {
     lua_rawgeti(L, LUA_REGISTRYINDEX, func_ref);
     if (check_stack_nil(L, -1)) {
       printf("<%d> class function doesn't exist.\n", func_ref);
-      return fb;
+      return;
     }
     lua_rawgeti(L, LUA_REGISTRYINDEX, global_ref);
     if (check_stack_nil(L, -1)) {
       printf("<%d> global doesn't exist.\n", global_ref);
-      return fb;
+      return;
     }
   } else {  // find global function
     lua_rawgeti(L, LUA_REGISTRYINDEX, func_ref);
     if (check_stack_nil(L, -1)) {
       printf("<%d> global function doesn't exist.\n", func_ref);
-      return fb;
+      return;
     }
   }
 
@@ -319,7 +316,7 @@ DD_FuncBuff callback_lua(lua_State *L, const DD_LEvent levent, int func_ref,
   lua_pushinteger(L, (int64_t)levent.active);  // push # of arguments
 
   // debug
-  stack_dump(L);
+  //stack_dump(L);
 
   // call function
   int num_args = global_ref > 0 ? 4 : 3;
@@ -329,8 +326,6 @@ DD_FuncBuff callback_lua(lua_State *L, const DD_LEvent levent, int func_ref,
 
   // get returned events and fill buffer
   parse_lua_events(L, fb);
-
-	return fb;
 }
 
 void stack_dump(lua_State *L) {

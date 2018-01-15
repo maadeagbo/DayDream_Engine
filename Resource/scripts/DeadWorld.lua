@@ -8,6 +8,9 @@ do
 	ticks = 0.0
 	speed = 5.0
 
+	pitch = 0
+	yaw = 0
+
 	main_character = base_hero:new({name = "Slayer"})
 		enemies = {}
 
@@ -49,6 +52,7 @@ do
 
 		-- get camera position
 		old_pos = get_agent_ls_pos( {["id"] = deadworld_asset["cam_ag"]} )
+		old_rot = get_agent_ws_rot( {["id"] = deadworld_asset["cam_ag"]} )
 		--[[
 		out = { ["output"] = string.format("Cam pos = %.3f, %.3f, %.3f", 
 			old_pos["x"], old_pos["y"], old_pos["z"]) 
@@ -58,31 +62,45 @@ do
 
 		-- input
 		cam_pos = { ["id"] = deadworld_asset["cam_ag"] }
+		cam_rot = { ["id"] = deadworld_asset["cam_ag"] }
 		update_pos = false
 		update_rot = false
-		if __dd_input["a"]["active"] then
+		if __dd_input["a"] then
 			--
 			cam_pos["x"] = old_pos["x"] - speed * __frame_time
 			update_pos = true
+			--dd_print({["output"] = "bang"})
 		end
-		if __dd_input["d"]["active"] then
+		if __dd_input["d"] then
 			--
 			cam_pos["x"] = old_pos["x"] + speed * __frame_time
 			update_pos = true
 		end
-		if __dd_input["w"]["active"] then
+		if __dd_input["w"] then
 			--
 			cam_pos["z"] = old_pos["z"] - speed * __frame_time
 			update_pos = true
 		end
-		if __dd_input["s"]["active"] then
+		if __dd_input["s"] then
 			--
 			cam_pos["z"] = old_pos["z"] + speed * __frame_time
 			update_pos = true
 		end
+		if __dd_input["mouse_b_l"] then
+			--
+			pitch = pitch + __dd_input["mouse_y_delta"]
+			dd_print({["output"] = "Y: "..pitch})
+			yaw = yaw + __dd_input["mouse_x_delta"]
+			dd_print({["output"] = "X: "..yaw})
+
+			cam_rot["x"] = yaw
+			cam_rot["y"] = pitch
+			update_rot = true
+		end
 
 		-- update position
 		if update_pos then set_agent_pos(cam_pos) end
+		if update_rot then set_agent_rot(cam_rot) end
 	end
 
 end
