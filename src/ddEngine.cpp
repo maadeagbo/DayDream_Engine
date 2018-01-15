@@ -27,6 +27,7 @@ const cbuff<32> lvl_asset_hash("_load_resource_done");
 const cbuff<32> terminal_hash("poll_terminal");
 const cbuff<32> process_terminal_hash("process_terminal");
 const cbuff<32> init_screen_hash("init_screen");
+const cbuff<32> reset_lvl_script_hash("refresh_script");
 }  // namespace
 
 static void error_callback_glfw(int error, const char *description) {
@@ -166,14 +167,12 @@ bool ddEngine::level_select(const size_t w, const size_t h) {
   startup_script.format("%s/scripts/startup.lua", RESOURCE_DIR);
   bool file_loaded = parse_luafile(main_lstate, startup_script.str());
 
-  // create array of levels
-  dd_array<const char *> lvls_list;
   if (file_loaded) {
     // get reference to function
     int func_ref = get_lua_ref(main_lstate, nullptr, "generate_levels");
     DD_LEvent init_event;
     init_event.handle = "get_lvls";
-    callback_lua(main_lstate, init_event, main_fb, func_ref, -1);
+		main_fb = std::move(callback_lua(main_lstate, init_event, func_ref, -1));
 
     int64_t *num_levels = main_fb.get_func_val<int64_t>("num_levels");
     if (num_levels) {
@@ -359,7 +358,9 @@ void ddEngine::load() {
   main_q.subscribe(lvl_asset_hash.gethash(), sys_engine_hash);
   main_q.subscribe(init_screen_hash.gethash(), sys_engine_hash);
   main_q.subscribe(draw_hash.gethash(), sys_engine_hash);
-  main_q.subscribe(physics_hash.gethash(), sys_engine_hash);
+	main_q.subscribe(physics_hash.gethash(), sys_engine_hash);
+	main_q.subscribe(process_terminal_hash.gethash(), sys_engine_hash);
+	main_q.subscribe(reset_lvl_script_hash.gethash(), sys_engine_hash);
 
   // load terminal history
   ddTerminal::inTerminalHistory();
@@ -392,31 +393,31 @@ void ddEngine::run() {
   // set certain default parameters for assets
   ddAssets::default_params(window_w, window_h);
 
-  // push some events to kick start the queue
-  DD_LEvent _event;
-
   // create new screen
-  _event.handle = init_screen_hash;
-  q_push(_event);
+	DD_LEvent _e1;
+	_e1.handle = init_screen_hash;
+  q_push(_e1);
 
   // turn on load screen
-  _event.handle = load_hash;
-  q_push(_event);
+	DD_LEvent _e2;
+	_e2.handle = load_hash;
+  q_push(_e2);
 
   // add async level assets load
-  _event.handle = main_q.res_call;
-  q_push(_event);
+	DD_LEvent _e3;
+	_e3.handle = main_q.res_call;
+  q_push(_e3);
 
   // add frame update
-  _event.active = 0;
-  _event.handle = frame_enter_hash;
-  q_push(_event);
+	DD_LEvent _e4;
+	_e4.handle = frame_enter_hash;
+  q_push(_e4);
 
   // exit (debug testing)
-  _event.active = 0;
-  _event.handle = exit_hash;
-  _event.delay = 1000;
-  q_push(_event);
+	DD_LEvent _e5;
+	_e5.handle = exit_hash;
+  _e5.delay = 1000;
+  //q_push(_event);
 
   main_q.process_queue();
 }
@@ -449,7 +450,6 @@ bool ddEngine::execTerminal(const char *cmd) {
 
     DD_LEvent _event;
     _event.handle = head.c_str();
-    add_arg_LEvent<const char *>(&_event, "tag", str_arg.str());
     q_push(_event);
     return true;
   } else {
@@ -505,7 +505,9 @@ void ddEngine::update(DD_LEvent &_event) {
     q_push(new_event);
 
     // process terminal
-    new_event.handle = terminal_hash;
+		new_event.handle = terminal_hash;
+		q_push(new_event);
+    new_event.handle = process_terminal_hash;
     q_push(new_event);
 
 		// update per frame script information
@@ -586,5 +588,8 @@ void ddEngine::update(DD_LEvent &_event) {
   } else if (e_sig == physics_hash.gethash()) {  // physics update
     // physics simulation
     main_physics.step_simulate(ddTime::get_avg_frame_time());
+  } else if (e_sig == reset_lvl_script_hash.gethash()) {  // lvl update script
+    // reset lua script
+		main_q.init_level_scripts(lvls_list[current_lvl], true);
   }
 }

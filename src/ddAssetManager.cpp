@@ -9,6 +9,8 @@ namespace {
 DD_FuncBuff fb;
 // containers only exist in this translation unit
 btDiscreteDynamicsWorld *p_world = nullptr;
+// rigid body types
+enum class RBType : unsigned { BOX, SPHERE };
 
 // default parameters for object initialization
 unsigned native_scr_width = 0, native_scr_height = 0;
@@ -141,9 +143,10 @@ ddTex2D *create_tex2D(const char *path, const char *img_id);
 /// \param agent to add rigid body
 /// \param mesh data containing bounding box information
 /// \return True if rigid body is successfully added
-bool add_rigid_body(ddAgent *agent, ddModelData *mdata, const float mass = 0.f);
-/** 
- * \brief Removes rigidbody from physics world 
+bool add_rigid_body(ddAgent *agent, ddModelData *mdata, const float mass = 0.f,
+                    RBType rb_type = RBType::BOX);
+/**
+ * \brief Removes rigidbody from physics world
  * \param agent contains rigid body
  */
 void delete_rigid_body(ddAgent *agent);
@@ -313,7 +316,7 @@ namespace ddSceneManager {
 
 void cull_objects(const FrustumBox fr, const glm::mat4 view_m,
                   dd_array<ddAgent *> &_agents) {
-	POW2_VERIFY(_agents.size() == ASSETS_CONTAINER_MAX_SIZE);
+  POW2_VERIFY(_agents.size() == ASSETS_CONTAINER_MAX_SIZE);
 
   /** \brief Get max corner of AAABB based on frustum face normal */
   auto max_aabb_corner = [](ddBodyFuncs::AABB bbox, const glm::vec3 normal) {
@@ -386,30 +389,30 @@ void cull_objects(const FrustumBox fr, const glm::mat4 view_m,
   }
 }
 
-void get_active_lights(dd_array<ddLBulb*>& _lights) {
-	POW2_VERIFY(_lights.size() == ASSETS_CONTAINER_MIN_SIZE);
+void get_active_lights(dd_array<ddLBulb *> &_lights) {
+  POW2_VERIFY(_lights.size() == ASSETS_CONTAINER_MIN_SIZE);
 
-	// null the array
-	DD_FOREACH(ddLBulb*, blb, _lights) { *blb.ptr = nullptr; }
+  // null the array
+  DD_FOREACH(ddLBulb *, blb, _lights) { *blb.ptr = nullptr; }
 
-	unsigned blb_tracker = 0;
-	for (auto &idx : map_lights) {
-		ddLBulb *blb = &lights[idx.second];
+  unsigned blb_tracker = 0;
+  for (auto &idx : map_lights) {
+    ddLBulb *blb = &lights[idx.second];
 
-		_lights[blb_tracker] = blb->active ? blb : nullptr;
+    _lights[blb_tracker] = blb->active ? blb : nullptr;
 
-		blb_tracker++;
-	}
+    blb_tracker++;
+  }
 }
 
 ddLBulb *get_shadow_light() {
-	for (auto &idx : map_lights) {
-		ddLBulb *blb = &lights[idx.second];
-		if (blb->active && blb->shadow) {
-			return blb;
-		}
-	}
-	return nullptr;
+  for (auto &idx : map_lights) {
+    ddLBulb *blb = &lights[idx.second];
+    if (blb->active && blb->shadow) {
+      return blb;
+    }
+  }
+  return nullptr;
 }
 
 }  // namespace ddSceneManager
@@ -422,7 +425,9 @@ int dd_assets_create_agent(lua_State *L) {
   const char *agent_id = fb.get_func_val<const char>("id");
   int64_t *mesh_id = fb.get_func_val<int64_t>("mesh");
   int64_t *sk_id = fb.get_func_val<int64_t>("skeleton");
-  int64_t *p_id = fb.get_func_val<int64_t>("parent");
+	int64_t *p_id = fb.get_func_val<int64_t>("parent");
+	int64_t *shape = fb.get_func_val<int64_t>("type");
+  float *agent_mass = fb.get_func_val<float>("mass");
 
   ddAgent *new_agent = nullptr;
   if (agent_id) {
@@ -484,7 +489,12 @@ int dd_assets_create_agent(lua_State *L) {
         }
       }
       // add ddBody to agent and then agent to world
-      add_rigid_body(new_agent, mdata);
+      float mass = 0.f;
+			RBType type = RBType::BOX;
+      if (mdata && agent_mass) mass = *agent_mass;
+			if (shape && *shape == 1) type = RBType::SPHERE;
+
+      add_rigid_body(new_agent, mdata, mass, type);
       // return agent id
       lua_pushinteger(L, new_agent->id);
       return 1;
@@ -540,11 +550,11 @@ int dd_assets_create_cam(lua_State *L) {
       new_cam->height = native_scr_height;
       new_cam->fovh = glm::radians(60.f);
       new_cam->n_plane = 0.1f;
-      new_cam->f_plane = 100.f;
+      new_cam->f_plane = 50.f;
       new_cam->active = true;
       // rotate agent to face towards the negative z-axis
-      ddBodyFuncs::rotate(
-          &ag->body, glm::vec3(glm::radians(90.f), glm::radians(180.f), 0.f));
+      // ddBodyFuncs::rotate(
+      //&ag->body, glm::vec3(glm::radians(90.f), glm::radians(180.f), 0.f));
     }
 
     if (new_cam) {
@@ -571,8 +581,8 @@ int dd_assets_create_light(lua_State *L) {
       ddTerminal::f_post("Duplicate light <%s>", id);
     } else {
       new_bulb = spawn_ddLBulb(light_id);
-			// initialize
-			new_bulb->active = true;
+      // initialize
+      new_bulb->active = true;
     }
 
     if (new_bulb) {
@@ -654,8 +664,7 @@ int get_agent_rot_ls(lua_State *L) {
     ddAgent *ag = find_ddAgent((size_t)(*id));
     if (ag) {
       // push vec3 (euler from quaternion) to stack
-      glm::quat q = ddBodyFuncs::rot(&ag->body);
-      glm::vec3 rot = glm::eulerAngles(q);
+      glm::vec3 rot = ddBodyFuncs::rot(&ag->body);
       push_vec3_to_lua(L, rot.x, rot.y, rot.y);
       return 1;
     }
@@ -674,8 +683,7 @@ int get_agent_rot_ws(lua_State *L) {
     ddAgent *ag = find_ddAgent((size_t)(*id));
     if (ag) {
       // push vec3 (euler from quaternion) to stack
-      glm::quat q = ddBodyFuncs::rot_ws(&ag->body);
-      glm::vec3 rot = glm::eulerAngles(q);
+      glm::vec3 rot = ddBodyFuncs::rot_ws(&ag->body);
       push_vec3_to_lua(L, rot.x, rot.y, rot.y);
       return 1;
     }
@@ -693,12 +701,17 @@ int set_agent_pos(lua_State *L) {
   float *_y = fb.get_func_val<float>("y");
   float *_z = fb.get_func_val<float>("z");
 
-  if (id && _x && _y && _z) {
+  if (id) {
     ddAgent *ag = find_ddAgent((size_t)(*id));
+		glm::vec3 pos = ddBodyFuncs::pos_ws(&ag->body);
+
+		// set arguments based on availability
+		const float x_ = _x ? *_x : pos.x;
+		const float y_ = _y ? *_y : pos.y;
+		const float z_ = _z ? *_z : pos.z;
+
     if (ag) {
-      // set agent position based on arguments
-      glm::vec3 new_pos = glm::vec3(*_x, *_y, *_z);
-      ddBodyFuncs::update_pos(&ag->body, new_pos);
+      ddBodyFuncs::update_pos(&ag->body, glm::vec3(x_, y_, z_));
       return 0;
     }
   }
@@ -743,6 +756,7 @@ int set_agent_scale(lua_State *L) {
       // set agent scale based on arguments
       glm::vec3 new_scale = glm::vec3(*_x, *_y, *_z);
       ddBodyFuncs::update_scale(&ag->body, new_scale);
+      p_world->updateSingleAabb(ag->body.bt_bod);
 
       return 0;
     }
@@ -1175,12 +1189,13 @@ ddTex2D *create_tex2D(const char *path, const char *img_id) {
   return new_tex;
 }
 
-bool add_rigid_body(ddAgent *agent, ddModelData *mdata, const float mass) {
+bool add_rigid_body(ddAgent *agent, ddModelData *mdata, const float mass,
+                    RBType rb_type) {
   if (!agent) return false;
 
   // set up bounding box
-  glm::vec3 bb_max = glm::vec3(0.1f, 0.1f, 0.1f);
-  glm::vec3 bb_min = glm::vec3(-0.1f, -0.1f, -0.1f);
+  glm::vec3 bb_max = glm::vec3(0.01f, 0.01f, 0.01f);
+  glm::vec3 bb_min = glm::vec3(-0.01f, -0.01f, -0.01f);
   if (mdata) {
     bb_max = mdata->mesh_info[0].bb_max;
     bb_min = mdata->mesh_info[0].bb_min;
@@ -1188,8 +1203,15 @@ bool add_rigid_body(ddAgent *agent, ddModelData *mdata, const float mass) {
   float h_width = (bb_max.x - bb_min.x) * 0.5f;
   float h_height = (bb_max.y - bb_min.y) * 0.5f;
   float h_depth = (bb_max.z - bb_min.z) * 0.5f;
-  btBoxShape *bt_bbox = new btBoxShape(
-      btVector3(btScalar(h_width), btScalar(h_height), btScalar(h_depth)));
+
+	btCollisionShape *bt_shape = nullptr; 
+	if (rb_type == RBType::BOX) {
+		bt_shape = new btBoxShape(
+			btVector3(btScalar(h_width), btScalar(h_height), btScalar(h_depth)));
+  } else {
+		float diameter = glm::length(glm::vec3(h_width, h_height, h_depth));
+		bt_shape = new btSphereShape(diameter * 0.5f);
+  }
 
   // set up rigid body constructor
   btTransform transform;
@@ -1200,13 +1222,15 @@ bool add_rigid_body(ddAgent *agent, ddModelData *mdata, const float mass) {
   btScalar _mass(mass);
   bool isDynamic = (_mass != 0.f);
   btVector3 localInertia(0, 0, 0);
-  if (isDynamic) bt_bbox->calculateLocalInertia(_mass, localInertia);
+	if (isDynamic) {
+		bt_shape->calculateLocalInertia(_mass, localInertia);
+	}
 
   // set up rigid body
   // using motionstate is optional, it provides interpolation capabilities, and
   // only synchronizes 'active' objects
   btDefaultMotionState *bt_motion = new btDefaultMotionState(transform);
-  btRigidBody::btRigidBodyConstructionInfo rbInfo(_mass, bt_motion, bt_bbox,
+  btRigidBody::btRigidBodyConstructionInfo rbInfo(_mass, bt_motion, bt_shape,
                                                   localInertia);
   agent->body.bt_bod = new btRigidBody(rbInfo);
 

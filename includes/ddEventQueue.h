@@ -109,7 +109,7 @@ struct ddQueue {
   /**
    * \brief ONLY CALLED INTERNALLY BY ddEngine. DO NOT USE
    */
-  void init_level_scripts(const char *script_id);
+  void init_level_scripts(const char *script_id, const bool runtime = false);
 
   cbuff<32> lvl_call;
   cbuff<32> lvl_call_i;
@@ -164,8 +164,8 @@ struct ddQueue {
   std::map<size_t, dd_array<size_t>> registered_events;
   std::map<size_t, handler_sig> callback_funcs;
   std::map<size_t, SysEventHandler> sys_funcs;
-  std::future<void> async_lvl_init;
-  std::future<void> async_resource;
+  std::future<DD_FuncBuff> async_lvl_init;
+  std::future<DD_FuncBuff> async_resource;
   handler_sig lvl_init;
   handler_sig lvl_update;
   handler_sig lvl_res;

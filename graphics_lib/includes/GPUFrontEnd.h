@@ -227,6 +227,8 @@ void toggle_depth_test(bool flag = false);
 void toggle_stencil_test(bool flag = false);
 // Enable or disable framebuffer additive blending
 void toggle_additive_blend(bool flag = false);
+// Enable or disable framebuffer alpha blending
+void toggle_alpha_blend(bool flag = false);
 
 enum DepthMode { LESS_OR_EQUAL, GREATER, LESS };
 // Set how depth testing function behaves

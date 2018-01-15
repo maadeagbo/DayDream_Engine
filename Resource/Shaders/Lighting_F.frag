@@ -98,15 +98,16 @@ float ShadowCalculation(vec4 lightSpace, vec3 normal, vec3 lightDir) {
 	return shadow;
 }
 
-vec4 pointSpotLightModel( vec3 lightDir, vec3 viewDir, vec3 norm, vec4 albedoSpec, float _distance ) {
-	vec3 ambient =  vec3(albedoSpec) * 0.1;
+vec4 pointSpotLightModel( vec3 lightDir, vec3 viewDir, vec3 norm, vec4 albedo, 
+													float _distance, float spec_val ) {
+	vec3 ambient =  vec3(albedo) * 0.1;
 	// diffuse
 	float kd = max(dot(norm, lightDir), 0.0);
-	vec3 diffuse = Light.color * vec3(albedoSpec) * kd;
+	vec3 diffuse = Light.color * vec3(albedo) * kd;
 	// specular
 	vec3 halfDir = normalize(lightDir + viewDir);
 	float ks = pow(max(dot(norm, halfDir), 0.0), 40.0);
-	vec3 spec = Light.color * ks * albedoSpec.a;
+	vec3 spec = Light.color * ks * spec_val;
 	
 	float spot = 1.0, intensity = 1.0;
 	// spot light calc
@@ -124,27 +125,29 @@ vec4 pointSpotLightModel( vec3 lightDir, vec3 viewDir, vec3 norm, vec4 albedoSpe
 	}
 
 	// Attenuation
-	float attenuation = 1.0f / (1.0 + Light.linear * _distance + Light.quadratic * (_distance * _distance)); 
+	float attenuation = 1.0f / (1.0 + Light.linear * _distance + Light.quadratic * 
+		(_distance * _distance)); 
 	diffuse *= attenuation; 
 	ambient *= attenuation; 
 	spec *= attenuation; 
 
-	return vec4((diffuse* spot * intensity + ambient * intensity + spec * spot * intensity), 1.0);
+	return vec4((diffuse* spot * intensity + ambient * intensity + spec * spot * 
+							intensity), albedo.a);
 }
 
-vec4 directionLightModel( vec3 lightDir, vec3 viewDir, vec3 norm, vec4 albedoSpec, 
-	vec3 color, float shadow) 
+vec4 directionLightModel( vec3 lightDir, vec3 viewDir, vec3 norm, vec4 albedo, 
+	vec3 color, float shadow, float spec_val) 
 {
-	vec3 ambient =  vec3(albedoSpec) * 0.1;
+	vec3 ambient =  vec3(albedo) * 0.1;
 	// diffuse
 	float kd = max(dot(norm, lightDir), 0.0);
-	vec3 diffuse = color * vec3(albedoSpec) * kd;
+	vec3 diffuse = color * vec3(albedo) * kd;
 	// specular
 	vec3 halfDir = normalize(lightDir + viewDir);
 	float ks = pow(max(dot(norm, halfDir), 0.0), 40.0);
-	vec3 spec = color * ks * albedoSpec.a;
+	vec3 spec = color * ks * spec_val;
 
-	return vec4((ambient + (diffuse + spec) * shadow), 1.0);
+	return vec4((ambient + (diffuse + spec) * shadow), albedo.a);
 	//return vec4(vec3(shadow), 1.0);
 }
 
@@ -156,8 +159,9 @@ void main() {
 	}
 	vec3 pos = vec3( texture( PositionTex, tex_coord ) );
 	vec3 norm = vec3( texture( NormalTex, tex_coord ) );
-	vec4 albedoSpec = texture( ColorTex, tex_coord );
-	//vec4 albedoSpec = vec4(0.5, 0.5, 0.5, 1.0);
+	float spec = texture( NormalTex, tex_coord ).a;
+	vec4 albedo = texture( ColorTex, tex_coord );
+	//vec4 albedo = vec4(0.5, 0.5, 0.5, 1.0);
 	vec3 viewDir = normalize(viewPos - pos);
 	vec3 lightDir = vec3(0.0);
 	// uniform braching to select light
@@ -184,19 +188,19 @@ void main() {
 				//finalColor = vec4(texture( DepthTex, tex_coord ).r);
 			}
 			finalColor = directionLightModel( lightDir, viewDir, norm, 
-				albedoSpec, Light.color, shadow);
+				albedo, Light.color, shadow, spec);
 		} else {
 			vec3 _dist = Light.position - pos;
 			lightDir = normalize(_dist);
-			finalColor = pointSpotLightModel( lightDir, viewDir, norm, albedoSpec, 
-				length(_dist) );
+			finalColor = pointSpotLightModel( lightDir, viewDir, norm, albedo, 
+				length(_dist), spec);
 		}
 
 		
 		OutColor = finalColor;
 		//OutColor = vec4(1.0, 0.0, 0.0, 1.0);
 		//OutColor = vec4(norm, 1.0);
-		//OutColor = albedoSpec;
+		//OutColor = albedo;
 	}
 	
 }

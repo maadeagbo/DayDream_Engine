@@ -23,21 +23,27 @@ glm::vec3 pos_ws(const ddBody* bod) {
   return glm::vec3(ws.x(), ws.y(), ws.z());
 }
 
-glm::quat rot(const ddBody* bod) {
+glm::vec3 rot(const ddBody* bod) {
   // local transform
-  btTransform tr = bod->bt_bod->getCenterOfMassTransform();
-  btQuaternion q = tr.getRotation();
-  return glm::quat(q.x(), q.y(), q.z(), q.w());
+  btScalar x, y, z;
+  bod->bt_bod->getCenterOfMassTransform().getBasis().getEulerZYX(z, y, x);
+  return glm::vec3(x, y, z);
 }
 
-glm::quat rot_ws(const ddBody* bod) {
+glm::vec3 rot_ws(const ddBody* bod) {
   // world transform
-  btTransform tr = bod->bt_bod->getWorldTransform();
-  btQuaternion q = tr.getRotation();
-  return glm::quat(q.x(), q.y(), q.z(), q.w());
+  btScalar x, y, z;
+  bod->bt_bod->getWorldTransform().getBasis().getEulerZYX(z, y, x);
+  return glm::vec3(x, y, z);
 }
 
-glm::vec3 forward_dir(const ddBody* bod, const glm::quat q) {
+glm::vec3 forward_dir(const ddBody* bod) {
+  // btQuaternion bt_q = bod->bt_bod->getWorldTransform().get
+  glm::vec3 r = ddBodyFuncs::rot_ws(bod);
+	r.x = glm::radians(r.x);
+	r.y = glm::radians(r.y);
+	r.z = glm::radians(r.z);
+  glm::quat q = glm::quat(r);
   glm::vec4 _f =
       q * glm::vec4(world_front.x, world_front.y, world_front.z, 1.f);
   return glm::normalize(glm::vec3(_f));
@@ -45,12 +51,12 @@ glm::vec3 forward_dir(const ddBody* bod, const glm::quat q) {
 
 void update_pos(ddBody* bod, const glm::vec3& pos) {
   // local rotation
-  const glm::quat q = ddBodyFuncs::rot(bod);
+  const btQuaternion q1 = bod->bt_bod->getCenterOfMassTransform().getRotation();
 
   // set tranform
   btTransform tr;
   tr.setOrigin(btVector3(pos.x, pos.y, pos.z));
-  tr.setRotation(btQuaternion(q.x, q.y, q.z, q.z));
+  tr.setRotation(q1);
   bod->bt_bod->setWorldTransform(tr);
 }
 
@@ -81,15 +87,12 @@ void update_scale(ddBody* bod, const glm::vec3& _scale) {
 }
 
 glm::mat4 get_model_mat(ddBody* bod) {
-  const glm::vec3 pos = ddBodyFuncs::pos_ws(bod);
-  const glm::quat q = ddBodyFuncs::rot_ws(bod);
+  glm::mat4 trans_rot;
+  bod->bt_bod->getWorldTransform().getOpenGLMatrix(&trans_rot[0][0]);
   const glm::vec3 sc = bod->scale;
-
-  glm::mat4 _t = glm::translate(glm::mat4(), pos);
-  glm::mat4 _r = glm::mat4_cast(q);
   glm::mat4 _s = glm::scale(glm::mat4(), sc);
 
-  return _t * _r * _s;
+  return trans_rot * _s;
 }
 
 AABB get_aabb(ddBody* bod) {

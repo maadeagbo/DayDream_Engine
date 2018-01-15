@@ -1164,6 +1164,18 @@ void toggle_additive_blend(bool flag) {
   }
 }
 
+void toggle_alpha_blend(bool flag) {
+	if (flag) {
+		// additive blend on
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	}
+	else {
+		// disble blending
+		glDisable(GL_BLEND);
+	}
+}
+
 void set_depth_mode(const DepthMode mode) {
   switch (mode) {
     case DepthMode::LESS:

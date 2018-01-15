@@ -32,17 +32,17 @@ glm::vec3 pos(const ddBody *bod);
  */
 glm::vec3 pos_ws(const ddBody *bod);
 /**
- * \brief Local-space rotation
+ * \brief Local-space rotation (euler)
  */
-glm::quat rot(const ddBody *bod);
+glm::vec3 rot(const ddBody *bod);
 /**
- * \brief World-space rotation
+ * \brief World-space rotation (euler)
  */
-glm::quat rot_ws(const ddBody *bod);
+glm::vec3 rot_ws(const ddBody *bod);
 /**
  * \brief Forward direction based on world (0, 0, -1)
  */
-glm::vec3 forward_dir(const ddBody *bod, const glm::quat q);
+glm::vec3 forward_dir(const ddBody *bod);
 /**
  * \brief Right direction based on world (0, 0, -1)
  */

@@ -282,6 +282,9 @@ void initialize(const unsigned width, const unsigned height) {
   }
 
   // light volumes/plane
+	ddAgent *lplane = find_ddAgent(light_plane_id.gethash());
+	POW2_VERIFY_MSG(lplane != nullptr, "Light plane agent not initialized", 0);
+	lplane->rend.flag_render = false;
 }
 
 void shutdown() {
@@ -308,7 +311,10 @@ void render_load_screen() {
   // set uniforms
   sh->set_uniform((int)RE_PostPr::MVP_m4x4,
                   load_trans_mat * load_scale_mat * load_rot_mat);
-  sh->set_uniform((int)RE_PostPr::DoToneMap_b, false);
+	sh->set_uniform((int)RE_PostPr::DoToneMap_b, false);
+	sh->set_uniform((int)RE_PostPr::GammaCorrect_b, false);
+	sh->set_uniform((int)RE_PostPr::Blur_b, false);
+	sh->set_uniform((int)RE_PostPr::SampleShadow_b, false);
   sh->set_uniform((int)RE_PostPr::AveLum_f, 1.f);
   sh->set_uniform((int)RE_PostPr::Exposure_f, 0.75f);
   sh->set_uniform((int)RE_PostPr::White_f, 0.97f);
@@ -320,7 +326,9 @@ void render_load_screen() {
   sh->set_uniform((int)RE_PostPr::ColorTex_smp2d, 0);
   sh->set_uniform((int)RE_PostPr::SampleMap_b, true);
 
+	ddGPUFrontEnd::toggle_alpha_blend(true);
   ddGPUFrontEnd::render_quad();
+	ddGPUFrontEnd::toggle_alpha_blend(false);
 }
 
 void draw_world() {
@@ -353,7 +361,7 @@ glm::mat4 calc_view_matrix(const ddBody *bod) {
   const glm::vec3 pos = ddBodyFuncs::pos_ws(bod);
 
   // camera front direction
-  glm::vec3 front = ddBodyFuncs::forward_dir(bod, ddBodyFuncs::rot_ws(bod));
+  glm::vec3 front = ddBodyFuncs::forward_dir(bod);
 
   // camera up direction
   glm::vec3 right = glm::normalize(glm::cross(front, global_Yv3));
@@ -373,7 +381,7 @@ FrustumBox get_current_frustum(const ddCam *cam, const ddBody *bod) {
   // recalculate front, right, and up for frustum calculation
   const glm::vec3 cam_pos = ddBodyFuncs::pos_ws(bod);
   const glm::vec3 front =
-      ddBodyFuncs::forward_dir(bod, ddBodyFuncs::rot_ws(bod));
+      ddBodyFuncs::forward_dir(bod);
   const glm::vec3 right = glm::normalize(glm::cross(front, global_Yv3));
   const glm::vec3 up = glm::normalize(glm::cross(right, front));
 
@@ -460,6 +468,7 @@ float calc_lightvolume_radius(const ddLBulb *blb) {
 void draw_scene(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
                 const glm::vec3 cam_pos) {
   // geometry buffer pass
+	ddGPUFrontEnd::clear_screen(0.f, 0.f, 0.f, 0.f);
   gbuffer_pass(cam_view_m, cam_proj_m);
 
   // line pass
@@ -477,7 +486,9 @@ void draw_scene(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
   // hdri tone mapping
 
   // debug (maybe)
+	//ddGPUFrontEnd::clear_screen(1.0);
   ddGPUFrontEnd::toggle_depth_test(false);
+	ddGPUFrontEnd::toggle_alpha_blend(true);
 
   ddShader *sh = find_ddShader(postp_sh.gethash());
   POW2_VERIFY_MSG(sh != nullptr, "Post processing shader missing", 0);
@@ -500,6 +511,7 @@ void draw_scene(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
   sh->set_uniform((int)RE_PostPr::SampleMap_b, true);
 
   ddGPUFrontEnd::render_quad();
+	ddGPUFrontEnd::toggle_alpha_blend(false);
 
   return;
 }
@@ -510,7 +522,7 @@ void gbuffer_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m) {
   ddGPUFrontEnd::clear_color_buffer();
   ddGPUFrontEnd::clear_depth_buffer();
   ddGPUFrontEnd::toggle_depth_test(true);
-  ddGPUFrontEnd::toggle_face_cull(false);
+  ddGPUFrontEnd::toggle_face_cull(true);
   ddGPUFrontEnd::set_face_cull();
   // clipping (if necessary)
   ddGPUFrontEnd::toggle_clip_plane();
@@ -627,7 +639,7 @@ void render_static(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
         sh->set_uniform((int)RE_GBuffer::useDebug_b, false);
       }
       // log stats
-      tris_in_frame += mdata.ptr->indices.size() / 3;
+      tris_in_frame += (unsigned)mdata.ptr->indices.size() / 3;
       draw_calls += 1;
 
       // bind vao and render
@@ -641,8 +653,7 @@ void render_static(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
 void light_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
                 const glm::vec3 cam_pos) {
   // get light plane
-  ddAgent *lplane = find_ddAgent(light_plane_id.gethash());
-  POW2_VERIFY_MSG(lplane != nullptr, "Light plane agent not initialized", 0);
+  //ddAgent *lplane = find_ddAgent(light_plane_id.gethash());
 
   // buffer setup
   ddGPUFrontEnd::blit_depth_buffer(ddBufferType::GEOM, ddBufferType::LIGHT,

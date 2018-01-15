@@ -36,7 +36,6 @@ struct ddEngine {
       : main_state(GameState::LOADING),
         // main_window(nullptr),
         main_window_glfw(nullptr),
-        num_lvls(0),
         current_lvl(0),
         load_screen(false),
         flag_debug(false) {}
@@ -75,7 +74,7 @@ struct ddEngine {
 
   PushFunc q_push;
   DD_FuncBuff main_fb;
-  size_t num_lvls;
+	dd_array<const char *> lvls_list;
   int current_lvl;
   bool load_screen;
   bool flag_debug;

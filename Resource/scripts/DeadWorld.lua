@@ -3,9 +3,10 @@
 do
 	base_hero = require "scripts.Hero"
 	base_monster = require "scripts.Monster"
-	--require "scripts.DeadWorld_assets"
 
 	DeadWorld = {}
+	ticks = 0.0
+	speed = 5.0
 
 	main_character = base_hero:new({name = "Slayer"})
 		enemies = {}
@@ -21,19 +22,18 @@ do
 		}
 	end
 
-	function DeadWorld:init( map )
+	function DeadWorld:init( event, args, num_args )
 		-- spawn hero
 		print("Deadworld init called\n")
 		main_character.position = { 0.0, 1.0, -2.0 }
 		main_character.alive = true
-		make_person(main_character)
 
 		-- spawn some monsters
 		for i=1,5 do
 			new_name = string.format("monster_%d",i)
 			enemies[i] = base_monster:new({name = new_name, alive = true})
-			make_person(enemies[i])
 		end
+
 	end
 
 	function DeadWorld:world_status()
@@ -45,23 +45,44 @@ do
 	end
 
 	function DeadWorld:update( event, args, num_args )
-		if event == "post" then
-			for k,v in pairs(args) do
-				if k == "test_float" then print("Deadworld out val: "..v) end
-			end
-		end
+		ticks = ticks + __frame_time
 
-		cam_pos = get_agent_ws_pos( {["id"] = deadworld_asset["cam_ag"]} )
+		-- get camera position
+		old_pos = get_agent_ls_pos( {["id"] = deadworld_asset["cam_ag"]} )
+		--[[
 		out = { ["output"] = string.format("Cam pos = %.3f, %.3f, %.3f", 
-			cam_pos["x"], cam_pos["y"], cam_pos["z"]) 
+			old_pos["x"], old_pos["y"], old_pos["z"]) 
 		}
-		--dd_print({["output"] = "Deadworld post called"})
-		--dd_print(out)
+		dd_print(out)
+		--]]
 
 		-- input
+		cam_pos = { ["id"] = deadworld_asset["cam_ag"] }
+		update_pos = false
+		update_rot = false
 		if __dd_input["a"]["active"] then
-			dd_print({["output"] = "bang"})
+			--
+			cam_pos["x"] = old_pos["x"] - speed * __frame_time
+			update_pos = true
 		end
+		if __dd_input["d"]["active"] then
+			--
+			cam_pos["x"] = old_pos["x"] + speed * __frame_time
+			update_pos = true
+		end
+		if __dd_input["w"]["active"] then
+			--
+			cam_pos["z"] = old_pos["z"] - speed * __frame_time
+			update_pos = true
+		end
+		if __dd_input["s"]["active"] then
+			--
+			cam_pos["z"] = old_pos["z"] + speed * __frame_time
+			update_pos = true
+		end
+
+		-- update position
+		if update_pos then set_agent_pos(cam_pos) end
 	end
 
 end

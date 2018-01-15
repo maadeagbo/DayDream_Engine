@@ -3,16 +3,16 @@
 /// \brief Set the 8 corners of bounding box
 void BoundingBox::SetCorners() {
   if (min.x == max.x) {
-    min.x -= 1.f;
-    max.x += 1.f;
+    min.x -= 0.05f;
+    max.x += 0.05f;
   }
   if (min.y == max.y) {
-    min.y -= 1.f;
-    max.y += 1.f;
+    min.y -= 0.05f;
+    max.y += 0.05f;
   }
   if (min.z == max.z) {
-    min.z -= 1.f;
-    max.z += 1.f;
+    min.z -= 0.05f;
+    max.z += 0.05f;
   }
   this->corner1 =
       glm::vec3(this->min.x, this->min.y, this->min.z);  // back bottom left

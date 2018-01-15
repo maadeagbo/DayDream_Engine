@@ -186,6 +186,8 @@ void ddQueue::unsubscribe(const size_t event_sig, const size_t _sig) {
   }
 }
 
+const cbuff<32> frame_enter_hash("frame_init");
+
 void ddQueue::process_queue() {
   while (!shutdown) {
     DD_LEvent _event;
@@ -199,14 +201,14 @@ void ddQueue::process_queue() {
     }
     // check if event is level call
     else if (_event.handle == lvl_call) {
-      callback_lua(L, _event, fb, lvl_update.func_id, lvl_update.global_id);
+      fb = std::move(
+          callback_lua(L, _event, lvl_update.func_id, lvl_update.global_id));
     }
     // check if event is lvl init call
     else if (_event.handle == lvl_call_i) {
       // async level init
-      async_lvl_init =
-          std::async(std::launch::async, callback_lua, L, std::ref(_event),
-                     std::ref(fb), lvl_init.func_id, lvl_init.global_id);
+      async_lvl_init = std::async(std::launch::async, callback_lua, L, _event,
+                                  lvl_init.func_id, lvl_init.global_id);
       // send delay event
       DD_LEvent a_event;
       a_event.handle = check_lvl_async;
@@ -216,9 +218,8 @@ void ddQueue::process_queue() {
     // check if event is resource load call
     else if (_event.handle == res_call) {
       // async resources load
-      async_resource =
-          std::async(std::launch::async, callback_lua, L, std::ref(_event),
-                     std::ref(fb), lvl_res.func_id, lvl_res.global_id);
+      async_resource = std::async(std::launch::async, callback_lua, L, _event,
+                                  lvl_res.func_id, lvl_res.global_id);
       // send delay event
       DD_LEvent a_event;
       a_event.handle = check_res_async;
@@ -266,22 +267,24 @@ void ddQueue::process_queue() {
       dd_array<size_t> &func_sigs = registered_events[e_sig];
 
       for (size_t i = 1; i <= func_sigs[0]; i++) {
-        // script
-        if (callback_funcs.count(func_sigs[i]) > 0) {
-          handler_sig &handle = callback_funcs[func_sigs[i]];
-          callback_lua(L, _event, fb, handle.func_id, handle.global_id);
-        }
         // system call
         if (sys_funcs.count(func_sigs[i]) > 0) {
           SysEventHandler &handle = sys_funcs[func_sigs[i]];
           handle(_event);
+        } else {
+          // scripts
+          if (callback_funcs.count(func_sigs[i]) > 0) {
+            handler_sig &handle = callback_funcs[func_sigs[i]];
+            fb = std::move(
+                callback_lua(L, _event, handle.func_id, handle.global_id));
+          }
         }
       }
     }
   }
 }
 
-void ddQueue::init_level_scripts(const char *script_id) {
+void ddQueue::init_level_scripts(const char *script_id, const bool runtime) {
   // find level functions
   cbuff<256> file_name;
   file_name.format("%s/scripts/%s.lua", RESOURCE_DIR, script_id);
@@ -314,21 +317,23 @@ void ddQueue::init_level_scripts(const char *script_id) {
     ddTerminal::f_post("init_level_scripts::Failed to open <%s>",
                        file_name.str());
   }
-  // find load function
-  file_name.format("%s/scripts/%s_assets.lua", RESOURCE_DIR, script_id);
-  file_found = parse_luafile(L, file_name.str());
-  if (file_found) {
-    int func_ref = get_lua_ref(L, nullptr, "load");
-    if (func_ref != LUA_REFNIL) {
-      // add queue handle
-      lvl_res = {-1, func_ref};
+  if (!runtime) {
+    // find load function
+    file_name.format("%s/scripts/%s_assets.lua", RESOURCE_DIR, script_id);
+    file_found = parse_luafile(L, file_name.str());
+    if (file_found) {
+      int func_ref = get_lua_ref(L, nullptr, "load");
+      if (func_ref != LUA_REFNIL) {
+        // add queue handle
+        lvl_res = {-1, func_ref};
+      } else {
+        ddTerminal::f_post("init_level_scripts::Failed to find: %s_asset::load",
+                           script_id);
+      }
     } else {
-      ddTerminal::f_post("init_level_scripts::Failed to find: %s_asset::load",
-                         script_id);
+      ddTerminal::f_post("init_level_scripts::Failed to open <%s>",
+                         file_name.str());
     }
-  } else {
-    ddTerminal::f_post("init_level_scripts::Failed to open <%s>",
-                       file_name.str());
   }
 }
 
@@ -337,7 +342,7 @@ bool ddQueue::push_current(const DD_LEvent &_event) {
   if (m_numEvents == qsize) {
     return false;
   }
-  events_current[m_tail] = std::move(_event);
+  events_current[m_tail] = _event;
   m_tail = (m_tail + 1) % qsize;
   m_numEvents++;
   return true;
@@ -349,7 +354,7 @@ bool ddQueue::push_future(const DD_LEvent &_event) {
     return false;
   }
 
-  events_future[f_tail] = std::move(_event);
+  events_future[f_tail] = _event;
   f_tail = (f_tail + 1) % qsize;
   f_numEvents++;
   return true;
