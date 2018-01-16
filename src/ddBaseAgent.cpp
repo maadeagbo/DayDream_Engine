@@ -26,14 +26,16 @@ glm::vec3 pos_ws(const ddBody* bod) {
 glm::vec3 rot(const ddBody* bod) {
   // local transform
   btScalar x, y, z;
-  bod->bt_bod->getCenterOfMassTransform().getBasis().getEulerYPR(x, y, z);
+  bod->bt_bod->getCenterOfMassTransform().getBasis().getEulerYPR(y, x, z);
   return glm::vec3(x, y, z);
 }
 
 glm::vec3 rot_ws(const ddBody* bod) {
   // world transform
   btScalar x, y, z;
-  bod->bt_bod->getWorldTransform().getBasis().getEulerYPR(x, y, z);
+	btTransform tr;
+	bod->bt_bod->getMotionState()->getWorldTransform(tr);
+	tr.getBasis().getEulerYPR(y, x, z);
   return glm::vec3(x, y, z);
 }
 
@@ -50,7 +52,13 @@ glm::vec3 forward_dir(const ddBody* bod) {
 }
 
 void update_velocity(ddBody * bod, const glm::vec3 & vel) {
-	bod->bt_bod->setLinearVelocity(btVector3(vel.x, vel.y, vel.z));
+	//bod->bt_bod->setLinearVelocity(btVector3(vel.x, vel.y, vel.z));
+	
+	btMatrix3x3& boxRot = bod->bt_bod->getWorldTransform().getBasis();
+	btVector3 correctedForce = boxRot * btVector3(vel.x, vel.y, vel.z);
+
+	bod->bt_bod->activate(true);
+	bod->bt_bod->applyCentralForce(correctedForce);
 }
 
 void update_pos(ddBody* bod, const glm::vec3& pos) {
@@ -70,25 +78,29 @@ void update_pos(ddBody* bod, const glm::vec3& pos) {
   // bod->bt_bod->setAngularVelocity(btVector3(0, 0, 0));
 }
 
-void rotate(ddBody* bod, const glm::vec3& _euler) {
+void rotate(ddBody* bod, const glm::vec3& torque) {
   btTransform tr;
   // local rotation
   // const btQuaternion q1 =
   // bod->bt_bod->getCenterOfMassTransform().getRotation();
-  // new rotation
-  btQuaternion q2;
-  q2.setEuler(glm::radians(_euler.x), glm::radians(_euler.y),
-              glm::radians(_euler.z));
-  // q2 *= q1;
-  // local translation
-  const glm::vec3 p1 = ddBodyFuncs::pos(bod);
 
-  // set new transform
-  tr.setIdentity();
-  tr.setOrigin(btVector3(p1.x, p1.y, p1.z));
-  tr.setRotation(q2);
-  bod->bt_bod->setWorldTransform(tr);
-  bod->bt_bod->getMotionState()->setWorldTransform(tr);
+  // new rotation
+  //btQuaternion q2;
+  //q2.setEuler(glm::radians(_euler.x), glm::radians(_euler.y),
+  //            glm::radians(_euler.z));
+  //// q2 *= q1;
+  //// local translation
+  //const glm::vec3 p1 = ddBodyFuncs::pos(bod);
+
+  //// set new transform
+  //tr.setIdentity();
+  //tr.setOrigin(btVector3(p1.x, p1.y, p1.z));
+  //tr.setRotation(q2);
+  //bod->bt_bod->setWorldTransform(tr);
+  //bod->bt_bod->getMotionState()->setWorldTransform(tr);
+
+	bod->bt_bod->applyTorque(btVector3(torque.x, torque.y, torque.z));
+	//bod->bt_bod->setAngularVelocity(btVector3(torque.x, torque.y, torque.z));
 }
 
 void update_scale(ddBody* bod, const glm::vec3& _scale) {

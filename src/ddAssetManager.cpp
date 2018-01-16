@@ -109,6 +109,11 @@ int set_agent_rot(lua_State *L);
 int set_agent_scale(lua_State *L);
 int translate_agent(lua_State *L);
 int rotate_agent(lua_State *L);
+int get_agent_vel(lua_State *L);
+int get_agent_ang_vel(lua_State *L);
+
+// camera manipulation
+int rotate_camera(lua_State *L);
 
 /// \brief Parse ddm file and load to ram
 /// \param filename Path to .ddm file
@@ -146,8 +151,7 @@ ddTex2D *create_tex2D(const char *path, const char *img_id);
 /// \param mesh data containing bounding box information
 /// \return True if rigid body is successfully added
 bool add_rigid_body(ddAgent *agent, ddModelData *mdata, glm::vec3 pos,
-                    const float mass = 0.f,
-                    RBType rb_type = RBType::BOX);
+                    const float mass = 0.f, RBType rb_type = RBType::BOX);
 /**
  * \brief Removes rigidbody from physics world
  * \param agent contains rigid body
@@ -244,10 +248,15 @@ void log_lua_func(lua_State *L) {
   add_func_to_scripts(L, get_agent_pos_ls, "get_agent_ls_pos");
   add_func_to_scripts(L, get_agent_rot_ws, "get_agent_ws_rot");
   add_func_to_scripts(L, get_agent_rot_ls, "get_agent_ls_rot");
+	add_func_to_scripts(L, get_agent_vel, "get_current_velocity_agent");
+	add_func_to_scripts(L, get_agent_ang_vel, "get_current_ang_velocity_agent");
   // manipulate agent information
   add_func_to_scripts(L, set_agent_pos, "set_agent_pos");
-  add_func_to_scripts(L, set_agent_rot, "set_agent_rot");
+  add_func_to_scripts(L, translate_agent, "apply_force_agent");
+  add_func_to_scripts(L, rotate_agent, "apply_torque_agent");
   add_func_to_scripts(L, set_agent_scale, "set_agent_scale");
+  // manipulate camera
+  add_func_to_scripts(L, rotate_camera, "rotate_camera");
 }
 
 void load_to_gpu() {
@@ -443,9 +452,9 @@ int dd_assets_create_agent(lua_State *L) {
   float *pos_x = fb.get_func_val<float>("pos_x");
   float *pos_y = fb.get_func_val<float>("pos_y");
   float *pos_z = fb.get_func_val<float>("pos_z");
-	float *sc_x = fb.get_func_val<float>("scale_x");
-	float *sc_y = fb.get_func_val<float>("scale_y");
-	float *sc_z = fb.get_func_val<float>("scale_z");
+  float *sc_x = fb.get_func_val<float>("scale_x");
+  float *sc_y = fb.get_func_val<float>("scale_y");
+  float *sc_z = fb.get_func_val<float>("scale_z");
 
   ddAgent *new_agent = nullptr;
   if (agent_id) {
@@ -509,7 +518,7 @@ int dd_assets_create_agent(lua_State *L) {
       // add ddBody to agent and then agent to world
       float mass = 0.f;
       RBType type = RBType::BOX;
-      if (mdata && agent_mass) mass = *agent_mass;
+      if (agent_mass) mass = *agent_mass;
       if (shape && *shape == 1) type = RBType::SPHERE;
       if (shape && *shape == -1) type = RBType::NULL_;
 
@@ -518,11 +527,11 @@ int dd_assets_create_agent(lua_State *L) {
       if (pos_y) pos.y = *pos_y;
       if (pos_z) pos.z = *pos_z;
 
-			glm::vec3 _scale = glm::vec3(1.f);
-			if (sc_x) _scale.x = *sc_x;
-			if (sc_y) _scale.y = *sc_y;
-			if (sc_z) _scale.z = *sc_z;
-			new_agent->body.scale = _scale;
+      glm::vec3 _scale = glm::vec3(1.f);
+      if (sc_x) _scale.x = *sc_x;
+      if (sc_y) _scale.y = *sc_y;
+      if (sc_z) _scale.z = *sc_z;
+      new_agent->body.scale = _scale;
 
       add_rigid_body(new_agent, mdata, pos, mass, type);
       // return agent id
@@ -810,18 +819,100 @@ int translate_agent(lua_State *L) {
   if (id) {
     ddAgent *ag = find_ddAgent((size_t)(*id));
     if (ag) {
-      btVector3 bt_vel = ag->body.bt_bod->getLinearVelocity();
-
       // set arguments based on availability
-      const float x_ = _x ? *_x : bt_vel.x();
-      const float y_ = _y ? *_y : bt_vel.y();
-      const float z_ = _z ? *_z : bt_vel.z();
+      const float x_ = _x ? *_x : 0;
+      const float y_ = _y ? *_y : 0;
+      const float z_ = _z ? *_z : 0;
 
       ddBodyFuncs::update_velocity(&ag->body, glm::vec3(x_, y_, z_));
       return 0;
     }
   }
   ddTerminal::post("[error]Failed to set agent velocity");
+  return 0;
+}
+
+int rotate_agent(lua_State *L) {
+  parse_lua_events(L, fb);
+
+  int64_t *id = fb.get_func_val<int64_t>("id");
+  float *_x = fb.get_func_val<float>("x");
+  float *_y = fb.get_func_val<float>("y");
+  float *_z = fb.get_func_val<float>("z");
+
+  if (id) {
+    ddAgent *ag = find_ddAgent((size_t)(*id));
+    if (ag) {
+      // set arguments based on availability
+      const float x_ = _x ? *_x : 0;
+      const float y_ = _y ? *_y : 0;
+      const float z_ = _z ? *_z : 0;
+
+      ddBodyFuncs::rotate(&ag->body, glm::vec3(x_, y_, z_));
+      return 0;
+    }
+  }
+  ddTerminal::post("[error]Failed to set agent torque");
+  return 0;
+}
+
+int get_agent_vel(lua_State *L) {
+  parse_lua_events(L, fb);
+
+  int64_t *id = fb.get_func_val<int64_t>("id");
+
+  if (id) {
+    ddAgent *ag = find_ddAgent((size_t)(*id));
+    if (ag) {
+      // push vec3 to stack
+      const btVector3 vel = ag->body.bt_bod->getLinearVelocity();
+      push_vec3_to_lua(L, vel.x(), vel.y(), vel.z());
+      return 1;
+    }
+  }
+  ddTerminal::post("[error]Failed to get agent velocity");
+  lua_pushnil(L);  // push nil to stack
+  return 1;
+}
+
+int get_agent_ang_vel(lua_State *L) {
+  parse_lua_events(L, fb);
+
+  int64_t *id = fb.get_func_val<int64_t>("id");
+
+  if (id) {
+    ddAgent *ag = find_ddAgent((size_t)(*id));
+    if (ag) {
+      // push vec3 to stack
+      const btVector3 ang_vel = ag->body.bt_bod->getAngularVelocity();
+      push_vec3_to_lua(L, ang_vel.x(), ang_vel.y(), ang_vel.z());
+      return 1;
+    }
+  }
+  ddTerminal::post("[error]Failed to get agent angular velocity");
+  lua_pushnil(L);  // push nil to stack
+  return 1;
+}
+
+int rotate_camera(lua_State *L) {
+  parse_lua_events(L, fb);
+
+  int64_t *id = fb.get_func_val<int64_t>("id");
+  float *_p = fb.get_func_val<float>("pitch");
+  float *_y = fb.get_func_val<float>("yaw");
+  float *_r = fb.get_func_val<float>("roll");
+
+  if (id) {
+    ddCam *cam = find_ddCam((size_t)(*id));
+    if (cam) {  // set arguments based on availability
+      if (_p) cam->pitch = *_p;
+      if (_y) cam->yaw = *_y;
+      if (_r) cam->roll = *_r;
+
+      return 0;
+    }
+  }
+  ddTerminal::post("[error]Failed to set camera euler angles");
   return 0;
 }
 
@@ -1296,6 +1387,9 @@ bool add_rigid_body(ddAgent *agent, ddModelData *mdata, glm::vec3 pos,
 
   // add to world
   p_world->addRigidBody(agent->body.bt_bod);
+  if (rb_type == RBType::NULL_) {
+    agent->body.bt_bod->setGravity(btVector3(0.f, 0.f, 0.f));
+  }
   return true;
 }
 

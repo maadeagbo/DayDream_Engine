@@ -8,20 +8,24 @@ function load()
 	-- mesh
 	arg["path"] = ROOT_DIR.."/Resource/Meshes/primitives/cube.ddm"
 	floor_key = load_ddm(arg)
-	dd_print( {["output"] = "Created plane mesh: "..floor_key} )
+	dd_print( "Created plane mesh: "..floor_key )
 
 	arg["path"] = ROOT_DIR.."/Resource/Meshes/primitives/sphere_10.ddm"
 	sphere_key = load_ddm(arg)
-	dd_print( {["output"] = "Created box mesh: "..sphere_key} )
+	dd_print( "Created box mesh: "..sphere_key )
 
 	arg["path"] = ROOT_DIR.."/Resource/Meshes/primitives/cube.ddm"
 	box_key = load_ddm(arg)
-	dd_print( {["output"] = "Created box mesh: "..box_key} )
+	dd_print( "Created box mesh: "..box_key )
+
+	arg["path"] = "C:/Users/Moses/Documents/kachujin/Kachujin_0.ddm"
+	ninja_key = load_ddm(arg)
+	dd_print( "Created ninja mesh: "..ninja_key )
 
 	-- light
 	arg = { ["id"] = "light_1" }
 	key = create_light(arg)
-	dd_print( {["output"] = "Created light: "..key} )
+	dd_print( "Created light: "..key )
 	
 	-- floor
 	args = {
@@ -33,7 +37,7 @@ function load()
 	}
 	agent_id = create_agent(args)
 	deadworld_asset["floor"] = agent_id
-	dd_print( {["output"] = "Created agent (floor): "..agent_id} )
+	dd_print( "Created agent (floor): "..agent_id )
 
 	-- circle
 	args = {
@@ -49,21 +53,24 @@ function load()
 	}
 	agent_id = create_agent(args)
 	deadworld_asset["sphere"] = agent_id
-	dd_print( {["output"] = "Created agent (sphere): "..agent_id} )
+	dd_print( "Created agent (sphere): "..agent_id )
 
 	-- box
 	args = {
 		["id"] = "agent_3",
-		["mesh"] = box_key,
+		["mesh"] = ninja_key,
 		["mass"] = 0.3,
-		["pos_y"] = 15.0,
-		["pos_x"] = 0.45
+		["pos_y"] = 30.0,
+		["pos_x"] = 0.45,
+		["scale_x"] = 0.01,
+		["scale_y"] = 0.01,
+		["scale_z"] = 0.01
 	}
 	agent_id = create_agent(args)
 	deadworld_asset["box"] = agent_id
 	--new_s = { ["id"] = agent_id, ["x"] = 0.01, ["y"] = 0.01, ["z"] = 0.01 }
 	--set_agent_scale(new_s)
-	dd_print( {["output"] = "Created agent (box): "..agent_id} )
+	dd_print( "Created agent (box): "..agent_id )
 
 	-- circle 2
 	args = {
@@ -82,6 +89,7 @@ function load()
 	-- camera
 	args = {
 		["id"] = "cam_agent",
+		["mass"] = 1.0,
 		["type"] = -1,
 		["pos_y"] = 2.0,
 		["pos_z"] = 12.0,
@@ -94,6 +102,6 @@ function load()
 	}
 	key = create_cam(arg)
 	deadworld_asset["cam_id"] = key
-	dd_print( {["output"] = "Created camera: "..key} )
+	dd_print( "Created camera: "..key )
 	
 end

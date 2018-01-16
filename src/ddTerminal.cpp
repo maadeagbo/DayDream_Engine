@@ -47,14 +47,13 @@ unsigned last_tabbed = 0;
 unsigned matched_expr[CMD_HIST_SIZE];
 
 DD_FuncBuff fb;
-}
+}  // namespace
 
 void ddTerminal::flipDebugFlag() { RENDER_ON ^= 1; }
 
 /// \brief Post to terminal (currently not thread safe)
-void ddTerminal::post(std::string message) {
-  snprintf(history[terminal_idx], DEFAULT_ENTRY_SIZE, ">>: %s",
-           message.c_str());
+void ddTerminal::post(const char* message) {
+  snprintf(history[terminal_idx], DEFAULT_ENTRY_SIZE, ">>: %s", message);
   logged_input[entry_idx] = terminal_idx;
   terminal_idx = (terminal_idx + 1) % TOTAL_ENTRIES;
   entry_idx = (entry_idx + 1) % VISIBLE_ENTRIES;
@@ -107,7 +106,7 @@ void ddTerminal::display(const float scr_width, const float scr_height) {
         }
       }
       // keep focus on imgui
-      //if (ImGui::IsItemHovered() ||
+      // if (ImGui::IsItemHovered() ||
       //    (ImGui::IsRootWindowOrAnyChildFocused() &&
       //     !ImGui::IsAnyItemActive() && !ImGui::IsMouseClicked(0))) {
       //  ImGui::SetKeyboardFocusHere(-1);  // Auto focus previous widget
@@ -295,11 +294,19 @@ void ddTerminal::outTerminalHistory() {
 }
 
 int script_print(lua_State* L) {
-  parse_lua_events(L, fb);
-  const char* str = fb.get_func_val<const char>("output");
-
-  // print script output
-  if (str) ddTerminal::post(str);
+  int top = lua_gettop(L); /* number of events */
+  for (int i = 1; i <= top; i++) {
+    int t = lua_type(L, i);
+    switch (t) {
+      case LUA_TSTRING:
+        ddTerminal::f_post("%s", lua_tostring(L, -1));
+        lua_pop(L, 1);  // Pop value of stack
+        break;
+      default:
+        lua_pop(L, 1);  // Pop value of stack
+        break;
+    }
+  }
 
   return 0;
 }

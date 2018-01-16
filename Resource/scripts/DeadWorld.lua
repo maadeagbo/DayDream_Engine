@@ -3,11 +3,12 @@
 do
 	base_hero = require "scripts.Hero"
 	base_monster = require "scripts.Monster"
+	matrix = require "scripts.matrix"
 
 	DeadWorld = {}
-	ticks = 0.0
-	speed = 5.0
-
+	speed = 10.0
+	max_vel_diff = 20.0
+	damp_factor = 5.0
 	pitch = 0
 	yaw = 0
 
@@ -47,60 +48,68 @@ do
 			end
 	end
 
+	function clamp_vel(val, min, max)
+		-- clamps val between min and max
+		if val < min then return min end
+		if val > max then return max end
+		return val
+	end
+
 	function DeadWorld:update( event, args, num_args )
-		ticks = ticks + __frame_time
 
-		-- get camera position
-		old_pos = get_agent_ls_pos( {["id"] = deadworld_asset["cam_ag"]} )
-		old_rot = get_agent_ws_rot( {["id"] = deadworld_asset["cam_ag"]} )
-		--[[
-		out = { ["output"] = string.format("Cam pos = %.3f, %.3f, %.3f", 
-			old_pos["x"], old_pos["y"], old_pos["z"]) 
-		}
-		dd_print(out)
-		--]]
+		-- velocity control
+		curr_v = get_current_velocity_agent({["id"] = deadworld_asset["cam_ag"]})
+		v3_v = matrix{curr_v["x"], curr_v["y"], curr_v["z"]}
+		-- rotation control
+		curr_av = get_current_ang_velocity_agent({["id"] = deadworld_asset["cam_ag"]})
+		v3_av = matrix{curr_av["x"], curr_av["y"], curr_av["z"]}
+		--[[]] 
+		dd_print(string.format("Vel = %.3f, %.3f, %.3f", 
+			curr_av["x"], curr_av["y"], curr_av["z"])
+		)
+		--]]--
 
-		-- input
-		cam_pos = { ["id"] = deadworld_asset["cam_ag"] }
-		cam_rot = { ["id"] = deadworld_asset["cam_ag"] }
-		update_pos = false
-		update_rot = false
-		if __dd_input["a"] then
-			--
-			cam_pos["x"] = old_pos["x"] - speed * __frame_time
-			update_pos = true
-			--dd_print({["output"] = "bang"})
-		end
-		if __dd_input["d"] then
-			--
-			cam_pos["x"] = old_pos["x"] + speed * __frame_time
-			update_pos = true
-		end
-		if __dd_input["w"] then
-			--
-			cam_pos["z"] = old_pos["z"] - speed * __frame_time
-			update_pos = true
-		end
-		if __dd_input["s"] then
-			--
-			cam_pos["z"] = old_pos["z"] + speed * __frame_time
-			update_pos = true
-		end
+		new_v = matrix{0, 0, 0}
+		new_r = matrix{0, 0, 0}
+		
+		-- left
+		if __dd_input["a"] then new_v = new_v - matrix{speed, 0, 0} end
+		-- right
+		if __dd_input["d"] then new_v = new_v + matrix{speed, 0, 0} end
+		-- forward
+		if __dd_input["w"] then new_v = new_v - matrix{0, 0, speed} end
+		-- backwards
+		if __dd_input["s"] then new_v = new_v + matrix{0, 0, speed} end
+		-- rotation
 		if __dd_input["mouse_b_l"] then
 			--
-			pitch = pitch + __dd_input["mouse_y_delta"]
-			dd_print({["output"] = "Y: "..pitch})
-			yaw = yaw + __dd_input["mouse_x_delta"]
-			dd_print({["output"] = "X: "..yaw})
+			--pitch = pitch + __dd_input["mouse_y_delta"] * 1.0/speed
+			--yaw = yaw + __dd_input["mouse_x_delta"] * 1.0/speed
+			new_r["x"] = __dd_input["mouse_x_delta"] * 0.0001
+			new_r["z"] = __dd_input["mouse_y_delta"] * 0.0001
 
-			cam_rot["x"] = yaw
-			cam_rot["y"] = pitch
-			update_rot = true
+			new_r["id"] = deadworld_asset["cam_ag"]
+			--apply_torque_agent(new_r)
 		end
 
-		-- update position
-		if update_pos then set_agent_pos(cam_pos) end
-		if update_rot then set_agent_rot(cam_rot) end
+		-- dampining
+		if new_v[3][1] < 0.01 and new_v[3][1] > -0.01 then
+			new_v[3][1] = -v3_v[3][1] * damp_factor
+		end
+		if new_v[1][1] < 0.01 and new_v[1][1] > -0.01 then
+			new_v[1][1] = -v3_v[1][1] * damp_factor
+		end
+
+		-- update position (and clamp maximum velocity difference)
+		delta_v = {
+			["x"] = clamp_vel(new_v[1][1] - curr_v["x"], -max_vel_diff, max_vel_diff),
+			["y"] = clamp_vel(new_v[2][1] - curr_v["y"], -max_vel_diff, max_vel_diff),
+			["z"] = clamp_vel(new_v[3][1] - curr_v["z"], -max_vel_diff, max_vel_diff)
+		}
+
+		delta_v["id"] = deadworld_asset["cam_ag"]
+		apply_force_agent(delta_v)
+		--if update_rot then rotate_camera(cam_rot) end
 	end
 
 end

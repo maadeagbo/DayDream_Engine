@@ -62,7 +62,7 @@ void update_pos(ddBody *bod, const glm::vec3 &pos);
 /**
  * \brief Change btRigidBody's local rotation
  */
-void rotate(ddBody *bod, const glm::vec3 &_euler);
+void rotate(ddBody *bod, const glm::vec3 &torque);
 /**
  * \brief Change transform's scale
  */

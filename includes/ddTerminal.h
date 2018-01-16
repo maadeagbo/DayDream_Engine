@@ -29,7 +29,7 @@ ENABLE_BITMASK_OPERATORS(TerminalCmds)
 
 namespace ddTerminal {
 void flipDebugFlag();
-void post(std::string message);
+void post(const char *message);
 void clearTerminal();
 void display(const float scr_width, const float scr_height);
 void dumpTerminalToImGuiText();

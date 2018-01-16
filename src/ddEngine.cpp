@@ -9,9 +9,7 @@ bool windowShouldClose = false;
 std::chrono::milliseconds timespan(10);
 std::chrono::milliseconds chrono_msec(1);
 
-const bool UNLOCK_FRAMEPACE = true;
-const size_t FRAME_CAP = 100;
-const uint64_t SECOND_LL = 1000000000LL;
+float PHYSICS_TICK = 0.f;
 
 // int resolution_set[2] = {1400, 800};
 bool engine_mode_flags[] = {true, false, false, false};
@@ -495,6 +493,7 @@ void ddEngine::update(DD_LEvent &_event) {
     ddGPUFrontEnd::clear_screen();
 
     ddTime::update();
+		PHYSICS_TICK += ddTime::get_avg_frame_time();
 
     // start imgui window processing
     ImGui_ImplGlfwGL3_NewFrame();
@@ -537,9 +536,13 @@ void ddEngine::update(DD_LEvent &_event) {
       new_event.handle = main_q.lvl_call;
       q_push(new_event);
 
-      // send physics event
-      new_event.handle = physics_hash;
-      q_push(new_event);
+      // send physics event (locked to 60 fps update or vsync on)
+			if (engine_mode_flags[0] || PHYSICS_TICK > 1.f/60.f) {
+				PHYSICS_TICK = 0.f;
+
+				new_event.handle = physics_hash;
+				q_push(new_event);
+			}
 
       // send render event
       new_event.handle = draw_hash;
