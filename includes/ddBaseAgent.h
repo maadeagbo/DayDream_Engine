@@ -34,23 +34,15 @@ glm::vec3 pos_ws(const ddBody *bod);
 /**
  * \brief Local-space rotation (euler)
  */
-glm::vec3 rot(const ddBody *bod);
+glm::quat rot(const ddBody *bod);
 /**
  * \brief World-space rotation (euler)
  */
-glm::vec3 rot_ws(const ddBody *bod);
+glm::quat rot_ws(const ddBody *bod);
 /**
  * \brief Forward direction based on world (0, 0, -1)
  */
 glm::vec3 forward_dir(const ddBody *bod);
-/**
- * \brief Right direction based on world (0, 0, -1)
- */
-glm::vec3 right_dir(ddBody *bod);
-/**
- * \brief Up direction based on world (0, 0, -1)
- */
-glm::vec3 up_dir(ddBody *bod);
 /**
  * \brief Change btRigidBody's velocity
  */
@@ -62,7 +54,7 @@ void update_pos(ddBody *bod, const glm::vec3 &pos);
 /**
  * \brief Change btRigidBody's local rotation
  */
-void rotate(ddBody *bod, const glm::vec3 &torque);
+void rotate(ddBody *bod, const float yaw, const float pitch, const float roll);
 /**
  * \brief Change transform's scale
  */

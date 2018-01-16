@@ -398,20 +398,6 @@ void parse_table(lua_State *L, DD_LEvent *levent, const int tabs) {
         }
         break;
       }
-      case LUA_TBOOLEAN: {
-        bool lbool = lua_toboolean(L, -1);
-        lua_pushvalue(L, -2);  // copy the key
-        _key.format("%s", lua_tostring(L, -1));
-        lua_pop(L, 1);  // remove copy key
-
-        bool arg_set = add_arg_LEvent(levent, _key.str(), lbool);
-        if (!arg_set) {
-          printf("B\n");
-          printf("No more args available\n");
-        }
-
-        break;
-      }
       case LUA_TNUMBER: {
         if (lua_isinteger(L, -1)) {
           int64_t val = (int64_t)lua_tointeger(L, -1);
@@ -438,6 +424,20 @@ void parse_table(lua_State *L, DD_LEvent *levent, const int tabs) {
         }
         break;
       }
+			case LUA_TBOOLEAN: {
+				bool lbool = lua_toboolean(L, -1);
+				lua_pushvalue(L, -2);  // copy the key
+				_key.format("%s", lua_tostring(L, -1));
+				lua_pop(L, 1);  // remove copy key
+
+				bool arg_set = add_arg_LEvent(levent, _key.str(), lbool);
+				if (!arg_set) {
+					printf("B\n");
+					printf("No more args available\n");
+				}
+
+				break;
+			}
       case LUA_TTABLE: {
         parse_table(L, levent, tabs + 1);
         break;

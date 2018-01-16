@@ -19,8 +19,8 @@ function load()
 	dd_print( "Created box mesh: "..box_key )
 
 	arg["path"] = "C:/Users/Moses/Documents/kachujin/Kachujin_0.ddm"
-	ninja_key = load_ddm(arg)
-	dd_print( "Created ninja mesh: "..ninja_key )
+	--ninja_key = load_ddm(arg)
+	--dd_print( "Created ninja mesh: "..ninja_key )
 
 	-- light
 	arg = { ["id"] = "light_1" }
@@ -31,9 +31,9 @@ function load()
 	args = {
 		["id"] = "agent_1",
 		["mesh"] = floor_key,
-		["scale_x"] = 7.0,
+		["scale_x"] = 30.0,
 		["scale_y"] = 0.2,
-		["scale_z"] = 7.0
+		["scale_z"] = 10.0
 	}
 	agent_id = create_agent(args)
 	deadworld_asset["floor"] = agent_id
@@ -58,28 +58,23 @@ function load()
 	-- box
 	args = {
 		["id"] = "agent_3",
-		["mesh"] = ninja_key,
-		["mass"] = 0.3,
-		["pos_y"] = 30.0,
-		["pos_x"] = 0.45,
-		["scale_x"] = 0.01,
-		["scale_y"] = 0.01,
-		["scale_z"] = 0.01
+		["mesh"] = box_key,
+		["mass"] = 0.9,
+		["pos_y"] = 11.0,
+		["pos_x"] = 0.48
 	}
 	agent_id = create_agent(args)
 	deadworld_asset["box"] = agent_id
-	--new_s = { ["id"] = agent_id, ["x"] = 0.01, ["y"] = 0.01, ["z"] = 0.01 }
-	--set_agent_scale(new_s)
 	dd_print( "Created agent (box): "..agent_id )
 
 	-- circle 2
 	args = {
 		["id"] = "agent_4",
 		["mesh"] = sphere_key,
-		["mass"] = 1.0,
+		["mass"] = 1.9,
 		["type"] = 1,
 		["pos_y"] = 20.0,
-		["pos_x"] = -0.6,
+		["pos_x"] = -3.9,
 		["scale_x"] = 0.007,
 		["scale_y"] = 0.007,
 		["scale_z"] = 0.007
@@ -89,7 +84,7 @@ function load()
 	-- camera
 	args = {
 		["id"] = "cam_agent",
-		["mass"] = 1.0,
+		["mass"] = 0.1,
 		["type"] = -1,
 		["pos_y"] = 2.0,
 		["pos_z"] = 12.0,
@@ -97,11 +92,11 @@ function load()
 	new_agent_id = create_agent(args)
 	deadworld_asset["cam_ag"] = new_agent_id
 	arg = {
-		["id"] = "cam_1",
+		["id"] = "cam_2",
 		["parent"] = new_agent_id
 	}
 	key = create_cam(arg)
-	deadworld_asset["cam_id"] = key
+	deadworld_asset["camera"] = key
 	dd_print( "Created camera: "..key )
 	
 end

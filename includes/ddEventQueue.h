@@ -30,7 +30,8 @@ struct handler_sig {
 
 struct ddQueue {
   ddQueue(const size_t size = 1000)
-      : lvl_call("_lvl_call"),
+      : physics_tick("physics_tick"),
+        lvl_call("update"),
         lvl_call_i("_lvl_init"),
         res_call("_load_resources"),
         check_future("_process_future"),
@@ -111,7 +112,8 @@ struct ddQueue {
    */
   void init_level_scripts(const char *script_id, const bool runtime = false);
 
-  cbuff<32> lvl_call;
+	cbuff<32> physics_tick;
+	cbuff<32> lvl_call;
   cbuff<32> lvl_call_i;
   cbuff<32> res_call;
   cbuff<32> check_future;

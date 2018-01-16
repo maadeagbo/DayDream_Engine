@@ -540,6 +540,9 @@ void ddEngine::update(DD_LEvent &_event) {
 			if (engine_mode_flags[0] || PHYSICS_TICK > 1.f/60.f) {
 				PHYSICS_TICK = 0.f;
 
+				new_event.handle = main_q.physics_tick;
+				q_push(new_event);
+
 				new_event.handle = physics_hash;
 				q_push(new_event);
 			}

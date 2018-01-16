@@ -199,12 +199,9 @@ void ddQueue::process_queue() {
     if (_event.handle == check_future) {
       process_future();
     }
-    // check if event is level call
-    else if (_event.handle == lvl_call) {
-      callback_lua(L, _event, lvl_update.func_id, fb, lvl_update.global_id);
-    }
     // check if event is lvl init call
     else if (_event.handle == lvl_call_i) {
+			_event.handle = "init";
       // async level init (spawn new lua thread)
       lua_State *L1 = lua_newthread(L);
       async_lvl_init =
@@ -312,6 +309,14 @@ void ddQueue::init_level_scripts(const char *script_id, const bool runtime) {
       if (func_ref != LUA_REFNIL) {
         // add queue handle
         lvl_update = {global_ref, func_ref};
+
+				// subscribe for certain callback events
+				handler_sig _sig = { global_ref, func_ref };
+				size_t curr_lvl_id = getCharHash("lvl_update");
+				register_handler(curr_lvl_id, _sig);
+
+				subscribe(lvl_call.gethash(), curr_lvl_id);
+				subscribe(physics_tick.gethash(), curr_lvl_id);
       } else {
         ddTerminal::f_post("init_level_scripts::Failed to find: %s::update",
                            script_id);

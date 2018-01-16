@@ -108,11 +108,11 @@ struct ddLBulb {
   /**
    * \brief Normalized vector for directional and spot lights
    */
-  glm::vec3 direction = glm::vec3(-1.f);
+  glm::vec3 direction = glm::vec3(0.3f, -1.f, -0.3f);
   /**
    * \brief Location of light
    */
-  glm::vec3 position = glm::vec3(5.f, 10.f, 5.f);
+  glm::vec3 position = glm::vec3(0.f, 10.f, 0.f);
   /**
    * \brief Color of light
    */

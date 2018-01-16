@@ -362,23 +362,7 @@ glm::mat4 calc_view_matrix(const ddCam *cam, const ddBody *bod) {
   const glm::vec3 pos = ddBodyFuncs::pos_ws(bod);
 
   // camera front direction
-  /*glm::quat q1 =
-      glm::quat(glm::vec3(glm::radians(cam->pitch), glm::radians(cam->yaw),
-                          glm::radians(cam->roll)));
-	glm::vec3 _euler = ddBodyFuncs::rot_ws(bod);
-	glm::quat q2 =
-		glm::quat(glm::vec3(glm::radians(_euler.x), glm::radians(_euler.y),
-			glm::radians(_euler.z)));*/
-	
-	btTransform tr;
-	bod->bt_bod->getMotionState()->getWorldTransform(tr);
-	btQuaternion bt_q = tr.getRotation();
-	float roll, pitch, yaw;
-	bt_q.getEulerZYX(yaw, pitch, roll);
-
-	glm::quat q2 = glm::quat(glm::vec3(pitch, yaw, roll));
-
-  glm::vec3 front = glm::normalize((q2) * world_front);
+  const glm::vec3 front = ddSceneManager::cam_forward_dir(cam, bod);
 
   // camera up direction
   glm::vec3 right = glm::normalize(glm::cross(front, global_Yv3));
@@ -397,10 +381,7 @@ FrustumBox get_current_frustum(const ddCam *cam, const ddBody *bod) {
 
   // recalculate front, right, and up for frustum calculation
   const glm::vec3 cam_pos = ddBodyFuncs::pos_ws(bod);
-  glm::quat q =
-      glm::quat(glm::vec3(glm::radians(cam->pitch), glm::radians(cam->yaw),
-                          glm::radians(cam->roll)));
-  const glm::vec3 front = glm::normalize(q * world_front);
+  const glm::vec3 front = ddSceneManager::cam_forward_dir(cam, bod);
   const glm::vec3 right = glm::normalize(glm::cross(front, global_Yv3));
   const glm::vec3 up = glm::normalize(glm::cross(right, front));
 

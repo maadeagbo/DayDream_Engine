@@ -102,14 +102,13 @@ int dd_assets_create_texture(lua_State *L);
 // agent monipulation
 int get_agent_pos_ls(lua_State *L);
 int get_agent_pos_ws(lua_State *L);
-int get_agent_rot_ls(lua_State *L);
-int get_agent_rot_ws(lua_State *L);
+int get_agent_forward_dir(lua_State *L);
 int set_agent_pos(lua_State *L);
-int set_agent_rot(lua_State *L);
 int set_agent_scale(lua_State *L);
 int translate_agent(lua_State *L);
 int rotate_agent(lua_State *L);
 int get_agent_vel(lua_State *L);
+int get_cam_dir(lua_State *L);
 int get_agent_ang_vel(lua_State *L);
 
 // camera manipulation
@@ -246,17 +245,17 @@ void log_lua_func(lua_State *L) {
   // get agent information
   add_func_to_scripts(L, get_agent_pos_ws, "get_agent_ws_pos");
   add_func_to_scripts(L, get_agent_pos_ls, "get_agent_ls_pos");
-  add_func_to_scripts(L, get_agent_rot_ws, "get_agent_ws_rot");
-  add_func_to_scripts(L, get_agent_rot_ls, "get_agent_ls_rot");
-	add_func_to_scripts(L, get_agent_vel, "get_current_velocity_agent");
-	add_func_to_scripts(L, get_agent_ang_vel, "get_current_ang_velocity_agent");
+  add_func_to_scripts(L, get_agent_forward_dir, "get_forward_direction_agent");
+  add_func_to_scripts(L, get_agent_vel, "get_current_velocity_agent");
+  add_func_to_scripts(L, get_agent_ang_vel, "get_current_ang_velocity_agent");
   // manipulate agent information
-  add_func_to_scripts(L, set_agent_pos, "set_agent_pos");
+  add_func_to_scripts(L, set_agent_pos, "set_agent_position");
   add_func_to_scripts(L, translate_agent, "apply_force_agent");
-  add_func_to_scripts(L, rotate_agent, "apply_torque_agent");
+  add_func_to_scripts(L, rotate_agent, "set_agent_rotation");
   add_func_to_scripts(L, set_agent_scale, "set_agent_scale");
   // manipulate camera
-  add_func_to_scripts(L, rotate_camera, "rotate_camera");
+	add_func_to_scripts(L, rotate_camera, "rotate_camera");
+	add_func_to_scripts(L, get_cam_dir, "ddCam_get_direction");
 }
 
 void load_to_gpu() {
@@ -434,6 +433,19 @@ ddLBulb *get_shadow_light() {
     }
   }
   return nullptr;
+}
+
+glm::vec3 cam_forward_dir(const ddCam *cam, const ddBody *cam_parent_body) {
+  glm::quat cam_internal_rot =
+      glm::quat(glm::vec3(glm::radians(cam->pitch), glm::radians(cam->yaw),
+                          glm::radians(cam->roll)));
+  btTransform tr = cam_parent_body->bt_bod->getWorldTransform();
+  glm::mat4 body_rot;
+  tr.getBasis().getOpenGLSubMatrix(&body_rot[0][0]);
+  body_rot *= glm::mat4_cast(cam_internal_rot);
+  glm::vec4 _f = body_rot * glm::vec4(world_front, 1.f);
+
+  return glm::normalize(glm::vec3(_f));
 }
 
 }  // namespace ddSceneManager
@@ -694,7 +706,7 @@ int get_agent_pos_ws(lua_State *L) {
   return 1;
 }
 
-int get_agent_rot_ls(lua_State *L) {
+int get_agent_forward_dir(lua_State *L) {
   parse_lua_events(L, fb);
 
   int64_t *id = fb.get_func_val<int64_t>("id");
@@ -702,32 +714,13 @@ int get_agent_rot_ls(lua_State *L) {
   if (id) {
     ddAgent *ag = find_ddAgent((size_t)(*id));
     if (ag) {
-      // push vec3 (euler from quaternion) to stack
-      glm::vec3 rot = ddBodyFuncs::rot(&ag->body);
-      push_vec3_to_lua(L, rot.x, rot.y, rot.y);
+      // push vec3 to stack
+      glm::vec3 dir = ddBodyFuncs::forward_dir(&ag->body);
+      push_vec3_to_lua(L, dir.x, dir.y, dir.z);
       return 1;
     }
   }
-  ddTerminal::post("[error]Failed to get agent local rotation");
-  lua_pushnil(L);  // push nil to stack
-  return 1;
-}
-
-int get_agent_rot_ws(lua_State *L) {
-  parse_lua_events(L, fb);
-
-  int64_t *id = fb.get_func_val<int64_t>("id");
-
-  if (id) {
-    ddAgent *ag = find_ddAgent((size_t)(*id));
-    if (ag) {
-      // push vec3 (euler from quaternion) to stack
-      glm::vec3 rot = ddBodyFuncs::rot_ws(&ag->body);
-      push_vec3_to_lua(L, rot.x, rot.y, rot.y);
-      return 1;
-    }
-  }
-  ddTerminal::post("[error]Failed to get agent world rotation");
+  ddTerminal::post("[error]Failed to get agent world position");
   lua_pushnil(L);  // push nil to stack
   return 1;
 }
@@ -754,34 +747,6 @@ int set_agent_pos(lua_State *L) {
     }
   }
   ddTerminal::post("[error]Failed to set agent position");
-  return 0;
-}
-
-int set_agent_rot(lua_State *L) {
-  parse_lua_events(L, fb);
-
-  int64_t *id = fb.get_func_val<int64_t>("id");
-  float *_x = fb.get_func_val<float>("x");
-  float *_y = fb.get_func_val<float>("y");
-  float *_z = fb.get_func_val<float>("z");
-
-  if (id) {
-    ddAgent *ag = find_ddAgent((size_t)(*id));
-    if (ag) {
-      glm::vec3 _euler = ddBodyFuncs::rot_ws(&ag->body);
-      // set arguments based on availability
-      const float x_ = _x ? *_x : _euler.x;
-      const float y_ = _y ? *_y : _euler.y;
-      const float z_ = _z ? *_z : _euler.z;
-
-      glm::vec3 new_rot =
-          glm::vec3(glm::radians(x_), glm::radians(y_), glm::radians(z_));
-      ddBodyFuncs::rotate(&ag->body, new_rot);
-
-      return 0;
-    }
-  }
-  ddTerminal::post("[error]Failed to set agent rotation");
   return 0;
 }
 
@@ -836,19 +801,20 @@ int rotate_agent(lua_State *L) {
   parse_lua_events(L, fb);
 
   int64_t *id = fb.get_func_val<int64_t>("id");
-  float *_x = fb.get_func_val<float>("x");
-  float *_y = fb.get_func_val<float>("y");
-  float *_z = fb.get_func_val<float>("z");
+  float *_p = fb.get_func_val<float>("pitch");
+  float *_y = fb.get_func_val<float>("yaw");
+  float *_r = fb.get_func_val<float>("roll");
 
   if (id) {
     ddAgent *ag = find_ddAgent((size_t)(*id));
     if (ag) {
       // set arguments based on availability
-      const float x_ = _x ? *_x : 0;
+      const float p_ = _p ? *_p : 0;
       const float y_ = _y ? *_y : 0;
-      const float z_ = _z ? *_z : 0;
+      const float r_ = _r ? *_r : 0;
 
-      ddBodyFuncs::rotate(&ag->body, glm::vec3(x_, y_, z_));
+      ddBodyFuncs::rotate(&ag->body, glm::radians(y_), glm::radians(p_),
+                          glm::radians(r_));
       return 0;
     }
   }
@@ -873,6 +839,28 @@ int get_agent_vel(lua_State *L) {
   ddTerminal::post("[error]Failed to get agent velocity");
   lua_pushnil(L);  // push nil to stack
   return 1;
+}
+
+int get_cam_dir(lua_State * L) {
+	parse_lua_events(L, fb);
+
+	int64_t *id = fb.get_func_val<int64_t>("id");
+
+	if (id) {
+		ddCam *cam = find_ddCam((size_t)(*id));
+		if (cam) {
+			ddAgent *ag = find_ddAgent(cam->parent);
+			if (ag) {
+				// push vec3 to stack
+				glm::vec3 dir = ddSceneManager::cam_forward_dir(cam, &ag->body);
+				push_vec3_to_lua(L, dir.x, dir.y, dir.z);
+				return 1;
+			}
+		}
+	}
+	ddTerminal::post("[error]Failed to get camera direction");
+	lua_pushnil(L);  // push nil to stack
+	return 1;
 }
 
 int get_agent_ang_vel(lua_State *L) {
@@ -1345,8 +1333,8 @@ bool add_rigid_body(ddAgent *agent, ddModelData *mdata, glm::vec3 pos,
   if (!agent) return false;
 
   // set up bounding box
-  glm::vec3 bb_max = glm::vec3(0.01f, 0.01f, 0.01f);
-  glm::vec3 bb_min = glm::vec3(-0.01f, -0.01f, -0.01f);
+  glm::vec3 bb_max = glm::vec3(0.5f, 0.5f, 0.5f);
+  glm::vec3 bb_min = glm::vec3(-.5f, -0.5f, -0.5f);
   if (mdata) {
     bb_max = mdata->mesh_info[0].bb_max * agent->body.scale;
     bb_min = mdata->mesh_info[0].bb_min * agent->body.scale;
@@ -1356,12 +1344,12 @@ bool add_rigid_body(ddAgent *agent, ddModelData *mdata, glm::vec3 pos,
   float h_depth = (bb_max.z - bb_min.z) * 0.5f;
 
   btCollisionShape *bt_shape = nullptr;
-  if (rb_type == RBType::BOX) {
-    bt_shape = new btBoxShape(
-        btVector3(btScalar(h_width), btScalar(h_height), btScalar(h_depth)));
-  } else {
+  if (rb_type == RBType::SPHERE) {
     float diameter = glm::length(glm::vec3(h_width, h_height, h_depth));
     bt_shape = new btSphereShape(diameter * 0.5f);
+  } else {
+    bt_shape = new btBoxShape(
+        btVector3(btScalar(h_width), btScalar(h_height), btScalar(h_depth)));
   }
 
   // set up rigid body constructor
@@ -1389,6 +1377,8 @@ bool add_rigid_body(ddAgent *agent, ddModelData *mdata, glm::vec3 pos,
   p_world->addRigidBody(agent->body.bt_bod);
   if (rb_type == RBType::NULL_) {
     agent->body.bt_bod->setGravity(btVector3(0.f, 0.f, 0.f));
+    // agent->body.bt_bod->setLinearFactor(btVector3(1, 0, 1));
+    agent->body.bt_bod->setAngularFactor(btVector3(0, 0, 0));
   }
   return true;
 }

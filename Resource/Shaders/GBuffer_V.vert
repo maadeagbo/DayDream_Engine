@@ -28,20 +28,20 @@ void main() {
 	// cannot be used with instancing
 	vs_out.Normal = normalize(vec3(Norm * vec4(VertexNormal, 0.0))); 
 	// can be used with instancing
-	//vs_out.Normal = normalize(vec3(InstanceMatrix * vec4(VertexNormal, 0.0)));
-	vs_out.FragPos = vec3( InstanceMatrix * vec4(VertexPosition, 1.0f));
+	//vs_out.Normal = normalize(vec3(InstanceMatrix * MVP * vec4(VertexNormal, 0.0)));
+	vs_out.FragPos = vec3( InstanceMatrix * MVP * vec4(VertexPosition, 1.0f));
 	if (multiplierMat) {
 		vs_out.InstanceColor = InstanceColor;
 	}
 
 	// normalize and create TBN matrix
-	vec3 tanNorm = normalize(vec3( InstanceMatrix * vec4(TangentNormal, 0.0)));
-	vec3 norm = normalize( vec3( InstanceMatrix * vec4(VertexNormal, 0.0)));
+	vec3 tanNorm = normalize(vec3( InstanceMatrix * MVP * vec4(TangentNormal, 0.0)));
+	vec3 norm = normalize( vec3( InstanceMatrix * MVP * vec4(VertexNormal, 0.0)));
 	vec3 bitanNorm = cross(norm, tanNorm);
 	vs_out.TBN = mat3(tanNorm, bitanNorm, norm);
 	
-	vec4 wsPos = InstanceMatrix * vec4(VertexPosition, 1.0);
-	gl_Position =  MVP * wsPos;
+	vec4 wsPos = InstanceMatrix * MVP * vec4(VertexPosition, 1.0);
+	gl_Position = wsPos;
 	if (enable_clip1) {
 		//gl_ClipDistance[0] = dot(cplane_01, wsPos);
 	}
