@@ -155,6 +155,11 @@ ddLBulb *get_shadow_light();
  */
 glm::vec3 cam_forward_dir(const ddCam *cam, const ddBody* cam_parent_body);
 
+/** 
+ * \brief Get camera's forward direction
+ */
+void update_scene_graph();
+
 }  // namespace ddSceneManager
 
 ASSET_DECL(ddAgent)

@@ -10,7 +10,7 @@ DD_FuncBuff fb;
 // containers only exist in this translation unit
 btDiscreteDynamicsWorld *p_world = nullptr;
 // rigid body types
-enum class RBType : unsigned { BOX, SPHERE, NULL_ };
+enum class RBType : unsigned { BOX, SPHERE, FREE_FORM, KIN };
 
 // default parameters for object initialization
 unsigned native_scr_width = 0, native_scr_height = 0;
@@ -232,30 +232,30 @@ void default_params(const unsigned scr_width, const unsigned scr_height) {
 
 void log_lua_func(lua_State *L) {
   // mesh creation
-  add_func_to_scripts(L, dd_assets_create_mesh, "load_ddm");
+  add_func_to_scripts(L, dd_assets_create_mesh, "dd_load_ddm");
   // camera creation
-  add_func_to_scripts(L, dd_assets_create_cam, "create_cam");
+  add_func_to_scripts(L, dd_assets_create_cam, "dd_create_camera");
   // light creation
-  add_func_to_scripts(L, dd_assets_create_light, "create_light");
+  add_func_to_scripts(L, dd_assets_create_light, "dd_create_light");
   // agent creation
-  add_func_to_scripts(L, dd_assets_create_agent, "create_agent");
+  add_func_to_scripts(L, dd_assets_create_agent, "dd_create_agent");
   // texture creation
-  add_func_to_scripts(L, dd_assets_create_texture, "create_texture");
+  add_func_to_scripts(L, dd_assets_create_texture, "dd_create_texture");
 
   // get agent information
-  add_func_to_scripts(L, get_agent_pos_ws, "get_agent_ws_pos");
-  add_func_to_scripts(L, get_agent_pos_ls, "get_agent_ls_pos");
-  add_func_to_scripts(L, get_agent_forward_dir, "get_forward_direction_agent");
-  add_func_to_scripts(L, get_agent_vel, "get_current_velocity_agent");
-  add_func_to_scripts(L, get_agent_ang_vel, "get_current_ang_velocity_agent");
+  add_func_to_scripts(L, get_agent_pos_ws, "ddAgent_world_pos");
+  add_func_to_scripts(L, get_agent_pos_ls, "ddAgent_local_pos");
+  add_func_to_scripts(L, get_agent_forward_dir, "ddAgent_get_forward");
+  add_func_to_scripts(L, get_agent_vel, "ddAgent_get_velocity");
+  add_func_to_scripts(L, get_agent_ang_vel, "ddAgent_get_ang_velocity");
   // manipulate agent information
-  add_func_to_scripts(L, set_agent_pos, "set_agent_position");
-  add_func_to_scripts(L, translate_agent, "apply_force_agent");
-  add_func_to_scripts(L, rotate_agent, "set_agent_rotation");
-  add_func_to_scripts(L, set_agent_scale, "set_agent_scale");
+  add_func_to_scripts(L, set_agent_pos, "ddAgent_set_position");
+  add_func_to_scripts(L, translate_agent, "ddAgent_apply_force");
+  add_func_to_scripts(L, rotate_agent, "ddAgent_set_rotation");
+  add_func_to_scripts(L, set_agent_scale, "ddAgent_set_scale");
   // manipulate camera
-	add_func_to_scripts(L, rotate_camera, "rotate_camera");
-	add_func_to_scripts(L, get_cam_dir, "ddCam_get_direction");
+  add_func_to_scripts(L, rotate_camera, "ddCam_rotate");
+  add_func_to_scripts(L, get_cam_dir, "ddCam_get_direction");
 }
 
 void load_to_gpu() {
@@ -448,6 +448,10 @@ glm::vec3 cam_forward_dir(const ddCam *cam, const ddBody *cam_parent_body) {
   return glm::normalize(glm::vec3(_f));
 }
 
+void update_scene_graph() {
+	// loop through agents & update constraints
+}
+
 }  // namespace ddSceneManager
 
 //*****************************************************************************
@@ -518,21 +522,13 @@ int dd_assets_create_agent(lua_State *L) {
           }
         }
       }
-      // add parent object
-      if (p_id) {
-        ddAgent *p_agent = find_ddAgent((size_t)*p_id);
-        if (p_agent) {
-          // set parent id / set physics system constraint
-        } else {
-          ddTerminal::f_post("[error]  Failed to find parent <%ld>", *p_id);
-        }
-      }
       // add ddBody to agent and then agent to world
       float mass = 0.f;
       RBType type = RBType::BOX;
       if (agent_mass) mass = *agent_mass;
       if (shape && *shape == 1) type = RBType::SPHERE;
-      if (shape && *shape == -1) type = RBType::NULL_;
+      if (shape && *shape == -1) type = RBType::FREE_FORM;
+      if (shape && *shape == -2) type = RBType::KIN;
 
       glm::vec3 pos;
       if (pos_x) pos.x = *pos_x;
@@ -546,6 +542,24 @@ int dd_assets_create_agent(lua_State *L) {
       new_agent->body.scale = _scale;
 
       add_rigid_body(new_agent, mdata, pos, mass, type);
+
+      // add parent object
+      if (p_id) {
+        ddAgent *p_agent = find_ddAgent((size_t)*p_id);
+        if (p_agent) {
+          new_agent->body.parent = p_agent->id;
+          // set parent id / set physics system constraint
+          new_agent->body.bt_constraint = new btGeneric6DofSpringConstraint(
+              *new_agent->body.bt_bod,
+              p_agent->body.bt_bod->getWorldTransform(), true);
+          // pGen6DOF->setLinearLowerLimit(btVector3(-10., -2., -1.));
+          // pGen6DOF->setLinearUpperLimit(btVector3(10., 2., 1.));
+          p_world->addConstraint(new_agent->body.bt_constraint);
+        } else {
+          ddTerminal::f_post("[error]  Failed to find parent <%ld>", *p_id);
+        }
+      }
+
       // return agent id
       lua_pushinteger(L, new_agent->id);
       return 1;
@@ -841,26 +855,26 @@ int get_agent_vel(lua_State *L) {
   return 1;
 }
 
-int get_cam_dir(lua_State * L) {
-	parse_lua_events(L, fb);
+int get_cam_dir(lua_State *L) {
+  parse_lua_events(L, fb);
 
-	int64_t *id = fb.get_func_val<int64_t>("id");
+  int64_t *id = fb.get_func_val<int64_t>("id");
 
-	if (id) {
-		ddCam *cam = find_ddCam((size_t)(*id));
-		if (cam) {
-			ddAgent *ag = find_ddAgent(cam->parent);
-			if (ag) {
-				// push vec3 to stack
-				glm::vec3 dir = ddSceneManager::cam_forward_dir(cam, &ag->body);
-				push_vec3_to_lua(L, dir.x, dir.y, dir.z);
-				return 1;
-			}
-		}
-	}
-	ddTerminal::post("[error]Failed to get camera direction");
-	lua_pushnil(L);  // push nil to stack
-	return 1;
+  if (id) {
+    ddCam *cam = find_ddCam((size_t)(*id));
+    if (cam) {
+      ddAgent *ag = find_ddAgent(cam->parent);
+      if (ag) {
+        // push vec3 to stack
+        glm::vec3 dir = ddSceneManager::cam_forward_dir(cam, &ag->body);
+        push_vec3_to_lua(L, dir.x, dir.y, dir.z);
+        return 1;
+      }
+    }
+  }
+  ddTerminal::post("[error]Failed to get camera direction");
+  lua_pushnil(L);  // push nil to stack
+  return 1;
 }
 
 int get_agent_ang_vel(lua_State *L) {
@@ -1375,10 +1389,28 @@ bool add_rigid_body(ddAgent *agent, ddModelData *mdata, glm::vec3 pos,
 
   // add to world
   p_world->addRigidBody(agent->body.bt_bod);
-  if (rb_type == RBType::NULL_) {
-    agent->body.bt_bod->setGravity(btVector3(0.f, 0.f, 0.f));
-    // agent->body.bt_bod->setLinearFactor(btVector3(1, 0, 1));
-    agent->body.bt_bod->setAngularFactor(btVector3(0, 0, 0));
+  btCollisionObject::CollisionFlags cf = btCollisionObject::CollisionFlags(
+      agent->body.bt_bod->getCollisionFlags());
+  switch (rb_type) {
+    case RBType::BOX:
+      break;
+    case RBType::SPHERE:
+      break;
+    case RBType::FREE_FORM:
+      agent->body.bt_bod->setGravity(btVector3(0.f, 0.f, 0.f));
+      agent->body.bt_bod->setAngularFactor(btVector3(0, 0, 0));
+      agent->body.bt_bod->setActivationState(DISABLE_DEACTIVATION);
+      break;
+    case RBType::KIN:
+      agent->body.bt_bod->setGravity(btVector3(0.f, 0.f, 0.f));
+      // agent->body.bt_bod->setLinearFactor(btVector3(0, 0, 0));
+      // agent->body.bt_bod->setAngularFactor(btVector3(0, 0, 0));
+      // agent->body.bt_bod->setCollisionFlags(
+      // cf | btCollisionObject::CF_KINEMATIC_OBJECT);
+      agent->body.bt_bod->setActivationState(DISABLE_DEACTIVATION);
+      break;
+    default:
+      break;
   }
   return true;
 }

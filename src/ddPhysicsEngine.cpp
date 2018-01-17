@@ -44,6 +44,12 @@ void ddPhysics::clear_all_rigidbodies() {
     world->removeCollisionObject(obj);
     delete obj;
   }
+  // delete constraints attached to rigid bodies
+  for (int i = world->getNumConstraints() - 1; i >= 0; i--) {
+    btTypedConstraint* constraint = world->getConstraint(i);
+    world->removeConstraint(constraint);
+    delete constraint;
+  }
 }
 
 void ddPhysics::step_simulate(const float dt) {

@@ -155,8 +155,8 @@ void send_upstream_to_lua(lua_State* L) {
       lua_setfield(L, -2, id);
     } else {
       if (val) {
-				lua_pushnumber(L, *val);
-				lua_setfield(L, -2, id);
+        lua_pushnumber(L, *val);
+        lua_setfield(L, -2, id);
       }
     }
   };
@@ -241,9 +241,15 @@ void send_upstream_to_lua(lua_State* L) {
   set_table_field("mouse_b_m", &kf.active, nullptr);
   kf = global_input.keys[(unsigned)DD_Keys::MOUSE_LEFT];
   set_table_field("mouse_b_l", &kf.active, nullptr);
+
+  global_input.keys[(unsigned)DD_Keys::MOUSE_XDELTA].order =
+      mouse_lastx - mouse_x;
   kf = global_input.keys[(unsigned)DD_Keys::MOUSE_XDELTA];
   set_table_field("mouse_x_delta", nullptr, &kf.order);
+  global_input.keys[(unsigned)DD_Keys::MOUSE_YDELTA].order =
+      mouse_lasty - mouse_y;
   kf = global_input.keys[(unsigned)DD_Keys::MOUSE_YDELTA];
+
   set_table_field("mouse_y_delta", nullptr, &kf.order);
   kf = global_input.keys[(unsigned)DD_Keys::MOUSE_X];
   set_table_field("mouse_x", nullptr, &kf.order);
@@ -265,6 +271,10 @@ void send_upstream_to_lua(lua_State* L) {
   set_table_field("grave", &kf.active, nullptr);
 
   lua_setglobal(L, "__dd_input");
+
+	// set old mouse position
+	mouse_lastx = mouse_x;
+	mouse_lasty = mouse_y;
   //*/
 }
 
@@ -420,19 +430,14 @@ void dd_mouse_pos_callback(GLFWwindow* window, double xpos, double ypos) {
     mouse_lasty = (int)ypos;
     flag_first_mouse = false;
   }
+	// set old mouse position
+	mouse_lastx = mouse_x;
+	mouse_lasty = mouse_y;
   // log current mouse movement
   mouse_x = (int)xpos;
   mouse_y = (int)ypos;
-  // get delta
-  global_input.keys[(unsigned)DD_Keys::MOUSE_YDELTA].order =
-      mouse_lasty - mouse_y;
-  global_input.keys[(unsigned)DD_Keys::MOUSE_XDELTA].order =
-      mouse_lastx - mouse_x;
   global_input.keys[(unsigned)DD_Keys::MOUSE_Y].order = mouse_y;
   global_input.keys[(unsigned)DD_Keys::MOUSE_X].order = mouse_x;
-  // set old mouse position
-  mouse_lastx = mouse_x;
-  mouse_lasty = mouse_y;
 }
 
 void dd_mouse_click_callback(GLFWwindow* window, int button, int action,

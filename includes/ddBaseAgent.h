@@ -9,9 +9,13 @@ struct ddBody {
    */
   btRigidBody *bt_bod = nullptr;
   /**
-   * \brief Initialized on mesh import or set to default size
+   * \brief Constraint for parenting
    */
-  // btCollisionShape *bt_bbox = nullptr;
+	btGeneric6DofSpringConstraint *bt_constraint = nullptr;
+	/**
+   * \brief Parent object
+   */
+	size_t parent = 0;
   /**
 * \brief Modify object scale (and affect physics using btCollisionShape)
 */

@@ -23,12 +23,12 @@ cubemap_resolution(args)
 args = {
 	["path"] = ROOT_DIR.."/Resource/Meshes/primitives/light_plane.ddm"
 }
-local lplane = load_ddm(args)
+local lplane = dd_load_ddm(args)
 args = {
 	["id"] = "_dd_light_plane",
 	["mesh"] = lplane
 }
-local lplane_id = create_agent(args)
+local lplane_id = dd_create_agent(args)
 print("Found and added light plane: "..lplane_id)
 
 -- Shaders ********************************************************************
@@ -132,4 +132,4 @@ args = {
 	["path"] = ROOT_DIR.."/Resource/Textures/loading_base.png",
 	["id"] = "load_screen"
 }
-create_texture(args)
+dd_create_texture(args)

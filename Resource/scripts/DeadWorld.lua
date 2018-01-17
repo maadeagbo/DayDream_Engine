@@ -6,7 +6,7 @@ do
 	matrix = require "scripts.matrix"
 
 	DeadWorld = {}
-	speed = 10.0
+	speed = 5.0
 	max_vel_diff = 10.0
 	damp_factor = 2.0
 	pitch = 0
@@ -59,33 +59,44 @@ do
 		assets = deadworld_asset
 
 		if event == "physics_tick" then
+			-- world up 
+			world_up = matrix{0, 1, 0}
 			-- velocity control
-			curr_v = get_current_velocity_agent({["id"] = assets["cam_ag"]})
+			curr_v = ddAgent_get_velocity({["id"] = assets["cam_ag"]})
 			v3_v = matrix{curr_v["x"], curr_v["y"], curr_v["z"]}
 			-- rotation control
-			curr_av = get_current_ang_velocity_agent({["id"] = assets["cam_ag"]})
+			curr_av = ddAgent_get_ang_velocity({["id"] = assets["cam_ag"]})
 			v3_av = matrix{curr_av["x"], curr_av["y"], curr_av["z"]}
 			-- direction
 			curr_d = ddCam_get_direction({["id"] = assets["camera"]})
 			v3_d = matrix{curr_d["x"], curr_d["y"], curr_d["z"]}
+			--[[
 			dd_print(string.format("Dir = %.3f, %.3f, %.3f", 
 				curr_d["x"], curr_d["y"], curr_d["z"])
 			)
+			]]--
+			-- "right" direction
+			v3_rdir = matrix.cross(v3_d, world_up)
+			--[[
+			dd_print(string.format(
+				"F_dir %.3f, %.3f, %.3f", v3_rdir[1][1], v3_rdir[2][1], v3_rdir[3][1]))
+			dd_print(string.format(
+				"R_dir %.3f, %.3f, %.3f", v3_d[1][1], v3_d[2][1], v3_d[3][1]))
+			]]--
 
 			new_v = matrix{0, 0, 0}
-			
 			-- left
-			if __dd_input["a"] then new_v = -1 * matrix{speed, 0, 0} end
+			if __dd_input["a"] then new_v = new_v - v3_rdir end
 			-- right
-			if __dd_input["d"] then new_v = matrix{speed, 0, 0} end
+			if __dd_input["d"] then new_v = new_v + v3_rdir end
 			-- forward
-			if __dd_input["w"] then new_v = -1 * matrix{0, 0, speed} end
+			if __dd_input["w"] then new_v = new_v + v3_d end
 			-- backwards
-			if __dd_input["s"] then new_v = matrix{0, 0, speed} end
+			if __dd_input["s"] then new_v = new_v - v3_d end
 			-- up
-			if __dd_input["q"] then new_v = matrix{0, speed, 0} end
+			if __dd_input["space"] then new_v = new_v + matrix{0, 1, 0} end
 			-- down
-			if __dd_input["e"] then new_v = -1 * matrix{0, speed, 0} end
+			if __dd_input["l_shift"] then new_v = new_v - matrix{0, 1, 0} end
 			-- rotation
 			if __dd_input["mouse_b_l"] then
 				--
@@ -95,16 +106,13 @@ do
 				new_cr = {}
 				new_cr["id"] = assets["camera"]
 				--dd_print(string.format("%d", assets["camera"]))
-				new_cr["yaw"] = yaw
-				dd_print(""..assets["camera"])
-				rotate_camera(new_cr)
+				new_cr["pitch"] = pitch
+				ddCam_rotate(new_cr)
 
 				new_r = {}
 				new_r["id"] = assets["cam_ag"]
-				new_r["pitch"] = pitch
-				new_r["yaw"] = 0
-
-				set_agent_rotation(new_r)
+				new_r["yaw"] = yaw
+				ddAgent_set_rotation(new_r)
 				--[[
 				dd_print(string.format("Pitch = %.3f || Yaw = %.3f", 
 					new_r["pitch"], new_r["yaw"]))
@@ -122,7 +130,8 @@ do
 				--new_v[1][1] = -v3_v[1][1] * damp_factor
 			end
 
-			-- update position (and clamp maximum velocity difference)
+			-- update position (and clamp maximum velocity difference w/ deceleration)
+			new_v = new_v * speed;
 			delta_v = {
 				["x"] = clamp_vel(new_v[1][1] - curr_v["x"], -max_vel_diff, max_vel_diff),
 				["y"] = clamp_vel(new_v[2][1] - curr_v["y"], -max_vel_diff, max_vel_diff),
@@ -130,7 +139,7 @@ do
 			}
 
 			delta_v["id"] = assets["cam_ag"]
-			apply_force_agent(delta_v)
+			ddAgent_apply_force(delta_v)
 			--if update_rot then rotate_camera(cam_rot) end
 		end
 	end
