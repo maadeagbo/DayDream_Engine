@@ -597,6 +597,8 @@ void ddEngine::update(DD_LEvent &_event) {
     // render 3D world
     ddRenderer::draw_world();
   } else if (e_sig == physics_hash.gethash()) {  // physics update
+		// scene graph
+		ddSceneManager::update_scene_graph();
     // physics simulation
     main_physics.step_simulate(ddTime::get_avg_frame_time());
   } else if (e_sig == reset_lvl_script_hash.gethash()) {  // lvl update script

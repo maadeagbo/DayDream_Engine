@@ -5,12 +5,18 @@
 #include "ddTerminal.h"
 
 namespace {
+enum collisiontypes {
+  COL_NOTHING = 0,         //< Collide with nothing
+  COL_AGENTS = DD_BIT(0),  //< Collide with ddAgent
+  COL_WEAPONS = DD_BIT(1)  //< Collide with walls
+};
+
 // function callback buffer
 DD_FuncBuff fb;
 // containers only exist in this translation unit
 btDiscreteDynamicsWorld *p_world = nullptr;
 // rigid body types
-enum class RBType : unsigned { BOX, SPHERE, FREE_FORM, KIN };
+enum class RBType : unsigned { BOX, SPHERE, FREE_FORM, KIN, GHOST };
 
 // default parameters for object initialization
 unsigned native_scr_width = 0, native_scr_height = 0;
@@ -152,10 +158,15 @@ ddTex2D *create_tex2D(const char *path, const char *img_id);
 bool add_rigid_body(ddAgent *agent, ddModelData *mdata, glm::vec3 pos,
                     const float mass = 0.f, RBType rb_type = RBType::BOX);
 /**
+ * \brief Add ghost agent to physics world for parenting/scene graph
+ */
+btRigidBody &create_ghost(btTransform _transform);
+/**
  * \brief Removes rigidbody from physics world
  * \param agent contains rigid body
  */
 void delete_rigid_body(ddAgent *agent);
+
 // source <Muhammad Mobeen Movania::OpenGL Development Cookbook>
 /// \brief Invert image along Y-axis
 /// \param image Pointer to image on RAM
@@ -449,7 +460,28 @@ glm::vec3 cam_forward_dir(const ddCam *cam, const ddBody *cam_parent_body) {
 }
 
 void update_scene_graph() {
-	// loop through agents & update constraints
+  // loop through agents & update constraints
+  for (auto &idx : map_b_agents) {
+    if (b_agents[idx.second].body.bt_constraint) {
+      // get parent & update constraints
+      ddAgent *ag = find_ddAgent(b_agents[idx.second].body.parent);
+
+			// create tranformation for kinematic object
+			btTransform og_tr = ag->body.bt_bod->getWorldTransform();
+      btMatrix3x3 rot = ag->body.bt_bod->getWorldTransform().getBasis();
+      btVector3 offset(b_agents[idx.second].body.offset.x,
+                       b_agents[idx.second].body.offset.y,
+                       b_agents[idx.second].body.offset.z);
+
+			btTransform tr;
+			tr.setIdentity();
+      tr.setOrigin(offset); // apply offset vector
+			tr = og_tr * tr;
+
+      b_agents[idx.second].body.bt_bod->activate(true);
+      b_agents[idx.second].body.bt_bod->setWorldTransform(tr);
+    }
+  }
 }
 
 }  // namespace ddSceneManager
@@ -528,7 +560,8 @@ int dd_assets_create_agent(lua_State *L) {
       if (agent_mass) mass = *agent_mass;
       if (shape && *shape == 1) type = RBType::SPHERE;
       if (shape && *shape == -1) type = RBType::FREE_FORM;
-      if (shape && *shape == -2) type = RBType::KIN;
+      if (shape && *shape == -2) type = RBType::GHOST;
+      if (shape && *shape == -3) type = RBType::KIN;
 
       glm::vec3 pos;
       if (pos_x) pos.x = *pos_x;
@@ -548,13 +581,7 @@ int dd_assets_create_agent(lua_State *L) {
         ddAgent *p_agent = find_ddAgent((size_t)*p_id);
         if (p_agent) {
           new_agent->body.parent = p_agent->id;
-          // set parent id / set physics system constraint
-          new_agent->body.bt_constraint = new btGeneric6DofSpringConstraint(
-              *new_agent->body.bt_bod,
-              p_agent->body.bt_bod->getWorldTransform(), true);
-          // pGen6DOF->setLinearLowerLimit(btVector3(-10., -2., -1.));
-          // pGen6DOF->setLinearUpperLimit(btVector3(10., 2., 1.));
-          p_world->addConstraint(new_agent->body.bt_constraint);
+          new_agent->body.offset = glm::vec3(0.1f, 0.1f, -2.f);
         } else {
           ddTerminal::f_post("[error]  Failed to find parent <%ld>", *p_id);
         }
@@ -1372,7 +1399,7 @@ bool add_rigid_body(ddAgent *agent, ddModelData *mdata, glm::vec3 pos,
   transform.setOrigin(btVector3(pos.x, pos.y, pos.z));
 
   // rigidbody is dynamic if and only if mass is non zero, otherwise static
-  btScalar _mass(mass);
+  btScalar _mass = (rb_type != RBType::KIN) ? mass : 0.f;
   bool isDynamic = (_mass != 0.f);
   btVector3 localInertia(0, 0, 0);
   if (isDynamic) {
@@ -1388,36 +1415,98 @@ bool add_rigid_body(ddAgent *agent, ddModelData *mdata, glm::vec3 pos,
   agent->body.bt_bod = new btRigidBody(rbInfo);
 
   // add to world
-  p_world->addRigidBody(agent->body.bt_bod);
   btCollisionObject::CollisionFlags cf = btCollisionObject::CollisionFlags(
       agent->body.bt_bod->getCollisionFlags());
   switch (rb_type) {
     case RBType::BOX:
+      p_world->addRigidBody(agent->body.bt_bod, COL_AGENTS,
+                            COL_AGENTS | COL_WEAPONS);
       break;
     case RBType::SPHERE:
+      p_world->addRigidBody(agent->body.bt_bod, COL_AGENTS,
+                            COL_AGENTS | COL_WEAPONS);
       break;
     case RBType::FREE_FORM:
       agent->body.bt_bod->setGravity(btVector3(0.f, 0.f, 0.f));
       agent->body.bt_bod->setAngularFactor(btVector3(0, 0, 0));
+      p_world->addRigidBody(agent->body.bt_bod, COL_AGENTS,
+                            COL_AGENTS | COL_WEAPONS);
       agent->body.bt_bod->setActivationState(DISABLE_DEACTIVATION);
       break;
     case RBType::KIN:
-      agent->body.bt_bod->setGravity(btVector3(0.f, 0.f, 0.f));
-      // agent->body.bt_bod->setLinearFactor(btVector3(0, 0, 0));
-      // agent->body.bt_bod->setAngularFactor(btVector3(0, 0, 0));
-      // agent->body.bt_bod->setCollisionFlags(
-      // cf | btCollisionObject::CF_KINEMATIC_OBJECT);
-      agent->body.bt_bod->setActivationState(DISABLE_DEACTIVATION);
+      agent->body.bt_bod->setCollisionFlags(
+          cf | btCollisionObject::CF_KINEMATIC_OBJECT);
+      p_world->addRigidBody(agent->body.bt_bod, COL_NOTHING, COL_NOTHING);
       break;
+    case RBType::GHOST: {
+      agent->body.bt_bod->setGravity(btVector3(0.f, 0.f, 0.f));
+      agent->body.bt_bod->setLinearFactor(btVector3(0, 0, 0));
+      agent->body.bt_bod->setAngularFactor(btVector3(0, 0, 0));
+      /*agent->body.bt_bod->setCollisionFlags(
+                      cf | btCollisionObject::CF_NO_CONTACT_RESPONSE);
+      agent->body.bt_bod->setActivationState(DISABLE_DEACTIVATION);*/
+      p_world->addRigidBody(agent->body.bt_bod, COL_NOTHING, COL_NOTHING);
+
+      // constraint
+      btTransform frameInA;
+      frameInA = btTransform::getIdentity();
+      btRigidBody &ghost =
+          create_ghost(agent->body.bt_bod->getWorldTransform());
+      // set parent id / set physics system constraint
+      agent->body.bt_constraint = new btGeneric6DofSpring2Constraint(
+          *agent->body.bt_bod, ghost, frameInA, frameInA);
+
+      p_world->addConstraint(agent->body.bt_constraint);
+      break;
+    }
     default:
       break;
   }
   return true;
 }
 
+btRigidBody &create_ghost(btTransform _transform) {
+  btRigidBody *bt_bod = nullptr;
+  // set up bounding sphere
+  btCollisionShape *bt_shape = new btSphereShape(0.5f);
+  ;
+
+  // set up dynamic rigid body constructor
+  btScalar _mass(0.1f);
+  bool isDynamic = (_mass != 0.f);
+  btVector3 localInertia(0, 0, 0);
+  bt_shape->calculateLocalInertia(_mass, localInertia);
+
+  // motion state
+  btDefaultMotionState *bt_motion = new btDefaultMotionState(_transform);
+  btRigidBody::btRigidBodyConstructionInfo rbInfo(_mass, bt_motion, bt_shape,
+                                                  localInertia);
+  bt_bod = new btRigidBody(rbInfo);
+
+  // add to world
+  p_world->addRigidBody(bt_bod, COL_AGENTS, COL_AGENTS | COL_WEAPONS);
+
+  POW2_VERIFY(bt_bod != nullptr);
+  return *bt_bod;
+}
+
 void delete_rigid_body(ddAgent *agent) {
   if (!agent) return;
   if (!agent->body.bt_bod) return;
+
+  // remove constraints
+  if (agent->body.bt_constraint) {
+    // rigidbodyb contains ghost body. Delete
+    btRigidBody &ghost = agent->body.bt_constraint->getRigidBodyB();
+    p_world->removeRigidBody(&ghost);
+    delete ghost.getMotionState();
+    delete ghost.getCollisionShape();
+
+    // delete constraint
+    p_world->removeConstraint(agent->body.bt_constraint);
+    delete agent->body.bt_constraint;
+    agent->body.bt_constraint = nullptr;
+  }
 
   // remove body and delete allocated CollisionShape and MotionState
   p_world->removeRigidBody(agent->body.bt_bod);

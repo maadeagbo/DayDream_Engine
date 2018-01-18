@@ -31,9 +31,9 @@ function load()
 	args = {
 		["id"] = "agent_1",
 		["mesh"] = floor_key,
-		["scale_x"] = 30.0,
+		["scale_x"] = 50.0,
 		["scale_y"] = 0.2,
-		["scale_z"] = 10.0
+		["scale_z"] = 50.0
 	}
 	agent_id = dd_create_agent(args)
 	deadworld_asset["floor"] = agent_id
@@ -103,13 +103,14 @@ function load()
 	args = {
 		["id"] = "agent_5",
 		["parent"] = new_agent_id,
-		["mesh"] = box_key,
-		["mass"] = 0.1,
-		["scale_y"] = 0.9,
-		["scale_z"] = 0.9,
-		["scale_x"] = 0.9,
-		["pos_y"] = 4.0,
-		["pos_x"] = -1.0
+		["mesh"] = sphere_key,
+		["mass"] = 1.0,
+		["type"] = -2,
+		["scale_x"] = 0.007,
+		["scale_y"] = 0.007,
+		["scale_z"] = 0.007,
+		["pos_y"] = 5.0,
+		["pos_z"] = 9.0
 	}
 	agent_id = dd_create_agent(args)
 	deadworld_asset["box2"] = agent_id

@@ -53,10 +53,5 @@ void ddPhysics::clear_all_rigidbodies() {
 }
 
 void ddPhysics::step_simulate(const float dt) {
-  const float check = (dt / (1.f / 60.f));
-  const unsigned num_iterations = check < 1.f ? 1 : (unsigned)check;
-
-  for (unsigned i = 0; i < num_iterations; i++) {
-    world->stepSimulation(1.f / 60.f);
-  }
+	world->stepSimulation(dt);
 }

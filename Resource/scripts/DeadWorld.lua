@@ -94,9 +94,9 @@ do
 			-- backwards
 			if __dd_input["s"] then new_v = new_v - v3_d end
 			-- up
-			if __dd_input["space"] then new_v = new_v + matrix{0, 1, 0} end
+			if __dd_input["space"] then new_v = new_v + matrix{0, speed, 0} end
 			-- down
-			if __dd_input["l_shift"] then new_v = new_v - matrix{0, 1, 0} end
+			if __dd_input["l_shift"] then new_v = new_v - matrix{0, speed, 0} end
 			-- rotation
 			if __dd_input["mouse_b_l"] then
 				--

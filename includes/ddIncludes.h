@@ -73,6 +73,8 @@ struct EnableBitMaskOperators {
   static const bool enable = false;
 };
 
+#define DD_BIT(x) (1 << (x))
+
 #define ENABLE_BITMASK_OPERATORS(TYPE)  \
   template <>                           \
   struct EnableBitMaskOperators<TYPE> { \
