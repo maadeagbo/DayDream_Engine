@@ -74,9 +74,9 @@ enum DD_Keys {
 };
 
 struct key_flags {
-  key_flags(const bool a = false, const int b = 0) : active(a), order(b) {}
+  key_flags(const bool a = false, const float b = 0) : active(a), order(b) {}
   bool active;
-  int order;
+	float order;
 };
 
 struct InputData {

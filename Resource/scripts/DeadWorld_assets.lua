@@ -31,19 +31,25 @@ function load()
 	args = {
 		["id"] = "agent_1",
 		["mesh"] = floor_key,
-		["scale_x"] = 50.0,
+		["scale_x"] = 100.0,
 		["scale_y"] = 0.2,
-		["scale_z"] = 50.0
+		["scale_z"] = 100.0
 	}
 	agent_id = dd_create_agent(args)
 	deadworld_asset["floor"] = agent_id
+	-- set friction
+	arg = {
+		["id"] = agent_id,
+		["friction"] = 0.7
+	}
+	--ddAgent_set_friction(arg)
 	dd_print( "Created agent (floor): "..agent_id )
 
 	-- circle
 	args = {
 		["id"] = "agent_2",
 		["mesh"] = sphere_key,
-		["mass"] = 0.4,
+		["mass"] = 5.0,
 		["type"] = 1,
 		["pos_y"] = 7.0,
 		["pos_x"] = 0.2,
@@ -59,7 +65,7 @@ function load()
 	args = {
 		["id"] = "agent_3",
 		["mesh"] = box_key,
-		["mass"] = 0.9,
+		["mass"] = 3.0,
 		["pos_y"] = 11.0,
 		["pos_x"] = 0.48
 	}
@@ -81,16 +87,23 @@ function load()
 	}
 	agent_id = dd_create_agent(args)
 
-	-- camera
+	-- camera agent
 	args = {
 		["id"] = "cam_agent",
-		["mass"] = 0.1,
+		["mass"] = 10.0,
 		["type"] = -1,
 		["pos_y"] = 5.0,
 		["pos_z"] = 12.0,
 	}
 	new_agent_id = dd_create_agent(args)
 	deadworld_asset["cam_ag"] = new_agent_id
+	-- set friction
+	arg = {
+		["id"] = new_agent_id,
+		["friction"] = 0.7
+	}
+	--ddAgent_set_friction(arg)
+	-- camera
 	arg = {
 		["id"] = "cam_2",
 		["parent"] = new_agent_id
@@ -102,10 +115,10 @@ function load()
 	-- box 2
 	args = {
 		["id"] = "agent_5",
-		["parent"] = new_agent_id,
+		--["parent"] = new_agent_id,
 		["mesh"] = sphere_key,
 		["mass"] = 1.0,
-		["type"] = -2,
+		["type"] = 1,
 		["scale_x"] = 0.007,
 		["scale_y"] = 0.007,
 		["scale_z"] = 0.007,

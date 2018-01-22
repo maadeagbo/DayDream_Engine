@@ -542,10 +542,9 @@ void ddEngine::update(DD_LEvent &_event) {
 
 				new_event.handle = main_q.physics_tick;
 				q_push(new_event);
-
-				new_event.handle = physics_hash;
-				q_push(new_event);
 			}
+			new_event.handle = physics_hash;
+			q_push(new_event);
 
       // send render event
       new_event.handle = draw_hash;
