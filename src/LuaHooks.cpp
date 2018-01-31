@@ -196,6 +196,8 @@ lua_State *init_lua_state() {
     set_lua_global(L, "ROOT_DIR", ROOT_DIR);
     s_dir.format("%s/%s", RESOURCE_DIR, "scripts");
     set_lua_global(L, "SCRIPTS_DIR", s_dir.str());
+    s_dir.format("%s/%s", ROOT_DIR, "Projects");
+    set_lua_global(L, "PROJECTS_DIR", s_dir.str());
 
     s_dir.format("%s/", RESOURCE_DIR);
     append_package_path(L, s_dir.str());

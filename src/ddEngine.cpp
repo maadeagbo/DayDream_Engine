@@ -37,9 +37,6 @@ void ddEngine::startup_lua() {
   main_q.set_lua_ptr(main_lstate);
 
   register_lfuncs();
-
-  // register globals from ddRenderer
-  ddRenderer::init_lua_globals(main_lstate);
 }
 
 void ddEngine::dd_open_window(const size_t width, const size_t height,
@@ -369,6 +366,11 @@ void ddEngine::register_lfuncs() {
   add_func_to_scripts(main_lstate, script_print, "dd_print");
   // add asset function
   ddAssets::log_lua_func(main_lstate);
+  // register globals from ddRenderer
+  ddRenderer::init_lua_globals(main_lstate);
+
+  // add event queue instance to lua space to register functions
+  register_instance_lua_xspace<ddQueue>(main_lstate, main_q);
 }
 
 void ddEngine::update_GLFW() {

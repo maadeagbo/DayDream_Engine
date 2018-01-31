@@ -29,7 +29,7 @@ int ddQueue::push_lua(lua_State *_L) {
     }
     // log delay
     else if (fb.buffer[i].arg_name == delay_hash) {
-      _event.delay = *fb.get_func_val<int>(delay_hash.str());
+      _event.delay = *fb.get_func_val<int64_t>(delay_hash.str());
     }
     // log remaining arguments
     else {
@@ -73,10 +73,10 @@ int ddQueue::register_lua_func(lua_State *_L) {
   // grab key to object from top of stack
   parse_lua_events(_L, fb);
 
-  int *key = fb.get_func_val<int>("key");
+  const char *key = fb.get_func_val<const char>("key");
   if (key && func_ref != LUA_REFNIL) {
     handler_sig _sig = {global_ref, func_ref};
-    register_handler((size_t)*key, _sig);
+    register_handler(getCharHash(key), _sig);
   }
   return 0;
 }
@@ -85,9 +85,9 @@ int ddQueue::subscribe_lua_func(lua_State *_L) {
   parse_lua_events(_L, fb);
 
   // grab event key
-  int *e_val = fb.get_func_val<int>("event.key");
+  int64_t *e_val = fb.get_func_val<int64_t>("event.key");
   // grab signature key
-  int *s_val = fb.get_func_val<int>("sig.key");
+  int64_t *s_val = fb.get_func_val<int64_t>("sig.key");
 
   if (e_val && s_val) {
     subscribe((size_t)*e_val, (size_t)*s_val);
@@ -99,9 +99,9 @@ int ddQueue::unsubscribe_lua_func(lua_State *_L) {
   parse_lua_events(_L, fb);
 
   // grab event key
-  int *e_val = fb.get_func_val<int>("event.key");
+  int64_t *e_val = fb.get_func_val<int64_t>("event.key");
   // grab signature key
-  int *s_val = fb.get_func_val<int>("sig.key");
+  int64_t *s_val = fb.get_func_val<int64_t>("sig.key");
 
   if (e_val && s_val) {
     unsubscribe((size_t)*e_val, (size_t)*s_val);
@@ -290,7 +290,7 @@ void ddQueue::process_queue() {
 void ddQueue::init_level_scripts(const char *script_id, const bool runtime) {
   // find level functions
   cbuff<256> file_name;
-  file_name.format("%s/scripts/%s.lua", RESOURCE_DIR, script_id);
+  file_name.format("%s/%s_lvl/%s_world.lua", PROJECT_DIR, script_id, script_id);
   bool file_found = parse_luafile(L, file_name.str());
   if (file_found) {
     int global_ref = get_lua_ref(L, nullptr, script_id);
@@ -330,7 +330,8 @@ void ddQueue::init_level_scripts(const char *script_id, const bool runtime) {
   }
   if (!runtime) {
     // find load function
-    file_name.format("%s/scripts/%s_assets.lua", RESOURCE_DIR, script_id);
+    file_name.format("%s/%s_lvl/%s_assets.lua", PROJECT_DIR, script_id, script_id);
+    //file_name.format("%s/scripts/%s_assets.lua", RESOURCE_DIR, script_id);
     file_found = parse_luafile(L, file_name.str());
     if (file_found) {
       int func_ref = get_lua_ref(L, nullptr, "load");
