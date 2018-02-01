@@ -40,13 +40,25 @@ echo -e "\t-- save to asset table" >> $1
 echo -e "\t$2_assets[\"floor\"] = floor_agent" >> $1
 echo -e "\tdd_print( \"Created agent (floor): \"..floor_agent )\n" >> $1
 
+# create random object
+echo -e "\t-- Box agent" >> $1
+echo -e "\targs = {}" >> $1
+echo -e "\targs[\"id\"] = \"box_agent\"" >> $1
+echo -e "\targs[\"mass\"] = 1.0" >> $1
+echo -e "\targs[\"mesh\"] = cube_mesh" >> $1
+echo -e "\targs[\"pos_y\"] = 5.0" >> $1
+echo -e "\tbox_agent = dd_create_agent(args)" >> $1
+echo -e "\t-- save to asset table" >> $1
+echo -e "\t$2_assets[\"box\"] = box_agent" >> $1
+echo -e "\tdd_print( \"Created agent (box): \"..box_agent )\n" >> $1
+
 # create parent agent for camera manipulation
 echo -e "\t-- Empty camera agent" >> $1
 echo -e "\targs = {}" >> $1
 echo -e "\targs[\"id\"] = \"$2_agent\"" >> $1
 echo -e "\targs[\"mass\"] = 1.0" >> $1
-echo -e "\targs[\"type\"] = -1" >> $1
-echo -e "\targs[\"pos_y\"] = 5.0" >> $1
+echo -e "\targs[\"type\"] = -2\t-- for floating movement" >> $1
+echo -e "\targs[\"pos_y\"] = 2.0" >> $1
 echo -e "\targs[\"pos_z\"] = 5.0" >> $1
 echo -e "\tcam_agent_id = dd_create_agent(args)" >> $1
 echo -e "\t$2_assets[\"$2_agent\"] = cam_agent_id\n" >> $1

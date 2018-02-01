@@ -188,19 +188,16 @@ lua_State *init_lua_state() {
   lua_State *L = luaL_newstate();  // opens lua
   if (L) {
     luaL_openlibs(L);  // opens standard libraries
-    cbuff<256> s_dir;
-    s_dir.format("%s/", ROOT_DIR);
-    append_package_path(L, s_dir.str());  // add root path to scripts
+    append_package_path(L, ROOT_DIR);  // add root path to scripts
+    append_package_path(L, RESOURCE_DIR);  // add resource path to scripts
+    append_package_path(L, PROJECT_DIR);  // add projects path to scripts
 
     // Add global variables for use in scripts
     set_lua_global(L, "ROOT_DIR", ROOT_DIR);
+    cbuff<256> s_dir;
     s_dir.format("%s/%s", RESOURCE_DIR, "scripts");
     set_lua_global(L, "SCRIPTS_DIR", s_dir.str());
-    s_dir.format("%s/%s", ROOT_DIR, "Projects");
-    set_lua_global(L, "PROJECTS_DIR", s_dir.str());
-
-    s_dir.format("%s/", RESOURCE_DIR);
-    append_package_path(L, s_dir.str());
+    set_lua_global(L, "PROJECTS_DIR", PROJECT_DIR);
 
 #ifdef _WIN32
     set_lua_global(L, "WIN32", true);
@@ -688,11 +685,11 @@ void push_vec4_to_lua(lua_State *L, const float x, const float y, const float z,
 }
 
 void append_package_path(lua_State *L, const char *path) {
-  cbuff<512> curr_path, new_path;
+  cbuff<1024> curr_path, new_path;
   lua_getglobal(L, "package");
   lua_getfield(L, -1, "path");
   curr_path = lua_tostring(L, -1);  // grab path string from top of stack
-  new_path.format(";%s/?.lua", path);
+  new_path.format("%s;%s/?.lua", curr_path.str(), path);
 
   lua_pop(L, 1);  // get rid of the old path string on the stack
   lua_pushstring(L, new_path.str());  // push the new one

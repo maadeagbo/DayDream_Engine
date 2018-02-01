@@ -472,7 +472,6 @@ void update_scene_graph() {
 
       // create tranformation for kinematic object
       btTransform og_tr = ag->body.bt_bod->getWorldTransform();
-      btMatrix3x3 rot = ag->body.bt_bod->getWorldTransform().getBasis();
       btVector3 offset(b_agents[idx.second].body.offset.x,
                        b_agents[idx.second].body.offset.y,
                        b_agents[idx.second].body.offset.z);
@@ -1519,7 +1518,7 @@ btRigidBody &create_ghost(btTransform _transform) {
 
   // set up dynamic rigid body constructor
   btScalar _mass(0.1f);
-  bool isDynamic = (_mass != 0.f);
+  //bool isDynamic = (_mass != 0.f);
   btVector3 localInertia(0, 0, 0);
   bt_shape->calculateLocalInertia(_mass, localInertia);
 

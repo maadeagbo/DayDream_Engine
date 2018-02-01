@@ -46,7 +46,7 @@ float load_ticks = 0.f;
 /** \brief Draw call information */
 unsigned draw_calls = 0;
 unsigned tris_in_frame = 0;
-unsigned lines_in_frame = 0;
+//unsigned lines_in_frame = 0;
 unsigned objects_in_frame = 0;
 
 /** \brief frustum cull buffer */
@@ -710,7 +710,7 @@ void light_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
     glm::mat4 model;
     model = glm::translate(model, blb->position);
     model = glm::scale(model, glm::vec3(lv_radius));
-    glm::mat4 light_mvp = cam_proj_m * cam_view_m * parent_mat * model;
+    //glm::mat4 light_mvp = cam_proj_m * cam_view_m * parent_mat * model;
 
     // render
     switch (blb->type) {
