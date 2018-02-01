@@ -29,3 +29,7 @@ source "$ROOT_DIR/tools/new_world_script.sh" $WRITE_DIR/"$1_world.lua" $1
 # create actor file
 echo -e "  Creating actor file:  ${GREEN}$1_actor.lua${NC}"
 source "$ROOT_DIR/tools/new_actor_script.sh" $WRITE_DIR/"$1_actor.lua" $1
+
+# create cpp file for lua integration
+echo -e "  Creating c++ file:    ${GREEN}$1_funcs.cpp${NC}"
+source "$ROOT_DIR/tools/new_lua_cpp.sh" $WRITE_DIR/"$1_funcs.cpp" $1

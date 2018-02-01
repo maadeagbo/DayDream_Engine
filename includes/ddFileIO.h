@@ -2,7 +2,6 @@
 
 #include <experimental/filesystem>
 #include <fstream>
-#include <sstream>
 #include "ddIncludes.h"
 
 enum class ddIOflag : unsigned {
@@ -18,11 +17,10 @@ struct ddIO {
   bool open(const char* fileName, const ddIOflag flags);
   const char* readNextLine();
   void writeLine(const char* output);
-  const char* getNextFile();
+  inline dd_array<cbuff<512>> get_directory_files() { return dir_files; }
 
  private:
-  typedef std::experimental::filesystem::directory_iterator fs_dir;
   char m_line[512];
   std::fstream m_file;
-  fs_dir m_directory;
+  dd_array<cbuff<512>> dir_files;
 };
