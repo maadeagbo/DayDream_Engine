@@ -76,7 +76,7 @@ enum DD_Keys {
 struct key_flags {
   key_flags(const bool a = false, const float b = 0) : active(a), order(b) {}
   bool active;
-	float order;
+  float order;
 };
 
 struct InputData {
@@ -110,7 +110,7 @@ const InputData& get_input();
 /**
  * \brief Make available input data to lua script
  */
-void send_upstream_to_lua(lua_State *L);
+void send_upstream_to_lua(lua_State* L);
 }  // namespace ddInput
 
 /** \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine */

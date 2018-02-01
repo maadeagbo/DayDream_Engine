@@ -299,8 +299,7 @@ void render_load_screen() {
   // rotate load circle
   if (ddTime::get_time_float() > load_ticks + 0.05f) {
     load_ticks = ddTime::get_time_float();
-    load_rot_mat =
-        glm::rotate(load_rot_mat, glm::radians(30.f), global_Yv3 + global_Zv3);
+    load_rot_mat = glm::rotate(load_rot_mat, glm::radians(30.f), global_Zv3);
   }
   ddGPUFrontEnd::toggle_depth_test(false);
 
@@ -483,7 +482,7 @@ void draw_scene(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
   // particle pass (copy depth buffer from gbuufer pass)
 
   // post processing
-  //ddGPUFrontEnd::clear_screen(1.0);
+  // ddGPUFrontEnd::clear_screen(1.0);
   ddGPUFrontEnd::toggle_depth_test(false);
   ddGPUFrontEnd::toggle_alpha_blend(true);
 

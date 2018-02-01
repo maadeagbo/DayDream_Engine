@@ -102,18 +102,18 @@ struct ddQueue {
   /**
    * \brief ONLY CALLED INTERNALLY BY ddEngine. DO NOT USE
    */
-  inline void shutdown_queue() { shutdown = true; }
+  void setup_lua(lua_State *_L);
   /**
    * \brief ONLY CALLED INTERNALLY BY ddEngine. DO NOT USE
    */
-  inline void set_lua_ptr(lua_State *_L) { L = _L; }
+  inline void shutdown_queue() { shutdown = true; }
   /**
    * \brief ONLY CALLED INTERNALLY BY ddEngine. DO NOT USE
    */
   void init_level_scripts(const char *script_id, const bool runtime = false);
 
-	cbuff<32> physics_tick;
-	cbuff<32> lvl_call;
+  cbuff<32> physics_tick;
+  cbuff<32> lvl_call;
   cbuff<32> lvl_call_i;
   cbuff<32> res_call;
   cbuff<32> check_future;

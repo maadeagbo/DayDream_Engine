@@ -130,9 +130,9 @@ struct ddCam {
    * \brief VR camera left/right eye distance in meters
    */
   float eye_dist = 0.f;
-	/**
-   * \brief Camera's rotation
-   */
+  /**
+* \brief Camera's rotation
+*/
   float roll = 0.f, pitch = 0.f, yaw = 0.f;
   /**
    * \brief VR camera left/right eye distance in meters

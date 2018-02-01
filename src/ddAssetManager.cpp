@@ -111,7 +111,7 @@ int get_agent_pos_ws(lua_State *L);
 int get_agent_forward_dir(lua_State *L);
 int set_agent_pos(lua_State *L);
 int set_agent_scale(lua_State *L);
-int translate_agent(lua_State *L);
+int set_agent_vel(lua_State *L);
 int rotate_agent(lua_State *L);
 int get_agent_vel(lua_State *L);
 int get_cam_dir(lua_State *L);
@@ -263,11 +263,11 @@ void log_lua_func(lua_State *L) {
   add_func_to_scripts(L, get_agent_ang_vel, "ddAgent_get_ang_velocity");
   // manipulate agent information
   add_func_to_scripts(L, set_agent_pos, "ddAgent_set_position");
-  add_func_to_scripts(L, translate_agent, "ddAgent_set_velocity");
+  add_func_to_scripts(L, set_agent_vel, "ddAgent_set_velocity");
   add_func_to_scripts(L, rotate_agent, "ddAgent_set_rotation");
-	add_func_to_scripts(L, set_agent_scale, "ddAgent_set_scale");
-	add_func_to_scripts(L, set_agent_friction, "ddAgent_set_friction");
-	add_func_to_scripts(L, set_agent_damping, "ddAgent_set_damping");
+  add_func_to_scripts(L, set_agent_scale, "ddAgent_set_scale");
+  add_func_to_scripts(L, set_agent_friction, "ddAgent_set_friction");
+  add_func_to_scripts(L, set_agent_damping, "ddAgent_set_damping");
   // manipulate camera
   add_func_to_scripts(L, rotate_camera, "ddCam_rotate");
   add_func_to_scripts(L, get_cam_dir, "ddCam_get_direction");
@@ -470,17 +470,17 @@ void update_scene_graph() {
       // get parent & update constraints
       ddAgent *ag = find_ddAgent(b_agents[idx.second].body.parent);
 
-			// create tranformation for kinematic object
-			btTransform og_tr = ag->body.bt_bod->getWorldTransform();
+      // create tranformation for kinematic object
+      btTransform og_tr = ag->body.bt_bod->getWorldTransform();
       btMatrix3x3 rot = ag->body.bt_bod->getWorldTransform().getBasis();
       btVector3 offset(b_agents[idx.second].body.offset.x,
                        b_agents[idx.second].body.offset.y,
                        b_agents[idx.second].body.offset.z);
 
-			btTransform tr;
-			tr.setIdentity();
-      tr.setOrigin(offset); // apply offset vector
-			tr = og_tr * tr;
+      btTransform tr;
+      tr.setIdentity();
+      tr.setOrigin(offset);  // apply offset vector
+      tr = og_tr * tr;
 
       b_agents[idx.second].body.bt_bod->activate(true);
       b_agents[idx.second].body.bt_bod->setWorldTransform(tr);
@@ -507,9 +507,9 @@ int dd_assets_create_agent(lua_State *L) {
   float *sc_x = fb.get_func_val<float>("scale_x");
   float *sc_y = fb.get_func_val<float>("scale_y");
   float *sc_z = fb.get_func_val<float>("scale_z");
-	float *rot_x = fb.get_func_val<float>("rot_x");
-	float *rot_y = fb.get_func_val<float>("rot_y");
-	float *rot_z = fb.get_func_val<float>("rot_z");
+  float *rot_x = fb.get_func_val<float>("rot_x");
+  float *rot_y = fb.get_func_val<float>("rot_y");
+  float *rot_z = fb.get_func_val<float>("rot_z");
 
   ddAgent *new_agent = nullptr;
   if (agent_id) {
@@ -820,7 +820,7 @@ int set_agent_scale(lua_State *L) {
   return 0;
 }
 
-int translate_agent(lua_State *L) {
+int set_agent_vel(lua_State *L) {
   parse_lua_events(L, fb);
 
   int64_t *id = fb.get_func_val<int64_t>("id");
@@ -929,46 +929,44 @@ int get_agent_ang_vel(lua_State *L) {
   return 1;
 }
 
-int set_agent_friction(lua_State * L)
-{
-	parse_lua_events(L, fb);
+int set_agent_friction(lua_State *L) {
+  parse_lua_events(L, fb);
 
-	int64_t *id = fb.get_func_val<int64_t>("id");
-	float *fr = fb.get_func_val<float>("friction");
+  int64_t *id = fb.get_func_val<int64_t>("id");
+  float *fr = fb.get_func_val<float>("friction");
 
-	if (id && fr) {
-		ddAgent *ag = find_ddAgent((size_t)(*id));
-		if (ag) {
-			// set agent friction
-			ag->body.bt_bod->setFriction(*fr);
-			return 0;
-		}
-	}
-	ddTerminal::post("[error]Failed to set agent friction");
-	return 0;
+  if (id && fr) {
+    ddAgent *ag = find_ddAgent((size_t)(*id));
+    if (ag) {
+      // set agent friction
+      ag->body.bt_bod->setFriction(*fr);
+      return 0;
+    }
+  }
+  ddTerminal::post("[error]Failed to set agent friction");
+  return 0;
 }
 
-int set_agent_damping(lua_State * L)
-{
-	parse_lua_events(L, fb);
+int set_agent_damping(lua_State *L) {
+  parse_lua_events(L, fb);
 
-	int64_t *id = fb.get_func_val<int64_t>("id");
-	float *vel = fb.get_func_val<float>("velocity");
-	float *ang = fb.get_func_val<float>("angular");
+  int64_t *id = fb.get_func_val<int64_t>("id");
+  float *vel = fb.get_func_val<float>("velocity");
+  float *ang = fb.get_func_val<float>("angular");
 
-	if (id) {
-		ddAgent *ag = find_ddAgent((size_t)(*id));
-		if (ag) {
-			// set agent damping based on arguments
-			float _v = vel ? *vel : (float)ag->body.bt_bod->getAngularDamping();
-			float _a = ang ? *ang : (float)ag->body.bt_bod->getLinearDamping();
+  if (id) {
+    ddAgent *ag = find_ddAgent((size_t)(*id));
+    if (ag) {
+      // set agent damping based on arguments
+      float _v = vel ? *vel : (float)ag->body.bt_bod->getAngularDamping();
+      float _a = ang ? *ang : (float)ag->body.bt_bod->getLinearDamping();
 
-			ag->body.bt_bod->setDamping(_v, _a);
-			return 0;
-		}
-	}
-	ddTerminal::post("[error]Failed to set agent damping");
-	return 0;
+      ag->body.bt_bod->setDamping(_v, _a);
+      return 0;
+    }
+  }
+  ddTerminal::post("[error]Failed to set agent damping");
+  return 0;
 }
 
 int rotate_camera(lua_State *L) {

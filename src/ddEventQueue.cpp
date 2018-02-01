@@ -53,6 +53,7 @@ int ddQueue::push_lua(lua_State *_L) {
       }
     }
   }
+  // attempt to add event to queue
   if (push_flag) {
     if (!push(_event)) {
       // failed to add event
@@ -64,19 +65,35 @@ int ddQueue::push_lua(lua_State *_L) {
 }
 
 int ddQueue::register_lua_func(lua_State *_L) {
-  // grab lua table object from top of stack
+  cbuff<32> key;
   int global_ref = LUA_REFNIL, func_ref = LUA_REFNIL;
-  global_ref = get_lua_object(L);
-  if (global_ref != LUA_REFNIL) {
-    func_ref = get_lua_ref(L, global_ref, "update");
-  }
-  // grab key to object from top of stack
-  parse_lua_events(_L, fb);
 
-  const char *key = fb.get_func_val<const char>("key");
-  if (key && func_ref != LUA_REFNIL) {
+  int top = lua_gettop(_L); /* number of events */
+  for (int i = 1; i <= top; i++) {
+    int t = lua_type(_L, i);
+    switch (t) {
+      case LUA_TSTRING:
+        // grab key to object from top of stack
+        key = lua_tostring(_L, i);
+        break;
+      case LUA_TTABLE:
+        // grab lua table object from top of stack
+        global_ref = get_lua_object(_L);
+        if (global_ref != LUA_REFNIL) {
+          func_ref = get_lua_ref(_L, global_ref, "update");
+        }
+        break;
+      default:
+        break;
+    }
+  }
+  // clear stack
+  top = lua_gettop(L);
+  lua_pop(_L, top);
+
+  if (*key.str() && func_ref != LUA_REFNIL) {
     handler_sig _sig = {global_ref, func_ref};
-    register_handler(getCharHash(key), _sig);
+    register_handler(key.gethash(), _sig);
   }
   return 0;
 }
@@ -85,12 +102,12 @@ int ddQueue::subscribe_lua_func(lua_State *_L) {
   parse_lua_events(_L, fb);
 
   // grab event key
-  int64_t *e_val = fb.get_func_val<int64_t>("event.key");
+  const char *k_val = fb.get_func_val<const char>("key");
   // grab signature key
-  int64_t *s_val = fb.get_func_val<int64_t>("sig.key");
+  const char *e_val = fb.get_func_val<const char>("event");
 
-  if (e_val && s_val) {
-    subscribe((size_t)*e_val, (size_t)*s_val);
+  if (e_val && k_val) {
+    subscribe(getCharHash(e_val), getCharHash(k_val));
   }
   return 0;
 }
@@ -201,7 +218,7 @@ void ddQueue::process_queue() {
     }
     // check if event is lvl init call
     else if (_event.handle == lvl_call_i) {
-			_event.handle = "init";
+      _event.handle = "init";
       // async level init (spawn new lua thread)
       lua_State *L1 = lua_newthread(L);
       async_lvl_init =
@@ -287,6 +304,18 @@ void ddQueue::process_queue() {
   }
 }
 
+void ddQueue::setup_lua(lua_State *_L) {
+  L = _L;
+  // add event queue instance to lua space to register functions
+  register_instance_lua_xspace<ddQueue>(L, *this);
+  // register functions
+  register_callback_lua(L, "dd_register_callback",
+                        &dispatch_<ddQueue, &ddQueue::register_lua_func>);
+  register_callback_lua(L, "dd_subscribe",
+                        &dispatch_<ddQueue, &ddQueue::subscribe_lua_func>);
+  register_callback_lua(L, "dd_push", &dispatch_<ddQueue, &ddQueue::push_lua>);
+}
+
 void ddQueue::init_level_scripts(const char *script_id, const bool runtime) {
   // find level functions
   cbuff<256> file_name;
@@ -310,13 +339,13 @@ void ddQueue::init_level_scripts(const char *script_id, const bool runtime) {
         // add queue handle
         lvl_update = {global_ref, func_ref};
 
-				// subscribe for certain callback events
-				handler_sig _sig = { global_ref, func_ref };
-				size_t curr_lvl_id = getCharHash("lvl_update");
-				register_handler(curr_lvl_id, _sig);
+        // subscribe for certain callback events
+        handler_sig _sig = {global_ref, func_ref};
+        size_t curr_lvl_id = getCharHash("lvl_update");
+        register_handler(curr_lvl_id, _sig);
 
-				subscribe(lvl_call.gethash(), curr_lvl_id);
-				subscribe(physics_tick.gethash(), curr_lvl_id);
+        subscribe(lvl_call.gethash(), curr_lvl_id);
+        subscribe(physics_tick.gethash(), curr_lvl_id);
       } else {
         ddTerminal::f_post("init_level_scripts::Failed to find: %s::update",
                            script_id);
@@ -330,8 +359,9 @@ void ddQueue::init_level_scripts(const char *script_id, const bool runtime) {
   }
   if (!runtime) {
     // find load function
-    file_name.format("%s/%s_lvl/%s_assets.lua", PROJECT_DIR, script_id, script_id);
-    //file_name.format("%s/scripts/%s_assets.lua", RESOURCE_DIR, script_id);
+    file_name.format("%s/%s_lvl/%s_assets.lua", PROJECT_DIR, script_id,
+                     script_id);
+    // file_name.format("%s/scripts/%s_assets.lua", RESOURCE_DIR, script_id);
     file_found = parse_luafile(L, file_name.str());
     if (file_found) {
       int func_ref = get_lua_ref(L, nullptr, "load");

@@ -48,8 +48,8 @@ glm::vec3 forward_dir(const ddBody* bod) {
 void update_velocity(ddBody* bod, const glm::vec3& vel) {
   // bod->bt_bod->setLinearVelocity(btVector3(vel.x, vel.y, vel.z));
 
-  //btMatrix3x3& boxRot = bod->bt_bod->getWorldTransform().getBasis();
-  //btVector3 correctedForce = boxRot * btVector3(vel.x, vel.y, vel.z);
+  // btMatrix3x3& boxRot = bod->bt_bod->getWorldTransform().getBasis();
+  // btVector3 correctedForce = boxRot * btVector3(vel.x, vel.y, vel.z);
 
   bod->bt_bod->activate(true);
   bod->bt_bod->setLinearVelocity(btVector3(vel.x, vel.y, vel.z));
@@ -75,7 +75,8 @@ void update_pos(ddBody* bod, const glm::vec3& pos) {
 void rotate(ddBody* bod, const float yaw, const float pitch, const float roll) {
   btTransform tr;
   // local rotation
-  //const btQuaternion q1 =  bod->bt_bod->getCenterOfMassTransform().getRotation();
+  // const btQuaternion q1 =
+  // bod->bt_bod->getCenterOfMassTransform().getRotation();
 
   // set new transform
   tr.setIdentity();
@@ -88,7 +89,7 @@ void rotate(ddBody* bod, const float yaw, const float pitch, const float roll) {
   tr.setRotation(q2);
 
   bod->bt_bod->setWorldTransform(tr);
-  //bod->bt_bod->getMotionState()->setWorldTransform(tr);
+  // bod->bt_bod->getMotionState()->setWorldTransform(tr);
 
   // bod->bt_bod->applyTorque(btVector3(torque.x, torque.y, torque.z));
   // bod->bt_bod->setAngularVelocity(btVector3(torque.x, torque.y, torque.z));

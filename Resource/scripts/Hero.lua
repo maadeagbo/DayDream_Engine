@@ -25,9 +25,9 @@ do
                             self.name, self.health, self.armour))
     end
 
-    function Hero:update( event )
+    function Hero:update( event, args, num_args )
         -- body
-		print("I have been ENVOKED")
+		dd_print("I have been ENVOKED at "..dd_gtime())
     end
 
     return Hero

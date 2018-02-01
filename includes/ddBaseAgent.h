@@ -11,15 +11,15 @@ struct ddBody {
   /**
    * \brief Constraint for parenting
    */
-	btGeneric6DofSpring2Constraint *bt_constraint = nullptr;
-	/**
-   * \brief Parent object
-   */
-	size_t parent = 0;
-	/**
-   * \brief Parent-child object offset
-   */
-	glm::vec3 offset;
+  btGeneric6DofSpring2Constraint *bt_constraint = nullptr;
+  /**
+* \brief Parent object
+*/
+  size_t parent = 0;
+  /**
+* \brief Parent-child object offset
+*/
+  glm::vec3 offset;
   /**
 * \brief Modify object scale (and affect physics using btCollisionShape)
 */

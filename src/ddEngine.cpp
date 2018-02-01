@@ -32,9 +32,21 @@ static void error_callback_glfw(int error, const char *description) {
   fprintf(stderr, "Error: %s\n", description);
 }
 
+int frame_time_lua(lua_State *L) { 
+  // send frame time to script
+  lua_pushnumber(L, ddTime::get_avg_frame_time());
+  return 1;
+}
+
+int engine_time_lua(lua_State *L) { 
+  // send frame time to script
+  lua_pushnumber(L, ddTime::get_time_float());
+  return 1;
+}
+
 void ddEngine::startup_lua() {
   main_lstate = init_lua_state();
-  main_q.set_lua_ptr(main_lstate);
+  main_q.setup_lua(main_lstate);
 
   register_lfuncs();
 }
@@ -167,7 +179,7 @@ bool ddEngine::level_select(const size_t w, const size_t h) {
     int func_ref = get_lua_ref(main_lstate, nullptr, "generate_levels");
     DD_LEvent init_event;
     init_event.handle = "get_lvls";
-		callback_lua(main_lstate, init_event, func_ref, main_fb, -1);
+    callback_lua(main_lstate, init_event, func_ref, main_fb, -1);
 
     int64_t *num_levels = main_fb.get_func_val<int64_t>("num_levels");
     if (num_levels) {
@@ -353,9 +365,9 @@ void ddEngine::load() {
   main_q.subscribe(lvl_asset_hash.gethash(), sys_engine_hash);
   main_q.subscribe(init_screen_hash.gethash(), sys_engine_hash);
   main_q.subscribe(draw_hash.gethash(), sys_engine_hash);
-	main_q.subscribe(physics_hash.gethash(), sys_engine_hash);
-	main_q.subscribe(process_terminal_hash.gethash(), sys_engine_hash);
-	main_q.subscribe(reset_lvl_script_hash.gethash(), sys_engine_hash);
+  main_q.subscribe(physics_hash.gethash(), sys_engine_hash);
+  main_q.subscribe(process_terminal_hash.gethash(), sys_engine_hash);
+  main_q.subscribe(reset_lvl_script_hash.gethash(), sys_engine_hash);
 
   // load terminal history
   ddTerminal::inTerminalHistory();
@@ -368,9 +380,9 @@ void ddEngine::register_lfuncs() {
   ddAssets::log_lua_func(main_lstate);
   // register globals from ddRenderer
   ddRenderer::init_lua_globals(main_lstate);
-
-  // add event queue instance to lua space to register functions
-  register_instance_lua_xspace<ddQueue>(main_lstate, main_q);
+  // time getters
+  add_func_to_scripts(main_lstate, frame_time_lua, "dd_ftime");
+  add_func_to_scripts(main_lstate, engine_time_lua, "dd_gtime");
 }
 
 void ddEngine::update_GLFW() {
@@ -394,30 +406,30 @@ void ddEngine::run() {
   ddAssets::default_params(window_w, window_h);
 
   // create new screen
-	DD_LEvent _e1;
-	_e1.handle = init_screen_hash;
+  DD_LEvent _e1;
+  _e1.handle = init_screen_hash;
   q_push(_e1);
 
   // turn on load screen
-	DD_LEvent _e2;
-	_e2.handle = load_hash;
+  DD_LEvent _e2;
+  _e2.handle = load_hash;
   q_push(_e2);
 
   // add async level assets load
-	DD_LEvent _e3;
-	_e3.handle = main_q.res_call;
+  DD_LEvent _e3;
+  _e3.handle = main_q.res_call;
   q_push(_e3);
 
   // add frame update
-	DD_LEvent _e4;
-	_e4.handle = frame_enter_hash;
+  DD_LEvent _e4;
+  _e4.handle = frame_enter_hash;
   q_push(_e4);
 
   // exit (debug testing)
-	DD_LEvent _e5;
-	_e5.handle = exit_hash;
+  DD_LEvent _e5;
+  _e5.handle = exit_hash;
   _e5.delay = 1000;
-  //q_push(_event);
+  // q_push(_event);
 
   main_q.process_queue();
 }
@@ -432,10 +444,10 @@ void ddEngine::shutdown() {
   // shutdown glfw
   glfwTerminate();
 
-	// close lua
-	lua_close(main_lstate);
-	// close physics engine
-	main_physics.cleanup_world();
+  // close lua
+  lua_close(main_lstate);
+  // close physics engine
+  main_physics.cleanup_world();
 }
 
 bool ddEngine::execTerminal(const char *cmd) {
@@ -495,7 +507,7 @@ void ddEngine::update(DD_LEvent &_event) {
     ddGPUFrontEnd::clear_screen();
 
     ddTime::update();
-		PHYSICS_TICK += ddTime::get_avg_frame_time();
+    PHYSICS_TICK += ddTime::get_avg_frame_time();
 
     // start imgui window processing
     ImGui_ImplGlfwGL3_NewFrame();
@@ -511,14 +523,12 @@ void ddEngine::update(DD_LEvent &_event) {
     q_push(new_event);
 
     // process terminal
-		new_event.handle = terminal_hash;
-		q_push(new_event);
+    new_event.handle = terminal_hash;
+    q_push(new_event);
     new_event.handle = process_terminal_hash;
     q_push(new_event);
 
-		// update per frame script information
-		set_lua_global(main_lstate, "__frame_time", ddTime::get_avg_frame_time());
-		set_lua_global(main_lstate, "__engine_time", ddTime::get_time_float());
+    // update input for scripts
     ddInput::send_upstream_to_lua(main_lstate);
 
     if (load_screen) {
@@ -539,14 +549,14 @@ void ddEngine::update(DD_LEvent &_event) {
       q_push(new_event);
 
       // send physics event (locked to 60 fps update or vsync on)
-			if (engine_mode_flags[0] || PHYSICS_TICK > 1.f/60.f) {
-				PHYSICS_TICK = 0.f;
+      if (engine_mode_flags[0] || PHYSICS_TICK > 1.f / 60.f) {
+        PHYSICS_TICK = 0.f;
 
-				new_event.handle = main_q.physics_tick;
-				q_push(new_event);
-			}
-			new_event.handle = physics_hash;
-			q_push(new_event);
+        new_event.handle = main_q.physics_tick;
+        q_push(new_event);
+      }
+      new_event.handle = physics_hash;
+      q_push(new_event);
 
       // send render event
       new_event.handle = draw_hash;
@@ -598,12 +608,12 @@ void ddEngine::update(DD_LEvent &_event) {
     // render 3D world
     ddRenderer::draw_world();
   } else if (e_sig == physics_hash.gethash()) {  // physics update
-		// scene graph
-		ddSceneManager::update_scene_graph();
+    // scene graph
+    ddSceneManager::update_scene_graph();
     // physics simulation
     main_physics.step_simulate(ddTime::get_avg_frame_time());
   } else if (e_sig == reset_lvl_script_hash.gethash()) {  // lvl update script
     // reset lua script
-		main_q.init_level_scripts(lvls_list[current_lvl], true);
+    main_q.init_level_scripts(lvls_list[current_lvl], true);
   }
 }

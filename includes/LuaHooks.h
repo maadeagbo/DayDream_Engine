@@ -185,8 +185,8 @@ bool parse_luafile(lua_State *L, const char *filename);
 /**
  * \brief Envoke lua callback function with lua_ref pointer
  */
-void callback_lua(lua_State *L, const DD_LEvent levent, int func_ref, DD_FuncBuff &fb,
-                         int global_ref = LUA_REFNIL);
+void callback_lua(lua_State *L, const DD_LEvent levent, int func_ref,
+                  DD_FuncBuff &fb, int global_ref = LUA_REFNIL);
 
 /**
  * \brief Push event arguments onto the stack

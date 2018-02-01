@@ -52,6 +52,4 @@ void ddPhysics::clear_all_rigidbodies() {
   }
 }
 
-void ddPhysics::step_simulate(const float dt) {
-	world->stepSimulation(dt);
-}
+void ddPhysics::step_simulate(const float dt) { world->stepSimulation(dt); }

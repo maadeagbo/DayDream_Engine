@@ -4,10 +4,7 @@
 do
     Entity = 
     {
-        name = "not_set",
-        health = 0.0,
-        position = { 0.0, 0.0, 0.0 },
-        alive = false
+        name = "not_set"
     }
 
     function Entity:new(params)

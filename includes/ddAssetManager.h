@@ -127,13 +127,13 @@ ddCam* get_active_cam();
 /**
  * \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine
  */
-void remove_rigid_body(ddAgent *ag);
+void remove_rigid_body(ddAgent* ag);
 };  // namespace ddAssets
 
 namespace ddSceneManager {
 
 /**
- * \brief Cull objects outside of camera frustum 
+ * \brief Cull objects outside of camera frustum
  * \param _agents must be allocated to size ASSETS_CONTAINER_MAX_SIZE
  */
 void cull_objects(const FrustumBox fr, const glm::mat4 view_m,
@@ -148,14 +148,14 @@ void get_active_lights(dd_array<ddLBulb*>& _lights);
 /**
  * \brief Get currently active directional light
  */
-ddLBulb *get_shadow_light();
+ddLBulb* get_shadow_light();
 
-/** 
+/**
  * \brief Get camera's forward direction
  */
-glm::vec3 cam_forward_dir(const ddCam *cam, const ddBody* cam_parent_body);
+glm::vec3 cam_forward_dir(const ddCam* cam, const ddBody* cam_parent_body);
 
-/** 
+/**
  * \brief Get camera's forward direction
  */
 void update_scene_graph();

@@ -149,7 +149,8 @@ const InputData& get_input() { return global_input; }
 
 void send_upstream_to_lua(lua_State* L) {
   /** \brief Each key in the table will be another 2-item table. This sets it*/
-  auto set_table_field = [&](const char* id, const bool* flag, const float* val) {
+  auto set_table_field = [&](const char* id, const bool* flag,
+                             const float* val) {
     if (flag) {
       lua_pushboolean(L, *flag);
       lua_setfield(L, -2, id);
@@ -272,9 +273,9 @@ void send_upstream_to_lua(lua_State* L) {
 
   lua_setglobal(L, "__dd_input");
 
-	// set old mouse position
-	mouse_lastx = mouse_x;
-	mouse_lasty = mouse_y;
+  // set old mouse position
+  mouse_lastx = mouse_x;
+  mouse_lasty = mouse_y;
   //*/
 }
 
@@ -430,9 +431,9 @@ void dd_mouse_pos_callback(GLFWwindow* window, double xpos, double ypos) {
     mouse_lasty = (float)ypos;
     flag_first_mouse = false;
   }
-	// set old mouse position
-	mouse_lastx = mouse_x;
-	mouse_lasty = mouse_y;
+  // set old mouse position
+  mouse_lastx = mouse_x;
+  mouse_lasty = mouse_y;
   // log current mouse movement
   mouse_x = (float)xpos;
   mouse_y = (float)ypos;

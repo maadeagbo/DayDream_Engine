@@ -97,10 +97,10 @@ struct ddLBulb {
    * \brief Parent index
    */
   size_t parent_id;
-	/**
-	* \brief Parent index
-	*/
-	bool parent_set = false;
+  /**
+  * \brief Parent index
+  */
+  bool parent_set = false;
   /**
    * \brief Sets shader lighting equation
    */
@@ -117,9 +117,9 @@ struct ddLBulb {
    * \brief Color of light
    */
   glm::vec3 color = glm::vec3(1.0f);
-	/**
-   * \brief Light space matrix (set per frame if light produces shadows)
-   */
+  /**
+* \brief Light space matrix (set per frame if light produces shadows)
+*/
   glm::mat4 l_s_m;
   /**
    * \brief Linear falloff compnent

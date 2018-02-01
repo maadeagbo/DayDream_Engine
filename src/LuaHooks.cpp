@@ -278,8 +278,8 @@ void register_callback_lua(lua_State *L, const char *func_sig,
   lua_register(L, func_sig, _func);
 }
 
-void callback_lua(lua_State *L, const DD_LEvent levent, int func_ref, DD_FuncBuff &fb,
-                         int global_ref) {
+void callback_lua(lua_State *L, const DD_LEvent levent, int func_ref,
+                  DD_FuncBuff &fb, int global_ref) {
   /// \brief print out error func
   int err_num = 0;
   auto handle_error = [&]() {
@@ -318,7 +318,7 @@ void callback_lua(lua_State *L, const DD_LEvent levent, int func_ref, DD_FuncBuf
   lua_pushinteger(L, (int64_t)levent.active);  // push # of arguments
 
   // debug
-  //stack_dump(L);
+  // stack_dump(L);
 
   // call function
   int num_args = global_ref > 0 ? 4 : 3;
@@ -426,20 +426,20 @@ void parse_table(lua_State *L, DD_LEvent *levent, const int tabs) {
         }
         break;
       }
-			case LUA_TBOOLEAN: {
-				bool lbool = lua_toboolean(L, -1);
-				lua_pushvalue(L, -2);  // copy the key
-				_key.format("%s", lua_tostring(L, -1));
-				lua_pop(L, 1);  // remove copy key
+      case LUA_TBOOLEAN: {
+        bool lbool = lua_toboolean(L, -1);
+        lua_pushvalue(L, -2);  // copy the key
+        _key.format("%s", lua_tostring(L, -1));
+        lua_pop(L, 1);  // remove copy key
 
-				bool arg_set = add_arg_LEvent(levent, _key.str(), lbool);
-				if (!arg_set) {
-					printf("B\n");
-					printf("No more args available\n");
-				}
+        bool arg_set = add_arg_LEvent(levent, _key.str(), lbool);
+        if (!arg_set) {
+          printf("B\n");
+          printf("No more args available\n");
+        }
 
-				break;
-			}
+        break;
+      }
       case LUA_TTABLE: {
         parse_table(L, levent, tabs + 1);
         break;

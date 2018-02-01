@@ -70,7 +70,7 @@ struct ddEngine {
 
   PushFunc q_push;
   DD_FuncBuff main_fb;
-	dd_array<const char *> lvls_list;
+  dd_array<const char*> lvls_list;
   int current_lvl;
   bool load_screen;
   bool flag_debug;
