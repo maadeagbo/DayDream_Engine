@@ -1,6 +1,7 @@
 #include "ddEngine.h"
 #include "ddFileIO.h"
 #include "ddTerminal.h"
+#include <imgui_impl_glfw_gl3.h>
 
 //#define IM_ARRAYSIZE(_ARR) ((int)(sizeof(_ARR) / sizeof(*_ARR)))
 
@@ -254,6 +255,10 @@ bool ddEngine::level_select(const size_t w, const size_t h) {
       if (launch) {
         // set up queue handlers
         main_q.init_level_scripts(lvls_list[current_lvl]);
+        // cpp lua functions
+        const char *temp = lvls_list[current_lvl];
+        std::map<cbuff<64>, std::function<int (lua_State *)>> lvl_funcs =
+          get_reflections();
       }
     }
 

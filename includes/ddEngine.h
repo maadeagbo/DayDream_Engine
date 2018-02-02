@@ -1,8 +1,5 @@
 #pragma once
 
-#include <imgui.h>
-#include <imgui_impl_glfw_gl3.h>
-
 #include "GLFW/glfw3.h"
 //#include "SDL.h"
 
@@ -14,6 +11,7 @@
 #include "ddPhysicsEngine.h"
 #include "ddRenderEngine.h"
 #include "ddTimer.h"
+#include "ddLevelPrototype.h"
 
 enum class GameState { LOADING, PAUSE, ACTIVE, NUM_STATES };
 
