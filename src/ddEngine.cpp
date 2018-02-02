@@ -1,6 +1,8 @@
 #include "ddEngine.h"
 #include "ddFileIO.h"
 #include "ddTerminal.h"
+
+// imgui
 #include <imgui_impl_glfw_gl3.h>
 
 //#define IM_ARRAYSIZE(_ARR) ((int)(sizeof(_ARR) / sizeof(*_ARR)))
@@ -33,13 +35,13 @@ static void error_callback_glfw(int error, const char *description) {
   fprintf(stderr, "Error: %s\n", description);
 }
 
-int frame_time_lua(lua_State *L) { 
+int frame_time_lua(lua_State *L) {
   // send frame time to script
   lua_pushnumber(L, ddTime::get_avg_frame_time());
   return 1;
 }
 
-int engine_time_lua(lua_State *L) { 
+int engine_time_lua(lua_State *L) {
   // send frame time to script
   lua_pushnumber(L, ddTime::get_time_float());
   return 1;
@@ -255,10 +257,12 @@ bool ddEngine::level_select(const size_t w, const size_t h) {
       if (launch) {
         // set up queue handlers
         main_q.init_level_scripts(lvls_list[current_lvl]);
-        // cpp lua functions
-        const char *temp = lvls_list[current_lvl];
-        std::map<cbuff<64>, std::function<int (lua_State *)>> lvl_funcs =
-          get_reflections();
+        // cpp lua functions for the level
+        cbuff<64> key = lvls_list[current_lvl];
+        std::map<cbuff<64>, std::function<void(lua_State *)>> lvl_funcs =
+            get_reflections();
+        POW2_VERIFY(lvl_funcs.size() != 0);
+        lvl_funcs[key](main_lstate);
       }
     }
 

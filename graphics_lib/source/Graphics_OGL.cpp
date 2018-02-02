@@ -621,7 +621,7 @@ void render_quad() {
         -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
         1.0f,  1.0f, 0.0f, 1.0f, 1.0f, 1.0f,  -1.0f, 0.0f, 1.0f, 0.0f,
     };
-    // set up Plane VAO for post processing shader
+    // set up Plane VAO for post processing shaderUntitled-1
     glGenVertexArrays(1, &quad_vao);
     glGenBuffers(1, &quad_vbo);
     POW2_VERIFY_MSG(!gl_error("render_quad"), "Error generating quad buffers",
