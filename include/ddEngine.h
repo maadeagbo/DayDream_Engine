@@ -9,6 +9,7 @@
 #include "ddIncludes.h"
 #include "ddInput.h"
 #include "ddLevelPrototype.h"
+#include "ddParticleSystem.h"
 #include "ddPhysicsEngine.h"
 #include "ddRenderEngine.h"
 #include "ddTimer.h"

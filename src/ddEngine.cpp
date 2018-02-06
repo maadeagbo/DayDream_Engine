@@ -15,7 +15,9 @@ std::chrono::milliseconds chrono_msec(1);
 float PHYSICS_TICK = 0.f;
 
 // int resolution_set[2] = {1400, 800};
-bool engine_mode_flags[] = {true, false, false, false};
+unsigned num_monitors = 0;
+int display_select = 0;
+bool engine_mode_flags[] = {true, false, true, false};
 
 const cbuff<32> exit_hash("sys_exit");
 const cbuff<32> frame_enter_hash("frame_init");
@@ -87,11 +89,13 @@ void ddEngine::window_load_GLFW(EngineMode mode) {
   int count;
   GLFWmonitor *mntr = nullptr;
   GLFWmonitor **mntrs = glfwGetMonitors(&count);
+  // log # of monitors
+  num_monitors = count;
 
   // select monitor
   uint8_t m_selected = 0;
   if (bool(mode & EngineMode::DD_SECOND_DISPLAY)) {
-    m_selected = 1;
+    m_selected = display_select;
   }
   uint8_t mntr_idx = (m_selected >= (uint8_t)count) ? 0 : m_selected;
   if (bool(mode & EngineMode::DD_FULLSCREEN)) {
@@ -241,13 +245,19 @@ bool ddEngine::level_select(const size_t w, const size_t h) {
     // ImGui::DragInt2("<-- Resolution", resolution_set, 10.f, 100);
     window_w = (int)strtod(res_[wh_idx[0]], nullptr);
     window_h = (int)strtod(res_[wh_idx[1]], nullptr);
+    
+    // stop edge clipping
+    ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.65f);
+    //ImGui::PushItemWidth(-100);
 
     ImGui::Checkbox("VSYNC", &engine_mode_flags[0]);
     ImGui::SameLine();
     ImGui::Checkbox("Full Screen", &engine_mode_flags[1]);
     ImGui::SameLine();
-    ImGui::Checkbox("Second Display", &engine_mode_flags[2]);
+    ImGui::Checkbox("Select Display", &engine_mode_flags[2]);
     ImGui::Checkbox("(Windows) Close Console", &engine_mode_flags[3]);
+    // select monitor
+    ImGui::SliderInt("Display monitor", &display_select, 0, num_monitors - 1);
 
     ImGui::Dummy(ImVec2(0, 10));
     if (lvls_list.size() > 0) {
@@ -448,6 +458,8 @@ void ddEngine::shutdown() {
   ddTerminal::outTerminalHistory();  // save history
   // render engine
   ddRenderer::shutdown();
+  // cleanup particles
+  ddParticleSys::cleanup();
   // clean up assets
   ddAssets::cleanup();
   // shutdown glfw
@@ -510,6 +522,9 @@ void ddEngine::update(DD_LEvent &_event) {
 
     // initialize rendering engine
     ddRenderer::initialize((unsigned)window_w, (unsigned)window_h);
+
+    // initialize particle engine
+    ddParticleSys::initialization((unsigned)window_w, (unsigned)window_h);
 
   } else if (e_sig == frame_enter_hash.gethash()) {  // setup new frame
     // clear framebuffer

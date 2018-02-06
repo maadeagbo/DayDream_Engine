@@ -3,6 +3,7 @@
 #include "GPUFrontEnd.h"
 #include "ddAssetManager.h"
 #include "ddFileIO.h"
+#include "ddParticleSystem.h"
 #include "ddShader.h"
 #include "ddShaderReflect.h"
 #include "ddTerminal.h"
@@ -479,7 +480,8 @@ void draw_scene(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
 
   // draw skybox
 
-  // particle pass (copy depth buffer from gbuufer pass)
+  // particle pass
+  ddParticleSys::render_tasks();
 
   // post processing
   // ddGPUFrontEnd::clear_screen(1.0);
