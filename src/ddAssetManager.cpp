@@ -158,7 +158,8 @@ ddTex2D *create_tex2D(const char *path, const char *img_id);
 /// \param mesh data containing bounding box information
 /// \return True if rigid body is successfully added
 bool add_rigid_body(ddAgent *agent, ddModelData *mdata, glm::vec3 pos,
-                    const float mass = 0.f, RBType rb_type = RBType::BOX);
+                    glm::vec3 rot, const float mass = 0.f,
+                    RBType rb_type = RBType::BOX);
 /**
  * \brief Add ghost agent to physics world for parenting/scene graph
  */
@@ -347,6 +348,10 @@ void remove_rigid_body(ddAgent *ag) { delete_rigid_body(ag); }
 
 namespace ddSceneManager {
 
+glm::uvec2 get_screen_dimensions() {
+  return glm::uvec2(native_scr_width, native_scr_height);
+}
+
 void cull_objects(const FrustumBox fr, const glm::mat4 view_m,
                   dd_array<ddAgent *> &_agents) {
   POW2_VERIFY(_agents.size() == ASSETS_CONTAINER_MAX_SIZE);
@@ -506,9 +511,9 @@ int dd_assets_create_agent(lua_State *L) {
   float *sc_x = fb.get_func_val<float>("scale_x");
   float *sc_y = fb.get_func_val<float>("scale_y");
   float *sc_z = fb.get_func_val<float>("scale_z");
-  float *rot_x = fb.get_func_val<float>("rot_x");
-  float *rot_y = fb.get_func_val<float>("rot_y");
-  float *rot_z = fb.get_func_val<float>("rot_z");
+  float *rot_p = fb.get_func_val<float>("pitch");
+  float *rot_y = fb.get_func_val<float>("yaw");
+  float *rot_r = fb.get_func_val<float>("roll");
 
   ddAgent *new_agent = nullptr;
   if (agent_id) {
@@ -568,18 +573,26 @@ int dd_assets_create_agent(lua_State *L) {
       if (shape && *shape == -1) type = RBType::FREE_FORM;
       if (shape && *shape == -2) type = RBType::KIN;
 
+      // set position
       glm::vec3 pos;
       if (pos_x) pos.x = *pos_x;
       if (pos_y) pos.y = *pos_y;
       if (pos_z) pos.z = *pos_z;
 
+      // set scale
       glm::vec3 _scale = glm::vec3(1.f);
       if (sc_x) _scale.x = *sc_x;
       if (sc_y) _scale.y = *sc_y;
       if (sc_z) _scale.z = *sc_z;
       new_agent->body.scale = _scale;
 
-      add_rigid_body(new_agent, mdata, pos, mass, type);
+      // set rotation
+      glm::vec3 _rot = glm::vec3(0.f);
+      if (rot_p) _rot.x = glm::radians(*rot_p);
+      if (rot_y) _rot.y = glm::radians(*rot_y);
+      if (rot_r) _rot.z = glm::radians(*rot_r);
+
+      add_rigid_body(new_agent, mdata, pos, _rot, mass, type);
 
       // add parent object
       if (p_id) {
@@ -1415,7 +1428,7 @@ ddTex2D *create_tex2D(const char *path, const char *img_id) {
 }
 
 bool add_rigid_body(ddAgent *agent, ddModelData *mdata, glm::vec3 pos,
-                    const float mass, RBType rb_type) {
+                    glm::vec3 rot, const float mass, RBType rb_type) {
   if (!agent) return false;
 
   // set up bounding box
@@ -1442,6 +1455,9 @@ bool add_rigid_body(ddAgent *agent, ddModelData *mdata, glm::vec3 pos,
   btTransform transform;
   transform.setIdentity();
   transform.setOrigin(btVector3(pos.x, pos.y, pos.z));
+  btQuaternion _q;
+  _q.setEuler(rot.y, rot.x, rot.z);
+  transform.setRotation(_q);
 
   // rigidbody is dynamic if and only if mass is non zero, otherwise static
   btScalar _mass = (rb_type != RBType::KIN) ? mass : 0.f;
@@ -1518,7 +1534,7 @@ btRigidBody &create_ghost(btTransform _transform) {
 
   // set up dynamic rigid body constructor
   btScalar _mass(0.1f);
-  //bool isDynamic = (_mass != 0.f);
+  // bool isDynamic = (_mass != 0.f);
   btVector3 localInertia(0, 0, 0);
   bt_shape->calculateLocalInertia(_mass, localInertia);
 

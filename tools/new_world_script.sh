@@ -11,7 +11,7 @@ echo -e "do" >> $1
 
 # include useful libraries and scripts
 echo -e "\tmatrix = require \"scripts.matrix\"" >> $1
-echo -e "\tactor_prototype = require \"$2_lvl.$2_actor\"" >> $1
+echo -e "\tactor_prototype = require \"$2.$2_actor\"" >> $1
 
 # world object
 echo -e "\n\t$2 = {}\n" >> $1

@@ -12,26 +12,9 @@
 * All rights reserved.
 */
 
-/*-----------------------------------------------------------------------------
-*
-*	dd_array:
-*		- array container
-*			- can be accessed w/ []
-*			- can be resized
-*			- has validation check
-*			- reports n size & n byte size
-*	dd_2Darray:
-*		- 2D array container
-*			- can be accessed w/ [][]
-*			- can be resized
-*			- has validation check
-*			- reports n size & n byte size
-*	TODO:
-*
-*	Uses POW_ASSERT
------------------------------------------------------------------------------*/
+/** @file */
 
-// Array container used for Day Dream engine
+/** \brief Simple array container used for DayDream engine */
 template <class T>
 class dd_array {
  public:
@@ -134,6 +117,7 @@ class dd_array {
   T* m_data;
 };
 
+/** \brief Simple 2D-array container used for DayDream engine */
 template <class T>
 class dd_2Darray {
  public:
@@ -279,6 +263,7 @@ struct _dd_iter {
   T* ptr;
 };
 
+/** A for-each implementation for dd_array objects */
 #define DD_FOREACH(TYPE, VAR, ddARRAY)                                       \
   for (_dd_iter<TYPE> VAR = {0, ddARRAY.size() > 0 ? &ddARRAY[0] : nullptr}; \
        VAR.i < ddARRAY.size();                                               \

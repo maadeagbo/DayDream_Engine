@@ -8,10 +8,10 @@
 #include "ddEventQueue.h"
 #include "ddIncludes.h"
 #include "ddInput.h"
+#include "ddLevelPrototype.h"
 #include "ddPhysicsEngine.h"
 #include "ddRenderEngine.h"
 #include "ddTimer.h"
-#include "ddLevelPrototype.h"
 
 enum class GameState { LOADING, PAUSE, ACTIVE, NUM_STATES };
 

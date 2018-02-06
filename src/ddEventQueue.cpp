@@ -319,7 +319,7 @@ void ddQueue::setup_lua(lua_State *_L) {
 void ddQueue::init_level_scripts(const char *script_id, const bool runtime) {
   // find level functions
   cbuff<256> file_name;
-  file_name.format("%s/%s_lvl/%s_world.lua", PROJECT_DIR, script_id, script_id);
+  file_name.format("%s/%s/%s_world.lua", PROJECT_DIR, script_id, script_id);
   bool file_found = parse_luafile(L, file_name.str());
   if (file_found) {
     int global_ref = get_lua_ref(L, nullptr, script_id);
@@ -359,8 +359,7 @@ void ddQueue::init_level_scripts(const char *script_id, const bool runtime) {
   }
   if (!runtime) {
     // find load function
-    file_name.format("%s/%s_lvl/%s_assets.lua", PROJECT_DIR, script_id,
-                     script_id);
+    file_name.format("%s/%s/%s_assets.lua", PROJECT_DIR, script_id, script_id);
     // file_name.format("%s/scripts/%s_assets.lua", RESOURCE_DIR, script_id);
     file_found = parse_luafile(L, file_name.str());
     if (file_found) {

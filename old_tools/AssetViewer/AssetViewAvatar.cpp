@@ -52,7 +52,7 @@ DD_Event AssetViewAvatar::Update(DD_Event event) {
     messageBuff* _m = static_cast<messageBuff*>(event.m_message);
     if (_m) {
       dd_array<cbuff<256>> args =
-          StrSpace::tokenize512<256>(_m->message512, " ");
+          StrSpace::tokenize1024<256>(_m->message512, " ");
       if (args.size() >= 3) {
         // check if this agent id matches arg 0
         bool same = args[0].compare(m_ID.c_str()) == 0;
@@ -70,7 +70,7 @@ DD_Event AssetViewAvatar::Update(DD_Event event) {
     messageBuff* _m = static_cast<messageBuff*>(event.m_message);
     if (_m) {
       dd_array<cbuff<256>> args =
-          StrSpace::tokenize512<256>(_m->message512, " ");
+          StrSpace::tokenize1024<256>(_m->message512, " ");
       if (args.size() >= 1) {
         // check if this agent id matches arg 0
         bool same = args[0].compare(m_ID.c_str()) == 0;

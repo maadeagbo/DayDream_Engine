@@ -96,6 +96,7 @@
   freelist fl_##CONTAINER;                    \
   dd_array<TYPE> CONTAINER(C_SIZE);
 
+/** \brief Interace for manipulating and creating assets for in-engine use */
 namespace ddAssets {
 /**
  * \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine
@@ -130,7 +131,10 @@ ddCam* get_active_cam();
 void remove_rigid_body(ddAgent* ag);
 };  // namespace ddAssets
 
+/** \brief Tools for retrieving assets and scene information */
 namespace ddSceneManager {
+/** \brief Get screen size information */
+glm::uvec2 get_screen_dimensions();
 
 /**
  * \brief Cull objects outside of camera frustum

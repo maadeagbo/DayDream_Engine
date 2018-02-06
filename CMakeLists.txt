@@ -117,11 +117,11 @@ else()
     DOC 
         "The directory where GLFW/glfw3.h resides"
 	)
-	# check if includes where found
+	# check if include where found
 	if (GLFW_INCLUDE_DIR)
 		include_directories(${GLFW_INCLUDE_DIR})
 	else()
-		message(FATAL_ERROR "GLFW includes not found")
+		message(FATAL_ERROR "GLFW include not found")
 	endif()
 	# add project
 	set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
@@ -140,40 +140,40 @@ find_path(GLM_PATH glm.hpp
 	PATHS
 	${CMAKE_SOURCE_DIR}/glm/glm)
 if(NOT GLM_PATH)
-	message(FATAL_ERROR "GLM includes not found")
+	message(FATAL_ERROR "GLM include not found")
 endif()
 find_path(BULLET_PATH 
 	NAMES btBulletCollisionCommon.h btBulletDynamicsCommon.h
 	PATHS
 	${CMAKE_SOURCE_DIR}/bullet3_287/src)
 if(NOT BULLET_PATH)
-	message(FATAL_ERROR "BULLET3 includes not found")
+	message(FATAL_ERROR "BULLET3 include not found")
 endif()
 find_path(VRPN_PATH vrpn_Tracker.h
 	PATHS
 	${CMAKE_CURRENT_SOURCE_DIR}/vrpn_lib_files)
 if(NOT VRPN_PATH)
-	message(FATAL_ERROR "VRPN_PATH VRPN includes not found")
+	message(FATAL_ERROR "VRPN_PATH VRPN include not found")
 endif()
 if(NOT UNIX)
 	find_path(SOIL_PATH SOIL.h
 		PATHS
 		${CMAKE_CURRENT_SOURCE_DIR}/SOIL/src)
 	if(NOT SOIL_PATH)
-		message(FATAL_ERROR "SOIL includes not found")
+		message(FATAL_ERROR "SOIL include not found")
 	endif()
 	find_path(LUA_PATH lua.hpp PATHS ${CMAKE_SOURCE_DIR}/lua53_Win64_lib/include)
 	if(NOT LUA_PATH)
-		message(FATAL_ERROR "Lua includes not found")
+		message(FATAL_ERROR "Lua include not found")
 	endif()
 else()
 	find_path(SOIL_PATH SOIL.h PATHS /usr/include/SOIL)
 	if(NOT SOIL_PATH)
-		message(FATAL_ERROR "SOIL unix includes not found")
+		message(FATAL_ERROR "SOIL unix include not found")
 	endif()
 	find_path(LUA_PATH lua.hpp PATHS /usr/include/lua5.3)
 	if(NOT LUA_PATH)
-		message(FATAL_ERROR "Lua includes not found")
+		message(FATAL_ERROR "Lua include not found")
 	endif()
 endif()
 
@@ -194,8 +194,8 @@ include_directories(${FREETYPE_INCLUDE_DIRS})
 
 # use the file(GLOB...) or file(GLOB_RECURSE...) to grab wildcard src files
 file(GLOB_RECURSE SOURCES 	"${CMAKE_SOURCE_DIR}/src/*.cpp"
-							"${CMAKE_SOURCE_DIR}/includes/*.hpp"
-							"${CMAKE_SOURCE_DIR}/includes/*.h"
+							"${CMAKE_SOURCE_DIR}/include/*.hpp"
+							"${CMAKE_SOURCE_DIR}/include/*.h"
 							"${CMAKE_SOURCE_DIR}/src/*.c")
 # file(GLOB IMGUI_SRC "${CMAKE_SOURCE_DIR}/imgui/*.cpp")
 
@@ -273,8 +273,8 @@ foreach(_proj_source IN ITEMS ${SCRIPTS})
 	source_group("${_source_path_rel}" FILES "${_proj_source}")
 endforeach()
 
-include_directories(${CMAKE_SOURCE_DIR}/includes
-	${PROJECT_SOURCE_DIR}/graphics_lib/includes
+include_directories(${CMAKE_SOURCE_DIR}/include
+	${PROJECT_SOURCE_DIR}/graphics_lib/include
 	${CMAKE_SOURCE_DIR}/glm/
 	${SOIL_PATH}
 	${PROJ_HEADERS}

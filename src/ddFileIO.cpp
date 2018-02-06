@@ -1,6 +1,6 @@
 #include "ddFileIO.h"
-#include <vector>
 #include <string>
+#include <vector>
 namespace fs = std::experimental::filesystem;
 typedef std::experimental::filesystem::directory_iterator fs_dir;
 
@@ -14,7 +14,7 @@ ddIO::~ddIO() {
 }
 
 /// \brief Open a file or directory (based on ddIOflag)
-bool ddIO::open(const char* fileName, const ddIOflag flags) {
+bool ddIO::open(const char *fileName, const ddIOflag flags) {
   std::ios_base::openmode ios_flag = std::ios::in;
   if ((unsigned)(flags & ddIOflag::READ)) {
     ios_flag = std::ios::in;
@@ -37,15 +37,15 @@ bool ddIO::open(const char* fileName, const ddIOflag flags) {
 }
 
 /// \brief Read the next line in a file
-const char* ddIO::readNextLine() {
+const char *ddIO::readNextLine() {
   if (m_file.getline(m_line, 512)) {
-    return (const char*)m_line;
+    return (const char *)m_line;
   }
   return nullptr;
 }
 
 /// \brief Write a line to an already opened file
-void ddIO::writeLine(const char* output) {
+void ddIO::writeLine(const char *output) {
   if (m_file.good()) {
     m_file << output;
   }

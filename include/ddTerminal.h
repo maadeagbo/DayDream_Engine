@@ -27,6 +27,7 @@
 enum class TerminalCmds : unsigned { NULL_CMD = 0x0, RENDER_DEBUG = 0x1 };
 ENABLE_BITMASK_OPERATORS(TerminalCmds)
 
+/** \brief Interace for printing and sending commands thru in-engine console */
 namespace ddTerminal {
 void flipDebugFlag();
 void post(const char* message);

@@ -108,6 +108,7 @@ struct ImageInfo {
   cbuff<256> path[(unsigned)CubeMapFaces::NUM_FACES];
 };
 
+/** \brief Front end interace for using low-level graphics API */
 namespace ddGPUFrontEnd {
 // Wipe back-buffer screen
 void clear_screen(const float r = 0.f, const float g = 0.f, const float b = 0.f,

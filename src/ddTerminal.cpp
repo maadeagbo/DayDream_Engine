@@ -324,7 +324,7 @@ ImColor colorCodeOutput(const char* entry) {
 void execTerminalCommand(const char* command) {
   // separate commands and add to buffer
   dd_array<cbuff<DEFAULT_ENTRY_SIZE>> cmds =
-      StrSpace::tokenize512<DEFAULT_ENTRY_SIZE>(command, "$");
+      StrSpace::tokenize1024<DEFAULT_ENTRY_SIZE>(command, "$");
 
   for (int i = ((int)cmds.size() - 1); i >= 0; i--) {
     if (*cmds[i].str()) {

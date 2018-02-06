@@ -6,6 +6,7 @@
 #define MAX_SHADERS 50
 #endif  // !MAX_SHADERS
 
+/** \brief Render engine interface */
 namespace ddRenderer {
 /**
 * \brief Initialize lua globals for scripts

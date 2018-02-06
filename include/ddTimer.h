@@ -51,6 +51,8 @@ namespace Timer {
 //   float m_ft[Timer::f_hist];
 // };
 
+/** \brief Interace for retrieving time information w/ nano-second granularity
+ */
 namespace ddTime {
 
 uint64_t GetHiResTime(const bool start_end = true);

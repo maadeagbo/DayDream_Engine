@@ -11,7 +11,7 @@ GREEN='\033[0;32m'
 NC='\033[0m' # No Color
 
 ROOT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-WRITE_DIR="$ROOT_DIR/Projects/$1_lvl"
+WRITE_DIR="$ROOT_DIR/Projects/$1"
 PROJ_NAME=$1
 
 # create directory if it doesn't exist

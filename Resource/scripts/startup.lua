@@ -1,23 +1,25 @@
 -- Config file for loading levels and other settings
 load_engine = require "scripts.EngineInit"
 
+-- Limit of 10 different projects at once
 local worlds = {
-	{ PROJECTS_DIR.."/dead_lvl", "dead" },
-	{ PROJECTS_DIR.."/kinect_lvl", "kinect" }
+	"kinect",
+	"dead"
 }
 
 function generate_levels( event, args, num_args )
 	-- creates a list of found level scripts
 	levels = {}
 	for i,v in ipairs(worlds) do
-		filename = string.format( "%s/%s_world.lua", v[1], v[2])
-		filename_a = string.format( "%s/%s_assets.lua", v[1], v[2])
+		loc = string.format("%s/%s/%s", PROJECTS_DIR, v, v)
+		filename = string.format( "%s_world.lua", loc)
+		filename_a = string.format( "%s_assets.lua", loc)
 		
 		_file = io.open(filename)					-- check world file exists
 		_file_a = io.open(filename_a)			-- check asset file exists
 
 		if _file and _file_a then
-			levels[#levels + 1] = v[2] 			-- add to output
+			levels[#levels + 1] = v					-- add to output
 			-- clean up
 			_file.close()
 			_file_a.close()

@@ -84,6 +84,7 @@ struct InputData {
   int order_tracker = 0;
 };
 
+/** \brief Interace for getting peripheral input information */
 namespace ddInput {
 /** \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine */
 void new_frame();

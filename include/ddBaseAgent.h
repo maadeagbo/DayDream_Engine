@@ -2,7 +2,7 @@
 
 #include "ddModel.h"
 
-/** \brief Container for manipulating transforms */
+/** \brief Container for transform information */
 struct ddBody {
   /**
    * \brief Assigned on agent creation. Deleted on agent destruction
@@ -26,6 +26,7 @@ struct ddBody {
   glm::vec3 scale = glm::vec3(1.f);
 };
 
+/** \brief Interace for bullet physics transforms */
 namespace ddBodyFuncs {
 /** \brief Simple axis-alligned bounding box */
 struct AABB {
