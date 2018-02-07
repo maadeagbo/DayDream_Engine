@@ -245,10 +245,10 @@ bool ddEngine::level_select(const size_t w, const size_t h) {
     // ImGui::DragInt2("<-- Resolution", resolution_set, 10.f, 100);
     window_w = (int)strtod(res_[wh_idx[0]], nullptr);
     window_h = (int)strtod(res_[wh_idx[1]], nullptr);
-    
+
     // stop edge clipping
     ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.65f);
-    //ImGui::PushItemWidth(-100);
+    // ImGui::PushItemWidth(-100);
 
     ImGui::Checkbox("VSYNC", &engine_mode_flags[0]);
     ImGui::SameLine();

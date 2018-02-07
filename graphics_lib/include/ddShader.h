@@ -52,7 +52,7 @@ struct ddShader {
   void set_uniform(const int loc, const glm::mat3& data);
   void set_uniform(const int loc, const glm::mat4& data);
 
-	size_t id = 0;
+  size_t id = 0;
   cbuff<256> vs = "";
   cbuff<256> fs = "";
   cbuff<256> gs = "";

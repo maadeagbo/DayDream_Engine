@@ -1,30 +1,22 @@
 #pragma once
 
-#include "ddAssetManager.h"
+#include "GPUFrontEnd.h"
+#include "ddIncludes.h"
 
 /** function pointer for particle shader initialization */
-typedef std::function<void()> ShaderSetupFunc;
-
-enum class ddPType : unsigned {
-  POINTS = DD_BIT(0),
-  TRIANGLES = DD_BIT(1),
-  NULL_ = 0
-};
-ENABLE_BITMASK_OPERATORS(ddPType)
+typedef std::function<void()> RenderFunc;
 
 /** \brief Contains particle task information */
 struct ddPTask {
-  /** \brief in-engine object id (set by engine) */
-  size_t id = 0;
   /** \brief Time left on queue */
   float lifespan = 0.f;
+  /** \brief Flag to tell queue not to remove task */
+  bool remain_on_q = false;
   /** \brief User-implemented shader setup function (called before particle
    * render) */
-  ShaderSetupFunc sfunc;
+  RenderFunc rfunc;
   /** \brief Particle position buffer (vec3 positions) */
   ddStorageBufferData* buff = nullptr;
-  /** \brief Render type for particles */
-  ddPType type = ddPType::NULL_;
 };
 
 /** \brief Particle system interface for ddRenderer */
@@ -43,5 +35,5 @@ void cleanup();
  * \brief Add task to queue
  * \return Newly created particle task (if queue still has space)
  */
-ddPTask* add_task(const char* task_name);
+bool add_task(ddPTask& new_task, const unsigned buffer_size_bytes);
 };

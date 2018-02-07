@@ -53,6 +53,14 @@ struct ddFilterBuffer {
 
 //*****************************************************************************
 
+const GLenum attrib_type_ogl[] = {GL_BOOL, GL_INT, GL_UNSIGNED_INT, GL_FLOAT,
+                                  GL_DOUBLE};
+const unsigned attrib_size_ogl[] = {sizeof(GLboolean), sizeof(GLint),
+                                    sizeof(GLuint), sizeof(GLfloat),
+                                    sizeof(GLdouble)};
+
+//*****************************************************************************
+
 namespace {
 // Error processing function for OpenGL calls
 bool gl_error(const char *signature) {
@@ -96,7 +104,8 @@ void create_texture2D(const GLenum format, GLuint &tex_handle, const int width,
   if (data) {
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, data_formet,
                     GL_UNSIGNED_BYTE, data);
-		POW2_VERIFY_MSG(!gl_error("create_texture2D"), "Error generating storage", 0);
+    POW2_VERIFY_MSG(!gl_error("create_texture2D"), "Error generating storage",
+                    0);
   }
   // mip maps
   if (mips) glGenerateMipmap(GL_TEXTURE_2D);
@@ -220,7 +229,7 @@ bool generate_texture2D_RGBA8_LR(ImageInfo &img) {
 
   // set up image parameters
   img.internal_format = GL_RGBA8;
-  img.image_format = GL_RGBA;     // TODO: should set based on channels ?
+  img.image_format = GL_RGBA;  // TODO: should set based on channels ?
   img.wrap_s = GL_REPEAT;
   img.wrap_t = GL_REPEAT;
   img.min_filter = GL_LINEAR_MIPMAP_LINEAR;
@@ -246,35 +255,35 @@ bool generate_texture2D_RGBA8_LR(ImageInfo &img) {
   return true;
 }
 
-bool generate_texture2D_RGBA16F_LR(ImageInfo & img) {
-	if (img.tex_buff) destroy_texture(img.tex_buff);
+bool generate_texture2D_RGBA16F_LR(ImageInfo &img) {
+  if (img.tex_buff) destroy_texture(img.tex_buff);
 
-	// set up image parameters
-	img.internal_format = GL_RGBA16F;
-	img.image_format = GL_RGBA;     // TODO: should set based on channels ?
-	img.wrap_s = GL_REPEAT;
-	img.wrap_t = GL_REPEAT;
-	img.min_filter = GL_LINEAR_MIPMAP_LINEAR;
-	img.mag_filter = GL_LINEAR;
+  // set up image parameters
+  img.internal_format = GL_RGBA16F;
+  img.image_format = GL_RGBA;  // TODO: should set based on channels ?
+  img.wrap_s = GL_REPEAT;
+  img.wrap_t = GL_REPEAT;
+  img.min_filter = GL_LINEAR_MIPMAP_LINEAR;
+  img.mag_filter = GL_LINEAR;
 
-	// create handle and texture
-	img.tex_buff = new ddTextureData();
-	if (!img.tex_buff) {
-		fprintf(stderr, "generate_texture2D_RGBA8_LR::RAM load failure\n");
-		return false;
-	}
+  // create handle and texture
+  img.tex_buff = new ddTextureData();
+  if (!img.tex_buff) {
+    fprintf(stderr, "generate_texture2D_RGBA8_LR::RAM load failure\n");
+    return false;
+  }
 
-	// create image
-	create_texture2D(img.internal_format, img.tex_buff->texture_handle, img.width,
-									 img.height, img.min_filter, img.mag_filter, img.wrap_s,
-									 img.wrap_t, GL_REPEAT, glm::vec4(-1.f), true,
-									 img.image_data[0], img.image_format);
-	// SOIL_free_image_data(img.image_data[0]);
-	// img.image_data[0] = nullptr;
+  // create image
+  create_texture2D(img.internal_format, img.tex_buff->texture_handle, img.width,
+                   img.height, img.min_filter, img.mag_filter, img.wrap_s,
+                   img.wrap_t, GL_REPEAT, glm::vec4(-1.f), true,
+                   img.image_data[0], img.image_format);
+  // SOIL_free_image_data(img.image_data[0]);
+  // img.image_data[0] = nullptr;
 
-	glBindTexture(GL_TEXTURE_2D, 0);
+  glBindTexture(GL_TEXTURE_2D, 0);
 
-	return true;
+  return true;
 }
 
 bool generate_textureCube_RGBA8_LR(ImageInfo &img, const bool empty) {
@@ -282,7 +291,7 @@ bool generate_textureCube_RGBA8_LR(ImageInfo &img, const bool empty) {
 
   // set up image parameters
   img.internal_format = GL_RGBA8;
-  img.image_format = GL_RGBA;     // TODO: should set based on channels ?
+  img.image_format = GL_RGBA;  // TODO: should set based on channels ?
   img.wrap_s = GL_REPEAT;
   img.wrap_t = GL_REPEAT;
   img.wrap_r = GL_REPEAT;
@@ -1165,15 +1174,14 @@ void toggle_additive_blend(bool flag) {
 }
 
 void toggle_alpha_blend(bool flag) {
-	if (flag) {
-		// additive blend on
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	}
-	else {
-		// disble blending
-		glDisable(GL_BLEND);
-	}
+  if (flag) {
+    // additive blend on
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  } else {
+    // disble blending
+    glDisable(GL_BLEND);
+  }
 }
 
 void set_depth_mode(const DepthMode mode) {
@@ -1226,7 +1234,6 @@ void bind_texture(const unsigned location, ddTextureData *tex_data) {
   glBindTexture(GL_TEXTURE_2D, tex_data->texture_handle);
 }
 
-
 void draw_instanced_vao(const ddVAOData *vao, const unsigned num_indices,
                         const unsigned instance_size) {
   POW2_VERIFY_MSG(vao != nullptr, "draw_instanced_vao::Null vao provided", 0);
@@ -1236,6 +1243,25 @@ void draw_instanced_vao(const ddVAOData *vao, const unsigned num_indices,
   glDrawElementsInstanced(GL_TRIANGLES, (GLsizei)num_indices, GL_UNSIGNED_INT,
                           0, instance_size);
   glBindVertexArray(0);
+}
+
+void draw_points(const ddStorageBufferData *sbuff_ptr, ddAttribPrimitive type,
+                 const unsigned attrib_loc, const unsigned stride,
+                 const unsigned offset_in_stride,
+                 const unsigned offset_in_buffer, const unsigned num_points) {
+  POW2_VERIFY_MSG(sbuff_ptr != nullptr, "draw_points::Null storage buffer", 0);
+
+  const unsigned stride_offset =
+      (offset_in_stride * attrib_size_ogl[(int)type]);
+  const unsigned num_attribs = stride / attrib_size_ogl[(int)type];
+
+  // bind buffer, set attributes, then draw points
+  glBindBuffer(GL_ARRAY_BUFFER, sbuff_ptr->storage_handle);
+  glEnableVertexAttribArray(attrib_loc);
+  glVertexAttribPointer(attrib_loc, num_attribs, attrib_type_ogl[(int)type],
+                        GL_FALSE, stride, (GLvoid *)stride_offset);
+  glDrawArrays(GL_POINT, offset_in_buffer, num_points);
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 }  // namespace ddGPUFrontEnd

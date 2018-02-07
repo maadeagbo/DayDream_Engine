@@ -18,7 +18,7 @@ struct ddMeshBufferData;
 struct ddTextureData;
 struct ddStorageBufferData;
 
-// Frame buffer declarations (API defined)
+/** \brief Frame buffer declarations (API defined) */
 enum class ddBufferType : unsigned {
   GEOM,
   LIGHT,
@@ -247,4 +247,13 @@ void bind_texture(const unsigned location, ddTextureData *tex_data);
 // Draw ddVAOObject instanced
 void draw_instanced_vao(const ddVAOData *vao, const unsigned num_indices,
                         const unsigned instance_size);
+
+/** \brief Primitive buffer attribute types */
+enum class ddAttribPrimitive : unsigned { BOOL = 0, INT, UINT, FLOAT, DOUBLE };
+
+// Draw ddStorageBufferData as points
+void draw_points(const ddStorageBufferData *sbuff_ptr, ddAttribPrimitive type,
+                 const unsigned attrib_loc, const unsigned stride,
+                 const unsigned offset_in_stride,
+                 const unsigned offset_in_buffer, const unsigned num_points);
 }  // namespace ddGPUFrontEnd
