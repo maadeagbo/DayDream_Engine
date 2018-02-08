@@ -1,5 +1,4 @@
 #include "ddRenderEngine.h"
-#include <SOIL.h>
 #include "GPUFrontEnd.h"
 #include "ddAssetManager.h"
 #include "ddFileIO.h"
@@ -246,9 +245,8 @@ void initialize(const unsigned width, const unsigned height) {
   POW2_VERIFY_MSG(tex != nullptr, "Load screen texture not found", 0);
   bool success = ddGPUFrontEnd::generate_texture2D_RGBA8_LR(tex->image_info);
   POW2_VERIFY_MSG(success == true, "Load screen texture not generated", 0);
-  // cleanup ram
-  SOIL_free_image_data(tex->image_info.image_data[0]);
-  tex->image_info.image_data[0] = nullptr;
+  // cleanup loaded image from ram
+	tex->image_info.image_data[0].resize(0);
 
   // set up load screen MVP matrices
   load_rot_mat = glm::mat4();

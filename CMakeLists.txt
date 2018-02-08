@@ -156,21 +156,11 @@ if(NOT VRPN_PATH)
 	message(FATAL_ERROR "VRPN_PATH VRPN include not found")
 endif()
 if(NOT UNIX)
-	find_path(SOIL_PATH SOIL.h
-		PATHS
-		${CMAKE_CURRENT_SOURCE_DIR}/SOIL/src)
-	if(NOT SOIL_PATH)
-		message(FATAL_ERROR "SOIL include not found")
-	endif()
 	find_path(LUA_PATH lua.hpp PATHS ${CMAKE_SOURCE_DIR}/lua53_Win64_lib/include)
 	if(NOT LUA_PATH)
 		message(FATAL_ERROR "Lua include not found")
 	endif()
 else()
-	find_path(SOIL_PATH SOIL.h PATHS /usr/include/SOIL)
-	if(NOT SOIL_PATH)
-		message(FATAL_ERROR "SOIL unix include not found")
-	endif()
 	find_path(LUA_PATH lua.hpp PATHS /usr/include/lua5.3)
 	if(NOT LUA_PATH)
 		message(FATAL_ERROR "Lua include not found")
@@ -276,7 +266,6 @@ endforeach()
 include_directories(${CMAKE_SOURCE_DIR}/include
 	${PROJECT_SOURCE_DIR}/graphics_lib/include
 	${CMAKE_SOURCE_DIR}/glm/
-	${SOIL_PATH}
 	${PROJ_HEADERS}
 	${LUA_PATH}
 	${BULLET_PATH}
@@ -322,10 +311,6 @@ if(NOT VRPN_LIB)
   message(FATAL_ERROR "VRPN Release library not found")
 endif()
 if(UNIX)
-	find_library(SOIL_LIB SOIL)
-	if(NOT SOIL_LIB)
-		message(FATAL_ERROR "SOIL library not found")
-	endif()
 	find_library(TTF_LIB freetype)
 	if(NOT TTF_LIB)
 		message(FATAL_ERROR "Freetype Release library not found")
@@ -339,10 +324,6 @@ if(UNIX)
 		message(FATAL_ERROR "Lua library not found")
 	endif()
 elseif(MSVC)
-	find_library(SOIL_LIB SOIL ${CMAKE_CURRENT_SOURCE_DIR}/SOIL/lib)
-	if(NOT SOIL_LIB)
-		message(FATAL_ERROR "SOIL library not found")
-	endif()
 	find_library(TTF_LIB freetype ${CMAKE_CURRENT_SOURCE_DIR}/freetype-2.7/lib)
 	if(NOT TTF_LIB)
 		message(FATAL_ERROR "Freetype Release library not found")
@@ -406,9 +387,9 @@ if(NOT WIN32)
 
 	target_link_libraries(dd_engine ${WIN_LIB} dd_graphics dd_shader 
 		${OPENGL_gl_LIBRARY} ${BULLET_LIB} ${VRPN_LIB} ${FREETYPE_LIBRARIES} 
-		${FS_LIB} ${DD_GPULIB} ${LUA_LIB} ${SOIL_LIB})
+		${FS_LIB} ${DD_GPULIB} ${LUA_LIB})
 else()
 	target_link_libraries(dd_engine ${WIN_LIB} dd_graphics dd_shader 
 		${OPENGL_gl_LIBRARY} ${BULLET_LIB} ${VRPN_LIB} ${FREETYPE_LIBRARIES} 
-		${LUA_LIB} ${DD_GPULIB} ${SOIL_LIB} )
+		${LUA_LIB} ${DD_GPULIB})
 endif()

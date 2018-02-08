@@ -197,7 +197,7 @@ lua_State *init_lua_state() {
     cbuff<256> s_dir;
     s_dir.format("%s/%s", RESOURCE_DIR, "scripts");
     set_lua_global(L, "SCRIPTS_DIR", s_dir.str());
-    set_lua_global(L, "PROJECTS_DIR", PROJECT_DIR);
+    set_lua_global(L, "PROJECT_DIR", PROJECT_DIR);
 
 #ifdef _WIN32
     set_lua_global(L, "WIN32", true);

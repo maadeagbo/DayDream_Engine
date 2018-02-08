@@ -8,7 +8,7 @@
 #pragma warning(disable : 4201)  // removes non-standard extensions warnings
 #endif
 #include <glm/glm.hpp>
-#include <memory>
+#include "Container.h"
 #include "StringLib.h"
 
 // Buffer declarations (API defined)
@@ -103,7 +103,7 @@ struct ImageInfo {
   /// \brief filter when pixels > screen pixels
   unsigned mag_filter;
   /// \brief pointer to image data in RAM
-  unsigned char *image_data[(unsigned)CubeMapFaces::NUM_FACES];
+  dd_array<unsigned char> image_data[(unsigned)CubeMapFaces::NUM_FACES];
   /// \brief path to image file
   cbuff<256> path[(unsigned)CubeMapFaces::NUM_FACES];
 };

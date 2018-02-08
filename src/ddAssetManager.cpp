@@ -1,8 +1,9 @@
 #include "ddAssetManager.h"
-#include <SOIL.h>
 #include <omp.h>
 #include "ddFileIO.h"
 #include "ddTerminal.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 namespace {
 enum collisiontypes {
@@ -206,14 +207,6 @@ void cleanup() {
       delete_rigid_body(&b_agents[idx.second]);
     }
   }
-  // cleanup any unfreed images
-  for (auto &idx : map_textures) {
-    for (unsigned i = 0; i < 6; i++) {
-      if (textures[idx.second].image_info.image_data[i]) {
-        SOIL_free_image_data(textures[idx.second].image_info.image_data[i]);
-      }
-    }
-  }
   // cleanup agents
   for (auto &idx : map_b_agents) {
     // vao's
@@ -284,9 +277,8 @@ void load_to_gpu() {
         textures[idx.second].image_info);
     POW2_VERIFY_MSG(success == true, "Texture not generated: %s",
                     textures[idx.second].image_info.path[0].str());
-    // cleanup ram
-    SOIL_free_image_data(textures[idx.second].image_info.image_data[0]);
-    textures[idx.second].image_info.image_data[0] = nullptr;
+    // cleanup images on ram
+    textures[idx.second].image_info.image_data[0].resize(0);
   }
 
   // load meshes
@@ -1396,28 +1388,24 @@ ddTex2D *create_tex2D(const char *path, const char *img_id) {
 
   // initialize
   ImageInfo img_info;
-  for (size_t i = 0; i < 6; i++) {
-    img_info.image_data[i] = nullptr;
-  }
 
   // find and load image to RAM
   img_info.path[0] = path;
-  img_info.image_data[0] =
-      SOIL_load_image(path, &img_info.width, &img_info.height,
-                      &img_info.channels, SOIL_LOAD_RGBA);
-  if (!img_info.image_data[0]) {
-    ddTerminal::f_post("[error]create_tex2D::Failed to open image: %s", path);
-    return new_tex;
-  }
-  // flip image (SOIL loads images inverted) and delete temp img
-  flip_image(img_info.image_data[0], img_info.width, img_info.height,
-             img_info.channels);
+	unsigned char* temp = nullptr;
+	temp = stbi_load(path, &img_info.width, &img_info.height, &img_info.channels, 4);
+	POW2_VERIFY_MSG(temp != nullptr, "stbi failed to read image: %s", path);
+  
+	// copy to dd_array and free stbi data
+	img_info.image_data[0].resize(img_info.width * img_info.height * 4);
+#pragma omp for
+	for (int i = 0; i < img_info.width * img_info.height * 4; i++) {
+		img_info.image_data[0][i] = temp[i];
+	}
+	stbi_image_free(temp);
 
   // create texture object and assign img_info
   new_tex = spawn_ddTex2D(tex_id);
   if (!new_tex) {  // failed to allocate
-    // delete soil image
-    SOIL_free_image_data(img_info.image_data[0]);
     // report
     ddTerminal::f_post("[error]create_tex2D::Failed to create ddTex2D object");
     return new_tex;

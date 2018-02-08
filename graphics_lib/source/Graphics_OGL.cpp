@@ -243,10 +243,12 @@ bool generate_texture2D_RGBA8_LR(ImageInfo &img) {
   }
 
   // create image
+  unsigned char *img_ptr =
+      (img.image_data[0].size() > 0) ? &img.image_data[0][0] : nullptr;
   create_texture2D(img.internal_format, img.tex_buff->texture_handle, img.width,
                    img.height, img.min_filter, img.mag_filter, img.wrap_s,
-                   img.wrap_t, GL_REPEAT, glm::vec4(-1.f), true,
-                   img.image_data[0], img.image_format);
+                   img.wrap_t, GL_REPEAT, glm::vec4(-1.f), true, img_ptr,
+                   img.image_format);
   // SOIL_free_image_data(img.image_data[0]);
   // img.image_data[0] = nullptr;
 
@@ -274,10 +276,12 @@ bool generate_texture2D_RGBA16F_LR(ImageInfo &img) {
   }
 
   // create image
+  unsigned char *img_ptr =
+      (img.image_data[0].size() > 0) ? &img.image_data[0][0] : nullptr;
   create_texture2D(img.internal_format, img.tex_buff->texture_handle, img.width,
                    img.height, img.min_filter, img.mag_filter, img.wrap_s,
-                   img.wrap_t, GL_REPEAT, glm::vec4(-1.f), true,
-                   img.image_data[0], img.image_format);
+                   img.wrap_t, GL_REPEAT, glm::vec4(-1.f), true, img_ptr,
+                   img.image_format);
   // SOIL_free_image_data(img.image_data[0]);
   // img.image_data[0] = nullptr;
 
@@ -339,7 +343,8 @@ bool generate_textureCube_RGBA8_LR(ImageInfo &img, const bool empty) {
     for (int i = 0; i < 6; i++) {
       // transfer image to GPU then delete from RAM
       glTexSubImage2D(targets[i], 0, 0, 0, img.width, img.height,
-                      img.image_format, GL_UNSIGNED_BYTE, img.image_data[i]);
+                      img.image_format, GL_UNSIGNED_BYTE,
+                      &img.image_data[i][0]);
       // SOIL_free_image_data(img.image_data[i]);
       // img.image_data[i] = nullptr;
 
@@ -1251,7 +1256,7 @@ void draw_points(const ddStorageBufferData *sbuff_ptr, ddAttribPrimitive type,
                  const unsigned offset_in_buffer, const unsigned num_points) {
   POW2_VERIFY_MSG(sbuff_ptr != nullptr, "draw_points::Null storage buffer", 0);
 
-  const unsigned stride_offset =
+  const int stride_offset =
       (offset_in_stride * attrib_size_ogl[(int)type]);
   const unsigned num_attribs = stride / attrib_size_ogl[(int)type];
 

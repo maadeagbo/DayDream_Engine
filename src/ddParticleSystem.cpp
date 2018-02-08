@@ -13,7 +13,7 @@ unsigned head = 0;
 unsigned tail = 0;
 unsigned num_tasks = 0;
 dd_array<ddPTask *> particle_q = dd_array<ddPTask *>(PARTICLE_Q_MAX);
-};
+};  // namespace
 
 namespace ddParticleSys {
 
@@ -55,8 +55,6 @@ bool add_task(ddPTask &new_task, const unsigned buffer_size_bytes) {
   if (num_tasks == PARTICLE_Q_MAX) {
     return false;
   }
-  // assign buffer space
-  ddGPUFrontEnd::create_storage_buffer(new_task.buff, buffer_size_bytes);
   push_task(new_task);
 
   return true;
@@ -100,6 +98,11 @@ void process_queue() {
 
     // check perform render function if task exists (skip null tasks and funcs)
     if (pt != nullptr) {
+      // assign buffer space if necessary
+      if (!pt->buff) {
+        ddGPUFrontEnd::create_storage_buffer(pt->buff, pt->buff_size);
+      }
+
       if (pt->rfunc != nullptr) pt->rfunc();
 
       // decrement life span (if tasks isn't permanent)
@@ -114,4 +117,4 @@ void process_queue() {
     }
   }
 }
-}
+}  // namespace ddParticleSys

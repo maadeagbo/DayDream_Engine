@@ -3,15 +3,14 @@ load_engine = require "scripts.EngineInit"
 
 -- Limit of 10 different projects at once
 local worlds = {
-	"kinect",
-	"dead"
+	"kinect"
 }
 
 function generate_levels( event, args, num_args )
 	-- creates a list of found level scripts
 	levels = {}
 	for i,v in ipairs(worlds) do
-		loc = string.format("%s/%s/%s", PROJECTS_DIR, v, v)
+		loc = string.format("%s/%s/%s", PROJECT_DIR, v, v)
 		filename = string.format( "%s_world.lua", loc)
 		filename_a = string.format( "%s_assets.lua", loc)
 		

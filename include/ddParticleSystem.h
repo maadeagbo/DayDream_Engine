@@ -10,6 +10,8 @@ typedef std::function<void()> RenderFunc;
 struct ddPTask {
   /** \brief Time left on queue */
   float lifespan = 0.f;
+  /** \brief Buffer to be assigned to task */
+  unsigned buff_size = 0;
   /** \brief Flag to tell queue not to remove task */
   bool remain_on_q = false;
   /** \brief User-implemented shader setup function (called before particle
