@@ -55,6 +55,8 @@ bool add_task(ddPTask &new_task, const unsigned buffer_size_bytes) {
   if (num_tasks == PARTICLE_Q_MAX) {
     return false;
   }
+	// assign buffer size
+	ddGPUFrontEnd::create_storage_buffer(new_task.buff, new_task.buff_size);
   push_task(new_task);
 
   return true;
@@ -98,11 +100,6 @@ void process_queue() {
 
     // check perform render function if task exists (skip null tasks and funcs)
     if (pt != nullptr) {
-      // assign buffer space if necessary
-      if (!pt->buff) {
-        ddGPUFrontEnd::create_storage_buffer(pt->buff, pt->buff_size);
-      }
-
       if (pt->rfunc != nullptr) pt->rfunc();
 
       // decrement life span (if tasks isn't permanent)
