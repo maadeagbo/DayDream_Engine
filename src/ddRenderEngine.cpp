@@ -246,7 +246,7 @@ void initialize(const unsigned width, const unsigned height) {
   bool success = ddGPUFrontEnd::generate_texture2D_RGBA8_LR(tex->image_info);
   POW2_VERIFY_MSG(success == true, "Load screen texture not generated", 0);
   // cleanup loaded image from ram
-	tex->image_info.image_data[0].resize(0);
+  tex->image_info.image_data[0].resize(0);
 
   // set up load screen MVP matrices
   load_rot_mat = glm::mat4();

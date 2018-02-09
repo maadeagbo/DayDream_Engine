@@ -1391,17 +1391,18 @@ ddTex2D *create_tex2D(const char *path, const char *img_id) {
 
   // find and load image to RAM
   img_info.path[0] = path;
-	unsigned char* temp = nullptr;
-	temp = stbi_load(path, &img_info.width, &img_info.height, &img_info.channels, 4);
-	POW2_VERIFY_MSG(temp != nullptr, "stbi failed to read image: %s", path);
-  
-	// copy to dd_array and free stbi data
-	img_info.image_data[0].resize(img_info.width * img_info.height * 4);
+  unsigned char *temp = nullptr;
+  temp =
+      stbi_load(path, &img_info.width, &img_info.height, &img_info.channels, 4);
+  POW2_VERIFY_MSG(temp != nullptr, "stbi failed to read image: %s", path);
+
+  // copy to dd_array and free stbi data
+  img_info.image_data[0].resize(img_info.width * img_info.height * 4);
 #pragma omp for
-	for (int i = 0; i < img_info.width * img_info.height * 4; i++) {
-		img_info.image_data[0][i] = temp[i];
-	}
-	stbi_image_free(temp);
+  for (int i = 0; i < img_info.width * img_info.height * 4; i++) {
+    img_info.image_data[0][i] = temp[i];
+  }
+  stbi_image_free(temp);
 
   // create texture object and assign img_info
   new_tex = spawn_ddTex2D(tex_id);

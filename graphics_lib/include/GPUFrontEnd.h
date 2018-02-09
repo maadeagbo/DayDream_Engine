@@ -156,6 +156,10 @@ void destroy_storage_buffer(ddStorageBufferData *&sbuff_ptr);
 // Create ddStorageBufferData buffer
 bool create_storage_buffer(ddStorageBufferData *&sbuff_ptr,
                            const unsigned byte_size);
+// Extract ddStorageBufferData data to provided buffer
+bool extract_storage_buffer_data(ddStorageBufferData *sbuff_ptr,
+                                 const unsigned buff_size_bytes,
+                                 void *data_storage);
 // Bind storage buffer object
 void bind_storage_buffer(const unsigned location,
                          const ddStorageBufferData *sbuff_ptr);
@@ -256,4 +260,9 @@ void draw_points(const ddStorageBufferData *sbuff_ptr, ddAttribPrimitive type,
                  const unsigned attrib_loc, const unsigned stride,
                  const unsigned offset_in_stride,
                  const unsigned offset_in_buffer, const unsigned num_points);
+
+// Deploy compute shader
+void deploy_compute_task(const unsigned x_work_groups,
+                         const unsigned y_work_groups,
+                         const unsigned z_work_groups);
 }  // namespace ddGPUFrontEnd

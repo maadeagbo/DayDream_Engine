@@ -39,7 +39,7 @@ bool ddIO::open(const char *fileName, const ddIOflag flags) {
 /// \brief Read the next line in a file
 const char *ddIO::readNextLine() {
   if (!m_file.eof()) {
-		m_file.getline(m_line, 1024);
+    m_file.getline(m_line, 1024);
     return (const char *)m_line;
   }
   return nullptr;

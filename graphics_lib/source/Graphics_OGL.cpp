@@ -588,6 +588,20 @@ bool create_storage_buffer(ddStorageBufferData *&sbuff_ptr,
   return true;
 }
 
+bool extract_storage_buffer_data(ddStorageBufferData *sbuff_ptr,
+                                 const unsigned buff_size_bytes,
+                                 void *data_storage) {
+  // check that ssbo is valid
+  if (!sbuff_ptr) return false;
+
+  // extract data
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, sbuff_ptr->storage_handle);
+  glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, buff_size_bytes,
+                     data_storage);
+  POW2_VERIFY(!gl_error("extract_storage_buffer_data"));
+  return true;
+}
+
 void bind_storage_buffer(const unsigned location,
                          const ddStorageBufferData *sbuff_ptr) {
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER, location,
@@ -1256,8 +1270,7 @@ void draw_points(const ddStorageBufferData *sbuff_ptr, ddAttribPrimitive type,
                  const unsigned offset_in_buffer, const unsigned num_points) {
   POW2_VERIFY_MSG(sbuff_ptr != nullptr, "draw_points::Null storage buffer", 0);
 
-  const int stride_offset =
-      (offset_in_stride * attrib_size_ogl[(int)type]);
+  const int stride_offset = (offset_in_stride * attrib_size_ogl[(int)type]);
   const unsigned num_attribs = stride / attrib_size_ogl[(int)type];
 
   // bind buffer, set attributes, then draw points
@@ -1267,6 +1280,14 @@ void draw_points(const ddStorageBufferData *sbuff_ptr, ddAttribPrimitive type,
                         GL_FALSE, stride, (GLvoid *)stride_offset);
   glDrawArrays(GL_POINT, offset_in_buffer, num_points);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void deploy_compute_task(const unsigned x_work_groups,
+                         const unsigned y_work_groups,
+                         const unsigned z_work_groups) {
+  glDispatchCompute((GLuint)x_work_groups, (GLuint)y_work_groups,
+                    (GLuint)z_work_groups);
+  glMemoryBarrier(GL_ALL_BARRIER_BITS);
 }
 
 }  // namespace ddGPUFrontEnd
