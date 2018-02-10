@@ -108,6 +108,9 @@ struct ImageInfo {
   cbuff<256> path[(unsigned)CubeMapFaces::NUM_FACES];
 };
 
+/** \brief Primitive buffer attribute types */
+enum class ddAttribPrimitive : unsigned { BOOL = 0, INT, UINT, FLOAT, DOUBLE };
+
 /** \brief Front end interace for using low-level graphics API */
 namespace ddGPUFrontEnd {
 // Wipe back-buffer screen
@@ -252,12 +255,10 @@ void bind_texture(const unsigned location, ddTextureData *tex_data);
 void draw_instanced_vao(const ddVAOData *vao, const unsigned num_indices,
                         const unsigned instance_size);
 
-/** \brief Primitive buffer attribute types */
-enum class ddAttribPrimitive : unsigned { BOOL = 0, INT, UINT, FLOAT, DOUBLE };
-
 // Draw ddStorageBufferData as points
-void draw_points(const ddStorageBufferData *sbuff_ptr, ddAttribPrimitive type,
-                 const unsigned attrib_loc, const unsigned stride,
+void draw_points(const ddVAOData *vao, const ddStorageBufferData *sbuff_ptr,
+                 ddAttribPrimitive type, const unsigned attrib_loc,
+                 const unsigned num_attribs, const unsigned stride,
                  const unsigned offset_in_stride,
                  const unsigned offset_in_buffer, const unsigned num_points);
 

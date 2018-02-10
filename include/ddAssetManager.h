@@ -121,11 +121,6 @@ void log_lua_func(lua_State* L);
 void load_to_gpu();
 
 /**
- * \brief Get currently active camera (selects to 1st active camera it finds)
- */
-ddCam* get_active_cam();
-
-/**
  * \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine
  */
 void remove_rigid_body(ddAgent* ag);
@@ -135,6 +130,31 @@ void remove_rigid_body(ddAgent* ag);
 namespace ddSceneManager {
 /** \brief Get screen size information */
 glm::uvec2 get_screen_dimensions();
+
+/**
+ * \brief Get currently active camera (selects to 1st active camera it finds)
+ */
+ddCam* get_active_cam();
+
+/**
+ * \brief Calculate camera view matrix
+ */
+glm::mat4 calc_view_matrix(const ddCam *cam);
+
+/**
+ * \brief Calculate perspective projection matrix
+ */
+glm::mat4 calc_p_proj_matrix(const ddCam *cam);
+
+/**
+ * \brief Calculate camera frustum
+ */
+FrustumBox get_current_frustum(const ddCam *cam);
+
+/**
+ * \brief Calculate light volume radius
+ */
+float calc_lightvolume_radius(const ddLBulb *blb);
 
 /**
  * \brief Cull objects outside of camera frustum

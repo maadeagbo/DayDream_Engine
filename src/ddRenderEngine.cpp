@@ -68,11 +68,6 @@ cbuff<32> depthsk_sh = "shadow_skinned";
 
 }  // namespace
 
-glm::mat4 calc_view_matrix(const ddCam *cam, const ddBody *bod);
-glm::mat4 calc_p_proj_matrix(const ddCam *cam);
-FrustumBox get_current_frustum(const ddCam *cam, const ddBody *bod);
-float calc_lightvolume_radius(const ddLBulb *blb);
-
 /** \brief Internal draw function */
 void draw_scene(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
                 const glm::vec3 cam_pos);
@@ -337,16 +332,16 @@ void draw_world() {
   objects_in_frame = 0;
 
   // grab camera data
-  ddCam *cam = ddAssets::get_active_cam();
+  ddCam *cam = ddSceneManager::get_active_cam();
   POW2_VERIFY_MSG(cam != nullptr, "No active camera", 0);
   ddAgent *cam_p = find_ddAgent(cam->parent);
   POW2_VERIFY_MSG(cam_p != nullptr, "Active camera has no parent", 0);
 
-  glm::mat4 view_m = calc_view_matrix(cam, &cam_p->body);
-  glm::mat4 proj_m = calc_p_proj_matrix(cam);
+  glm::mat4 view_m = ddSceneManager::calc_view_matrix(cam);
+  glm::mat4 proj_m = ddSceneManager::calc_p_proj_matrix(cam);
 
   // get frustum and cull objects
-  FrustumBox cam_fr = get_current_frustum(cam, &cam_p->body);
+  FrustumBox cam_fr = ddSceneManager::get_current_frustum(cam);
   ddSceneManager::cull_objects(cam_fr, view_m, _agents);
 
   // draw scene
@@ -354,114 +349,6 @@ void draw_world() {
 }
 
 }  // namespace ddRenderer
-
-glm::mat4 calc_view_matrix(const ddCam *cam, const ddBody *bod) {
-  // camera world position
-  const glm::vec3 pos = ddBodyFuncs::pos_ws(bod);
-
-  // camera front direction
-  const glm::vec3 front = ddSceneManager::cam_forward_dir(cam, bod);
-
-  // camera up direction
-  glm::vec3 right = glm::normalize(glm::cross(front, global_Yv3));
-  glm::vec3 up = glm::normalize(glm::cross(right, front));
-
-  return glm::lookAt(pos, pos + front, up);
-}
-
-glm::mat4 calc_p_proj_matrix(const ddCam *cam) {
-  return glm::perspectiveFov(cam->fovh, (float)cam->width, (float)cam->height,
-                             cam->n_plane, cam->f_plane);
-}
-
-FrustumBox get_current_frustum(const ddCam *cam, const ddBody *bod) {
-  FrustumBox frustum;
-
-  // recalculate front, right, and up for frustum calculation
-  const glm::vec3 cam_pos = ddBodyFuncs::pos_ws(bod);
-  const glm::vec3 front = ddSceneManager::cam_forward_dir(cam, bod);
-  const glm::vec3 right = glm::normalize(glm::cross(front, global_Yv3));
-  const glm::vec3 up = glm::normalize(glm::cross(right, front));
-
-  // calculate new frustum
-  glm::vec3 n_center = glm::vec3(glm::vec3(cam_pos) + front * cam->n_plane);
-  glm::vec3 f_center = glm::vec3(glm::vec3(cam_pos) + front * cam->f_plane);
-  float tang = tan(cam->fovh / 2);
-  float ratio = ((float)cam->height / (float)cam->width);
-  float w_near = tang * cam->n_plane * 2.0f;
-  float h_near = w_near * ratio;
-  float w_far = tang * cam->f_plane * 2.0f;
-  float h_far = w_far * ratio;
-
-  // corners
-  frustum.corners[0] = n_center + (up * h_near) + (right * w_near);
-  frustum.corners[1] = n_center - (up * h_near) + (right * w_near);
-  frustum.corners[2] = n_center + (up * h_near) - (right * w_near);
-  frustum.corners[3] = n_center - (up * h_near) - (right * w_near);
-  frustum.corners[4] = f_center + (up * h_far) + (right * w_far);
-  frustum.corners[5] = f_center - (up * h_far) + (right * w_far);
-  frustum.corners[6] = f_center + (up * h_far) - (right * w_far);
-  frustum.corners[7] = f_center - (up * h_far) - (right * w_far);
-
-  // frustum top
-  glm::vec3 top_pos = n_center + (up * h_near);
-  glm::vec3 temp_vec = glm::normalize(top_pos - glm::vec3(cam_pos));
-  glm::vec3 up_norm = glm::cross(temp_vec, right);
-
-  // frustum bottom
-  glm::vec3 bot_pos = n_center - (up * h_near);
-  temp_vec = glm::normalize(bot_pos - glm::vec3(cam_pos));
-  glm::vec3 down_norm = glm::cross(right, temp_vec);
-
-  // frustum left
-  glm::vec3 left_pos = n_center - (right * w_near);
-  temp_vec = glm::normalize(left_pos - glm::vec3(cam_pos));
-  glm::vec3 left_norm = glm::cross(temp_vec, up);
-
-  // frustum right normal ---> (nc + left * w_near / 2) - p
-  glm::vec3 right_pos = n_center + (right * w_near);
-  temp_vec = glm::normalize(right_pos - glm::vec3(cam_pos));
-  glm::vec3 right_norm = glm::cross(up, temp_vec);
-
-  // points
-  frustum.points[0] = n_center;
-  frustum.points[1] = f_center;
-  frustum.points[2] = right_pos;
-  frustum.points[3] = left_pos;
-  frustum.points[4] = top_pos;
-  frustum.points[5] = bot_pos;
-
-  // normals
-  frustum.normals[0] = front;
-  frustum.normals[1] = -front;
-  frustum.normals[2] = right_norm;
-  frustum.normals[3] = left_norm;
-  frustum.normals[4] = up_norm;
-  frustum.normals[5] = down_norm;
-
-  // D
-  frustum.d[0] = -glm::dot(frustum.normals[0], frustum.points[0]);
-  frustum.d[1] = -glm::dot(frustum.normals[1], frustum.points[1]);
-  frustum.d[2] = -glm::dot(frustum.normals[2], frustum.points[2]);
-  frustum.d[3] = -glm::dot(frustum.normals[3], frustum.points[3]);
-  frustum.d[4] = -glm::dot(frustum.normals[4], frustum.points[4]);
-  frustum.d[5] = -glm::dot(frustum.normals[5], frustum.points[5]);
-
-  return frustum;
-}
-
-float calc_lightvolume_radius(const ddLBulb *blb) {
-  float LVR = 0.0f;
-  float constant = 1.0;
-  float lightMax =
-      std::fmaxf(std::fmaxf(blb->color.r, blb->color.g), blb->color.b);
-  LVR =
-      (-blb->linear + std::sqrt(blb->linear * blb->linear -
-                                4.f * blb->quadratic *
-                                    (constant - lightMax * (256.0f / 5.0f)))) /
-      (2.f * blb->quadratic);
-  return LVR;
-}
 
 void draw_scene(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
                 const glm::vec3 cam_pos) {
@@ -706,7 +593,7 @@ void light_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
     sh->set_uniform((int)RE_Light::Light_spotExponent_f, blb->spot_exp);
 
     // calculate model matrix for light _light volume = plane approximation)
-    float lv_radius = calc_lightvolume_radius(blb);
+    float lv_radius = ddSceneManager::calc_lightvolume_radius(blb);
     glm::mat4 model;
     model = glm::translate(model, blb->position);
     model = glm::scale(model, glm::vec3(lv_radius));

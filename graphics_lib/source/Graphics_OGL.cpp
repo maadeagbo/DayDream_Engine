@@ -1264,22 +1264,39 @@ void draw_instanced_vao(const ddVAOData *vao, const unsigned num_indices,
   glBindVertexArray(0);
 }
 
-void draw_points(const ddStorageBufferData *sbuff_ptr, ddAttribPrimitive type,
-                 const unsigned attrib_loc, const unsigned stride,
+void draw_points(const ddVAOData *vao, const ddStorageBufferData *sbuff_ptr,
+                 ddAttribPrimitive type, const unsigned attrib_loc,
+                 const unsigned num_attribs, const unsigned stride,
                  const unsigned offset_in_stride,
                  const unsigned offset_in_buffer, const unsigned num_points) {
-  POW2_VERIFY_MSG(sbuff_ptr != nullptr, "draw_points::Null storage buffer", 0);
+	POW2_VERIFY_MSG(vao != nullptr, "draw_points::Null VAO object", 0);
+	POW2_VERIFY_MSG(sbuff_ptr != nullptr, "draw_points::Null storage buffer", 0);
 
   const int stride_offset = (offset_in_stride * attrib_size_ogl[(int)type]);
-  const unsigned num_attribs = stride / attrib_size_ogl[(int)type];
 
   // bind buffer, set attributes, then draw points
+	glBindVertexArray(vao->vao_handle);
   glBindBuffer(GL_ARRAY_BUFFER, sbuff_ptr->storage_handle);
+
+  POW2_VERIFY(!gl_error("draw_points"));
+
   glEnableVertexAttribArray(attrib_loc);
+
+  POW2_VERIFY(!gl_error("draw_points"));
+
   glVertexAttribPointer(attrib_loc, num_attribs, attrib_type_ogl[(int)type],
-                        GL_FALSE, stride, (GLvoid *)stride_offset);
-  glDrawArrays(GL_POINT, offset_in_buffer, num_points);
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
+                        GL_FALSE, stride * attrib_size_ogl[(int)type],
+                        (GLvoid *)stride_offset);
+
+	POW2_VERIFY(!gl_error("draw_points"));
+
+  glDrawArrays(GL_POINTS, offset_in_buffer, num_points);
+
+	POW2_VERIFY(!gl_error("draw_points"));
+
+	glBindVertexArray(0);
+  POW2_VERIFY_MSG(!gl_error("draw_points"), "draw_points::error drawing points",
+                  0);
 }
 
 void deploy_compute_task(const unsigned x_work_groups,
