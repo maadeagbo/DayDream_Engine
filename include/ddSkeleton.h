@@ -47,3 +47,31 @@ struct ddSkeletonPose {
   /** \brief Marks if imported animation uses global matrices or local */
   bool global_poses = false;
 };
+
+/** \brief Sample from animation clip */
+struct ddAnimSample {
+  dd_array<ddJointPose> m_pose;
+};
+
+/** \brief Information contained in animation clip */
+struct ddAnimClip {
+  size_t id;
+  unsigned num_joints = 0;
+  unsigned num_frames = 0;
+  float fps = 30.f;
+  float length = 0.f;
+  float step_size = 0.f;
+  dd_array<ddAnimSample> samples;
+};
+
+/// \brief Container to hold animation clip information
+struct ddAnimState {
+  size_t id;
+  size_t clip_id;
+  float weight = 1.f;
+  float local_time = 0.f;
+  float play_back = 1.f;
+  bool interpolate = true;
+  bool active = false;
+  bool flag_loop = false;
+};

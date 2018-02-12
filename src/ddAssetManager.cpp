@@ -1141,6 +1141,8 @@ int rotate_camera(lua_State *L) {
   return 0;
 }
 
+//*****************************************************************************
+
 ddModelData *load_ddm(const char *filename) {
   /// \brief Lambda to get uint from string
   auto getUint = [](const char *str) {
