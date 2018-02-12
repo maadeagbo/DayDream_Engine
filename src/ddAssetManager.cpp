@@ -2,8 +2,11 @@
 #include <omp.h>
 #include "ddFileIO.h"
 #include "ddTerminal.h"
+
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
 
 namespace {
 enum collisiontypes {
@@ -470,21 +473,21 @@ FrustumBox get_current_frustum(const ddCam *cam) {
 }
 
 float calc_lightvolume_radius(const ddLBulb *blb) {
-	if (!blb) {
-		ddTerminal::f_post("[error] calc_lightvolume_radius::Light is null");
-		return 0.f;
-	}
+  if (!blb) {
+    ddTerminal::f_post("[error] calc_lightvolume_radius::Light is null");
+    return 0.f;
+  }
 
-	float LVR = 0.0f;
-	float constant = 1.0;
-	float lightMax =
-		std::fmaxf(std::fmaxf(blb->color.r, blb->color.g), blb->color.b);
-	LVR =
-		(-blb->linear + std::sqrt(blb->linear * blb->linear -
-															4.f * blb->quadratic *
-															(constant - lightMax * (256.0f / 5.0f)))) /
-															(2.f * blb->quadratic);
-	return LVR;
+  float LVR = 0.0f;
+  float constant = 1.0;
+  float lightMax =
+      std::fmaxf(std::fmaxf(blb->color.r, blb->color.g), blb->color.b);
+  LVR =
+      (-blb->linear + std::sqrt(blb->linear * blb->linear -
+                                4.f * blb->quadratic *
+                                    (constant - lightMax * (256.0f / 5.0f)))) /
+      (2.f * blb->quadratic);
+  return LVR;
 }
 
 void cull_objects(const FrustumBox fr, const glm::mat4 view_m,

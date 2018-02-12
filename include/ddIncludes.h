@@ -1,18 +1,12 @@
 #pragma once
 
+#ifndef DD_INC
+#define DD_INC
+
 /*
  * Copyright (c) 2016, Moses Adeagbo
  * All rights reserved.
  */
-
-/*-----------------------------------------------------------------------------
-*
-*	DD_Types:
-*		- Typesdefs and enums for engine use
-*	DD_Event:
-*		- Defines the message objects
-*
------------------------------------------------------------------------------*/
 
 #include <inttypes.h>
 #include <algorithm>
@@ -119,3 +113,5 @@ static const glm::vec3 global_Xv3 = glm::vec3(1.f, 0.f, 0.f);
 static const glm::vec3 global_Yv3 = glm::vec3(0.f, 1.f, 0.f);
 static const glm::vec3 global_Zv3 = glm::vec3(0.f, 0.f, 1.f);
 static const glm::vec4 global_Wv4 = glm::vec4(0.f, 0.f, 0.f, 1.f);
+
+#endif

@@ -4,13 +4,7 @@
 #include <fstream>
 #include "ddIncludes.h"
 
-enum class ddIOflag : unsigned {
-  READ = 0x1,
-  WRITE = 0x2,
-  APPEND = 0x4,
-  DIRECTORY = 0x8
-};
-ENABLE_BITMASK_OPERATORS(ddIOflag)
+enum ddIOflag { READ = 0x1, WRITE = 0x2, APPEND = 0x4, DIRECTORY = 0x8 };
 
 struct ddIO {
   ~ddIO();

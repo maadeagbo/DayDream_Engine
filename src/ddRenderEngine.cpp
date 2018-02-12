@@ -386,15 +386,17 @@ void draw_scene(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
   sh->set_uniform((int)RE_PostPr::GammaCorrect_b, true);
   sh->set_uniform((int)RE_PostPr::Exposure_f, 0.75f);
   sh->set_uniform((int)RE_PostPr::White_f, 0.97f);
-  sh->set_uniform((int)RE_PostPr::BlendParticle_b, false);
   sh->set_uniform((int)RE_PostPr::Blur_b, false);
   sh->set_uniform((int)RE_PostPr::SampleShadow_b, false);
   sh->set_uniform((int)RE_PostPr::output2D_b, false);
 
   // bind texture
   ddGPUFrontEnd::bind_pass_texture(ddBufferType::LIGHT);
+  ddGPUFrontEnd::bind_pass_texture(ddBufferType::PARTICLE);
   sh->set_uniform((int)RE_PostPr::ColorTex_smp2d, 0);
-  sh->set_uniform((int)RE_PostPr::SampleMap_b, true);
+  sh->set_uniform((int)RE_PostPr::ParticleTex_smp2d, 1);
+  sh->set_uniform((int)RE_PostPr::SampleMap_b, false);
+  sh->set_uniform((int)RE_PostPr::BlendParticle_b, true);
 
   ddGPUFrontEnd::render_quad();
   ddGPUFrontEnd::toggle_alpha_blend(false);

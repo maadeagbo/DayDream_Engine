@@ -139,22 +139,22 @@ ddCam* get_active_cam();
 /**
  * \brief Calculate camera view matrix
  */
-glm::mat4 calc_view_matrix(const ddCam *cam);
+glm::mat4 calc_view_matrix(const ddCam* cam);
 
 /**
  * \brief Calculate perspective projection matrix
  */
-glm::mat4 calc_p_proj_matrix(const ddCam *cam);
+glm::mat4 calc_p_proj_matrix(const ddCam* cam);
 
 /**
  * \brief Calculate camera frustum
  */
-FrustumBox get_current_frustum(const ddCam *cam);
+FrustumBox get_current_frustum(const ddCam* cam);
 
 /**
  * \brief Calculate light volume radius
  */
-float calc_lightvolume_radius(const ddLBulb *blb);
+float calc_lightvolume_radius(const ddLBulb* blb);
 
 /**
  * \brief Cull objects outside of camera frustum
