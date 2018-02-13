@@ -19,13 +19,7 @@
 #include <string>
 #include <thread>
 #include <typeinfo>
-
-// simple template container library
-#include "Container.h"
-// simple string library
-#include "StringLib.h"
-// lua bindings
-#include "LuaHooks.h"
+#include <initializer_list>
 
 #ifdef WIN32
 #define GLM_FORCE_CXX98
@@ -35,23 +29,11 @@
 #pragma warning(disable : 4201)  // removes non-standard extensions warnings
 #endif
 
-#ifdef _MSC_VER
-#pragma warning(push, 0)  // disable warnings (low level)
-#endif
-
 // GLM includes
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
-
-// Bullet Physics include
-#include <btBulletCollisionCommon.h>
-#include <btBulletDynamicsCommon.h>
-
-#ifdef _MSC_VER
-#pragma warning(pop)  // enable (high level) warning back
-#endif
 
 // Enum bitwise flags
 /*
@@ -102,10 +84,6 @@ operator&(Enum lhs, Enum rhs) {
   return static_cast<Enum>(static_cast<underlying>(lhs) &
                            static_cast<underlying>(rhs));
 }
-
-// System handles
-const size_t sys_engine_hash = getCharHash("ddEngine");
-const size_t sys_terminal_hash = getCharHash("ddTerminal");
 
 /** \brief Useful world characteristics */
 static const glm::vec3 world_front = glm::vec3(0.f, 0.f, -1.f);

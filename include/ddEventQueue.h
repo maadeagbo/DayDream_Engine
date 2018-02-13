@@ -15,8 +15,8 @@
 *
 -----------------------------------------------------------------------------*/
 
-#include <initializer_list>
 #include "ddIncludes.h"
+#include "LuaHooks.h"
 #include "ddInput.h"
 #include "ddTimer.h"
 
@@ -178,3 +178,7 @@ struct ddQueue {
  * \brief Function pointer for pushing events to queue
  */
 typedef std::function<bool(DD_LEvent &)> PushFunc;
+
+// System handles
+const size_t sys_engine_hash = getCharHash("ddEngine");
+const size_t sys_terminal_hash = getCharHash("ddTerminal");

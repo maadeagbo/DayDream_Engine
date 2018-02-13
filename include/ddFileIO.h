@@ -2,7 +2,8 @@
 
 #include <experimental/filesystem>
 #include <fstream>
-#include "ddIncludes.h"
+#include "Container.h"
+#include "StringLib.h"
 
 enum ddIOflag { READ = 0x1, WRITE = 0x2, APPEND = 0x4, DIRECTORY = 0x8 };
 

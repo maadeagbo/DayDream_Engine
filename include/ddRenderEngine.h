@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ddIncludes.h"
+#include "LuaHooks.h"
 
 #ifndef MAX_SHADERS
 #define MAX_SHADERS 50

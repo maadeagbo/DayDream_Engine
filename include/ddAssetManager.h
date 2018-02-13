@@ -2,6 +2,8 @@
 
 #include "GPUFrontEnd.h"
 #include "ddIncludes.h"
+#include "LuaHooks.h"
+#include "ddPhysicsEngine.h"
 #include "ddAssets.h"
 
 /** \brief Interace for manipulating and creating assets for in-engine use */

@@ -2,6 +2,18 @@
 
 #include "ddIncludes.h"
 
+#ifdef _MSC_VER
+#pragma warning(push, 0)  // disable warnings (low level)
+#endif
+
+// Bullet Physics include
+#include <btBulletCollisionCommon.h>
+#include <btBulletDynamicsCommon.h>
+
+#ifdef _MSC_VER
+#pragma warning(pop)  // enable (high level) warning back
+#endif
+
 class ddPhysics {
  public:
   ddPhysics();

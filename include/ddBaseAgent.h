@@ -1,6 +1,8 @@
 #pragma once
 
 #include "ddModel.h"
+#include "LuaHooks.h"
+#include "ddPhysicsEngine.h"
 
 /** \brief Container for transform information */
 struct ddBody {
