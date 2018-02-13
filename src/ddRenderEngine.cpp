@@ -1,6 +1,7 @@
 #include "ddRenderEngine.h"
 #include "GPUFrontEnd.h"
 #include "ddAssetManager.h"
+#include "ddSceneManager.h"
 #include "ddFileIO.h"
 #include "ddParticleSystem.h"
 #include "ddShader.h"

@@ -24,34 +24,7 @@ enum class RBType : unsigned { BOX, SPHERE, FREE_FORM, KIN, GHOST };
 
 // default parameters for object initialization
 unsigned native_scr_width = 0, native_scr_height = 0;
-
-// ddAgents
-ASSET_CREATE(ddAgent, b_agents, ASSETS_CONTAINER_MAX_SIZE)
-dd_array<size_t> culled_agents(ASSETS_CONTAINER_MAX_SIZE);
-// ddCam
-ASSET_CREATE(ddCam, cams, ASSETS_CONTAINER_MIN_SIZE)
-// ddLBulb
-ASSET_CREATE(ddLBulb, lights, ASSETS_CONTAINER_MIN_SIZE)
-// ddModelData
-ASSET_CREATE(ddModelData, meshes, ASSETS_CONTAINER_MAX_SIZE)
-// ddSkeleton
-ASSET_CREATE(ddSkeleton, skeletons, ASSETS_CONTAINER_MIN_SIZE)
-// ddSkeletonPose
-ASSET_CREATE(ddSkeletonPose, poses, ASSETS_CONTAINER_MAX_SIZE)
-// ddTex2D
-ASSET_CREATE(ddTex2D, textures, ASSETS_CONTAINER_MAX_SIZE)
-// ddMat
-ASSET_CREATE(ddMat, mats, ASSETS_CONTAINER_MAX_SIZE)
 }  // namespace
-
-ASSET_DEF(ddAgent, b_agents)
-ASSET_DEF(ddCam, cams)
-ASSET_DEF(ddLBulb, lights)
-ASSET_DEF(ddModelData, meshes)
-ASSET_DEF(ddSkeleton, skeletons)
-ASSET_DEF(ddSkeletonPose, poses)
-ASSET_DEF(ddTex2D, textures)
-ASSET_DEF(ddMat, mats)
 
 /// \brief Object to store vertex data from DDM
 struct FbxVData {
@@ -187,15 +160,8 @@ namespace ddAssets {
 
 void initialize(btDiscreteDynamicsWorld *physics_world) {
   p_world = physics_world;
-  // set free lists
-  fl_b_agents.initialize((unsigned)b_agents.size());
-  fl_cams.initialize((unsigned)cams.size());
-  fl_lights.initialize((unsigned)lights.size());
-  fl_meshes.initialize((unsigned)meshes.size());
-  fl_skeletons.initialize((unsigned)skeletons.size());
-  fl_poses.initialize((unsigned)poses.size());
-  fl_textures.initialize((unsigned)textures.size());
-  fl_mats.initialize((unsigned)mats.size());
+
+	init_assets();
 
   // default assets
   obj_mat default_mat;
@@ -204,35 +170,7 @@ void initialize(btDiscreteDynamicsWorld *physics_world) {
 }
 
 void cleanup() {
-  // clean up bullet physics bodies
-  for (auto &idx : map_b_agents) {
-    if (b_agents[idx.second].body.bt_bod) {
-      delete_rigid_body(&b_agents[idx.second]);
-    }
-  }
-  // cleanup agents
-  for (auto &idx : map_b_agents) {
-    // vao's
-    DD_FOREACH(ModelIDs, mdl_id, b_agents[idx.second].mesh) {
-      DD_FOREACH(ddVAOData *, vao, mdl_id.ptr->vao_handles) {
-        ddGPUFrontEnd::destroy_vao(*vao.ptr);
-      }
-      // resize container
-      mdl_id.ptr->vao_handles.resize(0);
-    }
-    // instance buffers
-    ddGPUFrontEnd::destroy_instance_data(b_agents[idx.second].inst.inst_buff);
-    b_agents[idx.second].inst.inst_buff = nullptr;
-  }
-  // cleanup meshes
-  for (auto &idx : map_meshes) {
-    // mesh buffers
-    DD_FOREACH(ddMeshBufferData *, mdl, meshes[idx.second].buffers) {
-      ddGPUFrontEnd::destroy_buffer_data(*mdl.ptr);
-    }
-    // resize to 0
-    meshes[idx.second].buffers.resize(0);
-  }
+	cleanup_all_assets();
 }
 
 void default_params(const unsigned scr_width, const unsigned scr_height) {
@@ -267,64 +205,68 @@ void log_lua_func(lua_State *L) {
   add_func_to_scripts(L, set_agent_damping, "ddAgent_set_damping");
   // manipulate camera
   add_func_to_scripts(L, rotate_camera, "ddCam_rotate");
-  add_func_to_scripts(L, get_cam_dir, "ddCam_get_direction");
 }
 
 void load_to_gpu() {
   // load textures (skip load_screen id)
   size_t load_screen_tex = getCharHash("load_screen");
-  for (auto &idx : map_textures) {
-    if (textures[idx.second].id == load_screen_tex) continue;
 
-    bool success = ddGPUFrontEnd::generate_texture2D_RGBA8_LR(
-        textures[idx.second].image_info);
-    POW2_VERIFY_MSG(success == true, "Texture not generated: %s",
-                    textures[idx.second].image_info.path[0].str());
-    // cleanup images on ram
-    textures[idx.second].image_info.image_data[0].resize(0);
-  }
+	dd_array<ddTex2D*> t_array = get_all_ddTex2D();
+	DD_FOREACH(ddTex2D*, t_id, t_array) {
+		ddTex2D *tex = *t_id.ptr;
+
+		if (tex->id == load_screen_tex) continue;
+
+		bool success = ddGPUFrontEnd::generate_texture2D_RGBA8_LR(tex->image_info);
+		POW2_VERIFY_MSG(success == true, "Texture not generated: %s",
+										tex->image_info.path[0].str());
+		// cleanup images on ram
+		tex->image_info.image_data[0].resize(0);
+	}
 
   // load meshes
-  for (auto &idx : map_meshes) {
-    ddModelData *mdl = &meshes[idx.second];
-    mdl->buffers.resize(mdl->mesh_info.size());
+	dd_array<ddModelData*> md_array = get_all_ddModelData();
+	DD_FOREACH(ddModelData*, mh_id, md_array) {
+		ddModelData *mdl = *mh_id.ptr;
+		mdl->buffers.resize(mdl->mesh_info.size());
 
-    DD_FOREACH(DDM_Data, md, mdl->mesh_info) {
-      // create mesh data on gpu
-      mdl->buffers[md.i] = nullptr;
-      bool success =
-          ddGPUFrontEnd::load_buffer_data(mdl->buffers[md.i], md.ptr);
-      POW2_VERIFY_MSG(success == true, "Mesh data not loaded to GPU", 0);
+		DD_FOREACH(DDM_Data, md, mdl->mesh_info) {
+			// create mesh data on gpu
+			mdl->buffers[md.i] = nullptr;
+			bool success =
+				ddGPUFrontEnd::load_buffer_data(mdl->buffers[md.i], md.ptr);
+			POW2_VERIFY_MSG(success == true, "Mesh data not loaded to GPU", 0);
 
-      // cleanup on ram?
-      md.ptr->data.resize(0);
-    }
-  }
+			// cleanup on ram?
+			md.ptr->data.resize(0);
+		}
+	}
 
   // load agents
-  for (auto &idx : map_b_agents) {
-    ddAgent *ag = &b_agents[idx.second];
+	dd_array<ddAgent*> ag_array = get_all_ddAgent();
+	DD_FOREACH(ddAgent*, ag_id, ag_array) {
+		ddAgent *ag = *ag_id.ptr;
 
-    // create instance buffer
-    bool success = ddGPUFrontEnd::load_instance_data(ag->inst.inst_buff,
-                                                     ag->inst.m4x4.size());
-    POW2_VERIFY_MSG(success == true, "Instance data not loaded to GPU", 0);
+		// create instance buffer
+		bool success = ddGPUFrontEnd::load_instance_data(ag->inst.inst_buff,
+																										 ag->inst.m4x4.size());
+		POW2_VERIFY_MSG(success == true, "Instance data not loaded to GPU", 0);
 
-    // create & bind vao
-    DD_FOREACH(ModelIDs, mdl_id, ag->mesh) {
-      ddModelData *mdl = find_ddModelData(mdl_id.ptr->model);
-      POW2_VERIFY_MSG(success == true, "Mesh data not found", 0);
+		// create & bind vao
+		DD_FOREACH(ModelIDs, mdl_id, ag->mesh) {
+			ddModelData *mdl = find_ddModelData(mdl_id.ptr->model);
+			POW2_VERIFY_MSG(success == true, "Mesh data not found", 0);
 
-      mdl_id.ptr->vao_handles.resize(mdl->buffers.size());
-      DD_FOREACH(ddVAOData *, vao, mdl_id.ptr->vao_handles) {
-        success = ddGPUFrontEnd::create_vao(*vao.ptr);
-        POW2_VERIFY_MSG(success == true, "VAO data not generated", 0);
-        success = ddGPUFrontEnd::bind_object(*vao.ptr, ag->inst.inst_buff,
-                                             mdl->buffers[vao.i]);
-        POW2_VERIFY_MSG(success == true, "Object not bound to VAO", 0);
-      }
-    }
-  }
+			mdl_id.ptr->vao_handles.resize(mdl->buffers.size());
+			DD_FOREACH(ddVAOData *, vao, mdl_id.ptr->vao_handles) {
+				success = ddGPUFrontEnd::create_vao(*vao.ptr);
+				POW2_VERIFY_MSG(success == true, "VAO data not generated", 0);
+				success = ddGPUFrontEnd::bind_object(*vao.ptr, ag->inst.inst_buff,
+																						 mdl->buffers[vao.i]);
+				POW2_VERIFY_MSG(success == true, "Object not bound to VAO", 0);
+			}
+		}
+	}
 }
 
 void remove_rigid_body(ddAgent *ag) { delete_rigid_body(ag); }
@@ -333,305 +275,6 @@ void remove_rigid_body(ddAgent *ag) { delete_rigid_body(ag); }
 };  // namespace ddAssets
 
 //*****************************************************************************
-
-namespace ddSceneManager {
-
-glm::uvec2 get_screen_dimensions() {
-  return glm::uvec2(native_scr_width, native_scr_height);
-}
-
-ddCam *get_active_cam() {
-  for (auto &idx : map_cams) {
-    if (cams[idx.second].active) return &cams[idx.second];
-  }
-  return nullptr;
-}
-
-glm::mat4 calc_view_matrix(const ddCam *cam) {
-  if (!cam) {
-    ddTerminal::f_post("[error] calc_view_matrix::Camera is null");
-    return glm::mat4();
-  }
-  // get parent object
-  ddAgent *parent_ag = find_ddAgent(cam->parent);
-  if (!parent_ag) {
-    ddTerminal::f_post("[error] calc_view_matrix::Parent agent not found <%u>",
-                       cam->parent);
-    return glm::mat4();
-  }
-  ddBody *bod = &parent_ag->body;
-
-  // camera world position
-  const glm::vec3 pos = ddBodyFuncs::pos_ws(bod);
-
-  // camera front direction
-  const glm::vec3 front = ddSceneManager::cam_forward_dir(cam, bod);
-
-  // camera up direction
-  glm::vec3 right = glm::normalize(glm::cross(front, global_Yv3));
-  glm::vec3 up = glm::normalize(glm::cross(right, front));
-
-  return glm::lookAt(pos, pos + front, up);
-}
-
-glm::mat4 calc_p_proj_matrix(const ddCam *cam) {
-  if (!cam) {
-    ddTerminal::f_post("[error] calc_p_proj_matrix::Camera is null");
-    return glm::mat4();
-  }
-  return glm::perspectiveFov(cam->fovh, (float)cam->width, (float)cam->height,
-                             cam->n_plane, cam->f_plane);
-}
-
-FrustumBox get_current_frustum(const ddCam *cam) {
-  FrustumBox frustum;
-  if (!cam) {
-    ddTerminal::f_post("[error] get_current_frustum::Camera is null");
-    return frustum;
-  }
-  // get parent object
-  ddAgent *parent_ag = find_ddAgent(cam->parent);
-  if (!parent_ag) {
-    ddTerminal::f_post(
-        "[error] get_current_frustum::Parent agent not found <%u>",
-        cam->parent);
-    return frustum;
-  }
-  ddBody *bod = &parent_ag->body;
-
-  // recalculate front, right, and up for frustum calculation
-  const glm::vec3 cam_pos = ddBodyFuncs::pos_ws(bod);
-  const glm::vec3 front = ddSceneManager::cam_forward_dir(cam, bod);
-  const glm::vec3 right = glm::normalize(glm::cross(front, global_Yv3));
-  const glm::vec3 up = glm::normalize(glm::cross(right, front));
-
-  // calculate new frustum
-  glm::vec3 n_center = glm::vec3(glm::vec3(cam_pos) + front * cam->n_plane);
-  glm::vec3 f_center = glm::vec3(glm::vec3(cam_pos) + front * cam->f_plane);
-  float tang = tan(cam->fovh / 2);
-  float ratio = ((float)cam->height / (float)cam->width);
-  float w_near = tang * cam->n_plane * 2.0f;
-  float h_near = w_near * ratio;
-  float w_far = tang * cam->f_plane * 2.0f;
-  float h_far = w_far * ratio;
-
-  // corners
-  frustum.corners[0] = n_center + (up * h_near) + (right * w_near);
-  frustum.corners[1] = n_center - (up * h_near) + (right * w_near);
-  frustum.corners[2] = n_center + (up * h_near) - (right * w_near);
-  frustum.corners[3] = n_center - (up * h_near) - (right * w_near);
-  frustum.corners[4] = f_center + (up * h_far) + (right * w_far);
-  frustum.corners[5] = f_center - (up * h_far) + (right * w_far);
-  frustum.corners[6] = f_center + (up * h_far) - (right * w_far);
-  frustum.corners[7] = f_center - (up * h_far) - (right * w_far);
-
-  // frustum top
-  glm::vec3 top_pos = n_center + (up * h_near);
-  glm::vec3 temp_vec = glm::normalize(top_pos - glm::vec3(cam_pos));
-  glm::vec3 up_norm = glm::cross(temp_vec, right);
-
-  // frustum bottom
-  glm::vec3 bot_pos = n_center - (up * h_near);
-  temp_vec = glm::normalize(bot_pos - glm::vec3(cam_pos));
-  glm::vec3 down_norm = glm::cross(right, temp_vec);
-
-  // frustum left
-  glm::vec3 left_pos = n_center - (right * w_near);
-  temp_vec = glm::normalize(left_pos - glm::vec3(cam_pos));
-  glm::vec3 left_norm = glm::cross(temp_vec, up);
-
-  // frustum right normal ---> (nc + left * w_near / 2) - p
-  glm::vec3 right_pos = n_center + (right * w_near);
-  temp_vec = glm::normalize(right_pos - glm::vec3(cam_pos));
-  glm::vec3 right_norm = glm::cross(up, temp_vec);
-
-  // points
-  frustum.points[0] = n_center;
-  frustum.points[1] = f_center;
-  frustum.points[2] = right_pos;
-  frustum.points[3] = left_pos;
-  frustum.points[4] = top_pos;
-  frustum.points[5] = bot_pos;
-
-  // normals
-  frustum.normals[0] = front;
-  frustum.normals[1] = -front;
-  frustum.normals[2] = right_norm;
-  frustum.normals[3] = left_norm;
-  frustum.normals[4] = up_norm;
-  frustum.normals[5] = down_norm;
-
-  // D
-  frustum.d[0] = -glm::dot(frustum.normals[0], frustum.points[0]);
-  frustum.d[1] = -glm::dot(frustum.normals[1], frustum.points[1]);
-  frustum.d[2] = -glm::dot(frustum.normals[2], frustum.points[2]);
-  frustum.d[3] = -glm::dot(frustum.normals[3], frustum.points[3]);
-  frustum.d[4] = -glm::dot(frustum.normals[4], frustum.points[4]);
-  frustum.d[5] = -glm::dot(frustum.normals[5], frustum.points[5]);
-
-  return frustum;
-}
-
-float calc_lightvolume_radius(const ddLBulb *blb) {
-  if (!blb) {
-    ddTerminal::f_post("[error] calc_lightvolume_radius::Light is null");
-    return 0.f;
-  }
-
-  float LVR = 0.0f;
-  float constant = 1.0;
-  float lightMax =
-      std::fmaxf(std::fmaxf(blb->color.r, blb->color.g), blb->color.b);
-  LVR =
-      (-blb->linear + std::sqrt(blb->linear * blb->linear -
-                                4.f * blb->quadratic *
-                                    (constant - lightMax * (256.0f / 5.0f)))) /
-      (2.f * blb->quadratic);
-  return LVR;
-}
-
-void cull_objects(const FrustumBox fr, const glm::mat4 view_m,
-                  dd_array<ddAgent *> &_agents) {
-  POW2_VERIFY(_agents.size() == ASSETS_CONTAINER_MAX_SIZE);
-
-  /** \brief Get max corner of AAABB based on frustum face normal */
-  auto max_aabb_corner = [](ddBodyFuncs::AABB bbox, const glm::vec3 normal) {
-    glm::vec3 new_max = bbox.min;
-    if (normal.x >= 0) {
-      new_max.x = bbox.max.x;
-    }
-    if (normal.y >= 0) {
-      new_max.y = bbox.max.y;
-    }
-    if (normal.z >= 0) {
-      new_max.z = bbox.max.z;
-    }
-    return new_max;
-  };
-  /** \brief Get min corner of AAABB based on frustum face normal
-  auto min_aabb_corner = [](ddBodyFuncs::AABB bbox, const glm::vec3 normal) {
-    glm::vec3 new_min = bbox.max;
-    if (normal.x >= 0) {
-      new_min.x = bbox.min.x;
-    }
-    if (normal.y >= 0) {
-      new_min.y = bbox.min.y;
-    }
-    if (normal.z >= 0) {
-      new_min.z = bbox.min.z;
-    }
-    return new_min;
-  };
-  */
-  /** \brief Frustum cull function */
-  auto cpu_frustum_cull = [&](ddBodyFuncs::AABB bbox) {
-    for (unsigned i = 0; i < 6; i++) {
-      glm::vec3 fr_norm = fr.normals[i];
-      float fr_dist = fr.d[i];
-      // check if positive vertex is outside (positive vert depends on normal
-      // of the plane)
-      glm::vec3 max_vert = max_aabb_corner(bbox, fr_norm);
-      // if _dist is negative, point is located behind frustum plane (reject)
-      float _dist = glm::dot(fr_norm, max_vert) + fr_dist;
-      if (_dist < 0.0001f) {
-        return false;  // must not fail any plane test
-      }
-    }
-    return true;
-  };
-
-  // null the array
-  DD_FOREACH(ddAgent *, ag, _agents) { *ag.ptr = nullptr; }
-
-  // can be performed w/ compute shader
-  // delegating to cpu for now
-  unsigned ag_tracker = 0;
-  for (auto &idx : map_b_agents) {
-    ddAgent *ag = &b_agents[idx.second];
-
-    // check if agent has mesh
-    if (ag->mesh.size() > 0 && ag->body.bt_bod) {
-      // get AABB from physics
-      ddBodyFuncs::AABB bbox = ddBodyFuncs::get_aabb(&ag->body);
-      if (cpu_frustum_cull(bbox)) {
-        // add agent to current list
-        _agents[ag_tracker] = ag;
-        ag_tracker++;
-      }
-    } else {
-      // agents w/out models get automatic pass
-      _agents[ag_tracker] = ag;
-      ag_tracker++;
-    }
-  }
-}
-
-void get_active_lights(dd_array<ddLBulb *> &_lights) {
-  POW2_VERIFY(_lights.size() == ASSETS_CONTAINER_MIN_SIZE);
-
-  // null the array
-  DD_FOREACH(ddLBulb *, blb, _lights) { *blb.ptr = nullptr; }
-
-  unsigned blb_tracker = 0;
-  for (auto &idx : map_lights) {
-    ddLBulb *blb = &lights[idx.second];
-
-    if (blb->active) {
-      _lights[blb_tracker] = blb;
-      blb_tracker++;
-    }
-  }
-}
-
-ddLBulb *get_shadow_light() {
-  for (auto &idx : map_lights) {
-    ddLBulb *blb = &lights[idx.second];
-    if (blb->active && blb->shadow) {
-      return blb;
-    }
-  }
-  return nullptr;
-}
-
-glm::vec3 cam_forward_dir(const ddCam *cam, const ddBody *cam_parent_body) {
-  glm::quat cam_internal_rot =
-      glm::quat(glm::vec3(glm::radians(cam->pitch), glm::radians(cam->yaw),
-                          glm::radians(cam->roll)));
-  btTransform tr = cam_parent_body->bt_bod->getWorldTransform();
-  glm::mat4 body_rot;
-  tr.getBasis().getOpenGLSubMatrix(&body_rot[0][0]);
-  body_rot *= glm::mat4_cast(cam_internal_rot);
-  glm::vec4 _f = body_rot * glm::vec4(world_front, 1.f);
-
-  return glm::normalize(glm::vec3(_f));
-}
-
-void update_scene_graph() {
-  // loop through agents & update constraints
-  for (auto &idx : map_b_agents) {
-    if (b_agents[idx.second].body.bt_constraint) {
-      // get parent & update constraints
-      ddAgent *ag = find_ddAgent(b_agents[idx.second].body.parent);
-
-      // create tranformation for kinematic object
-      btTransform og_tr = ag->body.bt_bod->getWorldTransform();
-      btVector3 offset(b_agents[idx.second].body.offset.x,
-                       b_agents[idx.second].body.offset.y,
-                       b_agents[idx.second].body.offset.z);
-
-      btTransform tr;
-      tr.setIdentity();
-      tr.setOrigin(offset);  // apply offset vector
-      tr = og_tr * tr;
-
-      b_agents[idx.second].body.bt_bod->activate(true);
-      b_agents[idx.second].body.bt_bod->setWorldTransform(tr);
-    }
-  }
-}
-
-}  // namespace ddSceneManager
-
 //*****************************************************************************
 
 int dd_assets_create_agent(lua_State *L) {
@@ -1034,28 +677,6 @@ int get_agent_vel(lua_State *L) {
     }
   }
   ddTerminal::post("[error]Failed to get agent velocity");
-  lua_pushnil(L);  // push nil to stack
-  return 1;
-}
-
-int get_cam_dir(lua_State *L) {
-  parse_lua_events(L, fb);
-
-  int64_t *id = fb.get_func_val<int64_t>("id");
-
-  if (id) {
-    ddCam *cam = find_ddCam((size_t)(*id));
-    if (cam) {
-      ddAgent *ag = find_ddAgent(cam->parent);
-      if (ag) {
-        // push vec3 to stack
-        glm::vec3 dir = ddSceneManager::cam_forward_dir(cam, &ag->body);
-        push_vec3_to_lua(L, dir.x, dir.y, dir.z);
-        return 1;
-      }
-    }
-  }
-  ddTerminal::post("[error]Failed to get camera direction");
   lua_pushnil(L);  // push nil to stack
   return 1;
 }

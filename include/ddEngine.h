@@ -5,6 +5,7 @@
 
 #include "LuaHooks.h"
 #include "ddAssetManager.h"
+#include "ddSceneManager.h"
 #include "ddEventQueue.h"
 #include "ddIncludes.h"
 #include "ddInput.h"

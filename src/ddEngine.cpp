@@ -307,6 +307,9 @@ void ddEngine::load() {
   // Initialize resource manager
   ddAssets::initialize(main_physics.world);
 
+	// initialize scene manager
+	ddSceneManager::initialize(window_w, window_h);
+
   // set up math/physics library
   // DD_MathLib::setResourceBin(&main_res);
 
@@ -397,6 +400,8 @@ void ddEngine::register_lfuncs() {
   add_func_to_scripts(main_lstate, script_print, "dd_print");
   // add asset function
   ddAssets::log_lua_func(main_lstate);
+	// add scene functions
+	ddSceneManager::log_lua_funcs(main_lstate);
   // register globals from ddRenderer
   ddRenderer::init_lua_globals(main_lstate);
   // time getters
