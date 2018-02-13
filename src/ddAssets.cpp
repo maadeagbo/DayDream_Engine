@@ -45,12 +45,6 @@ void init_assets() {
 }
 
 void cleanup_all_assets() {
-  // clean up bullet physics bodies
-  for (auto &idx : map_b_agents) {
-    if (b_agents[idx.second].body.bt_bod) {
-      //delete_rigid_body(&b_agents[idx.second]);
-    }
-  }
   // cleanup agents
   for (auto &idx : map_b_agents) {
     // vao's
