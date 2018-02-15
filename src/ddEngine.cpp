@@ -37,22 +37,11 @@ static void error_callback_glfw(int error, const char *description) {
   fprintf(stderr, "Error: %s\n", description);
 }
 
-int frame_time_lua(lua_State *L) {
-  // send frame time to script
-  lua_pushnumber(L, ddTime::get_avg_frame_time());
-  return 1;
-}
-
-int engine_time_lua(lua_State *L) {
-  // send frame time to script
-  lua_pushnumber(L, ddTime::get_time_float());
-  return 1;
-}
-
 void ddEngine::startup_lua() {
   main_lstate = init_lua_state();
   main_q.setup_lua(main_lstate);
 
+	register_dd_libraries(main_lstate);
   register_lfuncs();
 }
 
@@ -396,17 +385,12 @@ void ddEngine::load() {
 }
 
 void ddEngine::register_lfuncs() {
-  // add ddTerminal print func
-  add_func_to_scripts(main_lstate, script_print, "dd_print");
   // add asset function
   ddAssets::log_lua_func(main_lstate);
 	// add scene functions
 	ddSceneManager::log_lua_funcs(main_lstate);
   // register globals from ddRenderer
   ddRenderer::init_lua_globals(main_lstate);
-  // time getters
-  add_func_to_scripts(main_lstate, frame_time_lua, "dd_ftime");
-  add_func_to_scripts(main_lstate, engine_time_lua, "dd_gtime");
 }
 
 void ddEngine::update_GLFW() {

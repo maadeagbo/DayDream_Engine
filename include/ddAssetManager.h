@@ -1,10 +1,20 @@
 #pragma once
 
 #include "GPUFrontEnd.h"
-#include "ddIncludes.h"
 #include "LuaHooks.h"
-#include "ddPhysicsEngine.h"
 #include "ddAssets.h"
+#include "ddIncludes.h"
+#include "ddPhysicsEngine.h"
+
+/** \brief Masks for physics object interactions */
+enum collisiontypes {
+  COL_NOTHING = 0,         //< Collide with nothing
+  COL_AGENTS = DD_BIT(0),  //< Collide with ddAgent
+  COL_WEAPONS = DD_BIT(1)  //< Collide with walls
+};
+
+/** \brief Rigid body types */
+enum class RBType : unsigned { BOX, SPHERE, FREE_FORM, KIN, GHOST };
 
 /** \brief Interace for manipulating and creating assets for in-engine use */
 namespace ddAssets {
@@ -34,4 +44,10 @@ void load_to_gpu();
  * \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine
  */
 void remove_rigid_body(ddAgent* ag);
+
+/**
+ * \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddLuaLib
+ */
+bool add_body(ddAgent* agent, ddModelData* mdata, glm::vec3 pos,
+                    glm::vec3 rot, const float mass, RBType rb_type);
 };  // namespace ddAssets

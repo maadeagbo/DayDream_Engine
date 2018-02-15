@@ -46,5 +46,3 @@ void f_post(const char* format_str, const Args&... args) {
   post(buff);
 }
 }
-
-int script_print(lua_State* L);

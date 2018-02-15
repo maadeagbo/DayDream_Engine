@@ -19,53 +19,6 @@ InputData global_input;
 /// \param i_flag
 void edit_key(int key, const bool b_flag, const float i_flag);
 
-/*
-inputBuff* DD_Input_::GetInput() {
-  inputBuff* MyInput = new inputBuff();
-  for (size_t i = 0; i < 512; i++) {
-    MyInput->rawInput[i] = Keys[i];
-  }
-  MyInput->mouseLMR[0] = MouseClicks_L_M_R[0];
-  MyInput->mouseLMR[1] = MouseClicks_L_M_R[1];
-  MyInput->mouseLMR[2] = MouseClicks_L_M_R[2];
-  MyInput->mouseScroll = MouseY_Scroll;
-
-  int delta_x = 0, delta_y = 0;
-  delta_x = lastX - newX;
-  delta_y = lastY - newY;
-  glm::vec2 xy_out =
-      filterMouseInput(glm::vec2((float)delta_x, (float)delta_y));
-
-  MyInput->mouseXDelta = (int)xy_out.x;
-  MyInput->mouseYDelta = (int)xy_out.y;
-  MyInput->mouseX = newX;
-  MyInput->mouseY = newY;
-
-  lastX = newX;
-  lastY = newY;
-  MouseY_Scroll = 0;
-
-  return MyInput;
-}
-
-glm::vec2 DD_Input_::filterMouseInput(glm::vec2 frame_in) {
-  for (size_t i = 9; i > 0; i--) {
-    mouse_hist[i] = mouse_hist[i - 1];
-  }
-  mouse_hist[0] = frame_in;
-  float avg_x = 0.f, avg_y = 0.f, avg_total = 0.f, current_weight = 1.f;
-
-  for (size_t i = 0; i < 10; i++) {
-    glm::vec2 tmp = mouse_hist[i];
-    avg_x += tmp.x * current_weight;
-    avg_y += tmp.y * current_weight;
-    avg_total += 1.f * current_weight;
-    current_weight *= MOUSE_FILTER_WEIGHT;
-  }
-  return glm::vec2(avg_x / avg_total, avg_y / avg_total);
-}
-//*/
-
 namespace ddInput {
 void new_frame() {
   // reset key order tracker
@@ -73,77 +26,6 @@ void new_frame() {
   // reset scroll wheel tracker
   global_input.keys[(unsigned)DD_Keys::MOUSE_SCROLL].order = 0;
 }
-
-/*
-void update_keyup(SDL_Keysym& key) {
-  edit_key(key, true, global_input.order_tracker);
-  global_input.order_tracker++;
-}
-
-void update_keydown(SDL_Keysym& key) {
-  edit_key(key, false, global_input.order_tracker);
-  global_input.order_tracker++;
-}
-
-void update_mouse_button(SDL_MouseButtonEvent& key, const bool b_flag) {
-  if (b_flag) {
-    switch (key.button) {
-      case SDL_BUTTON_LEFT:
-        global_input.keys[(unsigned)DD_Keys::MOUSE_LEFT].active = true;
-        break;
-      case SDL_BUTTON_MIDDLE:
-        global_input.keys[(unsigned)DD_Keys::MOUSE_MIDDLE].active = true;
-        break;
-      case SDL_BUTTON_RIGHT:
-        global_input.keys[(unsigned)DD_Keys::MOUSE_RIGHT].active = true;
-        break;
-      default:
-        break;
-    }
-  } else {
-    switch (key.button) {
-      case SDL_BUTTON_LEFT:
-        global_input.keys[(unsigned)DD_Keys::MOUSE_LEFT].active = false;
-        break;
-      case SDL_BUTTON_MIDDLE:
-        global_input.keys[(unsigned)DD_Keys::MOUSE_MIDDLE].active = false;
-        break;
-      case SDL_BUTTON_RIGHT:
-        global_input.keys[(unsigned)DD_Keys::MOUSE_RIGHT].active = false;
-        break;
-      default:
-        break;
-    }
-  }
-}
-
-void update_mouse_pos(SDL_MouseMotionEvent& key) {
-  if (flag_first_mouse) {
-    // set up for 1st movement
-    mouse_lastx = (int)key.x;
-    mouse_lasty = (int)key.y;
-    flag_first_mouse = false;
-  }
-  // log current mouse movement
-  mouse_x = (int)key.x;
-  mouse_y = (int)key.y;
-  // get delta
-  global_input.keys[(unsigned)DD_Keys::MOUSE_YDELTA].order =
-      mouse_lasty - mouse_y;
-  global_input.keys[(unsigned)DD_Keys::MOUSE_XDELTA].order =
-      mouse_lastx - mouse_x;
-  global_input.keys[(unsigned)DD_Keys::MOUSE_Y].order = mouse_y;
-  global_input.keys[(unsigned)DD_Keys::MOUSE_X].order = mouse_x;
-  // set old mouse position
-  mouse_lastx = mouse_x;
-  mouse_lasty = mouse_y;
-}
-
-void update_mouse_wheel(SDL_MouseWheelEvent& key) {
-  global_input.keys[(unsigned)DD_Keys::MOUSE_SCROLL].order = key.y;
-}
-
-//*/
 
 const InputData& get_input() { return global_input; }
 
@@ -271,7 +153,7 @@ void send_upstream_to_lua(lua_State* L) {
   kf = global_input.keys[(unsigned)DD_Keys::TILDE];
   set_table_field("grave", &kf.active, nullptr);
 
-  lua_setglobal(L, "__dd_input");
+  lua_setglobal(L, "ddInput");
 
   // set old mouse position
   mouse_lastx = mouse_x;

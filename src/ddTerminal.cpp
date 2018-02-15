@@ -293,24 +293,6 @@ void ddTerminal::outTerminalHistory() {
   }
 }
 
-int script_print(lua_State* L) {
-  int top = lua_gettop(L); /* number of events */
-  for (int i = 1; i <= top; i++) {
-    int t = lua_type(L, i);
-    switch (t) {
-      case LUA_TSTRING:
-        ddTerminal::f_post("%s", lua_tostring(L, -1));
-        lua_pop(L, 1);  // Pop value of stack
-        break;
-      default:
-        lua_pop(L, 1);  // Pop value of stack
-        break;
-    }
-  }
-
-  return 0;
-}
-
 ImColor colorCodeOutput(const char* entry) {
   ImColor col = ImColor(1.0f, 1.0f, 1.0f, 1.0f);
   if (strstr(entry, "[error]")) {

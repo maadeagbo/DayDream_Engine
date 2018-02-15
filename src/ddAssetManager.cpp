@@ -1,7 +1,7 @@
 #include "ddAssetManager.h"
 #include "ddFileIO.h"
-#include "ddTerminal.h"
 #include "ddImport_Model.h"
+#include "ddTerminal.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -9,23 +9,24 @@
 #include "stb_image_write.h"
 
 namespace {
-enum collisiontypes {
-  COL_NOTHING = 0,         //< Collide with nothing
-  COL_AGENTS = DD_BIT(0),  //< Collide with ddAgent
-  COL_WEAPONS = DD_BIT(1)  //< Collide with walls
-};
 
 // function callback buffer
 DD_FuncBuff fb;
 // containers only exist in this translation unit
 btDiscreteDynamicsWorld *p_world = nullptr;
-// rigid body types
-enum class RBType : unsigned { BOX, SPHERE, FREE_FORM, KIN, GHOST };
 
 // default parameters for object initialization
 unsigned native_scr_width = 0, native_scr_height = 0;
 }  // namespace
 
+
+/// \brief Add agent to physics world
+/// \param agent to add rigid body
+/// \param mesh data containing bounding box information
+/// \return True if rigid body is successfully added
+bool add_rigid_body(ddAgent *agent, ddModelData *mdata, glm::vec3 pos,
+                    glm::vec3 rot, const float mass = 0.f,
+                    RBType rb_type = RBType::BOX);
 /**
  * \brief Create ddAgent from lua scripts
  * \param L lua state
@@ -67,14 +68,6 @@ int set_agent_damping(lua_State *L);
 
 // camera manipulation
 int rotate_camera(lua_State *L);
-
-/// \brief Add agent to physics world
-/// \param agent to add rigid body
-/// \param mesh data containing bounding box information
-/// \return True if rigid body is successfully added
-bool add_rigid_body(ddAgent *agent, ddModelData *mdata, glm::vec3 pos,
-                    glm::vec3 rot, const float mass = 0.f,
-                    RBType rb_type = RBType::BOX);
 /**
  * \brief Add ghost agent to physics world for parenting/scene graph
  */
@@ -99,8 +92,8 @@ namespace ddAssets {
 void initialize(btDiscreteDynamicsWorld *physics_world) {
   p_world = physics_world;
 
-	// initialize asset buffers
-	init_assets();
+  // initialize asset buffers
+  init_assets();
 
   // default assets
   obj_mat default_mat;
@@ -108,16 +101,116 @@ void initialize(btDiscreteDynamicsWorld *physics_world) {
   create_material(default_mat);
 }
 
-void cleanup() {
-	// clean up bullet physics bodies
-	dd_array<ddAgent*> ag_array = get_all_ddAgent();
-	DD_FOREACH(ddAgent*, ag_id, ag_array) {
-		ddAgent *ag = *ag_id.ptr;
-		delete_rigid_body(ag);
+bool add_body(ddAgent *agent, ddModelData *mdata, glm::vec3 pos,
+                    glm::vec3 rot, const float mass, RBType rb_type) {
+	if (!agent) return false;
+
+	// set up bounding box
+	glm::vec3 bb_max = glm::vec3(0.5f, 0.5f, 0.5f);
+	glm::vec3 bb_min = glm::vec3(-.5f, -0.5f, -0.5f);
+	if (mdata) {
+		bb_max = mdata->mesh_info[0].bb_max * agent->body.scale;
+		bb_min = mdata->mesh_info[0].bb_min * agent->body.scale;
+	}
+	float h_width = (bb_max.x - bb_min.x) * 0.5f;
+	float h_height = (bb_max.y - bb_min.y) * 0.5f;
+	float h_depth = (bb_max.z - bb_min.z) * 0.5f;
+
+	btCollisionShape *bt_shape = nullptr;
+	if (rb_type == RBType::SPHERE) {
+		float diameter = glm::length(glm::vec3(h_width, h_height, h_depth));
+		bt_shape = new btSphereShape(diameter * 0.5f);
+	}
+	else {
+		bt_shape = new btBoxShape(
+			btVector3(btScalar(h_width), btScalar(h_height), btScalar(h_depth)));
 	}
 
-	// close asset buffers
-	cleanup_all_assets();
+	// set up rigid body constructor
+	btTransform transform;
+	transform.setIdentity();
+	transform.setOrigin(btVector3(pos.x, pos.y, pos.z));
+	btQuaternion _q;
+	_q.setEuler(rot.y, rot.x, rot.z);
+	transform.setRotation(_q);
+
+	// rigidbody is dynamic if and only if mass is non zero, otherwise static
+	btScalar _mass = (rb_type != RBType::KIN) ? mass : 0.f;
+	bool isDynamic = (_mass != 0.f);
+	btVector3 localInertia(0, 0, 0);
+	if (isDynamic) {
+		bt_shape->calculateLocalInertia(_mass, localInertia);
+	}
+
+	// set up rigid body
+	// using motionstate is optional, it provides interpolation capabilities, and
+	// only synchronizes 'active' objects
+	btDefaultMotionState *bt_motion = new btDefaultMotionState(transform);
+	btRigidBody::btRigidBodyConstructionInfo rbInfo(_mass, bt_motion, bt_shape,
+																									localInertia);
+	agent->body.bt_bod = new btRigidBody(rbInfo);
+
+	// add to world
+	btCollisionObject::CollisionFlags cf = btCollisionObject::CollisionFlags(
+		agent->body.bt_bod->getCollisionFlags());
+	switch (rb_type) {
+	case RBType::BOX:
+		p_world->addRigidBody(agent->body.bt_bod, COL_AGENTS,
+													COL_AGENTS | COL_WEAPONS);
+		break;
+	case RBType::SPHERE:
+		p_world->addRigidBody(agent->body.bt_bod, COL_AGENTS,
+													COL_AGENTS | COL_WEAPONS);
+		break;
+	case RBType::FREE_FORM:
+		agent->body.bt_bod->setGravity(btVector3(0.f, 0.f, 0.f));
+		agent->body.bt_bod->setAngularFactor(btVector3(0, 0, 0));
+		p_world->addRigidBody(agent->body.bt_bod, COL_AGENTS,
+													COL_AGENTS | COL_WEAPONS);
+		agent->body.bt_bod->setActivationState(DISABLE_DEACTIVATION);
+		break;
+	case RBType::KIN:
+		agent->body.bt_bod->setCollisionFlags(
+			cf | btCollisionObject::CF_KINEMATIC_OBJECT);
+		p_world->addRigidBody(agent->body.bt_bod, COL_NOTHING, COL_NOTHING);
+		break;
+	case RBType::GHOST: {
+		agent->body.bt_bod->setGravity(btVector3(0.f, 0.f, 0.f));
+		agent->body.bt_bod->setLinearFactor(btVector3(0, 0, 0));
+		agent->body.bt_bod->setAngularFactor(btVector3(0, 0, 0));
+		/*agent->body.bt_bod->setCollisionFlags(
+		cf | btCollisionObject::CF_NO_CONTACT_RESPONSE);
+		agent->body.bt_bod->setActivationState(DISABLE_DEACTIVATION);*/
+		p_world->addRigidBody(agent->body.bt_bod, COL_NOTHING, COL_NOTHING);
+
+		// constraint
+		btTransform frameInA;
+		frameInA = btTransform::getIdentity();
+		btRigidBody &ghost =
+			create_ghost(agent->body.bt_bod->getWorldTransform());
+		// set parent id / set physics system constraint
+		agent->body.bt_constraint = new btGeneric6DofSpring2Constraint(
+			*agent->body.bt_bod, ghost, frameInA, frameInA);
+
+		p_world->addConstraint(agent->body.bt_constraint);
+		break;
+	}
+	default:
+		break;
+	}
+	return true;
+}
+
+void cleanup() {
+  // clean up bullet physics bodies
+  dd_array<ddAgent *> ag_array = get_all_ddAgent();
+  DD_FOREACH(ddAgent *, ag_id, ag_array) {
+    ddAgent *ag = *ag_id.ptr;
+    delete_rigid_body(ag);
+  }
+
+  // close asset buffers
+  cleanup_all_assets();
 }
 
 void default_params(const unsigned scr_width, const unsigned scr_height) {
@@ -158,62 +251,62 @@ void load_to_gpu() {
   // load textures (skip load_screen id)
   size_t load_screen_tex = getCharHash("load_screen");
 
-	dd_array<ddTex2D*> t_array = get_all_ddTex2D();
-	DD_FOREACH(ddTex2D*, t_id, t_array) {
-		ddTex2D *tex = *t_id.ptr;
+  dd_array<ddTex2D *> t_array = get_all_ddTex2D();
+  DD_FOREACH(ddTex2D *, t_id, t_array) {
+    ddTex2D *tex = *t_id.ptr;
 
-		if (tex->id == load_screen_tex) continue;
+    if (tex->id == load_screen_tex) continue;
 
-		bool success = ddGPUFrontEnd::generate_texture2D_RGBA8_LR(tex->image_info);
-		POW2_VERIFY_MSG(success == true, "Texture not generated: %s",
-										tex->image_info.path[0].str());
-		// cleanup images on ram
-		tex->image_info.image_data[0].resize(0);
-	}
+    bool success = ddGPUFrontEnd::generate_texture2D_RGBA8_LR(tex->image_info);
+    POW2_VERIFY_MSG(success == true, "Texture not generated: %s",
+                    tex->image_info.path[0].str());
+    // cleanup images on ram
+    tex->image_info.image_data[0].resize(0);
+  }
 
   // load meshes
-	dd_array<ddModelData*> md_array = get_all_ddModelData();
-	DD_FOREACH(ddModelData*, mh_id, md_array) {
-		ddModelData *mdl = *mh_id.ptr;
-		mdl->buffers.resize(mdl->mesh_info.size());
+  dd_array<ddModelData *> md_array = get_all_ddModelData();
+  DD_FOREACH(ddModelData *, mh_id, md_array) {
+    ddModelData *mdl = *mh_id.ptr;
+    mdl->buffers.resize(mdl->mesh_info.size());
 
-		DD_FOREACH(DDM_Data, md, mdl->mesh_info) {
-			// create mesh data on gpu
-			mdl->buffers[md.i] = nullptr;
-			bool success =
-				ddGPUFrontEnd::load_buffer_data(mdl->buffers[md.i], md.ptr);
-			POW2_VERIFY_MSG(success == true, "Mesh data not loaded to GPU", 0);
+    DD_FOREACH(DDM_Data, md, mdl->mesh_info) {
+      // create mesh data on gpu
+      mdl->buffers[md.i] = nullptr;
+      bool success =
+          ddGPUFrontEnd::load_buffer_data(mdl->buffers[md.i], md.ptr);
+      POW2_VERIFY_MSG(success == true, "Mesh data not loaded to GPU", 0);
 
-			// cleanup on ram?
-			md.ptr->data.resize(0);
-		}
-	}
+      // cleanup on ram?
+      md.ptr->data.resize(0);
+    }
+  }
 
   // load agents
-	dd_array<ddAgent*> ag_array = get_all_ddAgent();
-	DD_FOREACH(ddAgent*, ag_id, ag_array) {
-		ddAgent *ag = *ag_id.ptr;
+  dd_array<ddAgent *> ag_array = get_all_ddAgent();
+  DD_FOREACH(ddAgent *, ag_id, ag_array) {
+    ddAgent *ag = *ag_id.ptr;
 
-		// create instance buffer
-		bool success = ddGPUFrontEnd::load_instance_data(ag->inst.inst_buff,
-																										 ag->inst.m4x4.size());
-		POW2_VERIFY_MSG(success == true, "Instance data not loaded to GPU", 0);
+    // create instance buffer
+    bool success = ddGPUFrontEnd::load_instance_data(ag->inst.inst_buff,
+                                                     ag->inst.m4x4.size());
+    POW2_VERIFY_MSG(success == true, "Instance data not loaded to GPU", 0);
 
-		// create & bind vao
-		DD_FOREACH(ModelIDs, mdl_id, ag->mesh) {
-			ddModelData *mdl = find_ddModelData(mdl_id.ptr->model);
-			POW2_VERIFY_MSG(success == true, "Mesh data not found", 0);
+    // create & bind vao
+    DD_FOREACH(ModelIDs, mdl_id, ag->mesh) {
+      ddModelData *mdl = find_ddModelData(mdl_id.ptr->model);
+      POW2_VERIFY_MSG(success == true, "Mesh data not found", 0);
 
-			mdl_id.ptr->vao_handles.resize(mdl->buffers.size());
-			DD_FOREACH(ddVAOData *, vao, mdl_id.ptr->vao_handles) {
-				success = ddGPUFrontEnd::create_vao(*vao.ptr);
-				POW2_VERIFY_MSG(success == true, "VAO data not generated", 0);
-				success = ddGPUFrontEnd::bind_object(*vao.ptr, ag->inst.inst_buff,
-																						 mdl->buffers[vao.i]);
-				POW2_VERIFY_MSG(success == true, "Object not bound to VAO", 0);
-			}
-		}
-	}
+      mdl_id.ptr->vao_handles.resize(mdl->buffers.size());
+      DD_FOREACH(ddVAOData *, vao, mdl_id.ptr->vao_handles) {
+        success = ddGPUFrontEnd::create_vao(*vao.ptr);
+        POW2_VERIFY_MSG(success == true, "VAO data not generated", 0);
+        success = ddGPUFrontEnd::bind_object(*vao.ptr, ag->inst.inst_buff,
+                                             mdl->buffers[vao.i]);
+        POW2_VERIFY_MSG(success == true, "Object not bound to VAO", 0);
+      }
+    }
+  }
 }
 
 void remove_rigid_body(ddAgent *ag) { delete_rigid_body(ag); }

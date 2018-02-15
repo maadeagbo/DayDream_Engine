@@ -45,6 +45,7 @@
     } else {                                       \
       uint32_t idx = map_##CONTAINER[id];          \
       CONTAINER[idx].~TYPE();                      \
+      CONTAINER[idx].id = 0;                       \
       fl_##CONTAINER.release_slot(idx);            \
       map_##CONTAINER.erase(id);                   \
       return true;                                 \

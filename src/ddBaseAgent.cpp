@@ -1,4 +1,5 @@
 #include "ddBaseAgent.h"
+#include <string>
 
 ddAgent::ddAgent() {}
 
@@ -125,3 +126,223 @@ AABB get_aabb(ddBody* bod) {
 }
 
 }  // namespace ddBodyFuncs
+
+#define DDAGENT_META_NAME "LuaClass.ddAgent"
+#define check_ddAgent(L) (ddAgent**)luaL_checkudata(L, 1, DDAGENT_META_NAME)
+
+const char* ddAgent_meta_name() { return DDAGENT_META_NAME; }
+
+static int get_id(lua_State* L);
+static int get_pos(lua_State* L);
+static int get_rot(lua_State* L);
+static int get_scale(lua_State* L);
+static int get_vel(lua_State* L);
+static int get_forward(lua_State* L);
+
+static int set_pos(lua_State* L);
+static int set_rot(lua_State* L);
+static int set_scale(lua_State* L);
+static int set_vel(lua_State* L);
+static int set_friction(lua_State* L);
+static int set_damping(lua_State* L);
+
+static int to_string(lua_State* L);
+
+// method list
+static const struct luaL_Reg agent_methods[] = {{"id", get_id},
+                                                {"pos", get_pos},
+                                                {"set_pos", set_pos},
+                                                {"eulerPYR", get_rot},
+                                                {"set_eulerPYR", set_rot},
+                                                {"scale", get_scale},
+                                                {"set_scale", set_scale},
+                                                {"vel", get_vel},
+                                                {"set_vel", set_vel},
+                                                {"set_friction", set_friction},
+                                                {"set_damping", set_damping},
+                                                {"forward_dir", get_forward},
+                                                {"__tostring", to_string},
+                                                {NULL, NULL}};
+
+void log_meta_ddAgent(lua_State* L) {
+  luaL_newmetatable(L, DDAGENT_META_NAME);  // create meta table
+  lua_pushvalue(L, -1);                     /* duplicate the metatable */
+  lua_setfield(L, -2, "__index");           /* mt.__index = mt */
+  luaL_setfuncs(L, agent_methods, 0);       /* register metamethods */
+}
+
+static int get_id(lua_State* L) {
+  ddAgent* ag = *check_ddAgent(L);
+  lua_pushinteger(L, ag->id);
+  return 1;
+}
+
+int get_pos(lua_State* L) {
+  ddAgent* ag = *check_ddAgent(L);
+
+  // return world space position
+  glm::vec3 wp = ddBodyFuncs::pos_ws(&ag->body);
+  push_vec3_to_lua(L, wp.x, wp.y, wp.z);
+
+  return 1;
+}
+
+int get_rot(lua_State* L) {
+  ddAgent* ag = *check_ddAgent(L);
+
+  // return world space rotation
+  glm::vec3 temp = glm::eulerAngles(ddBodyFuncs::rot_ws(&ag->body));
+  glm::vec3 rot = glm::degrees(temp);
+  push_vec3_to_lua(L, rot.x, rot.y, rot.z);
+
+  return 1;
+}
+
+int get_scale(lua_State* L) {
+  ddAgent* ag = *check_ddAgent(L);
+
+  // return world space scale
+  glm::vec3 sc = ag->body.scale;
+  push_vec3_to_lua(L, sc.x, sc.y, sc.z);
+
+  return 1;
+}
+
+int get_vel(lua_State* L) {
+  ddAgent* ag = *check_ddAgent(L);
+
+  // return velocity
+  btVector3 vel = ag->body.bt_bod->getLinearVelocity();
+  push_vec3_to_lua(L, vel.x(), vel.y(), vel.z());
+
+  return 1;
+}
+
+int get_forward(lua_State* L) {
+  ddAgent* ag = *check_ddAgent(L);
+
+  // return forward direction
+  glm::vec3 fwd = ddBodyFuncs::forward_dir(&ag->body);
+  push_vec3_to_lua(L, fwd.x, fwd.y, fwd.z);
+
+  return 1;
+}
+
+static void get_v3_lua(lua_State* L, glm::vec3& in) {
+  int top = lua_gettop(L);
+  for (unsigned i = 2; i <= (unsigned)top; i++) {
+    if (lua_isnumber(L, i)) {
+      switch (i) {
+        case 2:
+          in.x = (float)lua_tonumber(L, i);
+          break;
+        case 3:
+          in.y = (float)lua_tonumber(L, i);
+          break;
+        case 4:
+          in.z = (float)lua_tonumber(L, i);
+          break;
+        default:
+          break;
+      }
+    }
+  }
+}
+
+int set_pos(lua_State* L) {
+  ddAgent* ag = *check_ddAgent(L);
+  glm::vec3 pos = ddBodyFuncs::pos_ws(&ag->body);
+
+  get_v3_lua(L, pos);
+  ddBodyFuncs::update_pos(&ag->body, pos);
+
+  return 0;
+}
+
+int set_rot(lua_State* L) {
+  ddAgent* ag = *check_ddAgent(L);
+  glm::vec3 temp = glm::eulerAngles(ddBodyFuncs::rot_ws(&ag->body));
+  glm::vec3 rot = glm::degrees(temp);
+
+  get_v3_lua(L, rot);
+  rot = glm::radians(rot);
+  ddBodyFuncs::rotate(&ag->body, rot.y, rot.x, rot.z);
+
+  return 0;
+}
+
+int set_scale(lua_State* L) {
+  ddAgent* ag = *check_ddAgent(L);
+  glm::vec3 sc = ag->body.scale;
+
+  get_v3_lua(L, sc);
+  ddBodyFuncs::update_scale(&ag->body, sc);
+
+  return 0;
+}
+
+int set_vel(lua_State* L) {
+  ddAgent* ag = *check_ddAgent(L);
+  btVector3 vel = ag->body.bt_bod->getLinearVelocity();
+  glm::vec3 vel3(vel.x(), vel.y(), vel.z());
+
+  get_v3_lua(L, vel3);
+  ddBodyFuncs::update_velocity(&ag->body, vel3);
+  return 0;
+}
+
+int set_friction(lua_State* L) {
+  ddAgent* ag = *check_ddAgent(L);
+
+  int top = lua_gettop(L);
+  if (top == 2) {
+    float fr = (float)lua_tonumber(L, 2);
+    if (fr >= 0.f && fr <= 1.f) {
+      ag->body.bt_bod->setFriction(fr);
+    }
+  }
+
+  return 0;
+}
+
+int set_damping(lua_State* L) {
+  ddAgent* ag = *check_ddAgent(L);
+  float l_damp = (float)ag->body.bt_bod->getLinearDamping();
+  float a_damp = (float)ag->body.bt_bod->getAngularDamping();
+  glm::vec3 damp(l_damp, a_damp, 0.f);
+
+  get_v3_lua(L, damp);
+  ag->body.bt_bod->setDamping(damp.x, damp.y);
+
+  return 0;
+}
+
+static int to_string(lua_State* L) {
+  ddAgent* ag = *check_ddAgent(L);
+  std::string buff;
+
+  cbuff<128> out;
+  out.format("ddAgent(%llu):", (unsigned long long)ag->id);
+  buff += out.str();
+
+  out.format("\n  Mesh: %d", (int)ag->mesh.size());
+  buff += out.str();
+
+  DD_FOREACH(ModelIDs, mdl, ag->mesh) {
+    out.format("\n    %u:: near %.3f, far %.3f, model %llu", mdl.i,
+               mdl.ptr->_near, mdl.ptr->_far,
+               (unsigned long long)mdl.ptr->model);
+    buff += out.str();
+
+    out.format("\n    Materials: %d", (int)mdl.ptr->material.size());
+    buff += out.str();
+    DD_FOREACH(size_t, mat_id, mdl.ptr->material) {
+      out.format("\n      %u:: id %llu", mat_id.i,
+                 (unsigned long long)(*mat_id.ptr));
+      buff += out.str();
+    }
+  }
+
+  lua_pushstring(L, buff.c_str());
+  return 1;
+}

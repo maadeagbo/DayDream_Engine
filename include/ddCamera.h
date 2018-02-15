@@ -81,6 +81,7 @@ struct ddCam {
   bool vr_flag = false;
 };
 
-
-const char* ddCam_meta_t_name();
-void log_meta_t_ddCam(lua_State *L);
+/** \brief Lua class instance metatable name */
+const char* ddCam_meta_name();
+/** \brief DO NOT USE. ONLY TO BE CALLED BY ddAssetsLuaClass */
+void log_meta_ddCam(lua_State *L);

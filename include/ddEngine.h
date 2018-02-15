@@ -14,6 +14,7 @@
 #include "ddPhysicsEngine.h"
 #include "ddRenderEngine.h"
 #include "ddTimer.h"
+#include "ddLuaLib.h"
 
 enum class GameState { LOADING, PAUSE, ACTIVE, NUM_STATES };
 

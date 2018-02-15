@@ -46,31 +46,31 @@ echo -e "\t\tv3_udir = matrix{0, 1, 0}" >> $1
 echo -e "\t\tv3_rdir = matrix.cross( v3_fdir, v3_udir )\n" >> $1
 
 # read input keys and calculate movement
-echo -e "\t\t--dd_print( string.format(\"Pos = %.3f, %.3f, %.3f\"," >> $1
+echo -e "\t\t--ddLib.print( string.format(\"Pos = %.3f, %.3f, %.3f\"," >> $1
 echo -e "\t\t\t--curr_pos.x, curr_pos.y, curr_pos.z))\n" >> $1
 echo -e "\t\t-- Get frame time and setup new position variable" >> $1 
 echo -e "\t\tnew_pos = matrix{curr_pos.x, curr_pos.y, curr_pos.z}" >> $1
-echo -e "\t\tftime = dd_ftime()\n" >> $1 
+echo -e "\t\tftime = ddLib.ftime()\n" >> $1 
 
 # position
 echo -e "\t\t-- left" >> $1 
-echo -e "\t\tif __dd_input.a then new_pos = new_pos - (v3_rdir * ftime * speed) end" >> $1
+echo -e "\t\tif ddInput.a then new_pos = new_pos - (v3_rdir * ftime * speed) end" >> $1
 echo -e "\t\t-- right" >> $1 
-echo -e "\t\tif __dd_input.d then new_pos = new_pos + (v3_rdir * ftime * speed) end" >> $1 
+echo -e "\t\tif ddInput.d then new_pos = new_pos + (v3_rdir * ftime * speed) end" >> $1 
 echo -e "\t\t-- forward" >> $1 
-echo -e "\t\tif __dd_input.w then new_pos = new_pos + (v3_fdir * ftime * speed) end" >> $1 
+echo -e "\t\tif ddInput.w then new_pos = new_pos + (v3_fdir * ftime * speed) end" >> $1 
 echo -e "\t\t-- back" >> $1 
-echo -e "\t\tif __dd_input.s then new_pos = new_pos - (v3_fdir * ftime * speed) end" >> $1 
+echo -e "\t\tif ddInput.s then new_pos = new_pos - (v3_fdir * ftime * speed) end" >> $1 
 echo -e "\t\t-- down" >> $1 
-echo -e "\t\tif __dd_input.l_shift then new_pos = new_pos - (v3_udir * ftime * speed) end" >> $1
+echo -e "\t\tif ddInput.l_shift then new_pos = new_pos - (v3_udir * ftime * speed) end" >> $1
 echo -e "\t\t-- up" >> $1 
-echo -e "\t\tif __dd_input.space then new_pos = new_pos + (v3_udir * ftime * speed) end" >> $1
+echo -e "\t\tif ddInput.space then new_pos = new_pos + (v3_udir * ftime * speed) end" >> $1
 
 # rotation
 echo -e "\n\t\t-- rotation" >> $1
-echo -e "\t\tif __dd_input.mouse_b_l then" >> $1
-echo -e "\t\t\tpitch = pitch + __dd_input.mouse_y_delta * 1.0/speed" >> $1
-echo -e "\t\t\tyaw = yaw + __dd_input.mouse_x_delta * 1.0/speed\n" >> $1
+echo -e "\t\tif ddInput.mouse_b_l then" >> $1
+echo -e "\t\t\tpitch = pitch + ddInput.mouse_y_delta * 1.0/speed" >> $1
+echo -e "\t\t\tyaw = yaw + ddInput.mouse_x_delta * 1.0/speed\n" >> $1
 echo -e "\t\t\tddCam_rotate( {id = self.cam_id, pitch = pitch} )" >> $1
 echo -e "\t\t\tddAgent_set_rotation( {id = self.agent_id, yaw = yaw} )" >> $1
 echo -e "\t\tend" >> $1
