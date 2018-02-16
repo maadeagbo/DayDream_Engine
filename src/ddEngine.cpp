@@ -412,6 +412,7 @@ void ddEngine::update_GLFW() {
 void ddEngine::run() {
   // set certain default parameters for assets
   ddAssets::default_params(window_w, window_h);
+  ddSceneManager::initialize(window_w, window_h);
 
   // create new screen
   DD_LEvent _e1;

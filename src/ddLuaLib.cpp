@@ -100,6 +100,9 @@ static int new_ddCam(lua_State *L) {
     return 1;
   }
   // initialize
+  glm::uvec2 scr_dim = ddSceneManager::get_screen_dimensions();
+  (*cam)->width = scr_dim.x;
+  (*cam)->height = scr_dim.y;
   (*cam)->fovh = glm::radians(60.f);
   (*cam)->n_plane = 0.1f;
   (*cam)->f_plane = 50.f;
@@ -183,7 +186,7 @@ static int new_ddAgent(lua_State *L) {
   // get mass
   curr_arg++;
   float mass = 0.f;
-  if (num_args - 1 > curr_arg) {
+  if (num_args > curr_arg) {
     bool mass_flag = lua_type(L, curr_arg) == LUA_TNUMBER;
     if (!mass_flag) {
       ddTerminal::post("[error]ddAgent::Ignoring 2nd arg (mass : float)");
@@ -195,7 +198,7 @@ static int new_ddAgent(lua_State *L) {
   // get type
   curr_arg++;
   RBType type = RBType::BOX;
-  if (num_args - 1 > curr_arg) {
+  if (num_args > curr_arg) {
     bool type_flag = lua_type(L, curr_arg) == LUA_TSTRING;
     if (!type_flag) {
       ddTerminal::post("[error]ddAgent::Ignoring 3rd arg (AABB type : string)");
@@ -207,13 +210,15 @@ static int new_ddAgent(lua_State *L) {
         type = RBType::SPHERE;
       else if (t.compare("free") == 0)
         type = RBType::FREE_FORM;
+      else if (t.compare("kinematic") == 0)
+        type = RBType::KIN;
     }
   }
 
   // get mesh
   curr_arg++;
   ddModelData *mdata = nullptr;
-  if (num_args - 1 > curr_arg) {
+  if (num_args > curr_arg) {
     bool mdl_flag = lua_isinteger(L, curr_arg);
     if (!mdl_flag) {
       ddTerminal::post("[error]ddAgent::Ignoring 4th arg (model id : int)");

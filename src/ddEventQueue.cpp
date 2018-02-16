@@ -68,6 +68,8 @@ int ddQueue::register_lua_func(lua_State *_L) {
   cbuff<32> key;
   int global_ref = LUA_REFNIL, func_ref = LUA_REFNIL;
 
+  stack_dump(L);
+
   int top = lua_gettop(_L); /* number of events */
   for (int i = 1; i <= top; i++) {
     int t = lua_type(_L, i);
