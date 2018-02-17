@@ -17,6 +17,9 @@ btDiscreteDynamicsWorld *p_world = nullptr;
 
 // default parameters for object initialization
 unsigned native_scr_width = 0, native_scr_height = 0;
+
+// flag to check if game is in load screen
+bool load_screen_flag = false;
 }  // namespace
 
 
@@ -310,6 +313,14 @@ void load_to_gpu() {
 }
 
 void remove_rigid_body(ddAgent *ag) { delete_rigid_body(ag); }
+
+void set_load_screen_flag(const bool flag) {
+  load_screen_flag = flag;
+}
+
+bool load_screen_check() {
+  return load_screen_flag;
+}
 
 // end of namespace
 };  // namespace ddAssets

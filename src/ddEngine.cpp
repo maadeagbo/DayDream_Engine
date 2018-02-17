@@ -595,6 +595,7 @@ void ddEngine::update(DD_LEvent &_event) {
 
   } else if (e_sig == load_hash.gethash()) {  // load screen
     load_screen ^= 1;
+    ddAssets::set_load_screen_flag(load_screen);
   } else if (e_sig == process_terminal_hash.gethash()) {  // process terminal
     bool more_cmds = true;
     while (more_cmds) {
