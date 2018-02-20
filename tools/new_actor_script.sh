@@ -13,7 +13,7 @@ echo -e "do" >> $1
 echo -e "\tmatrix = require \"scripts.matrix\"\n" >> $1
 
 # Actor object
-echo -e "\t$2_actor = { agent_id = 0, cam_id = 0 }\n" >> $1
+echo -e "\t$2_actor = {}\n" >> $1
 
 # pitch and yaw variables
 echo -e "\tspeed = 5.0\n\tpitch = 0\n\tyaw = 0\n" >> $1
@@ -37,9 +37,9 @@ echo -e "\t\tassets = $2_assets\n" >> $1
 
 # get vectors necessary for movement
 echo -e "\t\t-- Get current position" >> $1
-echo -e "\t\tcurr_pos = ddAgent_world_pos( {id = self.agent_id} )\n" >> $1
+echo -e "\t\tcurr_pos = assets.nav_agent:pos()\n" >> $1
 echo -e "\t\t-- Get current facing direction and convert to vector" >> $1
-echo -e "\t\tcurr_d = ddCam_get_direction( {id = self.cam_id} )" >> $1
+echo -e "\t\tcurr_d = assets.cam_01:dir()" >> $1
 echo -e "\t\tv3_fdir = matrix{ curr_d.x, curr_d.y, curr_d.z }\n" >> $1
 echo -e "\t\t-- Direction facing to the right" >> $1
 echo -e "\t\tv3_udir = matrix{0, 1, 0}" >> $1
@@ -71,18 +71,11 @@ echo -e "\n\t\t-- rotation" >> $1
 echo -e "\t\tif ddInput.mouse_b_l then" >> $1
 echo -e "\t\t\tpitch = pitch + ddInput.mouse_y_delta * 1.0/speed" >> $1
 echo -e "\t\t\tyaw = yaw + ddInput.mouse_x_delta * 1.0/speed\n" >> $1
-echo -e "\t\t\tddCam_rotate( {id = self.cam_id, pitch = pitch} )" >> $1
-echo -e "\t\t\tddAgent_set_rotation( {id = self.agent_id, yaw = yaw} )" >> $1
+echo -e "\t\t\tassets.cam_01:set_eulerPYR(pitch, 0, 0)" >> $1
+echo -e "\t\t\tassets.nav_agent:set_eulerPYR(0, yaw, 0)" >> $1
 echo -e "\t\tend" >> $1
 
-echo -e "\n\t\t-- update position" >> $1
-echo -e "\t\targs = {" >> $1
-echo -e "\t\t\tid = self.agent_id," >> $1 
-echo -e "\t\t\tx = new_pos[1][1]," >> $1 
-echo -e "\t\t\ty = new_pos[2][1]," >> $1 
-echo -e "\t\t\tz = new_pos[3][1]," >> $1 
-echo -e "\t\t}" >> $1
-echo -e "\t\tddAgent_set_position( args )" >> $1
+echo -e "\t\tassets.nav_agent:set_pos(new_pos[1][1], new_pos[2][1], new_pos[3][1])" >> $1
 
 # update function end
 echo -e "\tend" >> $1

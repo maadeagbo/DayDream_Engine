@@ -16,61 +16,45 @@ echo -e "\targ = {}\n" >> $1
 
 # load box primitive for floor
 echo -e "\t-- Cube mesh" >> $1
-echo -e "\targ[\"path\"] = ROOT_DIR..\"/Resource/Meshes/primitives/cube.ddm\""\
-  >> $1
-echo -e "\tcube_mesh = dd_load_ddm(arg)" >> $1
-echo -e "\tdd_print( \"Created plane mesh: \"..cube_mesh )\n" >> $1
+echo -e "\t$2_assets.cube_m = ddModel.new(ROOT_DIR..\"/Resource/Meshes/primitives/cube.ddm\")" >> $1
+echo -e "\tddLib.print( \"Created plane mesh: \", $2_assets.cube_m:id() )\n" >> $1
 
 # create simple directional light
 echo -e "\t-- Directional light" >> $1
-echo -e "\targ = { [\"id\"] = \"light_1\" }" >> $1
-echo -e "\tlight_key = dd_create_light(arg)" >> $1
-echo -e "\tdd_print( \"Created light: \"..light_key )\n" >> $1
+echo -e "\t$2_assets.light_1 = ddLight.new(\"light_1\")" >> $1
+echo -e "\t$2_assets.light_1:set_active(true)" >> $1
+echo -e "\tddLib.print( \"Created light: \", $2_assets.light_1:id() )\n" >> $1
 
 # create floor object
 echo -e "\t-- Floor agent" >> $1
-echo -e "\targs = {}" >> $1
-echo -e "\targs[\"id\"] = \"floor_agent\"" >> $1
-echo -e "\targs[\"mesh\"] = cube_mesh" >> $1
-echo -e "\targs[\"scale_x\"] = 100.0" >> $1
-echo -e "\targs[\"scale_y\"] = 0.2" >> $1
-echo -e "\targs[\"scale_z\"] = 100.0" >> $1
-echo -e "\tfloor_agent = dd_create_agent(args)" >> $1
-echo -e "\t-- save to asset table" >> $1
-echo -e "\t$2_assets[\"floor\"] = floor_agent" >> $1
-echo -e "\tdd_print( \"Created agent (floor): \"..floor_agent )\n" >> $1
+echo -e "\t$2_assets.floor = ddAgent.new(\"floor_agent\", 0.0, \"box\")" >> $1
+echo -e "\t$2_assets.floor:set_scale(100.0, 0.2, 100.0)" >> $1
+echo -e "\t$2_assets.floor:add_mesh($2_assets.cube_m:id(), 0.1, 100.0)" >> $1
+echo -e "\tddLib.print( \"Created agent (floor): \", $2_assets.floor:id() )\n" >> $1
 
 # create random object
 echo -e "\t-- Box agent" >> $1
-echo -e "\targs = {}" >> $1
-echo -e "\targs[\"id\"] = \"box_agent\"" >> $1
-echo -e "\targs[\"mass\"] = 1.0" >> $1
-echo -e "\targs[\"mesh\"] = cube_mesh" >> $1
-echo -e "\targs[\"pos_y\"] = 5.0" >> $1
-echo -e "\tbox_agent = dd_create_agent(args)" >> $1
-echo -e "\t-- save to asset table" >> $1
-echo -e "\t$2_assets[\"box\"] = box_agent" >> $1
-echo -e "\tdd_print( \"Created agent (box): \"..box_agent )\n" >> $1
+echo -e "\t$2_assets.rand_obj = ddAgent.new(\"rand_obj\", 1.0, \"box\")" >> $1
+echo -e "\t$2_assets.rand_obj:set_pos(0.0, 5.0, 0.0)" >> $1
+echo -e "\t$2_assets.rand_obj:add_mesh($2_assets.cube_m:id(), 0.1, 100.0)" >> $1
+echo -e "\tddLib.print( \"Created agent (rand_obj): \", $2_assets.rand_obj:id() )\n" >> $1
 
 # create parent agent for camera manipulation
 echo -e "\t-- Empty camera agent" >> $1
-echo -e "\targs = {}" >> $1
-echo -e "\targs[\"id\"] = \"$2_agent\"" >> $1
-echo -e "\targs[\"mass\"] = 1.0" >> $1
-echo -e "\targs[\"type\"] = -2\t-- for floating movement" >> $1
-echo -e "\targs[\"pos_y\"] = 2.0" >> $1
-echo -e "\targs[\"pos_z\"] = 5.0" >> $1
-echo -e "\tcam_agent_id = dd_create_agent(args)" >> $1
-echo -e "\t$2_assets[\"$2_agent\"] = cam_agent_id\n" >> $1
+echo -e "\t$2_assets.nav_agent = ddAgent.new(\"$2_agent\", 1.0, \"kinematic\")" >> $1
+echo -e "\t$2_assets.nav_agent:set_pos(0.0, 2.0, 5.0)" >> $1
+echo -e "\t$2_assets.nav_agent:set_eulerPYR(0.0, 0.0)" >> $1
+echo -e "\tddLib.print( \"Created agent ($2_agent): \", $2_assets.nav_agent:id() )\n" >> $1
 
 # attach camera
 echo -e "\t-- Attach camera" >> $1
 echo -e "\targs = {}" >> $1
 echo -e "\targs[\"id\"] = \"cam_01\"" >> $1
 echo -e "\targs[\"parent\"] = cam_agent_id" >> $1
-echo -e "\tcam_key = dd_create_camera(args)" >> $1
-echo -e "\t$2_assets[\"cam_01\"] = cam_key" >> $1
-echo -e "\tdd_print( \"Created camera: \"..cam_key )\n" >> $1
+
+echo -e "\t$2_assets.cam_01 = ddCam.new(\"cam_01\", $2_assets.nav_agent:id())" >> $1
+echo -e "\t$2_assets.cam_01:set_active(true)" >> $1
+echo -e "\tddLib.print( \"Created camera: \", $2_assets.cam_01:id() )\n" >> $1
 
 # end load function
 echo -e "end" >> $1
