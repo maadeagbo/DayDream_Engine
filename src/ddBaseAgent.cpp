@@ -1,5 +1,6 @@
 #include "ddBaseAgent.h"
 #include <string>
+#include "ddTerminal.h"
 
 ddAgent::ddAgent() {}
 
@@ -138,6 +139,8 @@ static int get_rot(lua_State* L);
 static int get_scale(lua_State* L);
 static int get_vel(lua_State* L);
 static int get_forward(lua_State* L);
+static int get_mat_count(lua_State* L);
+static int get_mat_at_idx(lua_State* L);
 
 static int set_pos(lua_State* L);
 static int set_rot(lua_State* L);
@@ -145,24 +148,29 @@ static int set_scale(lua_State* L);
 static int set_vel(lua_State* L);
 static int set_friction(lua_State* L);
 static int set_damping(lua_State* L);
+static int set_mat_at_idx(lua_State* L);
 
 static int to_string(lua_State* L);
 
 // method list
-static const struct luaL_Reg agent_methods[] = {{"id", get_id},
-                                                {"pos", get_pos},
-                                                {"set_pos", set_pos},
-                                                {"eulerPYR", get_rot},
-                                                {"set_eulerPYR", set_rot},
-                                                {"scale", get_scale},
-                                                {"set_scale", set_scale},
-                                                {"vel", get_vel},
-                                                {"set_vel", set_vel},
-                                                {"set_friction", set_friction},
-                                                {"set_damping", set_damping},
-                                                {"forward_dir", get_forward},
-                                                {"__tostring", to_string},
-                                                {NULL, NULL}};
+static const struct luaL_Reg agent_methods[] = {
+    {"id", get_id},
+    {"pos", get_pos},
+    {"set_pos", set_pos},
+    {"eulerPYR", get_rot},
+    {"set_eulerPYR", set_rot},
+    {"scale", get_scale},
+    {"set_scale", set_scale},
+    {"vel", get_vel},
+    {"set_vel", set_vel},
+    {"set_friction", set_friction},
+    {"set_damping", set_damping},
+    {"forward_dir", get_forward},
+    {"mat_count", get_mat_count},
+    {"mat_at_idx", get_mat_at_idx},
+    {"set_mat_at_idx", set_mat_at_idx},
+    {"__tostring", to_string},
+    {NULL, NULL}};
 
 void log_meta_ddAgent(lua_State* L) {
   luaL_newmetatable(L, DDAGENT_META_NAME);  // create meta table
@@ -224,6 +232,91 @@ int get_forward(lua_State* L) {
   // return forward direction
   glm::vec3 fwd = ddBodyFuncs::forward_dir(&ag->body);
   push_vec3_to_lua(L, fwd.x, fwd.y, fwd.z);
+
+  return 1;
+}
+
+int get_mat_count(lua_State* L) {
+  ddAgent* ag = *check_ddAgent(L);
+  int top = lua_gettop(L);
+  size_t lod_lvl = 0;
+
+  if (top >= 2) {
+    if (lua_isinteger(L, 2)) {
+      lod_lvl = (size_t)lua_tointeger(L, 2);  // get lod level
+    } else {
+      ddTerminal::post(
+          "[error]ddAgent::mat_count::Invalid 2nd arg (LOD level : int)");
+			lua_pushinteger(L, -1);
+      return 1;
+    }
+  }
+
+  if (lod_lvl >= ag->mesh.size()) {  // check if lod level is out of bounds
+    ddTerminal::post(
+        "[error]ddAgent::mat_count::Invalid 2nd arg (LOD level : int)");
+		lua_pushinteger(L, -1);
+    return 1;
+  }
+
+  lua_pushinteger(L, ag->mesh[lod_lvl].material.size());
+  return 1;
+}
+
+static bool check_mat_args(lua_State* L, ddAgent* ag, size_t& lod_arg,
+                           size_t& mat_arg, const char* func_id) {
+  int top = lua_gettop(L);
+  if (top >= 3) {
+    if (lua_isinteger(L, 2)) {
+      lod_arg = (size_t)lua_tointeger(L, 2);  // get lod level
+    } else {
+      ddTerminal::f_post(
+          "[error]ddAgent::%s::Invalid 2nd arg (LOD level : int)", func_id);
+      return false;
+    }
+
+    if (lua_isinteger(L, 3)) {
+      mat_arg = (size_t)lua_tointeger(L, 3);  // get material index
+    } else {
+      ddTerminal::f_post(
+          "[error]ddAgent::%s::Invalid 3rd arg (material index : int)",
+          func_id);
+      return false;
+    }
+  } else {  // not enough arguments provided
+    ddTerminal::f_post(
+        "[error]ddAgent::%s::Must provide 2 args (LOD level, material index)",
+        func_id);
+    return false;
+  }
+
+  if (lod_arg >= ag->mesh.size()) {  // check if lod level is out of bounds
+    ddTerminal::f_post(
+        "[error]ddAgent::%s::Out-of-bounds 2nd arg (LOD level : int)", func_id);
+    return false;
+  }
+  // check if material index is out of bounds
+  if (mat_arg >= ag->mesh[lod_arg].material.size()) {
+    ddTerminal::f_post(
+        "[error]ddAgent::%s::Out-of-bounds 3rd arg (material index : int)",
+        func_id);
+    return false;
+  }
+
+  return true;
+}
+
+int get_mat_at_idx(lua_State* L) {
+  ddAgent* ag = *check_ddAgent(L);
+  size_t lod_lvl = 0;
+  size_t mat_idx = 0;
+
+  bool valid_idxs = check_mat_args(L, ag, lod_lvl, mat_idx, "mat_at_idx");
+  if (valid_idxs) {
+    lua_pushinteger(L, ag->mesh[lod_lvl].material[mat_idx]);
+  } else {
+    lua_pushnil(L);
+  }
 
   return 1;
 }
@@ -315,6 +408,23 @@ int set_damping(lua_State* L) {
   ag->body.bt_bod->setDamping(damp.x, damp.y);
 
   return 0;
+}
+
+int set_mat_at_idx(lua_State* L) {
+	ddAgent* ag = *check_ddAgent(L);
+	size_t lod_lvl = 0;
+	size_t mat_idx = 0;
+
+	bool valid_idxs = check_mat_args(L, ag, lod_lvl, mat_idx, "set_mat_at_idx");
+	if (valid_idxs) {
+		// get 4th argument (material ID to assign)
+		int top = lua_gettop(L);
+		if (top >= 4 && lua_isinteger(L, 4)) {
+			size_t id = (size_t)lua_tointeger(L, 4);
+			ag->mesh[lod_lvl].material[mat_idx] = id;
+		}
+	}
+	return 0; 
 }
 
 static int to_string(lua_State* L) {

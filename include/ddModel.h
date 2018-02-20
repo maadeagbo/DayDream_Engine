@@ -26,6 +26,7 @@
 
 #include "GPUFrontEnd.h"
 #include "ddIncludes.h"
+#include "LuaHooks.h"
 
 // struct DD_Model {
 //   std::string m_ID;
@@ -119,3 +120,8 @@ struct ddModelData {
   /// \brief GPU buffer handles
   dd_array<ddMeshBufferData*> buffers;
 };
+
+/** \brief Lua class instance metatable name */
+const char* ddModelData_meta_name();
+/** \brief DO NOT USE. ONLY TO BE CALLED BY ddAssetsLuaClass */
+void log_meta_ddModelData(lua_State *L);

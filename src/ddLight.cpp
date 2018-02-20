@@ -1,35 +1,56 @@
 #include "ddLight.h"
+#include "ddTerminal.h"
+#include <string>
 
-float LightSpace::CalculateLightVolumeRadius(const DD_Light* lght) {
-  float LVR = 0.0f;
-  float constant = 1.0;
-  float lightMax =
-      std::fmaxf(std::fmaxf(lght->m_color.r, lght->m_color.g), lght->m_color.b);
-  LVR = (-lght->m_linear +
-         std::sqrt(lght->m_linear * lght->m_linear -
-                   4.f * lght->m_quadratic *
-                       (constant - lightMax * (256.0f / 5.0f)))) /
-        (2.f * lght->m_quadratic);
-  return LVR;
+#define DDLBULB_META_NAME "LuaClass.ddLBulb"
+#define check_ddLBulb(L) (ddLBulb**)luaL_checkudata(L, 1, DDLBULB_META_NAME)
+
+const char* ddLBulb_meta_name() { return DDLBULB_META_NAME; }
+
+static int get_id(lua_State* L);
+static int set_active(lua_State *L);
+
+static int tostring(lua_State* L);
+
+static const struct luaL_Reg lbulb_methods[] = {
+	{ "id", get_id },
+{"set_active", set_active},
+{"__tostring", tostring}, 
+{NULL, NULL}};
+
+void log_meta_ddLBulb(lua_State* L) {
+  luaL_newmetatable(L, DDLBULB_META_NAME);  // create meta table
+  lua_pushvalue(L, -1);                     /* duplicate the metatable */
+  lua_setfield(L, -2, "__index");           /* mt.__index = mt */
+  luaL_setfuncs(L, lbulb_methods, 0);       /* register metamethods */
 }
 
-void LightSpace::PrintInfo(const DD_Light& lght) {
-  printf("\nLight ID: %s\n", lght.m_ID.c_str());
+int get_id(lua_State* L) {
+  ddLBulb* blb = *check_ddLBulb(L);
+  lua_pushinteger(L, blb->id);
+  return 1;
+}
 
-  if (lght.m_type == LightType::DIRECTION_L) {
-    printf("\tLight type: Directional\n");
-  } else if (lght.m_type == LightType::POINT_L) {
-    printf("\tLight type: Point\n");
-  } else {
-    printf("\tLight type: Spot\n");
-  }
+static int set_active(lua_State *L) {
+	ddLBulb* blb = *check_ddLBulb(L);
 
-  printf("\tPosition: %.3f, %.3f, %.3f\n", lght._position.x, lght._position.y,
-         lght._position.z);
-  printf("\tDirection: %.3f, %.3f, %.3f\n", lght.m_direction.x,
-         lght.m_direction.y, lght.m_direction.z);
-  printf("\tColor: %.3f, %.3f, %.3f\n", lght.m_color.r, lght.m_color.g,
-         lght.m_color.b);
-  printf("\tLinear fall-off: %f\n", lght.m_linear);
-  printf("\tQuadratic fall-off: %f\n", lght.m_quadratic);
+	int top = lua_gettop(L);
+	if (top >= 2 && lua_isboolean(L, 2)) {
+		blb->active = (bool)lua_toboolean(L, 2);
+	} else {
+		ddTerminal::post("[error]ddLBulb::set_active::Invalid 1st argument (active : bool)");
+	}
+	
+	return 0;
+}
+
+int tostring(lua_State* L) {
+  ddLBulb* blb = *check_ddLBulb(L);
+  std::string buff;
+
+  cbuff<128> out;
+  out.format("ddLBulb(%llu):", (unsigned long long)blb->id);
+  buff += out.str();
+
+  return 0;
 }

@@ -1,4 +1,5 @@
 #include "ddModel.h"
+#include <string>
 
 /// \brief Set the 8 corners of bounding box
 void BoundingBox::SetCorners() {
@@ -254,4 +255,53 @@ void printGlmMat(glm::mat4 mat) {
   line = Vec4f_Str(temp_vec);
   // ddTerminal::post(line);
   printf("%s\n", line.c_str());
+}
+
+//****************************************************************************
+// ddModelData
+//****************************************************************************
+
+#define DDMODEL_META_NAME "LuaClass.ddModel"
+#define check_ddModel(L) (ddModelData**)luaL_checkudata(L, 1, DDMODEL_META_NAME)
+
+const char* ddModelData_meta_name() { return DDMODEL_META_NAME; }
+
+static int get_id(lua_State* L);
+
+static int to_string(lua_State* L);
+
+static const struct luaL_Reg mdl_methods[] = {
+    {"id", get_id}, {"__tostring", to_string}, {NULL, NULL}};
+
+void log_meta_ddModelData(lua_State* L) {
+  luaL_newmetatable(L, DDMODEL_META_NAME);  // create meta table
+  lua_pushvalue(L, -1);                     /* duplicate the metatable */
+  lua_setfield(L, -2, "__index");           /* mt.__index = mt */
+  luaL_setfuncs(L, mdl_methods, 0);         /* register metamethods */
+}
+
+static int get_id(lua_State* L) {
+  ddModelData* mdl = *check_ddModel(L);
+  lua_pushinteger(L, mdl->id);
+  return 1;
+}
+
+static int to_string(lua_State* L) {
+  ddModelData* mdl = *check_ddModel(L);
+  std::string buff;
+
+  cbuff<128> out;
+  out.format("ddModelData(%llu):", (unsigned long long)mdl->id);
+  buff += out.str();
+
+  DD_FOREACH(DDM_Data, data, mdl->mesh_info) {
+    out.format("\n  Path: %s", data.ptr->path);
+    buff += out.str();
+    out.format("\n  Num indices: %llu",
+               (unsigned long long)data.ptr->indices.size());
+    buff += out.str();
+  }
+
+  lua_pushstring(L, buff.c_str());
+  return 1;
 }

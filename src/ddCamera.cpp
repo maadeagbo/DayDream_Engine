@@ -115,7 +115,7 @@ int get_id(lua_State *L) {
 int set_active(lua_State *L) {
   ddCam *cam = *check_ddCam(L);
   if (lua_isboolean(L, -1)) {
-    cam->active = lua_toboolean(L, -1);
+    cam->active = (bool)lua_toboolean(L, -1);
   } else {
     ddTerminal::f_post("Invalid boolean argument for cam: %u", cam->id);
   }

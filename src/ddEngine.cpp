@@ -451,7 +451,7 @@ void ddEngine::shutdown() {
   // cleanup particles
   ddParticleSys::cleanup();
   // clean up assets
-  ddAssets::cleanup();
+  ddAssets::cleanup_assets();
   // shutdown glfw
   glfwTerminate();
 

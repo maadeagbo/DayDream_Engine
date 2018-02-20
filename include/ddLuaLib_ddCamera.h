@@ -15,7 +15,7 @@ static int new_ddCam(lua_State *L) {
   int num_args = lua_gettop(L);
   if (num_args != 3) {
     ddTerminal::post("[error]ddCam::Must provide id and parent agent id");
-    return 0;
+		return 1;
   }
 
   // get id
@@ -24,7 +24,7 @@ static int new_ddCam(lua_State *L) {
   // luaL_argcheck(L, id_flag, 2, "ddCam::Must give camera id");
   if (!id_flag) {
     ddTerminal::post("[error]ddCam::Invalid 1st arg (id : string)");
-    return 0;
+		return 1;
   }
   const char *id = lua_tostring(L, curr_arg);
 
@@ -34,13 +34,13 @@ static int new_ddCam(lua_State *L) {
   bool p_flag = lua_isinteger(L, curr_arg);
   if (!p_flag) {
     ddTerminal::post("[error]ddCam::Invalid 2nd arg (parent id : int)");
-    return 0;
+		return 1;
   } else {
     p_id = (size_t)lua_tointeger(L, curr_arg);
     ddAgent *ag = find_ddAgent(p_id);
     if (!ag) {
       ddTerminal::post("[error]ddCam::Agent id does not exist");
-      return 0;
+			return 1;
     }
   }
 

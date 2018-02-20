@@ -13,6 +13,7 @@
 -----------------------------------------------------------------------------*/
 
 #include "ddIncludes.h"
+#include "LuaHooks.h"
 #include "ddTexture2D.h"
 
 enum MaterialType { MULTIPLIER_MAT, DEFAULT_MAT };
@@ -70,3 +71,8 @@ struct ddMat {
   /// \brief Flag that marks if color can be modified thru instancing
   bool color_modifier = false;
 };
+
+/** \brief Lua class instance metatable name */
+const char* ddMat_meta_name();
+/** \brief DO NOT USE. ONLY TO BE CALLED BY ddAssetsLuaClass */
+void log_meta_ddMat(lua_State *L);

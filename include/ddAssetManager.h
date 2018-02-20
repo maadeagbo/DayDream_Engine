@@ -29,7 +29,7 @@ void set_load_screen_flag(const bool flag);
 /**
  * \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine
  */
-void cleanup();
+void cleanup_assets();
 /**
  * \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine
  */
@@ -43,6 +43,16 @@ void log_lua_func(lua_State* L);
  * \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine
  */
 void load_to_gpu();
+
+/**
+* \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddLuaLib_ddAgent
+*/
+void load_agent_to_gpu(ddAgent* ag);
+
+/**
+* \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddLuaLib_ddModelData
+*/
+void load_model_to_gpu(ddModelData* mdl);
 
 /**
  * \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine

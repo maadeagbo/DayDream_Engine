@@ -14,6 +14,7 @@
 -----------------------------------------------------------------------------*/
 
 #include "ddIncludes.h"
+#include "LuaHooks.h"
 
 enum LightType { DIRECTION_L, POINT_L, SPOT_L };
 
@@ -150,3 +151,8 @@ struct ddLBulb {
    */
   bool shadow = false;
 };
+
+/** \brief Lua class instance metatable name */
+const char* ddLBulb_meta_name();
+/** \brief DO NOT USE. ONLY TO BE CALLED BY ddAssetsLuaClass */
+void log_meta_ddLBulb(lua_State *L);
