@@ -32,11 +32,18 @@ echo -e "\t$2_assets.floor:set_scale(100.0, 0.2, 100.0)" >> $1
 echo -e "\t$2_assets.floor:add_mesh($2_assets.cube_m:id(), 0.1, 100.0)" >> $1
 echo -e "\tddLib.print( \"Created agent (floor): \", $2_assets.floor:id() )\n" >> $1
 
+# create red material
+echo -e "\t-- Red material" >> $1
+echo -e "\t$2_assets.red_mat = ddMat.new(\"mat_red\")" >> $1
+echo -e "\t$2_assets.red_mat:set_base_color(0.5, 0.0, 0.0, 1.0)" >> $1
+echo -e "\t$2_assets.red_mat:set_specular(0.3)" >> $1
+
 # create random object
 echo -e "\t-- Box agent" >> $1
 echo -e "\t$2_assets.rand_obj = ddAgent.new(\"rand_obj\", 1.0, \"box\")" >> $1
 echo -e "\t$2_assets.rand_obj:set_pos(0.0, 5.0, 0.0)" >> $1
 echo -e "\t$2_assets.rand_obj:add_mesh($2_assets.cube_m:id(), 0.1, 100.0)" >> $1
+echo -e "\t$2_assets.rand_obj:set_mat_at_idx(0, 0, $2_assets.red_mat:id())" >> $1
 echo -e "\tddLib.print( \"Created agent (rand_obj): \", $2_assets.rand_obj:id() )\n" >> $1
 
 # create parent agent for camera manipulation

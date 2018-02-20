@@ -2,8 +2,7 @@
 load_engine = require "scripts.EngineInit"
 
 -- Limit of 10 different projects at once
-local worlds = {
-}
+local worlds = { "kinect", "dummy" }
 
 function generate_levels( event, args, num_args )
 	-- creates a list of found level scripts
