@@ -1,9 +1,9 @@
 #include "ddRenderEngine.h"
 #include "GPUFrontEnd.h"
 #include "ddAssetManager.h"
-#include "ddSceneManager.h"
 #include "ddFileIO.h"
 #include "ddParticleSystem.h"
+#include "ddSceneManager.h"
 #include "ddShader.h"
 #include "ddShaderReflect.h"
 #include "ddTerminal.h"
@@ -539,10 +539,22 @@ void render_static(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
   return;
 }
 
+glm::vec3 viewport_transform(const glm::vec3 ndc, const glm::vec2 dimension) {
+  glm::vec3 out;
+  glm::vec2 half_dim = dimension / 2.f;
+
+  out.x = (ndc.x * half_dim.x) + half_dim.x;
+  out.y = (ndc.y * half_dim.y) + half_dim.y;
+  out.z = 1.f;
+
+  return out;
+}
+
 void light_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
                 const glm::vec3 cam_pos) {
   // get light plane
-  // ddAgent *lplane = find_ddAgent(light_plane_id.gethash());
+  ddAgent *lplane = find_ddAgent(light_plane_id.gethash());
+  ddModelData *lplane_mdl = find_ddModelData(lplane->mesh[0].model);
 
   // buffer setup
   ddGPUFrontEnd::blit_depth_buffer(ddBufferType::GEOM, ddBufferType::LIGHT,
@@ -621,6 +633,43 @@ void light_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
       }
       case LightType::POINT_L: {
         // render using light volume plane
+        glm::mat4 mvp = cam_proj_m * cam_view_m * model;
+        glm::vec2 scr_dim = glm::vec2((float)scr_width, (float)scr_height);
+
+        glm::vec4 pos1 = glm::vec4(0.0, 0.0, 0.0, 1.0);
+        glm::vec4 pos2 = glm::vec4(1.0, 1.0, 0.0, 1.0);
+
+        pos1 = mvp * pos1;
+        pos1 /= pos1.w;
+        pos2 = mvp * pos2;
+        pos2 /= pos2.w;
+        glm::vec3 scr_pos1 = viewport_transform(glm::vec3(pos1), scr_dim);
+        glm::vec3 scr_pos2 = viewport_transform(glm::vec3(pos2), scr_dim);
+
+        float scale_x = glm::distance(scr_pos1.x, scr_pos2.x) / scr_dim.x;
+        float scale_y = glm::distance(scr_pos1.y, scr_pos2.y) / scr_dim.y;
+        float loc_x = scr_pos1.x / scr_dim.x;
+        float loc_y = scr_pos1.y / scr_dim.y;
+
+        glm::mat4 new_mvp =
+            glm::translate(glm::mat4(), glm::vec3(loc_x, loc_y, 0.f));
+        new_mvp = glm::scale(new_mvp, glm::vec3(scale_x, scale_y, 1.f));
+
+        sh->set_uniform((int)RE_Light::MVP_m4x4, new_mvp);
+        sh->set_uniform((int)RE_Light::LightVolume_b, true);
+        sh->set_uniform((int)RE_Light::screenDimension_v2, scr_dim);
+
+        // bind vao and render
+        ddGPUFrontEnd::toggle_face_cull(false);
+        // ddGPUFrontEnd::draw_instanced_vao(lplane->mesh[0].vao_handles[0],
+        //                                 (unsigned)lplane_mdl->mesh_info[0].indices.size(),
+        //                                 1);
+
+        ddGPUFrontEnd::render_quad();
+
+        ddGPUFrontEnd::toggle_face_cull(true);
+
+        sh->set_uniform((int)RE_Light::LightVolume_b, false);
         break;
       }
       case LightType::SPOT_L: {

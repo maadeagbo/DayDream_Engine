@@ -1,5 +1,5 @@
-#include "ddIncludes.h"
 #include "LuaHooks.h"
+#include "ddIncludes.h"
 
 /** \brief Prototype class to add lua functions to level scripts */
 struct ddLvlPrototype {

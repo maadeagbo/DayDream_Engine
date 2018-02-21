@@ -25,7 +25,7 @@ glm::uvec2 get_screen_dimensions() {
   return glm::uvec2(native_scr_width, native_scr_height);
 }
 
-ddCam* get_active_cam() {
+ddCam *get_active_cam() {
   dd_array<ddCam *> cam_array = get_all_ddCam();
   DD_FOREACH(ddCam *, cam_id, cam_array) {
     ddCam *cam = *cam_id.ptr;

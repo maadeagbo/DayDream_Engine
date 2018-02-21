@@ -15,8 +15,8 @@
 *
 -----------------------------------------------------------------------------*/
 
-#include "ddIncludes.h"
 #include "LuaHooks.h"
+#include "ddIncludes.h"
 #include "ddInput.h"
 #include "ddTimer.h"
 

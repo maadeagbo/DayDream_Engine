@@ -5,16 +5,16 @@
 
 #include "LuaHooks.h"
 #include "ddAssetManager.h"
-#include "ddSceneManager.h"
 #include "ddEventQueue.h"
 #include "ddIncludes.h"
 #include "ddInput.h"
 #include "ddLevelPrototype.h"
+#include "ddLuaLib.h"
 #include "ddParticleSystem.h"
 #include "ddPhysicsEngine.h"
 #include "ddRenderEngine.h"
+#include "ddSceneManager.h"
 #include "ddTimer.h"
-#include "ddLuaLib.h"
 
 enum class GameState { LOADING, PAUSE, ACTIVE, NUM_STATES };
 

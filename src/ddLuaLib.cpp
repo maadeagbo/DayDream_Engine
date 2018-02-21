@@ -70,12 +70,10 @@ static int dd_hash(lua_State *L) {
 }
 
 // ddLib library
-static const struct luaL_Reg dd_lib[] = {{"print", ddprint},
-                                         {"ftime", ddftime},
-                                         {"gtime", ddgtime},
-                                         {"hres_time", dd_high_res_time},
-                                         {"get_hash", dd_hash},
-                                         {NULL, NULL}};
+static const struct luaL_Reg dd_lib[] = {
+    {"print", ddprint},    {"ftime", ddftime},
+    {"gtime", ddgtime},    {"hres_time", dd_high_res_time},
+    {"get_hash", dd_hash}, {NULL, NULL}};
 
 int luaopen_ddLib(lua_State *L) {
   // library functions
@@ -96,10 +94,10 @@ void register_dd_libraries(lua_State *L) {
   luaL_requiref(L, "ddAgent", luaopen_ddAgent, 1);
   // material module
   luaL_requiref(L, "ddMat", luaopen_ddMat, 1);
-	// model module
-	luaL_requiref(L, "ddModel", luaopen_ddModelData, 1);
-	// light module
-	luaL_requiref(L, "ddLight", luaopen_ddLBulb, 1);
+  // model module
+  luaL_requiref(L, "ddModel", luaopen_ddModelData, 1);
+  // light module
+  luaL_requiref(L, "ddLight", luaopen_ddLBulb, 1);
 
   // clear stack
   int top = lua_gettop(L);

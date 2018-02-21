@@ -62,11 +62,11 @@ void remove_rigid_body(ddAgent* ag);
 /**
  * \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddLuaLib_ddAgent
  */
-bool add_body(ddAgent* agent, ddModelData* mdata, glm::vec3 pos,
-                    glm::vec3 rot, const float mass, RBType rb_type);
+bool add_body(ddAgent* agent, ddModelData* mdata, glm::vec3 pos, glm::vec3 rot,
+              const float mass, RBType rb_type);
 
 /**
  * \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddLuaLib_ddAgent
  */
-bool load_screen_check();                    
+bool load_screen_check();
 };  // namespace ddAssets

@@ -67,11 +67,11 @@ static const struct luaL_Reg blb_m2[] = {{"__gc", ddLBulb_gc}, {NULL, NULL}};
 static const struct luaL_Reg blb_lib[] = {{"new", new_ddLBulb}, {NULL, NULL}};
 
 int luaopen_ddLBulb(lua_State *L) {
-	// get and log functions in metatable
-	log_meta_ddLBulb(L);
-	luaL_setfuncs(L, blb_m2, 0);
+  // get and log functions in metatable
+  log_meta_ddLBulb(L);
+  luaL_setfuncs(L, blb_m2, 0);
 
-	// library functions
-	luaL_newlib(L, blb_lib);
-	return 1;
+  // library functions
+  luaL_newlib(L, blb_lib);
+  return 1;
 }

@@ -13,8 +13,8 @@
 *	TODO:	== Add set parent method
 -----------------------------------------------------------------------------*/
 
-#include "ddIncludes.h"
 #include "LuaHooks.h"
+#include "ddIncludes.h"
 
 enum LightType { DIRECTION_L, POINT_L, SPOT_L };
 
@@ -155,4 +155,4 @@ struct ddLBulb {
 /** \brief Lua class instance metatable name */
 const char* ddLBulb_meta_name();
 /** \brief DO NOT USE. ONLY TO BE CALLED BY ddAssetsLuaClass */
-void log_meta_ddLBulb(lua_State *L);
+void log_meta_ddLBulb(lua_State* L);

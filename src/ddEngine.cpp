@@ -41,7 +41,7 @@ void ddEngine::startup_lua() {
   main_lstate = init_lua_state();
   main_q.setup_lua(main_lstate);
 
-	register_dd_libraries(main_lstate);
+  register_dd_libraries(main_lstate);
   register_lfuncs();
 }
 
@@ -296,8 +296,8 @@ void ddEngine::load() {
   // Initialize resource manager
   ddAssets::initialize(main_physics.world);
 
-	// initialize scene manager
-	ddSceneManager::initialize(window_w, window_h);
+  // initialize scene manager
+  ddSceneManager::initialize(window_w, window_h);
 
   // set up math/physics library
   // DD_MathLib::setResourceBin(&main_res);
@@ -387,8 +387,8 @@ void ddEngine::load() {
 void ddEngine::register_lfuncs() {
   // add asset function
   ddAssets::log_lua_func(main_lstate);
-	// add scene functions
-	ddSceneManager::log_lua_funcs(main_lstate);
+  // add scene functions
+  ddSceneManager::log_lua_funcs(main_lstate);
   // register globals from ddRenderer
   ddRenderer::init_lua_globals(main_lstate);
 }

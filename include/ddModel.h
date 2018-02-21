@@ -25,8 +25,8 @@
 -----------------------------------------------------------------------------*/
 
 #include "GPUFrontEnd.h"
-#include "ddIncludes.h"
 #include "LuaHooks.h"
+#include "ddIncludes.h"
 
 // struct DD_Model {
 //   std::string m_ID;
@@ -124,4 +124,4 @@ struct ddModelData {
 /** \brief Lua class instance metatable name */
 const char* ddModelData_meta_name();
 /** \brief DO NOT USE. ONLY TO BE CALLED BY ddAssetsLuaClass */
-void log_meta_ddModelData(lua_State *L);
+void log_meta_ddModelData(lua_State* L);

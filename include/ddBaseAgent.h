@@ -1,7 +1,7 @@
 #pragma once
 
-#include "ddModel.h"
 #include "LuaHooks.h"
+#include "ddModel.h"
 #include "ddPhysicsEngine.h"
 
 /** \brief Container for transform information */
@@ -150,6 +150,6 @@ struct ddAgent {
 };
 
 /** \brief Lua class instance metatable name */
-const char* ddAgent_meta_name();
+const char *ddAgent_meta_name();
 /** \brief DO NOT USE. ONLY TO BE CALLED BY ddAssetsLuaClass */
 void log_meta_ddAgent(lua_State *L);

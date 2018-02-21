@@ -247,7 +247,7 @@ int get_mat_count(lua_State* L) {
     } else {
       ddTerminal::post(
           "[error]ddAgent::mat_count::Invalid 2nd arg (LOD level : int)");
-			lua_pushinteger(L, -1);
+      lua_pushinteger(L, -1);
       return 1;
     }
   }
@@ -255,7 +255,7 @@ int get_mat_count(lua_State* L) {
   if (lod_lvl >= ag->mesh.size()) {  // check if lod level is out of bounds
     ddTerminal::post(
         "[error]ddAgent::mat_count::Invalid 2nd arg (LOD level : int)");
-		lua_pushinteger(L, -1);
+    lua_pushinteger(L, -1);
     return 1;
   }
 
@@ -411,20 +411,20 @@ int set_damping(lua_State* L) {
 }
 
 int set_mat_at_idx(lua_State* L) {
-	ddAgent* ag = *check_ddAgent(L);
-	size_t lod_lvl = 0;
-	size_t mat_idx = 0;
+  ddAgent* ag = *check_ddAgent(L);
+  size_t lod_lvl = 0;
+  size_t mat_idx = 0;
 
-	bool valid_idxs = check_mat_args(L, ag, lod_lvl, mat_idx, "set_mat_at_idx");
-	if (valid_idxs) {
-		// get 4th argument (material ID to assign)
-		int top = lua_gettop(L);
-		if (top >= 4 && lua_isinteger(L, 4)) {
-			size_t id = (size_t)lua_tointeger(L, 4);
-			ag->mesh[lod_lvl].material[mat_idx] = id;
-		}
-	}
-	return 0; 
+  bool valid_idxs = check_mat_args(L, ag, lod_lvl, mat_idx, "set_mat_at_idx");
+  if (valid_idxs) {
+    // get 4th argument (material ID to assign)
+    int top = lua_gettop(L);
+    if (top >= 4 && lua_isinteger(L, 4)) {
+      size_t id = (size_t)lua_tointeger(L, 4);
+      ag->mesh[lod_lvl].material[mat_idx] = id;
+    }
+  }
+  return 0;
 }
 
 static int to_string(lua_State* L) {

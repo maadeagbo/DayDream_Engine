@@ -18,8 +18,8 @@
 
 //#include <SDL.h>
 #include "GLFW/glfw3.h"
-#include "ddIncludes.h"
 #include "LuaHooks.h"
+#include "ddIncludes.h"
 
 enum DD_Keys {
   A_Key,

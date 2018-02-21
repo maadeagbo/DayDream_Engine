@@ -17,7 +17,7 @@ static int new_ddMat(lua_State *L) {
   int num_args = lua_gettop(L);
   if (num_args == 0) {
     ddTerminal::post("[error]ddMat::Must provide id at initialization");
-		return 1;
+    return 1;
   }
 
   // get id
@@ -25,7 +25,7 @@ static int new_ddMat(lua_State *L) {
   bool id_flag = lua_type(L, curr_arg) == LUA_TSTRING;
   if (!id_flag) {
     ddTerminal::post("[error]ddMat::Invalid 1st arg (id : string)");
-		return 1;
+    return 1;
   }
   const char *id = lua_tostring(L, curr_arg);
 

@@ -15,11 +15,11 @@
 #include <cstdio>
 #include <functional>
 #include <future>
+#include <initializer_list>
 #include <map>
 #include <string>
 #include <thread>
 #include <typeinfo>
-#include <initializer_list>
 
 #ifdef WIN32
 #define GLM_FORCE_CXX98

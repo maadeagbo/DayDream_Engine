@@ -1,33 +1,33 @@
 #pragma once
 
-#include "ddIncludes.h"
 #include "LuaHooks.h"
-#include "ddFileIO.h"
 #include "ddAssets.h"
+#include "ddFileIO.h"
+#include "ddIncludes.h"
 
 /// \brief Object to store vertex data from DDM
 struct FbxVData {
-	dd_array<glm::vec3> v;
-	dd_array<glm::vec3> n;
-	dd_array<glm::vec3> t;
-	dd_array<glm::vec2> u;
-	dd_array<glm::vec4> j;
-	dd_array<glm::vec4> b;
-	BoundingBox bbox;
-	void setSize(const unsigned size) {
-		v.resize(size);
-		n.resize(size);
-		t.resize(size);
-		u.resize(size);
-		j.resize(size);
-		b.resize(size);
-	}
+  dd_array<glm::vec3> v;
+  dd_array<glm::vec3> n;
+  dd_array<glm::vec3> t;
+  dd_array<glm::vec2> u;
+  dd_array<glm::vec4> j;
+  dd_array<glm::vec4> b;
+  BoundingBox bbox;
+  void setSize(const unsigned size) {
+    v.resize(size);
+    n.resize(size);
+    t.resize(size);
+    u.resize(size);
+    j.resize(size);
+    b.resize(size);
+  }
 };
 
 /// \brief Object to store ebo data from DDM
 struct FbxEData {
-	dd_array<unsigned> idxs;
-	unsigned mat_idx;
+  dd_array<unsigned> idxs;
+  unsigned mat_idx;
 };
 
 /**

@@ -31,17 +31,16 @@ ASSET_DEF(ddMat, mats)
 ASSET_DEF(ddAnimClip, clips)
 
 void init_assets() {
-
-	// set free lists
-	fl_b_agents.initialize((unsigned)b_agents.size());
-	fl_cams.initialize((unsigned)cams.size());
-	fl_lights.initialize((unsigned)lights.size());
-	fl_meshes.initialize((unsigned)meshes.size());
-	fl_skeletons.initialize((unsigned)skeletons.size());
-	fl_poses.initialize((unsigned)poses.size());
-	fl_textures.initialize((unsigned)textures.size());
-	fl_mats.initialize((unsigned)mats.size());
-	fl_clips.initialize((unsigned)clips.size());
+  // set free lists
+  fl_b_agents.initialize((unsigned)b_agents.size());
+  fl_cams.initialize((unsigned)cams.size());
+  fl_lights.initialize((unsigned)lights.size());
+  fl_meshes.initialize((unsigned)meshes.size());
+  fl_skeletons.initialize((unsigned)skeletons.size());
+  fl_poses.initialize((unsigned)poses.size());
+  fl_textures.initialize((unsigned)textures.size());
+  fl_mats.initialize((unsigned)mats.size());
+  fl_clips.initialize((unsigned)clips.size());
 }
 
 void cleanup_all_assets() {

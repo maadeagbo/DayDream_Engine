@@ -37,12 +37,12 @@ static int new_ddModelData(lua_State *L) {
     ddTerminal::post("[error]ddModelData::Failed to allocate new model");
     return 1;
   }
-	// skip loading if using opengl api and on separate thread
-	bool skip = DD_GRAPHICS_API == 0 && ddAssets::load_screen_check();
-	if (!skip) {
-		// load to gpu
-		ddAssets::load_model_to_gpu(*mdl);
-	}
+  // skip loading if using opengl api and on separate thread
+  bool skip = DD_GRAPHICS_API == 0 && ddAssets::load_screen_check();
+  if (!skip) {
+    // load to gpu
+    ddAssets::load_model_to_gpu(*mdl);
+  }
 
   // set metatable
   luaL_getmetatable(L, ddModelData_meta_name());
@@ -75,11 +75,11 @@ static const struct luaL_Reg mdl_lib[] = {{"new", new_ddModelData},
                                           {NULL, NULL}};
 
 int luaopen_ddModelData(lua_State *L) {
-	// get and log functions in metatable
-	log_meta_ddModelData(L);
-	luaL_setfuncs(L, mdl_m2, 0);
+  // get and log functions in metatable
+  log_meta_ddModelData(L);
+  luaL_setfuncs(L, mdl_m2, 0);
 
-	// library functions
-	luaL_newlib(L, mdl_lib);
-	return 1;
+  // library functions
+  luaL_newlib(L, mdl_lib);
+  return 1;
 }

@@ -173,52 +173,51 @@ void ddAssets::load_to_gpu() {
   dd_array<ddModelData *> md_array = get_all_ddModelData();
   DD_FOREACH(ddModelData *, mh_id, md_array) {
     ddModelData *mdl = *mh_id.ptr;
-		load_model_to_gpu(mdl);
+    load_model_to_gpu(mdl);
   }
 
   // load agents
   dd_array<ddAgent *> ag_array = get_all_ddAgent();
   DD_FOREACH(ddAgent *, ag_id, ag_array) {
     ddAgent *ag = *ag_id.ptr;
-		load_agent_to_gpu(ag);
+    load_agent_to_gpu(ag);
   }
 }
 
-void ddAssets::load_agent_to_gpu(ddAgent * ag) {
-	// create instance buffer
-	bool success = ddGPUFrontEnd::load_instance_data(ag->inst.inst_buff,
-																									 ag->inst.m4x4.size());
-	POW2_VERIFY_MSG(success == true, "Instance data not loaded to GPU", 0);
+void ddAssets::load_agent_to_gpu(ddAgent *ag) {
+  // create instance buffer
+  bool success = ddGPUFrontEnd::load_instance_data(ag->inst.inst_buff,
+                                                   ag->inst.m4x4.size());
+  POW2_VERIFY_MSG(success == true, "Instance data not loaded to GPU", 0);
 
-	// create & bind vao
-	DD_FOREACH(ModelIDs, mdl_id, ag->mesh) {
-		ddModelData *mdl = find_ddModelData(mdl_id.ptr->model);
-		POW2_VERIFY_MSG(success == true, "Mesh data not found", 0);
+  // create & bind vao
+  DD_FOREACH(ModelIDs, mdl_id, ag->mesh) {
+    ddModelData *mdl = find_ddModelData(mdl_id.ptr->model);
+    POW2_VERIFY_MSG(success == true, "Mesh data not found", 0);
 
-		mdl_id.ptr->vao_handles.resize(mdl->buffers.size());
-		DD_FOREACH(ddVAOData *, vao, mdl_id.ptr->vao_handles) {
-			success = ddGPUFrontEnd::create_vao(*vao.ptr);
-			POW2_VERIFY_MSG(success == true, "VAO data not generated", 0);
-			success = ddGPUFrontEnd::bind_object(*vao.ptr, ag->inst.inst_buff,
-																					 mdl->buffers[vao.i]);
-			POW2_VERIFY_MSG(success == true, "Object not bound to VAO", 0);
-		}
-	}
+    mdl_id.ptr->vao_handles.resize(mdl->buffers.size());
+    DD_FOREACH(ddVAOData *, vao, mdl_id.ptr->vao_handles) {
+      success = ddGPUFrontEnd::create_vao(*vao.ptr);
+      POW2_VERIFY_MSG(success == true, "VAO data not generated", 0);
+      success = ddGPUFrontEnd::bind_object(*vao.ptr, ag->inst.inst_buff,
+                                           mdl->buffers[vao.i]);
+      POW2_VERIFY_MSG(success == true, "Object not bound to VAO", 0);
+    }
+  }
 }
 
-void ddAssets::load_model_to_gpu(ddModelData* mdl) {
-	mdl->buffers.resize(mdl->mesh_info.size());
+void ddAssets::load_model_to_gpu(ddModelData *mdl) {
+  mdl->buffers.resize(mdl->mesh_info.size());
 
-	DD_FOREACH(DDM_Data, md, mdl->mesh_info) {
-		// create mesh data on gpu
-		mdl->buffers[md.i] = nullptr;
-		bool success =
-			ddGPUFrontEnd::load_buffer_data(mdl->buffers[md.i], md.ptr);
-		POW2_VERIFY_MSG(success == true, "Mesh data not loaded to GPU", 0);
+  DD_FOREACH(DDM_Data, md, mdl->mesh_info) {
+    // create mesh data on gpu
+    mdl->buffers[md.i] = nullptr;
+    bool success = ddGPUFrontEnd::load_buffer_data(mdl->buffers[md.i], md.ptr);
+    POW2_VERIFY_MSG(success == true, "Mesh data not loaded to GPU", 0);
 
-		// cleanup on ram?
-		md.ptr->data.resize(0);
-	}
+    // cleanup on ram?
+    md.ptr->data.resize(0);
+  }
 }
 
 void ddAssets::remove_rigid_body(ddAgent *ag) { delete_rigid_body(ag); }
