@@ -4,28 +4,30 @@ layout (location = 0) in vec3 VertexPosition;
 layout (location = 1) in vec3 VertexNormal;
 layout (location = 2) in vec2 VertexTexCoord;
 
-uniform mat4 MVP;
+uniform mat4 View;
+uniform mat4 Proj;
 uniform bool DrawSky;
-uniform bool QuadRender;
-uniform bool LightVolume;
 
-out VS_OUT {
-	vec2 TexCoord;
-	vec3 SkyCoord;
-} vs_out;
+// out VS_OUT {
+// 	vec2 TexCoord;
+// 	vec3 SkyCoord;
+// } vs_out;
 
 void main() {
     // quad plane
-	vs_out.TexCoord = VertexTexCoord;
+	//vs_out.TexCoord = VertexTexCoord;
     gl_Position = vec4(VertexPosition, 1.0);
 
-	if (LightVolume) {
-		gl_Position = MVP * vec4(VertexPosition, 1.0);
-	}
+	//if (LightVolume) {
+		// vec3 pos = light_vol_center + 
+		// 	(cam_right_ws * VertexPosition.x * light_vol_radius) + 
+		// 	(cam_up_ws * VertexPosition.y * light_vol_radius);
+		// gl_Position = vec4(pos, 1.0);
+	//}
 	
 	if (DrawSky) {
-		vs_out.SkyCoord = VertexPosition;
-		gl_Position = MVP * vec4(VertexPosition, 1.0);
+		//vs_out.SkyCoord = VertexPosition;
+		gl_Position = Proj * View * vec4(VertexPosition, 1.0);
 		gl_Position.z = gl_Position.w - 0.00001;
 	} 
 }

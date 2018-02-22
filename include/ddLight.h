@@ -125,11 +125,11 @@ struct ddLBulb {
   /**
    * \brief Linear falloff compnent
    */
-  float linear = 0.0007f;
+  float linear = 2.f;
   /**
    * \brief Quadratic falloff component
    */
-  float quadratic = 0.00002f;
+  float quadratic = 1.f;
   /**
    * \brief Incedence angle cutoff spot light
    */

@@ -5,6 +5,7 @@ SDIR=$1
 # reflect lighting shader and initial file
 ./bin/dd_shader_reflect -o include/ddShaderReflect.h -e RE_Light \
 	-v "$SDIR/Resource/Shaders/Lighting_V.vert" \
+	-g "$SDIR/Resource/Shaders/Lighting_G.geom" \
 	-f "$SDIR/Resource/Shaders/Lighting_F.frag"
 
 # reflect gbuffer shader

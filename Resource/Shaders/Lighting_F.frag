@@ -4,7 +4,7 @@
 layout (location = 0) out vec4 FragColor;
 layout (location = 1) out vec4 OutColor;
 
-in VS_OUT {
+in GS_OUT {
 	vec2 TexCoord;
 	vec3 SkyCoord;
 } fs_in;
@@ -28,9 +28,10 @@ struct LightInfo {
 	float cutoff_o;
 	float spotExponent;
 
+	float lumin_cutoff;
 	float linear;
 	float quadratic;
-	float attenuation;
+	float lumin_r709;
 };
 
 uniform LightInfo Light;
@@ -110,6 +111,12 @@ vec4 pointSpotLightModel( vec3 lightDir, vec3 viewDir, vec3 norm, vec4 albedo,
 	vec3 spec = Light.color * ks * spec_val;
 	
 	float spot = 1.0, intensity = 1.0;
+
+	// Attenuation
+	float attenuation = 1.0 / pow((_distance + 1), 2);
+	attenuation = (attenuation - Light.lumin_cutoff) / (1.0 - Light.lumin_cutoff);
+	attenuation = max(attenuation, 0);
+	
 	// spot light calc
 	if ( Light.type > 1 ) {
 		// spot light inner outer/ rings for fading effect
@@ -124,14 +131,13 @@ vec4 pointSpotLightModel( vec3 lightDir, vec3 viewDir, vec3 norm, vec4 albedo,
 		//****************************************************
 	}
 
-	// Attenuation
-	float attenuation = 1.0f / (1.0 + Light.linear * _distance + Light.quadratic * 
-		(_distance * _distance)); 
+	// float attenuation = 1.0f / (Light.constant + Light.linear * _distance + Light.quadratic * 
+	// 	(_distance * _distance)); 
 	diffuse *= attenuation; 
 	ambient *= attenuation; 
 	spec *= attenuation; 
 
-	return vec4((diffuse* spot * intensity + ambient * intensity + spec * spot * 
+	return vec4((diffuse * spot * intensity + ambient * intensity + spec * spot * 
 							intensity), albedo.a);
 }
 
@@ -177,7 +183,7 @@ void main() {
 
 		OutColor = vec4(color, skyboxColor.w);
 	} else {
-		// general lighting
+		// directional lighting
 		if ( Light.type == 0 ) {
 			lightDir = -normalize( Light.direction );
 			// shadow calc
@@ -190,17 +196,20 @@ void main() {
 			finalColor = directionLightModel( lightDir, viewDir, norm, 
 				albedo, Light.color, shadow, spec);
 		} else {
+			// point and spot light
 			vec3 _dist = Light.position - pos;
 			lightDir = normalize(_dist);
 			finalColor = pointSpotLightModel( lightDir, viewDir, norm, albedo, 
 				length(_dist), spec);
 		}
 
-		
 		OutColor = finalColor;
 		//OutColor = vec4(1.0, 0.0, 0.0, 1.0);
 		//OutColor = vec4(norm, 1.0);
 		//OutColor = albedo;
 	}
 	
+	if ( Light.type == 1 ) {
+		OutColor = vec4(1.0);
+	}
 }

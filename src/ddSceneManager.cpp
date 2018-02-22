@@ -165,16 +165,21 @@ float calc_lightvolume_radius(const ddLBulb *blb) {
     return 0.f;
   }
 
-  float LVR = 0.0f;
-  float constant = 1.0;
-  float lightMax =
+	const float constant = 1.0;
+	const float radius = 1.0;
+	const float min_lumin = 0.01; // may need to be scaled inversely by exposure
+
+	//luminance using Rec 709 luminance formula
+	double light_lumin = glm::dot(blb->color, glm::vec3(0.2126, 0.7152, 0.0722));
+	const double cutoff = min_lumin / light_lumin;
+
+	//double kc = constant - (light_lumin / min_lumin);
+	// 1.0/(kc + blb->linear * blb->linear + (blb->quadratic * dist^2))
+
+	// max value set as light intensity (approximation subject to change)
+  float light_max =
       std::fmaxf(std::fmaxf(blb->color.r, blb->color.g), blb->color.b);
-  LVR =
-      (-blb->linear + std::sqrt(blb->linear * blb->linear -
-                                4.f * blb->quadratic *
-                                    (constant - lightMax * (256.0f / 5.0f)))) /
-      (2.f * blb->quadratic);
-  return LVR;
+  return radius * (glm::sqrt(light_max / cutoff) - 1.0);
 }
 
 void cull_objects(const FrustumBox fr, const glm::mat4 view_m,

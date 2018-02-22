@@ -63,7 +63,7 @@ struct ddMat {
   /// \brief Attached textures (indexed w/ TexType enum)
   dd_array<size_t> textures;
   /// \brief Specular component
-  float spec_value = 0.5f;
+  float spec_value = 0.0f;
   /// \brief Flag for activated textures (bit comparison w/ TexTypes)
   TexType texture_flag = TexType::NULL_T;
   /// \brief Flag that marks if the material is loaded on the gpu

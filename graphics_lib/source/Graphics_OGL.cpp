@@ -212,6 +212,10 @@ bool load_api_library(const bool display_info) {
   return true;
 }
 
+bool spot_check_errors(const char *sig) {
+	return gl_error(sig);
+}
+
 //*****************************************************************************
 
 void destroy_texture(ddTextureData *&tex_ptr) {

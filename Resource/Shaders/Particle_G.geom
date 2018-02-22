@@ -17,11 +17,15 @@ in vec4 V_Color[];
 in vec4 V_Velocity[];
 in float V_Life[];
 
-void main() {
+void out_uniforms() {
 	// pass thru colors and life time
 	G_Color = vec4(V_Color[0]);
 	G_Velocity = vec4(V_Velocity[0]);
 	G_Life = V_Life[0];
+}
+
+void main() {
+	out_uniforms();
 
 	float _sizeW = Size2;
 	float _sizeH = Size2;
@@ -42,18 +46,25 @@ void main() {
 	// first point & UV
 	gl_Position = Proj * (vec4(-_sizeW, -_sizeH, 0.0, 0.0) + gl_in[0].gl_Position);
 	TexCoord = vec2(0.0, 0.0);
+
 	EmitVertex();
+
 	// second point & UV
 	gl_Position = Proj * (vec4(_sizeW, -_sizeH, 0.0, 0.0) + gl_in[0].gl_Position);
 	TexCoord = vec2(1.0, 0.0);
+	
 	EmitVertex();
+
 	// third point & UV
 	gl_Position = Proj * (vec4(-_sizeW, _sizeH, 0.0, 0.0) + gl_in[0].gl_Position);
 	TexCoord = vec2(0.0, 1.0);
+	
 	EmitVertex();
+
 	// fourth point & UV
 	gl_Position = Proj * (vec4(_sizeW, _sizeH, 0.0, 0.0) + gl_in[0].gl_Position);
 	TexCoord = vec2(1.0, 1.0);
+	
 	EmitVertex();
 
 	if (V_Life[0] > 0.001) {

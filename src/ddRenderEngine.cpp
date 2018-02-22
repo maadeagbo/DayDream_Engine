@@ -67,6 +67,11 @@ cbuff<32> lstencil_sh = "light_stencil";
 cbuff<32> depth_sh = "shadow";
 cbuff<32> depthsk_sh = "shadow_skinned";
 
+// Light volume render buffers
+ddVAOData *light_vao = nullptr;
+ddStorageBufferData *light_point_ssbo = nullptr;
+dd_array<glm::vec3> light_point(1);
+
 }  // namespace
 
 /** \brief Internal draw function */
@@ -230,6 +235,12 @@ void initialize(const unsigned width, const unsigned height) {
   ddGPUFrontEnd::create_cbuffer(cube_width, cube_height);
   ddGPUFrontEnd::create_fbuffer(scr_width, scr_height, shadow_width,
                                 shadow_height);
+
+  // create vao
+  ddGPUFrontEnd::create_vao(light_vao);
+  // create storage buffer for rendering light volume
+  ddGPUFrontEnd::create_storage_buffer(light_point_ssbo,
+                                       light_point.sizeInBytes());
 
   // ping pong shader textures
   calc_pingpong_textures();
@@ -512,8 +523,8 @@ void render_static(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
         glm::mat4 model_m = ddBodyFuncs::get_model_mat(&agent->body);
         glm::mat4 norm_m = glm::transpose(glm::inverse(model_m));
         sh->set_uniform((int)RE_GBuffer::Norm_m4x4, norm_m);
-        sh->set_uniform((int)RE_GBuffer::MVP_m4x4,
-                        cam_proj_m * cam_view_m * model_m);
+        sh->set_uniform((int)RE_GBuffer::Model_m4x4, model_m);
+        sh->set_uniform((int)RE_GBuffer::VP_m4x4, cam_proj_m * cam_view_m);
 
         // bind/fill instance buffer
         ddGPUFrontEnd::set_instance_buffer_contents(agent->inst.inst_buff,
@@ -550,6 +561,16 @@ glm::vec3 viewport_transform(const glm::vec3 ndc, const glm::vec2 dimension) {
   return out;
 }
 
+glm::vec3 create_corner(const glm::vec3 origin, const glm::vec3 w_h_d) {
+	glm::vec3 out_vec;
+
+	out_vec.x = origin.x + w_h_d.x;
+	out_vec.y = origin.y + w_h_d.y;
+	out_vec.z = origin.z + w_h_d.z;
+
+	return out_vec;
+}
+
 void light_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
                 const glm::vec3 cam_pos) {
   // get light plane
@@ -560,6 +581,7 @@ void light_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
   ddGPUFrontEnd::blit_depth_buffer(ddBufferType::GEOM, ddBufferType::LIGHT,
                                    scr_width, scr_height);
   ddGPUFrontEnd::toggle_depth_mask();
+  ddGPUFrontEnd::toggle_face_cull(false);
   ddGPUFrontEnd::bind_framebuffer(ddBufferType::LIGHT);
   ddGPUFrontEnd::clear_color_buffer();
   ddGPUFrontEnd::toggle_additive_blend(true);
@@ -571,11 +593,12 @@ void light_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
 
   sh->set_uniform((int)RE_Light::viewPos_v3, cam_pos);
   sh->set_uniform((int)RE_Light::DrawSky_b, false);
-  sh->set_uniform((int)RE_Light::LightVolume_b, false);
+  sh->set_uniform((int)RE_Light::LightVolume_b, true);
   // bind geometry buffer multipass texture
   sh->set_uniform((int)RE_Light::PositionTex_smp2d, 0);
   sh->set_uniform((int)RE_Light::ColorTex_smp2d, 1);
   sh->set_uniform((int)RE_Light::NormalTex_smp2d, 2);
+
   ddGPUFrontEnd::bind_pass_texture(ddBufferType::GEOM);
 
   // get shadow producing light (if one exists)
@@ -595,17 +618,33 @@ void light_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
       parent_mat = ddBodyFuncs::get_model_mat(&blb_p->body);
     }
 
+    // calculate light luminance using Rec 709
+    const float light_lumin =
+        glm::dot(blb->color, glm::vec3(0.2126, 0.7152, 0.0722));
+    const float min_lumin =
+        0.01;  // may need to be scaled inversely by exposure
+
     // set shader uniforms per light
     glm::vec3 lpos = glm::vec3(parent_mat * glm::vec4(blb->position, 1.f));
     sh->set_uniform((int)RE_Light::Light_position_v3, lpos);
     sh->set_uniform((int)RE_Light::Light_type_i, (int)blb->type);
+    sh->set_uniform((int)RE_Light::light_geo_i, (int)blb->type);
     sh->set_uniform((int)RE_Light::Light_direction_v3, blb->direction);
     sh->set_uniform((int)RE_Light::Light_color_v3, blb->color);
-    sh->set_uniform((int)RE_Light::Light_linear_f, blb->linear);
-    sh->set_uniform((int)RE_Light::Light_quadratic_f, blb->quadratic);
+    sh->set_uniform((int)RE_Light::Light_lumin_cutoff_f,
+                    min_lumin / light_lumin);
+
+    ddTerminal::f_post("lumin: %.3f", light_lumin);
+    ddTerminal::f_post("cutoff: %.3f", 1.f - (min_lumin / light_lumin));
+
+    // sh->set_uniform((int)RE_Light::Light_linear_f, blb->linear);
+    // sh->set_uniform((int)RE_Light::Light_quadratic_f, blb->quadratic);
     sh->set_uniform((int)RE_Light::Light_cutoff_i_f, blb->cutoff_i);
     sh->set_uniform((int)RE_Light::Light_cutoff_o_f, blb->cutoff_o);
     sh->set_uniform((int)RE_Light::Light_spotExponent_f, blb->spot_exp);
+
+    glm::vec2 scr_dim = glm::vec2((float)scr_width, (float)scr_height);
+    sh->set_uniform((int)RE_Light::screenDimension_v2, scr_dim);
 
     // calculate model matrix for light _light volume = plane approximation)
     float lv_radius = ddSceneManager::calc_lightvolume_radius(blb);
@@ -625,51 +664,63 @@ void light_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
           sh->set_uniform((int)RE_Light::LSM_m4x4, shadow_blb->l_s_m);
         }
         // render full screen quad & turn off shadow calc
-        sh->set_uniform((int)RE_Light::MVP_m4x4, glm::mat4());
-        ddGPUFrontEnd::render_quad();
+        sh->set_uniform((int)RE_Light::View_m4x4, glm::mat4());
+        sh->set_uniform((int)RE_Light::Proj_m4x4, glm::mat4());
+
+        // render full screen quad
+        sh->set_uniform((int)RE_Light::half_width_f, 1.f);
+        sh->set_uniform((int)RE_Light::half_height_f, 1.f);
+
+        // render quad from center of screen
+        light_point[0] = glm::vec3(0.f);
+        ddGPUFrontEnd::set_storage_buffer_contents(
+            light_point_ssbo, light_point.sizeInBytes(), 0, &light_point[0]);
+
+        ddGPUFrontEnd::draw_points(light_vao, light_point_ssbo,
+                                   ddAttribPrimitive::FLOAT, 0, 3, 3, 0, 0, 1);
 
         sh->set_uniform((int)RE_Light::ShadowMap_b, false);
         break;
       }
       case LightType::POINT_L: {
         // render using light volume plane
-        glm::mat4 mvp = cam_proj_m * cam_view_m * model;
-        glm::vec2 scr_dim = glm::vec2((float)scr_width, (float)scr_height);
+        glm::mat4 mvp = cam_proj_m * cam_view_m;
 
-        glm::vec4 pos1 = glm::vec4(0.0, 0.0, 0.0, 1.0);
-        glm::vec4 pos2 = glm::vec4(1.0, 1.0, 0.0, 1.0);
+        glm::vec4 cam_right = cam_view_m[0];
+        glm::vec4 cam_up = cam_view_m[1];
 
-        pos1 = mvp * pos1;
-        pos1 /= pos1.w;
-        pos2 = mvp * pos2;
-        pos2 /= pos2.w;
-        glm::vec3 scr_pos1 = viewport_transform(glm::vec3(pos1), scr_dim);
-        glm::vec3 scr_pos2 = viewport_transform(glm::vec3(pos2), scr_dim);
+        sh->set_uniform((int)RE_Light::View_m4x4, cam_view_m);
+        sh->set_uniform((int)RE_Light::Proj_m4x4, cam_proj_m);
 
-        float scale_x = glm::distance(scr_pos1.x, scr_pos2.x) / scr_dim.x;
-        float scale_y = glm::distance(scr_pos1.y, scr_pos2.y) / scr_dim.y;
-        float loc_x = scr_pos1.x / scr_dim.x;
-        float loc_y = scr_pos1.y / scr_dim.y;
+        // check if inside volume
+				const glm::vec3 w_h_d(lv_radius + 0.1f);
+				glm::vec3 max_cnr = create_corner(blb->position, w_h_d);
+				glm::vec3 min_cnr = create_corner(blb->position, -w_h_d);
 
-        glm::mat4 new_mvp =
-            glm::translate(glm::mat4(), glm::vec3(loc_x, loc_y, 0.f));
-        new_mvp = glm::scale(new_mvp, glm::vec3(scale_x, scale_y, 1.f));
+				bool in_vol = true;
+				in_vol = cam_pos.x <= max_cnr.x && cam_pos.x >= min_cnr.x && in_vol;
+				in_vol = cam_pos.y <= max_cnr.y && cam_pos.y >= min_cnr.y && in_vol;
+				in_vol = cam_pos.z <= max_cnr.z && cam_pos.z >= min_cnr.z && in_vol;
 
-        sh->set_uniform((int)RE_Light::MVP_m4x4, new_mvp);
-        sh->set_uniform((int)RE_Light::LightVolume_b, true);
-        sh->set_uniform((int)RE_Light::screenDimension_v2, scr_dim);
+        if (in_vol) {
+          ddGPUFrontEnd::toggle_depth_test(false);
+        }
+
+        // render quad based on radius of light volume
+        sh->set_uniform((int)RE_Light::half_width_f, lv_radius);
+        sh->set_uniform((int)RE_Light::half_height_f, lv_radius);
+        sh->set_uniform((int)RE_Light::half_depth_f, lv_radius);
 
         // bind vao and render
-        ddGPUFrontEnd::toggle_face_cull(false);
-        // ddGPUFrontEnd::draw_instanced_vao(lplane->mesh[0].vao_handles[0],
-        //                                 (unsigned)lplane_mdl->mesh_info[0].indices.size(),
-        //                                 1);
+        light_point[0] = blb->position;
+        ddGPUFrontEnd::set_storage_buffer_contents(
+            light_point_ssbo, light_point.sizeInBytes(), 0, &light_point[0]);
 
-        ddGPUFrontEnd::render_quad();
-
-        ddGPUFrontEnd::toggle_face_cull(true);
-
-        sh->set_uniform((int)RE_Light::LightVolume_b, false);
+        ddGPUFrontEnd::draw_points(light_vao, light_point_ssbo,
+                                   ddAttribPrimitive::FLOAT, 0, 3, 3, 0, 0, 1);
+				if (in_vol) {
+					ddGPUFrontEnd::toggle_depth_test(true);
+				}
         break;
       }
       case LightType::SPOT_L: {
@@ -683,6 +734,7 @@ void light_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
   // reset
   ddGPUFrontEnd::toggle_additive_blend();
   ddGPUFrontEnd::toggle_depth_mask(true);
+  ddGPUFrontEnd::toggle_face_cull(true);
   ddGPUFrontEnd::bind_framebuffer(ddBufferType::DEFAULT);
   ddGPUFrontEnd::bind_pass_texture(ddBufferType::DEFAULT);
   return;

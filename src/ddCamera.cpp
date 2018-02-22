@@ -81,6 +81,8 @@ static int get_id(lua_State *L);
 static int set_active(lua_State *L);
 static int get_fov(lua_State *L);
 static int set_fov(lua_State *L);
+static int set_near(lua_State *L);
+static int set_far(lua_State *L);
 // p = pitch, y = yaw, r = roll
 static int get_p_y_r(lua_State *L);
 static int set_p_y_r(lua_State *L);
@@ -89,6 +91,8 @@ static int to_string(lua_State *L);
 
 // method list
 static const struct luaL_Reg cam_methods[] = {{"id", get_id},
+                                              {"set_near", set_near},
+                                              {"set_far", set_far},
                                               {"set_fovh", set_fov},
                                               {"fovh", get_fov},
                                               {"set_active", set_active},
@@ -137,6 +141,26 @@ int set_fov(lua_State *L) {
     ddTerminal::f_post("Invalid fov argument for cam: %u", cam->id);
   }
 
+  return 0;
+}
+
+int set_near(lua_State *L) {
+  ddCam *cam = *check_ddCam(L);
+  if (lua_isnumber(L, -1)) {
+    cam->n_plane = (float)lua_tonumber(L, -1);
+  } else {
+    ddTerminal::f_post("Invalid near plane argument for cam: %u", cam->id);
+  }
+  return 0;
+}
+
+int set_far(lua_State *L) {
+  ddCam *cam = *check_ddCam(L);
+  if (lua_isnumber(L, -1)) {
+    cam->f_plane = (float)lua_tonumber(L, -1);
+  } else {
+    ddTerminal::f_post("Invalid far plane argument for cam: %u", cam->id);
+  }
   return 0;
 }
 

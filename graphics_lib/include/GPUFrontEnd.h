@@ -118,6 +118,8 @@ void clear_screen(const float r = 0.f, const float g = 0.f, const float b = 0.f,
                   const float a = 1.f);
 // Initialize Graphics API library
 bool load_api_library(const bool display_info = true);
+// Spot check for API errors (returns true if errors found)
+bool spot_check_errors(const char *sig);
 
 //*****************************************************************************
 
