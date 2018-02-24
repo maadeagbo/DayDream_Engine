@@ -53,9 +53,9 @@ args["id"] = "light"
 args["path"] = ROOT_DIR.."/Resource/Shaders/Lighting_V.vert"
 args["type"] = VERT_SHADER
 add_shader(args)
-args["path"] = ROOT_DIR.."/Resource/Shaders/Lighting_G.geom"
-args["type"] = GEOM_SHADER
-add_shader(args)
+--args["path"] = ROOT_DIR.."/Resource/Shaders/Lighting_G.geom"
+--args["type"] = GEOM_SHADER
+--add_shader(args)
 args["path"] = ROOT_DIR.."/Resource/Shaders/Lighting_F.frag"
 args["type"] = FRAG_SHADER
 add_shader(args)

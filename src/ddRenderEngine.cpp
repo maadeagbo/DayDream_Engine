@@ -67,11 +67,6 @@ cbuff<32> lstencil_sh = "light_stencil";
 cbuff<32> depth_sh = "shadow";
 cbuff<32> depthsk_sh = "shadow_skinned";
 
-// Light volume render buffers
-ddVAOData *light_vao = nullptr;
-ddStorageBufferData *light_point_ssbo = nullptr;
-dd_array<glm::vec3> light_point(1);
-
 }  // namespace
 
 /** \brief Internal draw function */
@@ -235,12 +230,6 @@ void initialize(const unsigned width, const unsigned height) {
   ddGPUFrontEnd::create_cbuffer(cube_width, cube_height);
   ddGPUFrontEnd::create_fbuffer(scr_width, scr_height, shadow_width,
                                 shadow_height);
-
-  // create vao
-  ddGPUFrontEnd::create_vao(light_vao);
-  // create storage buffer for rendering light volume
-  ddGPUFrontEnd::create_storage_buffer(light_point_ssbo,
-                                       light_point.sizeInBytes());
 
   // ping pong shader textures
   calc_pingpong_textures();
@@ -561,7 +550,7 @@ glm::vec3 viewport_transform(const glm::vec3 ndc, const glm::vec2 dimension) {
   return out;
 }
 
-glm::vec3 create_corner(const glm::vec3 origin, const glm::vec3 w_h_d) {
+glm::vec3 point_light_vert(const glm::vec3 origin, const glm::vec3 w_h_d) {
 	glm::vec3 out_vec;
 
 	out_vec.x = origin.x + w_h_d.x;
@@ -569,6 +558,58 @@ glm::vec3 create_corner(const glm::vec3 origin, const glm::vec3 w_h_d) {
 	out_vec.z = origin.z + w_h_d.z;
 
 	return out_vec;
+}
+
+struct SpotLData { glm:: mat4 model; glm::vec3 min; glm::vec3 max; };
+
+SpotLData get_spot_light_data(const ddLBulb *blb, const float light_extent) {
+  SpotLData data;
+
+  // calcalute center of circle at "end" of spot light
+  const glm::vec3 f_dir = glm::normalize(blb->direction);
+  const glm::vec3 center = light_extent * f_dir + blb->position;
+  // vectors to left and up at "end" of cone
+  const glm::vec3 r_dir = glm::cross(f_dir, global_Yv3);
+  const glm::vec3 u_dir = glm::cross(r_dir, f_dir);
+
+  // calculate radius at "end" of cone based on outer angle
+  const float c_radius = glm::tan(blb->cutoff_o) * light_extent;
+
+  const glm::vec3 center_r = r_dir * c_radius + center;
+  const glm::vec3 center_l = -r_dir * c_radius + center;
+  const glm::vec3 center_t = u_dir * c_radius + center;
+  const glm::vec3 center_b = -u_dir * c_radius + center;
+
+  // get AABB bounds using 5 vertices
+  BoundingBox bbox;
+  bbox.corner1 = center_r;
+  bbox.corner2 = center_l;
+  bbox.corner3 = center_t;
+  bbox.corner4 = center_b;
+  bbox.corner5 = blb->position;
+  bbox.corner6 = blb->position;
+  bbox.corner7 = blb->position;
+  bbox.corner8 = blb->position;
+
+  bbox.UpdateAABB_min();
+  bbox.UpdateAABB_max();
+
+  // get center of AABB
+  const glm::vec3 bb_vec = bbox.min - bbox.max;
+  const glm::vec3 bb_pnt = glm::normalize(bb_vec) * glm::length(bb_vec) * 0.5f +
+    bbox.max;
+  // get scale in x, y, z
+  const float sc_x = bbox.max.x - bbox.min.x;
+  const float sc_y = bbox.max.y - bbox.min.y;
+  const float sc_z = bbox.max.z - bbox.min.z;
+
+  // set data
+  data.model = glm::translate(glm::mat4(), bb_pnt);
+  data.model = glm::scale(data.model, glm::vec3(sc_x, sc_y, sc_z));
+  data.min = bbox.min;
+  data.max = bbox.max;
+  
+  return data;
 }
 
 void light_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
@@ -593,7 +634,8 @@ void light_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
 
   sh->set_uniform((int)RE_Light::viewPos_v3, cam_pos);
   sh->set_uniform((int)RE_Light::DrawSky_b, false);
-  sh->set_uniform((int)RE_Light::LightVolume_b, true);
+  sh->set_uniform((int)RE_Light::Debug_b, false);
+
   // bind geometry buffer multipass texture
   sh->set_uniform((int)RE_Light::PositionTex_smp2d, 0);
   sh->set_uniform((int)RE_Light::ColorTex_smp2d, 1);
@@ -628,17 +670,11 @@ void light_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
     glm::vec3 lpos = glm::vec3(parent_mat * glm::vec4(blb->position, 1.f));
     sh->set_uniform((int)RE_Light::Light_position_v3, lpos);
     sh->set_uniform((int)RE_Light::Light_type_i, (int)blb->type);
-    sh->set_uniform((int)RE_Light::light_geo_i, (int)blb->type);
+    //sh->set_uniform((int)RE_Light::light_geo_i, (int)blb->type);
     sh->set_uniform((int)RE_Light::Light_direction_v3, blb->direction);
     sh->set_uniform((int)RE_Light::Light_color_v3, blb->color);
     sh->set_uniform((int)RE_Light::Light_lumin_cutoff_f,
                     min_lumin / light_lumin);
-
-    ddTerminal::f_post("lumin: %.3f", light_lumin);
-    ddTerminal::f_post("cutoff: %.3f", 1.f - (min_lumin / light_lumin));
-
-    // sh->set_uniform((int)RE_Light::Light_linear_f, blb->linear);
-    // sh->set_uniform((int)RE_Light::Light_quadratic_f, blb->quadratic);
     sh->set_uniform((int)RE_Light::Light_cutoff_i_f, blb->cutoff_i);
     sh->set_uniform((int)RE_Light::Light_cutoff_o_f, blb->cutoff_o);
     sh->set_uniform((int)RE_Light::Light_spotExponent_f, blb->spot_exp);
@@ -646,7 +682,7 @@ void light_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
     glm::vec2 scr_dim = glm::vec2((float)scr_width, (float)scr_height);
     sh->set_uniform((int)RE_Light::screenDimension_v2, scr_dim);
 
-    // calculate model matrix for light _light volume = plane approximation)
+    // calculate model matrix for light _light volume = mesh approximation)
     float lv_radius = ddSceneManager::calc_lightvolume_radius(blb);
     glm::mat4 model;
     model = glm::translate(model, blb->position);
@@ -664,38 +700,31 @@ void light_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
           sh->set_uniform((int)RE_Light::LSM_m4x4, shadow_blb->l_s_m);
         }
         // render full screen quad & turn off shadow calc
+        sh->set_uniform((int)RE_Light::Model_m4x4, glm::mat4());
         sh->set_uniform((int)RE_Light::View_m4x4, glm::mat4());
         sh->set_uniform((int)RE_Light::Proj_m4x4, glm::mat4());
 
         // render full screen quad
-        sh->set_uniform((int)RE_Light::half_width_f, 1.f);
-        sh->set_uniform((int)RE_Light::half_height_f, 1.f);
+        //sh->set_uniform((int)RE_Light::half_width_f, 1.f);
+        //sh->set_uniform((int)RE_Light::half_height_f, 1.f);
 
-        // render quad from center of screen
-        light_point[0] = glm::vec3(0.f);
-        ddGPUFrontEnd::set_storage_buffer_contents(
-            light_point_ssbo, light_point.sizeInBytes(), 0, &light_point[0]);
-
-        ddGPUFrontEnd::draw_points(light_vao, light_point_ssbo,
-                                   ddAttribPrimitive::FLOAT, 0, 3, 3, 0, 0, 1);
+        ddGPUFrontEnd::render_quad();
 
         sh->set_uniform((int)RE_Light::ShadowMap_b, false);
         break;
       }
       case LightType::POINT_L: {
-        // render using light volume plane
-        glm::mat4 mvp = cam_proj_m * cam_view_m;
-
         glm::vec4 cam_right = cam_view_m[0];
         glm::vec4 cam_up = cam_view_m[1];
 
+        sh->set_uniform((int)RE_Light::Model_m4x4, model);
         sh->set_uniform((int)RE_Light::View_m4x4, cam_view_m);
         sh->set_uniform((int)RE_Light::Proj_m4x4, cam_proj_m);
 
         // check if inside volume
 				const glm::vec3 w_h_d(lv_radius + 0.1f);
-				glm::vec3 max_cnr = create_corner(blb->position, w_h_d);
-				glm::vec3 min_cnr = create_corner(blb->position, -w_h_d);
+				glm::vec3 max_cnr = point_light_vert(blb->position, w_h_d);
+				glm::vec3 min_cnr = point_light_vert(blb->position, -w_h_d);
 
 				bool in_vol = true;
 				in_vol = cam_pos.x <= max_cnr.x && cam_pos.x >= min_cnr.x && in_vol;
@@ -706,24 +735,47 @@ void light_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
           ddGPUFrontEnd::toggle_depth_test(false);
         }
 
-        // render quad based on radius of light volume
-        sh->set_uniform((int)RE_Light::half_width_f, lv_radius);
-        sh->set_uniform((int)RE_Light::half_height_f, lv_radius);
-        sh->set_uniform((int)RE_Light::half_depth_f, lv_radius);
+        sh->set_uniform((int)RE_Light::Debug_b, true);
+        sh->set_uniform((int)RE_Light::Debug_Color_v4, glm::vec4(1.f, 1.f, 1.f, 0.5f));
 
-        // bind vao and render
-        light_point[0] = blb->position;
-        ddGPUFrontEnd::set_storage_buffer_contents(
-            light_point_ssbo, light_point.sizeInBytes(), 0, &light_point[0]);
+        ddGPUFrontEnd::render_cube();
 
-        ddGPUFrontEnd::draw_points(light_vao, light_point_ssbo,
-                                   ddAttribPrimitive::FLOAT, 0, 3, 3, 0, 0, 1);
+        sh->set_uniform((int)RE_Light::Debug_b, false);
+
 				if (in_vol) {
 					ddGPUFrontEnd::toggle_depth_test(true);
 				}
         break;
       }
       case LightType::SPOT_L: {
+        const SpotLData s_data = get_spot_light_data(blb, lv_radius);
+
+        sh->set_uniform((int)RE_Light::Model_m4x4, s_data.model);
+        sh->set_uniform((int)RE_Light::View_m4x4, cam_view_m);
+        sh->set_uniform((int)RE_Light::Proj_m4x4, cam_proj_m);
+
+        // check if inside volume
+        bool in_vol = true;
+        const glm::vec3 max_cnr = s_data.max;
+        const glm::vec3 min_cnr = s_data.min;
+        in_vol = cam_pos.x <= max_cnr.x && cam_pos.x >= min_cnr.x && in_vol;
+        in_vol = cam_pos.y <= max_cnr.y && cam_pos.y >= min_cnr.y && in_vol;
+        in_vol = cam_pos.z <= max_cnr.z && cam_pos.z >= min_cnr.z && in_vol;
+
+        if (in_vol) {
+          ddGPUFrontEnd::toggle_depth_test(false);
+        }
+
+        sh->set_uniform((int)RE_Light::Debug_b, true);
+        sh->set_uniform((int)RE_Light::Debug_Color_v4, glm::vec4(1.f, 0.f, 0.f, 0.5f));
+
+        ddGPUFrontEnd::render_cube();
+
+        sh->set_uniform((int)RE_Light::Debug_b, false);
+
+        if (in_vol) {
+          ddGPUFrontEnd::toggle_depth_test(true);
+        }
         break;
       }
       default:

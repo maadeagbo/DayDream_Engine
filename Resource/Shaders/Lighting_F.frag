@@ -4,10 +4,11 @@
 layout (location = 0) out vec4 FragColor;
 layout (location = 1) out vec4 OutColor;
 
-in GS_OUT {
-	vec2 TexCoord;
-	vec3 SkyCoord;
-} fs_in;
+// in GS_OUT {
+// 	vec2 TexCoord;
+// 	vec3 SkyCoord;
+// } fs_in;
+in vec3 SkyCoord;
 
 // G-Buffer textures
 layout (binding = 0) uniform sampler2D PositionTex;
@@ -39,8 +40,10 @@ uniform mat4 LSM;
 uniform vec3 viewPos;
 uniform vec2 screenDimension;
 uniform bool DrawSky;
-uniform bool LightVolume;
 uniform bool ShadowMap;
+
+uniform bool Debug;
+uniform vec4 Debug_Color;
 
 float ShadowCalculation(vec4 lightSpace, vec3 normal, vec3 lightDir) {
 	// perform perspective divide
@@ -110,7 +113,7 @@ vec4 pointSpotLightModel( vec3 lightDir, vec3 viewDir, vec3 norm, vec4 albedo,
 	float ks = pow(max(dot(norm, halfDir), 0.0), 40.0);
 	vec3 spec = Light.color * ks * spec_val;
 	
-	float spot = 1.0, intensity = 1.0;
+	float spot = 1.0;//, intensity = 1.0;
 
 	// Attenuation
 	float attenuation = 1.0 / pow((_distance + 1), 2);
@@ -122,7 +125,7 @@ vec4 pointSpotLightModel( vec3 lightDir, vec3 viewDir, vec3 norm, vec4 albedo,
 		// spot light inner outer/ rings for fading effect
 		float theta = dot(lightDir, normalize(-Light.direction) );	
 		float epsilon = Light.cutoff_i - Light.cutoff_o;
-		intensity = pow( theta, Light.spotExponent);
+		//intensity = pow( theta, Light.spotExponent);
 	
 		//****************************************************
 		// Don't need dynamic branching at all, precompute 
@@ -136,9 +139,11 @@ vec4 pointSpotLightModel( vec3 lightDir, vec3 viewDir, vec3 norm, vec4 albedo,
 	diffuse *= attenuation; 
 	ambient *= attenuation; 
 	spec *= attenuation; 
+	
+	return vec4((diffuse * spot + ambient + spec * spot), albedo.a);
 
-	return vec4((diffuse * spot * intensity + ambient * intensity + spec * spot * 
-							intensity), albedo.a);
+	//return vec4((diffuse * spot * intensity + ambient * intensity + spec * spot * 
+	//						intensity), albedo.a);
 }
 
 vec4 directionLightModel( vec3 lightDir, vec3 viewDir, vec3 norm, vec4 albedo, 
@@ -158,11 +163,8 @@ vec4 directionLightModel( vec3 lightDir, vec3 viewDir, vec3 norm, vec4 albedo,
 }
 
 void main() {
-	vec2 tex_coord = fs_in.TexCoord;
-	if (LightVolume) {
-		// light volume in screen space
-		tex_coord = gl_FragCoord.xy / screenDimension;
-	}
+	vec2 tex_coord = gl_FragCoord.xy / screenDimension;
+
 	vec3 pos = vec3( texture( PositionTex, tex_coord ) );
 	vec3 norm = vec3( texture( NormalTex, tex_coord ) );
 	float spec = texture( NormalTex, tex_coord ).a;
@@ -175,7 +177,7 @@ void main() {
 
 	if ( DrawSky ) {
 		// sky box
-		vec4 skyboxColor = texture( skybox, fs_in.SkyCoord );
+		vec4 skyboxColor = texture( skybox, SkyCoord );
 		vec3 color = skyboxColor.xyz;
 		// gamma correction
 		float gamma = 2.2;
@@ -209,7 +211,7 @@ void main() {
 		//OutColor = albedo;
 	}
 	
-	if ( Light.type == 1 ) {
-		OutColor = vec4(1.0);
+	if ( Debug ) {
+		OutColor = Debug_Color;
 	}
 }
