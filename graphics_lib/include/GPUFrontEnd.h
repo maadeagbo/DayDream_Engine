@@ -17,6 +17,7 @@ struct ddInstBufferData;
 struct ddMeshBufferData;
 struct ddTextureData;
 struct ddStorageBufferData;
+struct ddIndexBufferData;
 
 /** \brief Frame buffer declarations (API defined) */
 enum class ddBufferType : unsigned {
@@ -161,6 +162,11 @@ void destroy_storage_buffer(ddStorageBufferData *&sbuff_ptr);
 // Create ddStorageBufferData buffer
 bool create_storage_buffer(ddStorageBufferData *&sbuff_ptr,
                            const unsigned byte_size);
+// Destroy ddIndexBufferData object
+void destroy_index_buffer(ddIndexBufferData *&ebuff_ptr);
+// Create and load ddIndexBufferData
+bool create_index_buffer(ddIndexBufferData *&ebuff_ptr,
+                         const unsigned byte_size, const void *data);
 // Extract ddStorageBufferData data to provided buffer
 bool extract_storage_buffer_data(ddStorageBufferData *sbuff_ptr,
                                  const unsigned buff_size_bytes,
@@ -177,6 +183,17 @@ void set_instance_buffer_contents(const ddInstBufferData *ibuff_ptr,
 void set_storage_buffer_contents(const ddStorageBufferData *sbuff_ptr,
                                  const unsigned byte_size,
                                  const unsigned offset, void *data);
+// Bind parts of ssbo to VAO object
+void bind_storage_buffer_atrribute(const ddVAOData *vao,
+                                   const ddStorageBufferData *sbuff_ptr,
+                                   ddAttribPrimitive type,
+                                   const unsigned attrib_loc,
+                                   const unsigned num_attribs_of_type,
+                                   const unsigned stride_in_bytes,
+                                   const unsigned offset_in_stride);
+// Bind index buffer to VAO
+void bind_index_buffer(const ddVAOData *vao,
+                       const ddIndexBufferData *ebuff_ptr);
 
 //*****************************************************************************
 
@@ -239,6 +256,8 @@ void toggle_stencil_test(bool flag = false);
 void toggle_additive_blend(bool flag = false);
 // Enable or disable framebuffer alpha blending
 void toggle_alpha_blend(bool flag = false);
+// Enable or disable wireframe draw
+void toggle_wireframe(bool flag = false);
 
 enum DepthMode { LESS_OR_EQUAL, GREATER, LESS };
 // Set how depth testing function behaves
@@ -256,6 +275,14 @@ void bind_texture(const unsigned location, ddTextureData *tex_data);
 // Draw ddVAOObject instanced
 void draw_instanced_vao(const ddVAOData *vao, const unsigned num_indices,
                         const unsigned instance_size);
+
+// Draw ddVAOObject indexed
+void draw_indexed_vao(const ddVAOData *vao, const unsigned num_indices,
+                      const unsigned offset_in_index_buffer);
+
+// Draw ddVAOObject indexed
+void draw_indexed_lines_vao(const ddVAOData *vao, const unsigned num_indices,
+                      const unsigned offset_in_index_buffer);
 
 // Draw ddStorageBufferData as points
 void draw_points(const ddVAOData *vao, const ddStorageBufferData *sbuff_ptr,

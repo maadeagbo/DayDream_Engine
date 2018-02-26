@@ -165,18 +165,17 @@ float calc_lightvolume_radius(const ddLBulb *blb) {
     return 0.f;
   }
 
-	const float constant = 1.0;
-	const float radius = 1.0;
-	const float min_lumin = 0.01; // may need to be scaled inversely by exposure
+  const float radius = 1.0;
+  const float min_lumin = 0.01;  // may need to be scaled inversely by exposure
 
-	//luminance using Rec 709 luminance formula
-	double light_lumin = glm::dot(blb->color, glm::vec3(0.2126, 0.7152, 0.0722));
-	const double cutoff = min_lumin / light_lumin;
+  // luminance using Rec 709 luminance formula
+  double light_lumin = glm::dot(blb->color, glm::vec3(0.2126, 0.7152, 0.0722));
+  const double cutoff = min_lumin / light_lumin;
 
-	//double kc = constant - (light_lumin / min_lumin);
-	// 1.0/(kc + blb->linear * blb->linear + (blb->quadratic * dist^2))
+  // double kc = constant - (light_lumin / min_lumin);
+  // 1.0/(kc + blb->linear * blb->linear + (blb->quadratic * dist^2))
 
-	// max value set as light intensity (approximation subject to change)
+  // max value set as light intensity (approximation subject to change)
   float light_max =
       std::fmaxf(std::fmaxf(blb->color.r, blb->color.g), blb->color.b);
   return radius * (glm::sqrt(light_max / cutoff) - 1.0);

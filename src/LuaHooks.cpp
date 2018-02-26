@@ -1,4 +1,5 @@
 #include "LuaHooks.h"
+#include <typeinfo>
 
 namespace {
 cbuff<64> _key;
@@ -695,4 +696,74 @@ void append_package_path(lua_State *L, const char *path) {
   lua_pushstring(L, new_path.str());  // push the new one
   lua_setfield(L, -2, "path");        // set the field "path"
   lua_pop(L, 1);                      // pop package table
+}
+
+template <typename T>
+void parse_table_buffer(lua_State *L, dd_array<T>& buffer, unsigned& idx,
+                        const unsigned table_idx) {
+  // use typeid(T) to parse correctly
+  lua_pushnil(L);                 // push key on stack for table access
+  // adds value to the top of the stack and checks for space
+  while (lua_next(L, table_idx) != 0 && idx < buffer.size()) {  
+
+    int t = lua_type(L, -1);  // get value type
+    switch (t) {
+      case LUA_TBOOLEAN: {
+        if (typeid(T) == typeid(bool)) {
+          buffer[idx] = lua_toboolean(L, -1);
+          idx++;
+        }
+        break;
+      }
+      case LUA_TNUMBER: {
+        if (lua_isinteger(L, -1)) {
+          if (typeid(T) == typeid(int64_t)) {
+            buffer[idx] = (int64_t)lua_tointeger(L, -1);
+            idx++;
+          }
+        } else {
+          if (typeid(T) == typeid(float)) {
+            const float num = (float)lua_tonumber(L, -1);
+            buffer[idx] = num;
+            idx++;
+          }
+        }
+        break;
+      }
+      default:
+        break;
+    }
+    lua_pop(L, 1);  // remove value    
+  }
+}
+
+template <>
+void read_buffer_from_lua<float>(lua_State *L, dd_array<float>& buffer) {
+  int top = lua_gettop(L); /* number of arguments */
+  unsigned curr_idx = 0; 
+
+  for (int i = 1; i <= top; i++) {
+    int t = lua_type(L, i);
+    switch (t) {
+      case LUA_TTABLE: {
+        parse_table_buffer<float>(L, buffer, curr_idx, i);
+        break;
+      }
+      case LUA_TNUMBER: {
+        //parse_table(L, &fb);
+        if (curr_idx < buffer.size()) {
+          const float num = (float)lua_tonumber(L, i);
+          buffer[curr_idx] = num;
+          curr_idx++;
+        }
+        break;
+      }
+      default:
+        printf("%s\n", lua_typename(L, t));
+        break;
+    }
+  }
+  lua_pop(L, top);  // Pop table
+  
+  return;
 }

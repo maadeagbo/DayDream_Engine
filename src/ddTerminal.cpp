@@ -105,12 +105,12 @@ void ddTerminal::display(const float scr_width, const float scr_height) {
           execTerminalCommand(cmd_input);
         }
       }
-      // keep focus on imgui
-      // if (ImGui::IsItemHovered() ||
-      //    (ImGui::IsRootWindowOrAnyChildFocused() &&
-      //     !ImGui::IsAnyItemActive() && !ImGui::IsMouseClicked(0))) {
-      //  ImGui::SetKeyboardFocusHere(-1);  // Auto focus previous widget
-      //}
+      // keep focus on imgui text box
+      if (ImGui::IsItemHovered() ||
+          (ImGui::IsRootWindowOrAnyChildFocused() &&
+           !ImGui::IsAnyItemActive() && !ImGui::IsMouseClicked(0))) {
+        ImGui::SetKeyboardFocusHere(-1);  // Auto focus previous widget
+      }
     }
     ImGui::Separator();
 

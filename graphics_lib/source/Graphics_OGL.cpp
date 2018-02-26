@@ -24,6 +24,10 @@ struct ddStorageBufferData {
   GLuint storage_handle;
 };
 
+struct ddIndexBufferData {
+  GLuint index_handle;
+};
+
 //*****************************************************************************
 
 struct ddGBuffer {
@@ -212,9 +216,7 @@ bool load_api_library(const bool display_info) {
   return true;
 }
 
-bool spot_check_errors(const char *sig) {
-	return gl_error(sig);
-}
+bool spot_check_errors(const char *sig) { return gl_error(sig); }
 
 //*****************************************************************************
 
@@ -592,6 +594,39 @@ bool create_storage_buffer(ddStorageBufferData *&sbuff_ptr,
   return true;
 }
 
+void destroy_index_buffer(ddIndexBufferData *&ebuff_ptr) {
+  // destroy buffer and destroy buffer object
+  if (!ebuff_ptr) return;
+
+  glDeleteBuffers(1, &ebuff_ptr->index_handle);
+
+  gl_error("destroy_index_buffer");
+
+  delete ebuff_ptr;
+  ebuff_ptr = nullptr;
+}
+
+bool create_index_buffer(ddIndexBufferData *&ebuff_ptr,
+                         const unsigned byte_size, const void *data) {
+  if (ebuff_ptr) destroy_index_buffer(ebuff_ptr);
+
+  // create index buffer object
+  GLuint ebo = 0;
+  glGenBuffers(1, &ebo);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, byte_size, data, GL_STATIC_DRAW);
+  if (gl_error("create_index_buffer")) return false;
+
+  ebuff_ptr = new ddIndexBufferData();
+  if (!ebuff_ptr) {
+    fprintf(stderr, "Failed to create ddIndexBufferData object in RAM\n");
+    return false;
+  }
+  ebuff_ptr->index_handle = ebo;
+
+  return true;
+}
+
 bool extract_storage_buffer_data(ddStorageBufferData *sbuff_ptr,
                                  const unsigned buff_size_bytes,
                                  void *data_storage) {
@@ -641,6 +676,43 @@ void set_storage_buffer_contents(const ddStorageBufferData *sbuff_ptr,
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, sbuff_ptr->storage_handle);
   glBufferSubData(GL_SHADER_STORAGE_BUFFER, offset, byte_size, data);
   POW2_VERIFY_MSG(!gl_error("set_storage_buffer_contents"), "SSBO not set", 0);
+}
+
+void bind_storage_buffer_atrribute(const ddVAOData *vao,
+                                   const ddStorageBufferData *sbuff_ptr,
+                                   ddAttribPrimitive type,
+                                   const unsigned attrib_loc,
+                                   const unsigned num_attribs_of_type,
+                                   const unsigned stride_in_bytes,
+                                   const unsigned offset_in_stride) {
+  POW2_VERIFY_MSG(vao != nullptr, "bind_attribute::Null VAO object", 0);
+  POW2_VERIFY_MSG(sbuff_ptr != nullptr, "bind_attribute::Null storage buffer",
+                  0);
+
+  // bind buffer, set attributes, then draw points
+  glBindVertexArray(vao->vao_handle);
+  glBindBuffer(GL_ARRAY_BUFFER, sbuff_ptr->storage_handle);
+
+  glEnableVertexAttribArray(attrib_loc);
+  glVertexAttribPointer(attrib_loc, num_attribs_of_type,
+                        attrib_type_ogl[(int)type], GL_FALSE, stride_in_bytes,
+                        (GLvoid *)offset_in_stride);
+
+  glBindVertexArray(0);
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void bind_index_buffer(const ddVAOData *vao,
+                       const ddIndexBufferData *ebuff_ptr) {
+  POW2_VERIFY_MSG(vao != nullptr, "bind_index_buffer::Null VAO object", 0);
+  POW2_VERIFY_MSG(ebuff_ptr != nullptr, "bind_index_buffer::Null index buffer",
+                  0);
+
+  glBindVertexArray(vao->vao_handle);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebuff_ptr->index_handle);
+
+  glBindVertexArray(0);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 //*****************************************************************************
@@ -1207,6 +1279,16 @@ void toggle_alpha_blend(bool flag) {
   }
 }
 
+void toggle_wireframe(bool flag ) {
+  if (flag) {
+    // wireframe on
+    glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+  } else {
+    // disble wireframe
+    glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+  }
+}
+
 void set_depth_mode(const DepthMode mode) {
   switch (mode) {
     case DepthMode::LESS:
@@ -1265,6 +1347,28 @@ void draw_instanced_vao(const ddVAOData *vao, const unsigned num_indices,
   glBindVertexArray(vao->vao_handle);
   glDrawElementsInstanced(GL_TRIANGLES, (GLsizei)num_indices, GL_UNSIGNED_INT,
                           0, instance_size);
+  glBindVertexArray(0);
+}
+
+void draw_indexed_vao(const ddVAOData *vao, const unsigned num_indices,
+                      const unsigned offset_in_index_buffer) {
+  POW2_VERIFY_MSG(vao != nullptr, "draw_indexed_vao::Null vao provided", 0);
+
+  // bind vao and draw
+  glBindVertexArray(vao->vao_handle);
+  glDrawElements(GL_TRIANGLES, (GLsizei)num_indices, GL_UNSIGNED_INT,
+                 (GLvoid *)offset_in_index_buffer);
+  glBindVertexArray(0);
+}
+
+void draw_indexed_lines_vao(const ddVAOData *vao, const unsigned num_indices,
+                      const unsigned offset_in_index_buffer) {
+  POW2_VERIFY_MSG(vao != nullptr, "draw_indexed_vao::Null vao provided", 0);
+
+  // bind vao and draw
+  glBindVertexArray(vao->vao_handle);
+  glDrawElements(GL_LINES, (GLsizei)num_indices, GL_UNSIGNED_INT,
+                 (GLvoid *)offset_in_index_buffer);
   glBindVertexArray(0);
 }
 

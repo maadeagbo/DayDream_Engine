@@ -551,16 +551,20 @@ glm::vec3 viewport_transform(const glm::vec3 ndc, const glm::vec2 dimension) {
 }
 
 glm::vec3 point_light_vert(const glm::vec3 origin, const glm::vec3 w_h_d) {
-	glm::vec3 out_vec;
+  glm::vec3 out_vec;
 
-	out_vec.x = origin.x + w_h_d.x;
-	out_vec.y = origin.y + w_h_d.y;
-	out_vec.z = origin.z + w_h_d.z;
+  out_vec.x = origin.x + w_h_d.x;
+  out_vec.y = origin.y + w_h_d.y;
+  out_vec.z = origin.z + w_h_d.z;
 
-	return out_vec;
+  return out_vec;
 }
 
-struct SpotLData { glm:: mat4 model; glm::vec3 min; glm::vec3 max; };
+struct SpotLData {
+  glm::mat4 model;
+  glm::vec3 min;
+  glm::vec3 max;
+};
 
 SpotLData get_spot_light_data(const ddLBulb *blb, const float light_extent) {
   SpotLData data;
@@ -596,8 +600,8 @@ SpotLData get_spot_light_data(const ddLBulb *blb, const float light_extent) {
 
   // get center of AABB
   const glm::vec3 bb_vec = bbox.min - bbox.max;
-  const glm::vec3 bb_pnt = glm::normalize(bb_vec) * glm::length(bb_vec) * 0.5f +
-    bbox.max;
+  const glm::vec3 bb_pnt =
+      glm::normalize(bb_vec) * glm::length(bb_vec) * 0.5f + bbox.max;
   // get scale in x, y, z
   const float sc_x = bbox.max.x - bbox.min.x;
   const float sc_y = bbox.max.y - bbox.min.y;
@@ -608,16 +612,12 @@ SpotLData get_spot_light_data(const ddLBulb *blb, const float light_extent) {
   data.model = glm::scale(data.model, glm::vec3(sc_x, sc_y, sc_z));
   data.min = bbox.min;
   data.max = bbox.max;
-  
+
   return data;
 }
 
 void light_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
                 const glm::vec3 cam_pos) {
-  // get light plane
-  ddAgent *lplane = find_ddAgent(light_plane_id.gethash());
-  ddModelData *lplane_mdl = find_ddModelData(lplane->mesh[0].model);
-
   // buffer setup
   ddGPUFrontEnd::blit_depth_buffer(ddBufferType::GEOM, ddBufferType::LIGHT,
                                    scr_width, scr_height);
@@ -670,7 +670,7 @@ void light_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
     glm::vec3 lpos = glm::vec3(parent_mat * glm::vec4(blb->position, 1.f));
     sh->set_uniform((int)RE_Light::Light_position_v3, lpos);
     sh->set_uniform((int)RE_Light::Light_type_i, (int)blb->type);
-    //sh->set_uniform((int)RE_Light::light_geo_i, (int)blb->type);
+    // sh->set_uniform((int)RE_Light::light_geo_i, (int)blb->type);
     sh->set_uniform((int)RE_Light::Light_direction_v3, blb->direction);
     sh->set_uniform((int)RE_Light::Light_color_v3, blb->color);
     sh->set_uniform((int)RE_Light::Light_lumin_cutoff_f,
@@ -705,8 +705,8 @@ void light_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
         sh->set_uniform((int)RE_Light::Proj_m4x4, glm::mat4());
 
         // render full screen quad
-        //sh->set_uniform((int)RE_Light::half_width_f, 1.f);
-        //sh->set_uniform((int)RE_Light::half_height_f, 1.f);
+        // sh->set_uniform((int)RE_Light::half_width_f, 1.f);
+        // sh->set_uniform((int)RE_Light::half_height_f, 1.f);
 
         ddGPUFrontEnd::render_quad();
 
@@ -714,37 +714,35 @@ void light_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
         break;
       }
       case LightType::POINT_L: {
-        glm::vec4 cam_right = cam_view_m[0];
-        glm::vec4 cam_up = cam_view_m[1];
-
         sh->set_uniform((int)RE_Light::Model_m4x4, model);
         sh->set_uniform((int)RE_Light::View_m4x4, cam_view_m);
         sh->set_uniform((int)RE_Light::Proj_m4x4, cam_proj_m);
 
         // check if inside volume
-				const glm::vec3 w_h_d(lv_radius + 0.1f);
-				glm::vec3 max_cnr = point_light_vert(blb->position, w_h_d);
-				glm::vec3 min_cnr = point_light_vert(blb->position, -w_h_d);
+        const glm::vec3 w_h_d(lv_radius + 0.1f);
+        glm::vec3 max_cnr = point_light_vert(blb->position, w_h_d);
+        glm::vec3 min_cnr = point_light_vert(blb->position, -w_h_d);
 
-				bool in_vol = true;
-				in_vol = cam_pos.x <= max_cnr.x && cam_pos.x >= min_cnr.x && in_vol;
-				in_vol = cam_pos.y <= max_cnr.y && cam_pos.y >= min_cnr.y && in_vol;
-				in_vol = cam_pos.z <= max_cnr.z && cam_pos.z >= min_cnr.z && in_vol;
+        bool in_vol = true;
+        in_vol = cam_pos.x <= max_cnr.x && cam_pos.x >= min_cnr.x && in_vol;
+        in_vol = cam_pos.y <= max_cnr.y && cam_pos.y >= min_cnr.y && in_vol;
+        in_vol = cam_pos.z <= max_cnr.z && cam_pos.z >= min_cnr.z && in_vol;
 
         if (in_vol) {
           ddGPUFrontEnd::toggle_depth_test(false);
         }
 
         sh->set_uniform((int)RE_Light::Debug_b, true);
-        sh->set_uniform((int)RE_Light::Debug_Color_v4, glm::vec4(1.f, 1.f, 1.f, 0.5f));
+        sh->set_uniform((int)RE_Light::Debug_Color_v4,
+                        glm::vec4(1.f, 1.f, 1.f, 0.5f));
 
         ddGPUFrontEnd::render_cube();
 
         sh->set_uniform((int)RE_Light::Debug_b, false);
 
-				if (in_vol) {
-					ddGPUFrontEnd::toggle_depth_test(true);
-				}
+        if (in_vol) {
+          ddGPUFrontEnd::toggle_depth_test(true);
+        }
         break;
       }
       case LightType::SPOT_L: {
@@ -767,7 +765,8 @@ void light_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
         }
 
         sh->set_uniform((int)RE_Light::Debug_b, true);
-        sh->set_uniform((int)RE_Light::Debug_Color_v4, glm::vec4(1.f, 0.f, 0.f, 0.5f));
+        sh->set_uniform((int)RE_Light::Debug_Color_v4,
+                        glm::vec4(1.f, 0.f, 0.f, 0.5f));
 
         ddGPUFrontEnd::render_cube();
 

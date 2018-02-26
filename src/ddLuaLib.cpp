@@ -5,6 +5,9 @@
 #include "ddTerminal.h"
 #include "ddTimer.h"
 
+#include <imgui.h>
+#include <imgui_impl_glfw_gl3.h>
+
 //****************************************************************************
 // Base Agent
 //****************************************************************************
@@ -69,11 +72,19 @@ static int dd_hash(lua_State *L) {
   return 1;
 }
 
+static int dd_imgui_active(lua_State *L) {
+  // get io for mouse & keyboard management
+  ImGuiIO &imgui_io = ImGui::GetIO();
+  lua_pushboolean(L, imgui_io.WantCaptureMouse);
+  return 1;
+}
+
 // ddLib library
 static const struct luaL_Reg dd_lib[] = {
     {"print", ddprint},    {"ftime", ddftime},
     {"gtime", ddgtime},    {"hres_time", dd_high_res_time},
-    {"get_hash", dd_hash}, {NULL, NULL}};
+    {"get_hash", dd_hash}, {"mouse_over_UI", dd_imgui_active},
+    {NULL, NULL}};
 
 int luaopen_ddLib(lua_State *L) {
   // library functions

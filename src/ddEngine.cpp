@@ -478,6 +478,9 @@ bool ddEngine::execTerminal(const char *cmd) {
 
     DD_LEvent _event;
     _event.handle = head.c_str();
+    // add events after spltting
+    dd_array<cbuff<32>> args = StrSpace::tokenize1024<32>(str_arg.str(), " ");
+
     q_push(_event);
     return true;
   } else {
