@@ -730,6 +730,10 @@ void parse_table_buffer(lua_State *L, dd_array<T>& buffer, unsigned& idx,
         }
         break;
       }
+      case LUA_TTABLE: {
+        parse_table_buffer<float>(L, buffer, idx, (unsigned)lua_gettop(L) );
+        break;
+      }
       default:
         break;
     }

@@ -79,12 +79,23 @@ static int dd_imgui_active(lua_State *L) {
   return 1;
 }
 
+static int dd_scr_dimensions(lua_State *L) {
+  glm::uvec2 dim = ddSceneManager::get_screen_dimensions();
+  lua_pushnumber(L, dim.x);
+  lua_pushnumber(L, dim.y);
+  return 2;
+}
+
 // ddLib library
-static const struct luaL_Reg dd_lib[] = {
-    {"print", ddprint},    {"ftime", ddftime},
-    {"gtime", ddgtime},    {"hres_time", dd_high_res_time},
-    {"get_hash", dd_hash}, {"mouse_over_UI", dd_imgui_active},
-    {NULL, NULL}};
+static const struct luaL_Reg dd_lib[] = { {"print", ddprint},    
+    {"ftime", ddftime},
+    {"gtime", ddgtime},    
+    {"hres_time", dd_high_res_time},
+    {"get_hash", dd_hash}, 
+    {"mouse_over_UI", dd_imgui_active},
+    {"scr_dimensions", dd_scr_dimensions},
+    {NULL, NULL}
+};
 
 int luaopen_ddLib(lua_State *L) {
   // library functions

@@ -464,12 +464,14 @@ void ddEngine::shutdown() {
 bool ddEngine::execTerminal(const char *cmd) {
   if (cmd) {
     cbuff<32> str_arg;
+    bool args_present = false;
 
     // split arguments and tags if possible
     std::string head;
     std::string buff = cmd;
     size_t head_idx = buff.find_first_of(" ");
     if (head_idx != std::string::npos) {
+      args_present = true;
       head = buff.substr(0, head_idx);
       str_arg = buff.substr(head_idx + 1).c_str();
     } else {
@@ -479,7 +481,13 @@ bool ddEngine::execTerminal(const char *cmd) {
     DD_LEvent _event;
     _event.handle = head.c_str();
     // add events after spltting
-    dd_array<cbuff<32>> args = StrSpace::tokenize1024<32>(str_arg.str(), " ");
+    if (args_present) {
+      dd_array<cbuff<32>> args = StrSpace::tokenize1024<32>(str_arg.str(), " ");
+      for (unsigned i = 0; i < args.size() && i < MAX_EVENT_ARGS; ++i) {
+        str_arg.format("%u", i);
+        add_arg_LEvent(&_event, str_arg.str(), args[i].str()); 
+      }
+    }
 
     q_push(_event);
     return true;
