@@ -677,7 +677,6 @@ void light_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
                     min_lumin / light_lumin);
     sh->set_uniform((int)RE_Light::Light_cutoff_i_f, blb->cutoff_i);
     sh->set_uniform((int)RE_Light::Light_cutoff_o_f, blb->cutoff_o);
-    sh->set_uniform((int)RE_Light::Light_spotExponent_f, blb->spot_exp);
 
     glm::vec2 scr_dim = glm::vec2((float)scr_width, (float)scr_height);
     sh->set_uniform((int)RE_Light::screenDimension_v2, scr_dim);

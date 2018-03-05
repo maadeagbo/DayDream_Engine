@@ -1216,6 +1216,39 @@ void blit_depth_buffer(const ddBufferType in_type, const ddBufferType out_type,
   POW2_VERIFY_MSG(!gl_error("blit_depth"), "Error: blit", (unsigned)out_type);
 }
 
+float sample_depth_buffer(const ddBufferType type, const int pos_x,
+                          const int pos_y) {
+  switch (type) {
+    case ddBufferType::GEOM:
+      glBindFramebuffer(GL_DRAW_FRAMEBUFFER, g_buff.deffered_fbo);
+      break;
+    case ddBufferType::LIGHT:
+      glBindFramebuffer(GL_DRAW_FRAMEBUFFER, l_buff.light_fbo);
+      break;
+    case ddBufferType::SHADOW:
+      glBindFramebuffer(GL_DRAW_FRAMEBUFFER, s_buff.shadow_fbo);
+      break;
+    case ddBufferType::PARTICLE:
+      glBindFramebuffer(GL_DRAW_FRAMEBUFFER, p_buff.particle_fbo);
+      break;
+    case ddBufferType::CUBE:
+      glBindFramebuffer(GL_DRAW_FRAMEBUFFER, c_buff.cube_fbo);
+      break;
+    case ddBufferType::DEFAULT:
+      glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+      break;
+    default:
+      POW2_VERIFY_MSG(false, "Invalid out_buffer <%u>", (unsigned)type);
+      break;
+  }
+	// get depth
+	GLfloat _z = 0.f;
+	glReadPixels(pos_x, pos_y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &_z);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+  return _z;
+}
+
 void set_viewport(const unsigned width, const unsigned height) {
   glViewport(0, 0, (GLsizei)width, (GLsizei)height);
 }
@@ -1279,13 +1312,13 @@ void toggle_alpha_blend(bool flag) {
   }
 }
 
-void toggle_wireframe(bool flag ) {
+void toggle_wireframe(bool flag) {
   if (flag) {
     // wireframe on
-    glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
   } else {
     // disble wireframe
-    glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
   }
 }
 
@@ -1362,7 +1395,7 @@ void draw_indexed_vao(const ddVAOData *vao, const unsigned num_indices,
 }
 
 void draw_indexed_lines_vao(const ddVAOData *vao, const unsigned num_indices,
-                      const unsigned offset_in_index_buffer) {
+                            const unsigned offset_in_index_buffer) {
   POW2_VERIFY_MSG(vao != nullptr, "draw_indexed_vao::Null vao provided", 0);
 
   // bind vao and draw

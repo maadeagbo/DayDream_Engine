@@ -57,11 +57,13 @@ static int ddgtime(lua_State *L) {
   return 1;
 }
 
+/** \brief High-resolution engine time */
 static int dd_high_res_time(lua_State *L) {
   lua_pushinteger(L, ddTime::GetHiResTime());
   return 1;
 }
 
+/** \brief Hashes string to uint64_t value */
 static int dd_hash(lua_State *L) {
   int top = lua_gettop(L);
   if (top == 1 && lua_isstring(L, -1)) {
@@ -72,6 +74,7 @@ static int dd_hash(lua_State *L) {
   return 1;
 }
 
+/** \brief Checks if mouse is hovering over imgui module */
 static int dd_imgui_active(lua_State *L) {
   // get io for mouse & keyboard management
   ImGuiIO &imgui_io = ImGui::GetIO();
@@ -79,11 +82,76 @@ static int dd_imgui_active(lua_State *L) {
   return 1;
 }
 
+/** \brief Screen resolution */
 static int dd_scr_dimensions(lua_State *L) {
   glm::uvec2 dim = ddSceneManager::get_screen_dimensions();
   lua_pushnumber(L, dim.x);
   lua_pushnumber(L, dim.y);
   return 2;
+}
+
+/** \brief Returns ray from mouse click */
+static int dd_raycast(lua_State *L) {
+	// get mouse input
+	const InputData input = ddInput::get_input();
+	float scr_mx = 0, scr_my = 0;
+	ddCam *cam = nullptr;
+
+	int top = lua_gettop(L);
+	if (top == 3) {
+		int arg = 1;
+		// get camera
+		if (lua_isnumber(L, arg)) {
+			cam = find_ddCam((size_t)lua_tointeger(L, arg));
+			if (!cam) {
+				ddTerminal::post("[error] raycast::Invalid 1st arg (cam id : integer)");
+			}
+		}
+
+		// get mouse x
+		arg++;
+		if (lua_isnumber(L, arg)) {
+			scr_mx = lua_tonumber(L, arg);
+		} else {
+			ddTerminal::post("[error] raycast::Invalid 2nd arg (mouse x : float)");
+		}
+
+		// get mouse y
+		arg++;
+		if (lua_isnumber(L, arg)) {
+			scr_my = lua_tonumber(L, arg);
+		} else {
+			ddTerminal::post("[error] raycast::Invalid 3rd arg (mouse y : float)");
+		}
+	}
+	
+	if (cam) {
+		glm::mat4 inv_v_mat = glm::inverse(ddSceneManager::calc_view_matrix(cam));
+		glm::mat4 inv_p_mat = glm::inverse(ddSceneManager::calc_p_proj_matrix(cam));
+
+		glm::uvec2 scr_dim = ddSceneManager::get_screen_dimensions();
+		glm::vec4 view_p = glm::vec4(0.f, 0.f, (float)scr_dim.x, (float)scr_dim.y);
+		const float _x = scr_mx / (scr_dim.x * 0.5f) - 1.0f;
+		// top left is 0
+		const float _y = ((float)scr_dim.y - scr_my) / (scr_dim.y * 0.5f) - 1.0f;
+
+		ddTerminal::f_post("Coord: %.3f, %.3f", _x, _y);
+
+		// clip space to view space
+		glm::vec4 ray_v = inv_p_mat * glm::vec4(_x, _y, -1.f, 1.f);
+		// view to world space
+		glm::vec4 ray_w = inv_v_mat * glm::vec4(ray_v.x, ray_v.y, -1.f, 0.f);
+		glm::vec3 ray = glm::normalize(glm::vec3(ray_w));
+
+		// push to script
+		push_vec3_to_lua(L, ray.x, ray.y, ray.z);
+		return 1;
+	}
+
+	// return nil object
+	lua_pop(L, top);
+	lua_pushnil(L);
+	return 1;
 }
 
 // ddLib library
@@ -94,6 +162,7 @@ static const struct luaL_Reg dd_lib[] = { {"print", ddprint},
     {"get_hash", dd_hash}, 
     {"mouse_over_UI", dd_imgui_active},
     {"scr_dimensions", dd_scr_dimensions},
+    {"raycast", dd_raycast},
     {NULL, NULL}
 };
 

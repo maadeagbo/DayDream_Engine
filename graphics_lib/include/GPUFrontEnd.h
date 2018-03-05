@@ -235,6 +235,9 @@ void bind_pass_texture(const ddBufferType type, const unsigned loc = 0,
 // Bind framebuffers and copy depth from in -> out
 void blit_depth_buffer(const ddBufferType in_type, const ddBufferType out_type,
                        const unsigned width, const unsigned height);
+// Sample depth buffer based on cursor position
+float sample_depth_buffer(const ddBufferType type, const int pos_x,
+                          const int pos_y);
 
 //*****************************************************************************
 
@@ -282,7 +285,7 @@ void draw_indexed_vao(const ddVAOData *vao, const unsigned num_indices,
 
 // Draw ddVAOObject indexed
 void draw_indexed_lines_vao(const ddVAOData *vao, const unsigned num_indices,
-                      const unsigned offset_in_index_buffer);
+                            const unsigned offset_in_index_buffer);
 
 // Draw ddStorageBufferData as points
 void draw_points(const ddVAOData *vao, const ddStorageBufferData *sbuff_ptr,
