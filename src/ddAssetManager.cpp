@@ -54,22 +54,6 @@ int dd_assets_create_light(lua_State *L);
  */
 int dd_assets_create_texture(lua_State *L);
 
-// agent monipulation
-int get_agent_pos_ls(lua_State *L);
-int get_agent_pos_ws(lua_State *L);
-int get_agent_forward_dir(lua_State *L);
-int set_agent_pos(lua_State *L);
-int set_agent_scale(lua_State *L);
-int set_agent_vel(lua_State *L);
-int rotate_agent(lua_State *L);
-int get_agent_vel(lua_State *L);
-int get_cam_dir(lua_State *L);
-int get_agent_ang_vel(lua_State *L);
-int set_agent_friction(lua_State *L);
-int set_agent_damping(lua_State *L);
-
-// camera manipulation
-int rotate_camera(lua_State *L);
 /**
  * \brief Add ghost agent to physics world for parenting/scene graph
  */
@@ -135,21 +119,21 @@ void ddAssets::log_lua_func(lua_State *L) {
   // texture creation
   add_func_to_scripts(L, dd_assets_create_texture, "dd_create_texture");
 
-  // get agent information
-  add_func_to_scripts(L, get_agent_pos_ws, "ddAgent_world_pos");
-  add_func_to_scripts(L, get_agent_pos_ls, "ddAgent_local_pos");
-  add_func_to_scripts(L, get_agent_forward_dir, "ddAgent_get_forward");
-  add_func_to_scripts(L, get_agent_vel, "ddAgent_get_velocity");
-  add_func_to_scripts(L, get_agent_ang_vel, "ddAgent_get_ang_velocity");
-  // manipulate agent information
-  add_func_to_scripts(L, set_agent_pos, "ddAgent_set_position");
-  add_func_to_scripts(L, set_agent_vel, "ddAgent_set_velocity");
-  add_func_to_scripts(L, rotate_agent, "ddAgent_set_rotation");
-  add_func_to_scripts(L, set_agent_scale, "ddAgent_set_scale");
-  add_func_to_scripts(L, set_agent_friction, "ddAgent_set_friction");
-  add_func_to_scripts(L, set_agent_damping, "ddAgent_set_damping");
-  // manipulate camera
-  add_func_to_scripts(L, rotate_camera, "ddCam_rotate");
+  //// get agent information
+  //add_func_to_scripts(L, get_agent_pos_ws, "ddAgent_world_pos");
+  //add_func_to_scripts(L, get_agent_pos_ls, "ddAgent_local_pos");
+  //add_func_to_scripts(L, get_agent_forward_dir, "ddAgent_get_forward");
+  //add_func_to_scripts(L, get_agent_vel, "ddAgent_get_velocity");
+  //add_func_to_scripts(L, get_agent_ang_vel, "ddAgent_get_ang_velocity");
+  //// manipulate agent information
+  //add_func_to_scripts(L, set_agent_pos, "ddAgent_set_position");
+  //add_func_to_scripts(L, set_agent_vel, "ddAgent_set_velocity");
+  //add_func_to_scripts(L, rotate_agent, "ddAgent_set_rotation");
+  //add_func_to_scripts(L, set_agent_scale, "ddAgent_set_scale");
+  //add_func_to_scripts(L, set_agent_friction, "ddAgent_set_friction");
+  //add_func_to_scripts(L, set_agent_damping, "ddAgent_set_damping");
+  //// manipulate camera
+  //add_func_to_scripts(L, rotate_camera, "ddCam_rotate");
 }
 
 void ddAssets::load_to_gpu() {
@@ -557,260 +541,7 @@ int dd_assets_create_texture(lua_State *L) {
   return 0;
 }
 
-int get_agent_pos_ls(lua_State *L) {
-  parse_lua_events(L, fb);
-
-  int64_t *id = fb.get_func_val<int64_t>("id");
-
-  if (id) {
-    ddAgent *ag = find_ddAgent((size_t)(*id));
-    if (ag) {
-      // push vec3 to stack
-      glm::vec3 pos = ddBodyFuncs::pos(&ag->body);
-      push_vec3_to_lua(L, pos.x, pos.y, pos.z);
-      return 1;
-    }
-  }
-  ddTerminal::post("[error]Failed to get agent local position");
-  lua_pushnil(L);  // push nil to stack
-  return 1;
-}
-
-int get_agent_pos_ws(lua_State *L) {
-  parse_lua_events(L, fb);
-
-  int64_t *id = fb.get_func_val<int64_t>("id");
-
-  if (id) {
-    ddAgent *ag = find_ddAgent((size_t)(*id));
-    if (ag) {
-      // push vec3 to stack
-      glm::vec3 pos = ddBodyFuncs::pos_ws(&ag->body);
-      push_vec3_to_lua(L, pos.x, pos.y, pos.z);
-      return 1;
-    }
-  }
-  ddTerminal::post("[error]Failed to get agent world position");
-  lua_pushnil(L);  // push nil to stack
-  return 1;
-}
-
-int get_agent_forward_dir(lua_State *L) {
-  parse_lua_events(L, fb);
-
-  int64_t *id = fb.get_func_val<int64_t>("id");
-
-  if (id) {
-    ddAgent *ag = find_ddAgent((size_t)(*id));
-    if (ag) {
-      // push vec3 to stack
-      glm::vec3 dir = ddBodyFuncs::forward_dir(&ag->body);
-      push_vec3_to_lua(L, dir.x, dir.y, dir.z);
-      return 1;
-    }
-  }
-  ddTerminal::post("[error]Failed to get agent world position");
-  lua_pushnil(L);  // push nil to stack
-  return 1;
-}
-
-int set_agent_pos(lua_State *L) {
-  parse_lua_events(L, fb);
-
-  int64_t *id = fb.get_func_val<int64_t>("id");
-  float *_x = fb.get_func_val<float>("x");
-  float *_y = fb.get_func_val<float>("y");
-  float *_z = fb.get_func_val<float>("z");
-
-  if (id) {
-    ddAgent *ag = find_ddAgent((size_t)(*id));
-    if (ag) {
-      glm::vec3 pos = ddBodyFuncs::pos_ws(&ag->body);
-
-      // set arguments based on availability
-      const float x_ = _x ? *_x : pos.x;
-      const float y_ = _y ? *_y : pos.y;
-      const float z_ = _z ? *_z : pos.z;
-      ddBodyFuncs::update_pos(&ag->body, glm::vec3(x_, y_, z_));
-      return 0;
-    }
-  }
-  ddTerminal::post("[error]Failed to set agent position");
-  return 0;
-}
-
-int set_agent_scale(lua_State *L) {
-  parse_lua_events(L, fb);
-
-  int64_t *id = fb.get_func_val<int64_t>("id");
-  float *_x = fb.get_func_val<float>("x");
-  float *_y = fb.get_func_val<float>("y");
-  float *_z = fb.get_func_val<float>("z");
-
-  if (id && _x && _y && _z) {
-    ddAgent *ag = find_ddAgent((size_t)(*id));
-    if (ag) {
-      // set agent scale based on arguments
-      glm::vec3 new_scale = glm::vec3(*_x, *_y, *_z);
-      ddBodyFuncs::update_scale(&ag->body, new_scale);
-      p_world->updateSingleAabb(ag->body.bt_bod);
-
-      return 0;
-    }
-  }
-  ddTerminal::post("[error]Failed to set agent scale");
-  return 0;
-}
-
-int set_agent_vel(lua_State *L) {
-  parse_lua_events(L, fb);
-
-  int64_t *id = fb.get_func_val<int64_t>("id");
-  float *_x = fb.get_func_val<float>("x");
-  float *_y = fb.get_func_val<float>("y");
-  float *_z = fb.get_func_val<float>("z");
-
-  if (id) {
-    ddAgent *ag = find_ddAgent((size_t)(*id));
-    if (ag) {
-      // set arguments based on availability
-      const float x_ = _x ? *_x : 0;
-      const float y_ = _y ? *_y : 0;
-      const float z_ = _z ? *_z : 0;
-
-      ddBodyFuncs::update_velocity(&ag->body, glm::vec3(x_, y_, z_));
-      return 0;
-    }
-  }
-  ddTerminal::post("[error]Failed to set agent velocity");
-  return 0;
-}
-
-int rotate_agent(lua_State *L) {
-  parse_lua_events(L, fb);
-
-  int64_t *id = fb.get_func_val<int64_t>("id");
-  float *_p = fb.get_func_val<float>("pitch");
-  float *_y = fb.get_func_val<float>("yaw");
-  float *_r = fb.get_func_val<float>("roll");
-
-  if (id) {
-    ddAgent *ag = find_ddAgent((size_t)(*id));
-    if (ag) {
-      // set arguments based on availability
-      const float p_ = _p ? *_p : 0;
-      const float y_ = _y ? *_y : 0;
-      const float r_ = _r ? *_r : 0;
-
-      ddBodyFuncs::rotate(&ag->body, glm::radians(y_), glm::radians(p_),
-                          glm::radians(r_));
-      return 0;
-    }
-  }
-  ddTerminal::post("[error]Failed to set agent torque");
-  return 0;
-}
-
-int get_agent_vel(lua_State *L) {
-  parse_lua_events(L, fb);
-
-  int64_t *id = fb.get_func_val<int64_t>("id");
-
-  if (id) {
-    ddAgent *ag = find_ddAgent((size_t)(*id));
-    if (ag) {
-      // push vec3 to stack
-      const btVector3 vel = ag->body.bt_bod->getLinearVelocity();
-      push_vec3_to_lua(L, vel.x(), vel.y(), vel.z());
-      return 1;
-    }
-  }
-  ddTerminal::post("[error]Failed to get agent velocity");
-  lua_pushnil(L);  // push nil to stack
-  return 1;
-}
-
-int get_agent_ang_vel(lua_State *L) {
-  parse_lua_events(L, fb);
-
-  int64_t *id = fb.get_func_val<int64_t>("id");
-
-  if (id) {
-    ddAgent *ag = find_ddAgent((size_t)(*id));
-    if (ag) {
-      // push vec3 to stack
-      const btVector3 ang_vel = ag->body.bt_bod->getAngularVelocity();
-      push_vec3_to_lua(L, ang_vel.x(), ang_vel.y(), ang_vel.z());
-      return 1;
-    }
-  }
-  ddTerminal::post("[error]Failed to get agent angular velocity");
-  lua_pushnil(L);  // push nil to stack
-  return 1;
-}
-
-int set_agent_friction(lua_State *L) {
-  parse_lua_events(L, fb);
-
-  int64_t *id = fb.get_func_val<int64_t>("id");
-  float *fr = fb.get_func_val<float>("friction");
-
-  if (id && fr) {
-    ddAgent *ag = find_ddAgent((size_t)(*id));
-    if (ag) {
-      // set agent friction
-      ag->body.bt_bod->setFriction(*fr);
-      return 0;
-    }
-  }
-  ddTerminal::post("[error]Failed to set agent friction");
-  return 0;
-}
-
-int set_agent_damping(lua_State *L) {
-  parse_lua_events(L, fb);
-
-  int64_t *id = fb.get_func_val<int64_t>("id");
-  float *vel = fb.get_func_val<float>("velocity");
-  float *ang = fb.get_func_val<float>("angular");
-
-  if (id) {
-    ddAgent *ag = find_ddAgent((size_t)(*id));
-    if (ag) {
-      // set agent damping based on arguments
-      float _v = vel ? *vel : (float)ag->body.bt_bod->getAngularDamping();
-      float _a = ang ? *ang : (float)ag->body.bt_bod->getLinearDamping();
-
-      ag->body.bt_bod->setDamping(_v, _a);
-      return 0;
-    }
-  }
-  ddTerminal::post("[error]Failed to set agent damping");
-  return 0;
-}
-
-int rotate_camera(lua_State *L) {
-  parse_lua_events(L, fb);
-
-  int64_t *id = fb.get_func_val<int64_t>("id");
-  float *_p = fb.get_func_val<float>("pitch");
-  float *_y = fb.get_func_val<float>("yaw");
-  float *_r = fb.get_func_val<float>("roll");
-
-  if (id) {
-    ddCam *cam = find_ddCam((size_t)(*id));
-    if (cam) {  // set arguments based on availability
-      if (_p) cam->pitch = *_p;
-      if (_y) cam->yaw = *_y;
-      if (_r) cam->roll = *_r;
-
-      return 0;
-    }
-  }
-  ddTerminal::post("[error]Failed to set camera euler angles");
-  return 0;
-}
-
+//*****************************************************************************
 //*****************************************************************************
 
 bool add_rigid_body(ddAgent *agent, ddModelData *mdata, glm::vec3 pos,

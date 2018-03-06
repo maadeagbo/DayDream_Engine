@@ -38,7 +38,7 @@ static int new_ddAgent(lua_State *L) {
     if (!mass_flag) {
       ddTerminal::post("[error]ddAgent::Ignoring 2nd arg (mass : float)");
     } else {
-      mass = lua_tonumber(L, curr_arg);
+      mass = (float)lua_tonumber(L, curr_arg);
     }
   }
 
@@ -150,7 +150,7 @@ static int add_mesh(lua_State *L) {
       ddModelData *mdata = find_ddModelData(mdl_id);
       if (mdata) {
         // set up agent data
-        const unsigned num_mdl = ag->mesh.size();
+        const unsigned num_mdl = (unsigned)ag->mesh.size();
         if (num_mdl == 0) {
           // initialize model buffer
           ag->mesh.resize(1);

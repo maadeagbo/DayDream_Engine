@@ -664,7 +664,7 @@ void light_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
     const float light_lumin =
         glm::dot(blb->color, glm::vec3(0.2126, 0.7152, 0.0722));
     const float min_lumin =
-        0.01;  // may need to be scaled inversely by exposure
+        0.01f;  // may need to be scaled inversely by exposure
 
     // set shader uniforms per light
     glm::vec3 lpos = glm::vec3(parent_mat * glm::vec4(blb->position, 1.f));

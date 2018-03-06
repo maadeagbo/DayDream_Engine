@@ -128,6 +128,9 @@ AABB get_aabb(ddBody* bod) {
 
 }  // namespace ddBodyFuncs
 
+//*****************************************************************************
+//*****************************************************************************
+
 #define DDAGENT_META_NAME "LuaClass.ddAgent"
 #define check_ddAgent(L) (ddAgent**)luaL_checkudata(L, 1, DDAGENT_META_NAME)
 

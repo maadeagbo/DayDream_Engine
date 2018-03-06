@@ -92,9 +92,7 @@ static int dd_scr_dimensions(lua_State *L) {
 
 /** \brief Returns ray from mouse click */
 static int dd_raycast(lua_State *L) {
-	// get mouse input
-	const InputData input = ddInput::get_input();
-	float scr_mx = 0, scr_my = 0;
+	float scr_mx = -1.f, scr_my = -1.f;
 	ddCam *cam = nullptr;
 
 	int top = lua_gettop(L);
@@ -111,7 +109,7 @@ static int dd_raycast(lua_State *L) {
 		// get mouse x
 		arg++;
 		if (lua_isnumber(L, arg)) {
-			scr_mx = lua_tonumber(L, arg);
+			scr_mx = (float)lua_tonumber(L, arg);
 		} else {
 			ddTerminal::post("[error] raycast::Invalid 2nd arg (mouse x : float)");
 		}
@@ -119,13 +117,13 @@ static int dd_raycast(lua_State *L) {
 		// get mouse y
 		arg++;
 		if (lua_isnumber(L, arg)) {
-			scr_my = lua_tonumber(L, arg);
+			scr_my = (float)lua_tonumber(L, arg);
 		} else {
 			ddTerminal::post("[error] raycast::Invalid 3rd arg (mouse y : float)");
 		}
 	}
 	
-	if (cam) {
+	if (cam && scr_mx >= 0.f && scr_my >= 0.f) {
 		glm::mat4 inv_v_mat = glm::inverse(ddSceneManager::calc_view_matrix(cam));
 		glm::mat4 inv_p_mat = glm::inverse(ddSceneManager::calc_p_proj_matrix(cam));
 
@@ -135,7 +133,7 @@ static int dd_raycast(lua_State *L) {
 		// top left is 0
 		const float _y = ((float)scr_dim.y - scr_my) / (scr_dim.y * 0.5f) - 1.0f;
 
-		ddTerminal::f_post("Coord: %.3f, %.3f", _x, _y);
+		//ddTerminal::f_post("Coord: %.3f, %.3f", _x, _y);
 
 		// clip space to view space
 		glm::vec4 ray_v = inv_p_mat * glm::vec4(_x, _y, -1.f, 1.f);
@@ -149,7 +147,41 @@ static int dd_raycast(lua_State *L) {
 	}
 
 	// return nil object
+	ddTerminal::post("[error]raycast::Invalid arguments (int, float, float)");
 	lua_pop(L, top);
+	lua_pushnil(L);
+	return 1;
+}
+
+/** \brief Checks if object (bounding box) intersects with ray */
+static int dd_ray_bbox_check(lua_State *L) {
+	int top = lua_gettop(L);
+	if (top == 3) {
+		size_t ag_id = 0;
+		// get agent id
+		if (lua_isinteger(L, 3)) {
+			ag_id = (size_t)lua_tointeger(L, 3);
+		} else {
+			ddTerminal::post("[error]ray_bbox_check::Invalid 3rd arg (id : int)");
+			// return nil
+			lua_pushnil(L);
+			return 1;
+		}
+		
+		// get values for origin and ray
+		dd_array<float> buff(6);
+		read_buffer_from_lua<float>(L, buff);
+		glm::vec3 origin(buff[0], buff[1], buff[2]);
+		glm::vec3 dir(buff[3], buff[4], buff[5]);
+
+		const bool check = ddSceneManager::ray_bbox_intersect(origin, dir, ag_id);
+		lua_pushboolean(L, check);
+		return 1;
+	}
+	
+	// return nil object
+	ddTerminal::post("[error]ray_bbox_check::Invalid arguments ({float}, {float}"
+									 ", int)");
 	lua_pushnil(L);
 	return 1;
 }
@@ -163,6 +195,7 @@ static const struct luaL_Reg dd_lib[] = { {"print", ddprint},
     {"mouse_over_UI", dd_imgui_active},
     {"scr_dimensions", dd_scr_dimensions},
     {"raycast", dd_raycast},
+    {"ray_bbox_check", dd_ray_bbox_check},
     {NULL, NULL}
 };
 

@@ -9,9 +9,6 @@ namespace ddSceneManager {
 /** \brief Initialize */
 void initialize(const unsigned width, const unsigned height);
 
-/** \brief Log lua functions */
-void log_lua_funcs(lua_State* L);
-
 /** \brief Get screen size information */
 glm::uvec2 get_screen_dimensions();
 
@@ -68,4 +65,10 @@ glm::vec3 cam_forward_dir(const ddCam* cam, const ddBody* cam_parent_body);
  */
 void update_scene_graph();
 
+/**
+ * \brief Check if ray intersects agent
+ */
+
+bool ray_bbox_intersect(const glm::vec3 origin, const glm::vec3 dir,
+                        const size_t ag_id);
 }  // namespace ddSceneManager
