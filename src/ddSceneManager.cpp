@@ -107,22 +107,22 @@ FrustumBox ddSceneManager::get_current_frustum(const ddCam *cam) {
   // frustum top
   glm::vec3 top_pos = n_center + (up * h_near);
   glm::vec3 temp_vec = glm::normalize(top_pos - glm::vec3(cam_pos));
-  glm::vec3 up_norm = glm::cross(temp_vec, right);
+  glm::vec3 up_norm = glm::cross(right, temp_vec);
 
   // frustum bottom
   glm::vec3 bot_pos = n_center - (up * h_near);
   temp_vec = glm::normalize(bot_pos - glm::vec3(cam_pos));
-  glm::vec3 down_norm = glm::cross(right, temp_vec);
+  glm::vec3 down_norm = glm::cross(temp_vec, right);
 
   // frustum left
   glm::vec3 left_pos = n_center - (right * w_near);
   temp_vec = glm::normalize(left_pos - glm::vec3(cam_pos));
-  glm::vec3 left_norm = glm::cross(temp_vec, up);
+  glm::vec3 left_norm = glm::cross(up, temp_vec);
 
   // frustum right normal ---> (nc + left * w_near / 2) - p
   glm::vec3 right_pos = n_center + (right * w_near);
   temp_vec = glm::normalize(right_pos - glm::vec3(cam_pos));
-  glm::vec3 right_norm = glm::cross(up, temp_vec);
+  glm::vec3 right_norm = glm::cross(temp_vec, up);
 
   // points
   frustum.points[0] = n_center;
@@ -133,8 +133,8 @@ FrustumBox ddSceneManager::get_current_frustum(const ddCam *cam) {
   frustum.points[5] = bot_pos;
 
   // normals
-  frustum.normals[0] = front;
-  frustum.normals[1] = -front;
+  frustum.normals[0] = -front;
+  frustum.normals[1] = front;
   frustum.normals[2] = right_norm;
   frustum.normals[3] = left_norm;
   frustum.normals[4] = up_norm;
@@ -177,7 +177,7 @@ void ddSceneManager::cull_objects(const FrustumBox fr, const glm::mat4 view_m,
                                   dd_array<ddAgent *> &_agents) {
   POW2_VERIFY(_agents.size() == ASSETS_CONTAINER_MAX_SIZE);
 
-  /** \brief Get max corner of AAABB based on frustum face normal */
+  /** \brief Get max corner of AAABB based on frustum face normal
   auto max_aabb_corner = [](ddBodyFuncs::AABB bbox, const glm::vec3 normal) {
     glm::vec3 new_max = bbox.min;
     if (normal.x >= 0) {
@@ -191,32 +191,32 @@ void ddSceneManager::cull_objects(const FrustumBox fr, const glm::mat4 view_m,
     }
     return new_max;
   };
-  /** \brief Get min corner of AAABB based on frustum face normal
+        //*/
+  /** \brief Get min corner of AAABB based on frustum face normal */
   auto min_aabb_corner = [](ddBodyFuncs::AABB bbox, const glm::vec3 normal) {
-  glm::vec3 new_min = bbox.max;
-  if (normal.x >= 0) {
-  new_min.x = bbox.min.x;
-  }
-  if (normal.y >= 0) {
-  new_min.y = bbox.min.y;
-  }
-  if (normal.z >= 0) {
-  new_min.z = bbox.min.z;
-  }
-  return new_min;
+    glm::vec3 new_min = bbox.max;
+    if (normal.x >= 0) {
+      new_min.x = bbox.min.x;
+    }
+    if (normal.y >= 0) {
+      new_min.y = bbox.min.y;
+    }
+    if (normal.z >= 0) {
+      new_min.z = bbox.min.z;
+    }
+    return new_min;
   };
-  */
+  //*/
   /** \brief Frustum cull function */
   auto cpu_frustum_cull = [&](ddBodyFuncs::AABB bbox) {
     for (unsigned i = 0; i < 6; i++) {
       glm::vec3 fr_norm = fr.normals[i];
       float fr_dist = fr.d[i];
-      // check if positive vertex is outside (positive vert depends on normal
-      // of the plane)
-      glm::vec3 max_vert = max_aabb_corner(bbox, fr_norm);
-      // if _dist is negative, point is located behind frustum plane (reject)
-      float _dist = glm::dot(fr_norm, max_vert) + fr_dist;
-      if (_dist < 0.0001f) {
+      // check if negative vertex is outside (depends on normal of the plane)
+      glm::vec3 min_vert = min_aabb_corner(bbox, fr_norm);
+      // if _dist is positive, point is located behind frustum plane (reject)
+      float _dist = glm::dot(fr_norm, min_vert) + fr_dist;
+      if (_dist > 0.000001f) {
         return false;  // must not fail any plane test
       }
     }
@@ -323,42 +323,43 @@ void ddSceneManager::update_scene_graph() {
 bool ddSceneManager::ray_bbox_intersect(const glm::vec3 origin,
                                         const glm::vec3 dir,
                                         const size_t ag_id) {
-	ddAgent *ag = find_ddAgent(ag_id);
+  ddAgent *ag = find_ddAgent(ag_id);
 
-	if (ag) {
-		// get bounding box
-		ddBodyFuncs::AABB bbox = ddBodyFuncs::get_aabb(&ag->body);
+  if (ag) {
+    // get bounding box
+    ddBodyFuncs::AABB bbox = ddBodyFuncs::get_aabb(&ag->body);
 
-		// uses slab method of intersection (Kay and Kayjia siggraph)
-		double t_min = std::numeric_limits<double>::lowest();
-		double t_max = std::numeric_limits<double>::max();
+    // uses slab method of intersection (Kay and Kayjia siggraph)
+    // furthest near t vs closest far t (t = time to intersect)
+    double t_min = std::numeric_limits<double>::lowest();
+    double t_max = std::numeric_limits<double>::max();
 
-		// check x
-		if (!(dir.x < 0.000001 && dir.x > -0.000001)) {
-			const double t1 = (bbox.min.x - origin.x) / dir.x;
-			const double t2 = (bbox.max.x - origin.x) / dir.x;
+    // check x (intersection of x-component)
+    if (!(dir.x < 0.000001 && dir.x > -0.000001)) {
+      const double t1 = (bbox.min.x - origin.x) / dir.x;
+      const double t2 = (bbox.max.x - origin.x) / dir.x;
 
-			t_min = std::max(t_min, std::min(t1, t2));
-			t_max = std::min(t_max, std::max(t1, t2));
-		}
-		// check y
-		if (!(dir.y < 0.000001 && dir.y > -0.000001)) {
-			const double t1 = (bbox.min.y - origin.y) / dir.y;
-			const double t2 = (bbox.max.y - origin.y) / dir.y;
+      t_min = std::max(t_min, std::min(t1, t2));
+      t_max = std::min(t_max, std::max(t1, t2));
+    }
+    // check y (intersection of y-component)
+    if (!(dir.y < 0.000001 && dir.y > -0.000001)) {
+      const double t1 = (bbox.min.y - origin.y) / dir.y;
+      const double t2 = (bbox.max.y - origin.y) / dir.y;
 
-			t_min = std::max(t_min, std::min(t1, t2));
-			t_max = std::min(t_max, std::max(t1, t2));
-		}
-		// check z
-		if (!(dir.z < 0.000001 && dir.z > -0.000001)) {
-			const double t1 = (bbox.min.z - origin.z) / dir.z;
-			const double t2 = (bbox.max.z - origin.z) / dir.z;
+      t_min = std::max(t_min, std::min(t1, t2));
+      t_max = std::min(t_max, std::max(t1, t2));
+    }
+    // check z (intersection of z-component)
+    if (!(dir.z < 0.000001 && dir.z > -0.000001)) {
+      const double t1 = (bbox.min.z - origin.z) / dir.z;
+      const double t2 = (bbox.max.z - origin.z) / dir.z;
 
-			t_min = std::max(t_min, std::min(t1, t2));
-			t_max = std::min(t_max, std::max(t1, t2));
-		}
+      t_min = std::max(t_min, std::min(t1, t2));
+      t_max = std::min(t_max, std::max(t1, t2));
+    }
 
-		return t_max >= t_min && t_max > 0.0;
-	}
+    return t_max >= t_min && t_max > 0.0;
+  }
   return false;
 }

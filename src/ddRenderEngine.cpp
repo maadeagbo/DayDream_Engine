@@ -347,6 +347,8 @@ void draw_world() {
 
   // draw scene
   draw_scene(view_m, proj_m, ddBodyFuncs::pos_ws(&cam_p->body));
+
+	printf("objects in frame: %d\n", objects_in_frame);
 }
 
 }  // namespace ddRenderer
@@ -534,6 +536,9 @@ void render_static(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
       // bind vao and render
       ddGPUFrontEnd::draw_instanced_vao(mdl_id.ptr->vao_handles[mdata.i],
                                         (unsigned)mdata.ptr->indices.size(), 1);
+
+			// update stats
+			objects_in_frame++;
     }
   }
   return;
