@@ -371,7 +371,8 @@ int dd_assets_create_agent(lua_State *L) {
             skpose->sk_id = sk->id;
             skpose->global_mat = sk->global_mat;
             skpose->local_pose.resize(sk->bones.size());
-            skpose->global_pose.resize(sk->bones.size());
+						new_agent->rend.global_pose.resize(sk->bones.size());
+						new_agent->rend.inv_bp.resize(sk->bones.size());
             new_agent->mesh[0].sk_flag = true;
           } else {
             ddTerminal::f_post("[error]  Failed to find skeleton <%ld>",

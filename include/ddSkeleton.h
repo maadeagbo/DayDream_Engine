@@ -40,17 +40,15 @@ struct ddSkeletonPose {
   size_t sk_id;
   /** \brief modifiable global matrix to apply to skeleton */
   glm::mat4 global_mat;
-  /** \brief scratch buffer for local pose data */
+  /** \brief per-frame calculated local pose data */
   dd_array<ddJointPose> local_pose;
-  /** \brief per-frame calculated global pose data */
-  dd_array<ddJointPose> global_pose;
   /** \brief Marks if imported animation uses global matrices or local */
   bool global_poses = false;
 };
 
 /** \brief Sample from animation clip */
 struct ddAnimSample {
-  dd_array<ddJointPose> m_pose;
+  dd_array<ddJointPose> pose;
 };
 
 /** \brief Information contained in animation clip */

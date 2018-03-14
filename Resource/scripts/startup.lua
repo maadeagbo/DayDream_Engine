@@ -1,5 +1,6 @@
 -- Config file for loading levels and other settings
 load_engine = require "scripts.EngineInit"
+load_enums = require "scripts.EngineEnums"
 
 -- Limit of 10 different projects at once
 local worlds = { "camera_tests", "dummy", "kinect" }

@@ -348,7 +348,7 @@ void draw_world() {
   // draw scene
   draw_scene(view_m, proj_m, ddBodyFuncs::pos_ws(&cam_p->body));
 
-	printf("objects in frame: %d\n", objects_in_frame);
+	//printf("objects in frame: %d\n", objects_in_frame);
 }
 
 }  // namespace ddRenderer
