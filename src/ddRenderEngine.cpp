@@ -348,7 +348,7 @@ void draw_world() {
   // draw scene
   draw_scene(view_m, proj_m, ddBodyFuncs::pos_ws(&cam_p->body));
 
-	//printf("objects in frame: %d\n", objects_in_frame);
+  // printf("objects in frame: %d\n", objects_in_frame);
 }
 
 }  // namespace ddRenderer
@@ -428,7 +428,7 @@ void gbuffer_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m) {
       // check if model is instanced
       if (agent->inst.m4x4.size() == 1) {
         // render skinned mesh
-        if (agent->rend.global_pose.isValid()) {
+        if (agent->anim.states.isValid()) {
           //
         } else {
           // render static
@@ -537,8 +537,8 @@ void render_static(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
       ddGPUFrontEnd::draw_instanced_vao(mdl_id.ptr->vao_handles[mdata.i],
                                         (unsigned)mdata.ptr->indices.size(), 1);
 
-			// update stats
-			objects_in_frame++;
+      // update stats
+      objects_in_frame++;
     }
   }
   return;

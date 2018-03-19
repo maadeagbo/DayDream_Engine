@@ -483,7 +483,7 @@ bool ddEngine::execTerminal(const char *cmd) {
       dd_array<cbuff<32>> args = StrSpace::tokenize1024<32>(str_arg.str(), " ");
       for (unsigned i = 0; i < args.size() && i < MAX_EVENT_ARGS; ++i) {
         str_arg.format("%u", i);
-        add_arg_LEvent(&_event, str_arg.str(), args[i].str()); 
+        add_arg_LEvent(&_event, str_arg.str(), args[i].str());
       }
     }
 

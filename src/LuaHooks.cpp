@@ -699,13 +699,12 @@ void append_package_path(lua_State *L, const char *path) {
 }
 
 template <typename T>
-void parse_table_buffer(lua_State *L, dd_array<T>& buffer, unsigned& idx,
+void parse_table_buffer(lua_State *L, dd_array<T> &buffer, unsigned &idx,
                         const unsigned table_idx) {
   // use typeid(T) to parse correctly
-  lua_pushnil(L);                 // push key on stack for table access
+  lua_pushnil(L);  // push key on stack for table access
   // adds value to the top of the stack and checks for space
-  while (lua_next(L, table_idx) != 0 && idx < buffer.size()) {  
-
+  while (lua_next(L, table_idx) != 0 && idx < buffer.size()) {
     int t = lua_type(L, -1);  // get value type
     switch (t) {
       case LUA_TBOOLEAN: {
@@ -731,20 +730,20 @@ void parse_table_buffer(lua_State *L, dd_array<T>& buffer, unsigned& idx,
         break;
       }
       case LUA_TTABLE: {
-        parse_table_buffer<float>(L, buffer, idx, (unsigned)lua_gettop(L) );
+        parse_table_buffer<float>(L, buffer, idx, (unsigned)lua_gettop(L));
         break;
       }
       default:
         break;
     }
-    lua_pop(L, 1);  // remove value    
+    lua_pop(L, 1);  // remove value
   }
 }
 
 template <>
-void read_buffer_from_lua<float>(lua_State *L, dd_array<float>& buffer) {
+void read_buffer_from_lua<float>(lua_State *L, dd_array<float> &buffer) {
   int top = lua_gettop(L); /* number of arguments */
-  unsigned curr_idx = 0; 
+  unsigned curr_idx = 0;
 
   for (int i = 1; i <= top; i++) {
     int t = lua_type(L, i);
@@ -754,7 +753,7 @@ void read_buffer_from_lua<float>(lua_State *L, dd_array<float>& buffer) {
         break;
       }
       case LUA_TNUMBER: {
-        //parse_table(L, &fb);
+        // parse_table(L, &fb);
         if (curr_idx < buffer.size()) {
           const float num = (float)lua_tonumber(L, i);
           buffer[curr_idx] = num;
@@ -768,6 +767,6 @@ void read_buffer_from_lua<float>(lua_State *L, dd_array<float>& buffer) {
     }
   }
   lua_pop(L, top);  // Pop table
-  
+
   return;
 }

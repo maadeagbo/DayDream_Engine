@@ -11,7 +11,7 @@
  * \param id String id name
  * \return ddSkeleton pointer
  */
-ddSkeleton* load_skeleton(const char *ddb_file, const char *id);
+ddSkeleton* load_skeleton(const char* ddb_file, const char* id);
 
 /**
  * \brief Recursively calculate delta transform between bone joints

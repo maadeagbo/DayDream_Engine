@@ -12,7 +12,7 @@ ddSkeleton* load_skeleton(const char* ddb_file, const char* id) {
     ddTerminal::f_post("load_skeleton::<%s> already exists", id);
     return skele;
   }
-	// check that path is .ddb
+  // check that path is .ddb
   cbuff<512> path_check(ddb_file);
   if (!path_check.contains(".ddb")) {
     ddTerminal::f_post("[error] Invalid ddb file: %s", ddb_file);
@@ -95,7 +95,7 @@ void calc_delta_bone_trans(ddSkeleton* sk, bool visited[], const unsigned idx) {
     const unsigned p_idx = jnt.parent;
     // check parent bone
     if (!visited[p_idx]) {
-			calc_delta_bone_trans(sk, visited, p_idx);
+      calc_delta_bone_trans(sk, visited, p_idx);
     }
     if (idx == 0) {
       jnt.p_delta = glm::mat4();
@@ -105,97 +105,97 @@ void calc_delta_bone_trans(ddSkeleton* sk, bool visited[], const unsigned idx) {
   }
 }
 
-ddAnimClip * load_animation(const char * dda_file, const char * id) {
-	ddIO io_handle;
-	ddAnimClip* a_clip = nullptr;
+ddAnimClip* load_animation(const char* dda_file, const char* id) {
+  ddIO io_handle;
+  ddAnimClip* a_clip = nullptr;
 
-	// check if already exists
+  // check if already exists
   size_t hashed_id = getCharHash(id);
-	a_clip = find_ddAnimClip(hashed_id);
-	if (a_clip) {
-		ddTerminal::f_post("load_animation::<%s> already exists", id);
-		return a_clip;
-	}
-	// make sure file is .dda
-	cbuff<512> path_check(dda_file);
-	if (!path_check.contains(".dda")) {
-		ddTerminal::f_post("[error] Not valid dda file: %s", dda_file);
-		return a_clip;
-	}
+  a_clip = find_ddAnimClip(hashed_id);
+  if (a_clip) {
+    ddTerminal::f_post("load_animation::<%s> already exists", id);
+    return a_clip;
+  }
+  // make sure file is .dda
+  cbuff<512> path_check(dda_file);
+  if (!path_check.contains(".dda")) {
+    ddTerminal::f_post("[error] Not valid dda file: %s", dda_file);
+    return a_clip;
+  }
 
-	// parse animation from file
-	if (io_handle.open(dda_file, ddIOflag::READ)) {
-		a_clip = spawn_ddAnimClip(hashed_id);
-		cbuff<128> mybuff;
-		const char* val = nullptr;
+  // parse animation from file
+  if (io_handle.open(dda_file, ddIOflag::READ)) {
+    a_clip = spawn_ddAnimClip(hashed_id);
+    cbuff<128> mybuff;
+    const char* val = nullptr;
 
-		const char* nxtLine = io_handle.readNextLine();
-		while (nxtLine) {
-			mybuff.set(nxtLine);
+    const char* nxtLine = io_handle.readNextLine();
+    while (nxtLine) {
+      mybuff.set(nxtLine);
 
-			// framerate of clip
-			if (mybuff.compare("<framerate>") == 0) {
-				nxtLine = io_handle.readNextLine();
-				float fr = std::strtof(nxtLine, nullptr);
-				a_clip->fps = fr;
-			}
+      // framerate of clip
+      if (mybuff.compare("<framerate>") == 0) {
+        nxtLine = io_handle.readNextLine();
+        float fr = std::strtof(nxtLine, nullptr);
+        a_clip->fps = fr;
+      }
 
-			// buffer sizes
-			if (mybuff.compare("<buffer>") == 0) {
-				nxtLine = io_handle.readNextLine();
+      // buffer sizes
+      if (mybuff.compare("<buffer>") == 0) {
+        nxtLine = io_handle.readNextLine();
 
-				if (*nxtLine == 'j') {  // total joints
-					val = nxtLine + 2;
-					unsigned long j = std::strtoul(val, nullptr, 10);
-					a_clip->num_joints = (unsigned)j;
-					nxtLine = io_handle.readNextLine();
-				}
-				if (*nxtLine == 'f') {  // total frames
-					val = nxtLine + 2;
-					unsigned long tf = std::strtoul(val, nullptr, 10);
-					a_clip->num_frames = (unsigned)tf;
-					a_clip->samples.resize(a_clip->num_frames);
+        if (*nxtLine == 'j') {  // total joints
+          val = nxtLine + 2;
+          unsigned long j = std::strtoul(val, nullptr, 10);
+          a_clip->num_joints = (unsigned)j;
+          nxtLine = io_handle.readNextLine();
+        }
+        if (*nxtLine == 'f') {  // total frames
+          val = nxtLine + 2;
+          unsigned long tf = std::strtoul(val, nullptr, 10);
+          a_clip->num_frames = (unsigned)tf;
+          a_clip->samples.resize(a_clip->num_frames);
 
-					// calculate clip length
-					a_clip->length = (float)a_clip->num_frames / a_clip->fps;
-					a_clip->step_size = a_clip->length / a_clip->num_frames;
-					for (unsigned i = 0; i < tf; i++) {  // resize storage bin
-						a_clip->samples[i].pose.resize(a_clip->num_joints);
-					}
-					nxtLine = io_handle.readNextLine();
-				}
-			}
+          // calculate clip length
+          a_clip->length = (float)a_clip->num_frames / a_clip->fps;
+          a_clip->step_size = a_clip->length / a_clip->num_frames;
+          for (unsigned i = 0; i < tf; i++) {  // resize storage bin
+            a_clip->samples[i].pose.resize(a_clip->num_joints);
+          }
+          nxtLine = io_handle.readNextLine();
+        }
+      }
 
-			// animation data
-			if (mybuff.compare("<animation>") == 0) {
-				nxtLine = io_handle.readNextLine();
-				unsigned idx = 0;
-				unsigned f_idx = 0;
-				dd_array<ddJointPose> output(a_clip->num_frames);
+      // animation data
+      if (mybuff.compare("<animation>") == 0) {
+        nxtLine = io_handle.readNextLine();
+        unsigned idx = 0;
+        unsigned f_idx = 0;
+        dd_array<ddJointPose> output(a_clip->num_frames);
 
-				if (*nxtLine == '-') {  // joint index
-					val = nxtLine + 2;
-					idx = (unsigned)std::strtoul(val, nullptr, 10);
-					nxtLine = io_handle.readNextLine();
-				}
-				while (*nxtLine != '<') {  // keep reading till </animation>
-					if (*nxtLine == 'r') {   // joint rotation
-						val = nxtLine + 2;
-						// printf("r %u:%u %s\n", f_idx, idx, val);
-						a_clip->samples[f_idx].pose[idx].rot = getQuat(val);
-						f_idx += 1;  // increment frame index
-					}
-					if (*nxtLine == 'p') {  // joint translation
-						val = nxtLine + 2;
-						// printf("t %u:%u %s\n", f_idx, idx, val);
-						a_clip->samples[f_idx - 1].pose[idx].trans = getVec3f(val);
-					}
-					nxtLine = io_handle.readNextLine();
-				}
-			}
-			nxtLine = io_handle.readNextLine();
-		}
-	}
+        if (*nxtLine == '-') {  // joint index
+          val = nxtLine + 2;
+          idx = (unsigned)std::strtoul(val, nullptr, 10);
+          nxtLine = io_handle.readNextLine();
+        }
+        while (*nxtLine != '<') {  // keep reading till </animation>
+          if (*nxtLine == 'r') {   // joint rotation
+            val = nxtLine + 2;
+            // printf("r %u:%u %s\n", f_idx, idx, val);
+            a_clip->samples[f_idx].pose[idx].rot = getQuat(val);
+            f_idx += 1;  // increment frame index
+          }
+          if (*nxtLine == 'p') {  // joint translation
+            val = nxtLine + 2;
+            // printf("t %u:%u %s\n", f_idx, idx, val);
+            a_clip->samples[f_idx - 1].pose[idx].trans = getVec3f(val);
+          }
+          nxtLine = io_handle.readNextLine();
+        }
+      }
+      nxtLine = io_handle.readNextLine();
+    }
+  }
 
-	return a_clip;
+  return a_clip;
 }

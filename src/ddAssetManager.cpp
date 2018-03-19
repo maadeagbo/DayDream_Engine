@@ -120,20 +120,20 @@ void ddAssets::log_lua_func(lua_State *L) {
   add_func_to_scripts(L, dd_assets_create_texture, "dd_create_texture");
 
   //// get agent information
-  //add_func_to_scripts(L, get_agent_pos_ws, "ddAgent_world_pos");
-  //add_func_to_scripts(L, get_agent_pos_ls, "ddAgent_local_pos");
-  //add_func_to_scripts(L, get_agent_forward_dir, "ddAgent_get_forward");
-  //add_func_to_scripts(L, get_agent_vel, "ddAgent_get_velocity");
-  //add_func_to_scripts(L, get_agent_ang_vel, "ddAgent_get_ang_velocity");
+  // add_func_to_scripts(L, get_agent_pos_ws, "ddAgent_world_pos");
+  // add_func_to_scripts(L, get_agent_pos_ls, "ddAgent_local_pos");
+  // add_func_to_scripts(L, get_agent_forward_dir, "ddAgent_get_forward");
+  // add_func_to_scripts(L, get_agent_vel, "ddAgent_get_velocity");
+  // add_func_to_scripts(L, get_agent_ang_vel, "ddAgent_get_ang_velocity");
   //// manipulate agent information
-  //add_func_to_scripts(L, set_agent_pos, "ddAgent_set_position");
-  //add_func_to_scripts(L, set_agent_vel, "ddAgent_set_velocity");
-  //add_func_to_scripts(L, rotate_agent, "ddAgent_set_rotation");
-  //add_func_to_scripts(L, set_agent_scale, "ddAgent_set_scale");
-  //add_func_to_scripts(L, set_agent_friction, "ddAgent_set_friction");
-  //add_func_to_scripts(L, set_agent_damping, "ddAgent_set_damping");
+  // add_func_to_scripts(L, set_agent_pos, "ddAgent_set_position");
+  // add_func_to_scripts(L, set_agent_vel, "ddAgent_set_velocity");
+  // add_func_to_scripts(L, rotate_agent, "ddAgent_set_rotation");
+  // add_func_to_scripts(L, set_agent_scale, "ddAgent_set_scale");
+  // add_func_to_scripts(L, set_agent_friction, "ddAgent_set_friction");
+  // add_func_to_scripts(L, set_agent_damping, "ddAgent_set_damping");
   //// manipulate camera
-  //add_func_to_scripts(L, rotate_camera, "ddCam_rotate");
+  // add_func_to_scripts(L, rotate_camera, "ddCam_rotate");
 }
 
 void ddAssets::load_to_gpu() {
@@ -371,8 +371,8 @@ int dd_assets_create_agent(lua_State *L) {
             skpose->sk_id = sk->id;
             skpose->global_mat = sk->global_mat;
             skpose->local_pose.resize(sk->bones.size());
-						new_agent->rend.global_pose.resize(sk->bones.size());
-						new_agent->rend.inv_bp.resize(sk->bones.size());
+            new_agent->anim.global_pose.resize(sk->bones.size());
+            new_agent->anim.inv_bp.resize(sk->bones.size());
             new_agent->mesh[0].sk_flag = true;
           } else {
             ddTerminal::f_post("[error]  Failed to find skeleton <%ld>",

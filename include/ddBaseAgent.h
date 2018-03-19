@@ -3,6 +3,7 @@
 #include "LuaHooks.h"
 #include "ddModel.h"
 #include "ddPhysicsEngine.h"
+#include "ddSkeleton.h"
 
 /** \brief Container for transform information */
 struct ddBody {
@@ -99,14 +100,6 @@ struct ddInstInfo {
 /** \brief Container for Render settings and buffers */
 struct ddRendInfo {
   /**
-   * \brief per frame global pose matrix for rendering
-   */
-  dd_array<glm::mat4> global_pose;
-  /**
-   * \brief inverse bind pose matrices for rendering
-   */
-  dd_array<glm::mat4> inv_bp;
-  /**
    * \brief Number of instances to be rendered (per frame)
    */
   unsigned f_num_inst = 0;
@@ -118,6 +111,22 @@ struct ddRendInfo {
    * \brief True = render, false = no render
    */
   bool flag_render = true;
+};
+
+/** \brief Container for Render settings and buffers */
+struct ddAnimInfo {
+  /**
+   * \brief per frame global pose matrix for rendering
+   */
+  dd_array<glm::mat4> global_pose;
+  /**
+   * \brief inverse bind pose matrices for rendering
+   */
+  dd_array<glm::mat4> inv_bp;
+  /**
+   * \brief ddAnimState container
+   */
+  dd_array<ddAnimState> states;
 };
 
 /**
@@ -144,9 +153,13 @@ struct ddAgent {
    */
   ddRendInfo rend;
   /**
-  * \brief Transform info
-  */
+   * \brief Transform info
+   */
   ddBody body;
+  /**
+   * \brief Animation info
+   */
+  ddAnimInfo anim;
 };
 
 /** \brief Lua class instance metatable name */
