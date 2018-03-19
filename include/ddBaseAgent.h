@@ -115,14 +115,22 @@ struct ddRendInfo {
 
 /** \brief Container for Render settings and buffers */
 struct ddAnimInfo {
+  /** 
+   * \brief skeleton id 
+   */
+  size_t sk_id;
   /**
-   * \brief per frame global pose matrix for rendering
+   * \brief per frame global pose matrixcv for rendering
    */
   dd_array<glm::mat4> global_pose;
   /**
    * \brief inverse bind pose matrices for rendering
    */
   dd_array<glm::mat4> inv_bp;
+  /** 
+   * \brief per-frame calculated local pose data 
+   */
+  dd_array<ddJointPose> local_pose;
   /**
    * \brief ddAnimState container
    */

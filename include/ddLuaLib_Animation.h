@@ -41,7 +41,7 @@ static int new_ddAnimClip(lua_State *L) {
   // check if already exists (locked to ddAgent)
   ddAnimClip *a_clip = find_ddAnimClip(getCharHash(id));
   if (a_clip) {
-    ddTerminal::post("[error]ddAnimClip::Returning already allocated clip");
+    ddTerminal::post("[error]ddAnimClip::Clip already allocated");
     lua_pushboolean(L, true);
     return 1;
   }
@@ -60,8 +60,62 @@ static int new_ddAnimClip(lua_State *L) {
   return 1;
 }
 
+/**
+ * \brief "New" function for ddSkeleton
+ */
+static int new_ddSkeleton(lua_State *L) {
+  int num_args = lua_gettop(L);
+  if (num_args != 2) {
+    ddTerminal::post("[error]ddSkeleton::Must provide id and ddb file");
+
+    lua_pushboolean(L, false);
+    return 1;
+  }
+
+  // get id
+  int curr_arg = 1;
+  bool id_flag = lua_type(L, curr_arg) == LUA_TSTRING;
+  if (!id_flag) {
+    ddTerminal::post("[error]ddSkeleton::Invalid 1st arg (id : string)");
+    lua_pushboolean(L, false);
+    return 1;
+  }
+  const char *id = lua_tostring(L, curr_arg);
+
+  // get ddb file
+  curr_arg++;
+  id_flag = lua_type(L, curr_arg) == LUA_TSTRING;
+  if (!id_flag) {
+    ddTerminal::post("[error]ddSkeleton::Invalid 2nd arg (ddb file : string)");
+    lua_pushboolean(L, false);
+    return 1;
+  }
+  const char *ddb_file = lua_tostring(L, curr_arg);
+
+  // check if already exists (locked to ddAgent)
+  ddSkeleton *sk = find_ddSkeleton(getCharHash(id));
+  if (sk) {
+    ddTerminal::post("[error]ddSkeleton::Skeleton already allocated");
+    lua_pushboolean(L, true);
+    return 1;
+  }
+
+  // create new skeleton
+  sk = load_skeleton(ddb_file, id);
+  if (sk) {
+    ddTerminal::f_post("ddSkeleton:: %llu :: %u(bones) ",
+                       (long long unsigned)sk->id, (unsigned)sk->bones.size());
+    lua_pushboolean(L, true);
+    return 1;
+  }
+
+  lua_pushboolean(L, false);
+  return 1;
+}
+
 // Animation library
 static const struct luaL_Reg anim_lib[] = {{"load_clip", new_ddAnimClip},
+                                           {"load_skeleton", new_ddSkeleton},
                                            {NULL, NULL}};
 
 int luaopen_Animation(lua_State *L) {

@@ -194,9 +194,22 @@ static int add_mesh(lua_State *L) {
   return 1;
 }
 
+int set_skeleton(lua_State* L) {
+  ddAgent *ag = *(ddAgent **)lua_touserdata(L, 1);
+
+  // get skeleton id
+
+  // based on skeleton, allocate ddAnimInfo buffers
+
+  lua_pushboolean(L, true);
+  return 1;
+}
+
 // ddAgent library
-static const struct luaL_Reg agent_m2[] = {
-    {"add_mesh", add_mesh}, {"__gc", ddAgent_gc}, {NULL, NULL}};
+static const struct luaL_Reg agent_m2[] = { {"add_mesh", add_mesh}, 
+{"__gc", ddAgent_gc}, 
+{NULL, NULL}};
+
 static const struct luaL_Reg agent_lib[] = {{"new", new_ddAgent}, {NULL, NULL}};
 
 int luaopen_ddAgent(lua_State *L) {

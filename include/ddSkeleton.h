@@ -20,6 +20,7 @@ struct ddSkeleton {
   size_t id;
   /** \brief global model matrix from file */
   glm::mat4 global_mat;
+  /** \brief T-pose skeleton bones */
   dd_array<ddJoint> bones;
 };
 
@@ -59,6 +60,7 @@ struct ddAnimClip {
   float fps = 30.f;
   float length = 0.f;
   float step_size = 0.f;
+  bool global_calc = false;
   dd_array<ddAnimSample> samples;
 };
 
