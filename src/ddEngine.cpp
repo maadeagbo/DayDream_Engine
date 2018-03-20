@@ -31,6 +31,7 @@ const cbuff<32> terminal_hash("poll_terminal");
 const cbuff<32> process_terminal_hash("process_terminal");
 const cbuff<32> init_screen_hash("init_screen");
 const cbuff<32> reset_lvl_script_hash("reset_lvl");
+const cbuff<32> visibility_hash("update_visibility");
 }  // namespace
 
 static void error_callback_glfw(int error, const char *description) {
@@ -365,7 +366,7 @@ void ddEngine::load() {
   main_q.register_sys_func(sys_terminal_hash, _sh);
   main_q.subscribe(terminal_hash.gethash(), sys_terminal_hash);
 
-  // add engine callback
+  // add engine callbacks
   _sh = std::bind(&ddEngine::update, this, arg_1);
   main_q.register_sys_func(sys_engine_hash, _sh);
   main_q.subscribe(exit_hash.gethash(), sys_engine_hash);
@@ -379,6 +380,7 @@ void ddEngine::load() {
   main_q.subscribe(physics_hash.gethash(), sys_engine_hash);
   main_q.subscribe(process_terminal_hash.gethash(), sys_engine_hash);
   main_q.subscribe(reset_lvl_script_hash.gethash(), sys_engine_hash);
+  main_q.subscribe(visibility_hash.gethash(), sys_engine_hash);
 
   // load terminal history
   ddTerminal::inTerminalHistory();
@@ -581,6 +583,12 @@ void ddEngine::update(DD_LEvent &_event) {
       new_event.handle = physics_hash;
       q_push(new_event);
 
+      // send active camera visibility list
+      new_event.handle = visibility_hash;
+      q_push(new_event);
+
+      // send animation update event
+
       // send render event
       new_event.handle = draw_hash;
       q_push(new_event);
@@ -639,5 +647,16 @@ void ddEngine::update(DD_LEvent &_event) {
   } else if (e_sig == reset_lvl_script_hash.gethash()) {  // lvl update script
     // reset lua script
     main_q.init_level_scripts(lvls_list[current_lvl], true);
+  } else if (e_sig == visibility_hash.gethash()) {  // active camera visibility
+    // update active camera visibility list
+    ddCam *cam = ddSceneManager::get_active_cam();
+    POW2_VERIFY_MSG(cam != nullptr, "No active camera", 0);
+
+    ddAgent *cam_p = find_ddAgent(cam->parent);
+    POW2_VERIFY_MSG(cam_p != nullptr, "Active camera has no parent", 0);
+
+    ddSceneManager::reload_visibility_list(
+        cam->id, ddBodyFuncs::pos_ws(&cam_p->body),
+        ddSceneManager::get_current_frustum(cam));
   }
 }

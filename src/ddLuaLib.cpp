@@ -132,7 +132,8 @@ static int dd_raycast(lua_State *L) {
     glm::mat4 inv_p_mat = glm::inverse(ddSceneManager::calc_p_proj_matrix(cam));
 
     glm::uvec2 scr_dim = ddSceneManager::get_screen_dimensions();
-    //glm::vec4 view_p = glm::vec4(0.f, 0.f, (float)scr_dim.x, (float)scr_dim.y);
+    // glm::vec4 view_p = glm::vec4(0.f, 0.f, (float)scr_dim.x,
+    // (float)scr_dim.y);
     const float _x = scr_mx / (scr_dim.x * 0.5f) - 1.0f;
     // top left is 0
     const float _y = ((float)scr_dim.y - scr_my) / (scr_dim.y * 0.5f) - 1.0f;

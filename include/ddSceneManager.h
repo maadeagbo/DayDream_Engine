@@ -4,6 +4,13 @@
 #include "ddAssets.h"
 #include "ddIncludes.h"
 
+/** \brief List off agents visible from a selected camera's frustum */
+struct ddVisList {
+  size_t cam_id = 0;
+  dd_array<ddAgent*> visible_agents;
+  dd_array<float> sq_dist;
+};
+
 /** \brief Tools for retrieving assets and scene information */
 namespace ddSceneManager {
 /** \brief Initialize */
@@ -38,13 +45,6 @@ FrustumBox get_current_frustum(const ddCam* cam);
 float calc_lightvolume_radius(const ddLBulb* blb);
 
 /**
- * \brief Cull objects outside of camera frustum
- * \param _agents must be allocated to size ASSETS_CONTAINER_MAX_SIZE
- */
-void cull_objects(const FrustumBox fr, const glm::mat4 view_m,
-                  dd_array<ddAgent*>& _agents);
-
-/**
  * \brief Get all active lights in scene
  * \param _lights must be allocated to size ASSETS_CONTAINER_MIN_SIZE
  */
@@ -61,9 +61,20 @@ ddLBulb* get_shadow_light();
 glm::vec3 cam_forward_dir(const ddCam* cam, const ddBody* cam_parent_body);
 
 /**
- * \brief Get camera's forward direction
+ * \brief Update positions of constraints in bullet physics
  */
 void update_scene_graph();
+
+/**
+ * \brief Create list of visible objects in the scene w/ dist from camera
+ */
+bool reload_visibility_list(const size_t cam_id, const glm::vec3& cam_pos,
+                            const FrustumBox& fr);
+
+/**
+ * \brief Returns list of visible objects in the scene
+ */
+const ddVisList* get_visibility_list(const size_t cam_id);
 
 /**
  * \brief Check if ray intersects agent

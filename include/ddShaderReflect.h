@@ -75,9 +75,7 @@ enum class RE_Text : int {
   textColor_v3 = 2
 };
 
-enum class RE_PingP : int {
-  ColorTex_smp2d = 0
-};
+enum class RE_PingP : int { ColorTex_smp2d = 0 };
 
 enum class RE_Lumin : int {
   img_input_img2D = 0,
@@ -85,22 +83,10 @@ enum class RE_Lumin : int {
   computeLum_b = 2
 };
 
-enum class RE_Line : int {
-  MVP_m4x4 = 0,
-  color_v4 = 1
-};
+enum class RE_Line : int { MVP_m4x4 = 0, color_v4 = 1 };
 
-enum class RE_LightSt : int {
-  MVP_m4x4 = 0
-};
+enum class RE_LightSt : int { MVP_m4x4 = 0 };
 
-enum class RE_Shadow : int {
-  MVP_m4x4 = 0,
-  LightSpace_m4x4 = 1
-};
+enum class RE_Shadow : int { MVP_m4x4 = 0, LightSpace_m4x4 = 1 };
 
-enum class RE_ShadowSk : int {
-  MVP_m4x4 = 0,
-  LightSpace_m4x4 = 1
-};
-
+enum class RE_ShadowSk : int { MVP_m4x4 = 0, LightSpace_m4x4 = 1 };

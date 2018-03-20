@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ddAssetManager.h"
+#include "ddSceneManager.h"
 
 namespace ddAnimation {
 /** \brief Compute skeletal animations */

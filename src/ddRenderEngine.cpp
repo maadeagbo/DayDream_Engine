@@ -50,8 +50,6 @@ unsigned tris_in_frame = 0;
 // unsigned lines_in_frame = 0;
 unsigned objects_in_frame = 0;
 
-/** \brief frustum cull buffer */
-dd_array<ddAgent *> _agents = dd_array<ddAgent *>(ASSETS_CONTAINER_MAX_SIZE);
 /** \brief active lights buffer */
 dd_array<ddLBulb *> _lights = dd_array<ddLBulb *>(ASSETS_CONTAINER_MIN_SIZE);
 
@@ -71,9 +69,10 @@ cbuff<32> depthsk_sh = "shadow_skinned";
 
 /** \brief Internal draw function */
 void draw_scene(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
-                const glm::vec3 cam_pos);
+                const glm::vec3 cam_pos, const ddVisList *vlist);
 /** \brief Geometry buffer pass */
-void gbuffer_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m);
+void gbuffer_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
+                  const ddVisList *vlist);
 /** \brief Static mesh render pass */
 void render_static(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
                    ddAgent *agent, ddLBulb *shadow_light = nullptr);
@@ -285,8 +284,13 @@ void initialize(const unsigned width, const unsigned height) {
 
 void shutdown() {
   // shaders
-  for (auto &idx : map_shaders) {
-    shaders[idx.second].cleanup();
+  // for (auto &idx : map_shaders) {
+  //  shaders[idx.second].cleanup();
+  //}
+  dd_array<ddShader *> shaders = get_all_ddShader();
+  DD_FOREACH(ddShader *, sh, shaders) {
+    (*sh.ptr)->cleanup();
+    destroy_ddShader((*sh.ptr)->id);
   }
 }
 
@@ -337,16 +341,16 @@ void draw_world() {
   POW2_VERIFY_MSG(cam != nullptr, "No active camera", 0);
   ddAgent *cam_p = find_ddAgent(cam->parent);
   POW2_VERIFY_MSG(cam_p != nullptr, "Active camera has no parent", 0);
+  const glm::vec3 cam_pos = ddBodyFuncs::pos_ws(&cam_p->body);
 
   glm::mat4 view_m = ddSceneManager::calc_view_matrix(cam);
   glm::mat4 proj_m = ddSceneManager::calc_p_proj_matrix(cam);
 
-  // get frustum and cull objects
-  FrustumBox cam_fr = ddSceneManager::get_current_frustum(cam);
-  ddSceneManager::cull_objects(cam_fr, view_m, _agents);
+  // get visibility list from active camera
+  const ddVisList *vlist = ddSceneManager::get_visibility_list(cam->id);
 
   // draw scene
-  draw_scene(view_m, proj_m, ddBodyFuncs::pos_ws(&cam_p->body));
+  draw_scene(view_m, proj_m, cam_pos, vlist);
 
   // printf("objects in frame: %d\n", objects_in_frame);
 }
@@ -354,10 +358,11 @@ void draw_world() {
 }  // namespace ddRenderer
 
 void draw_scene(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
-                const glm::vec3 cam_pos) {
-  // geometry buffer pass
+                const glm::vec3 cam_pos, const ddVisList *vlist) {
   ddGPUFrontEnd::clear_screen(0.f, 0.f, 0.f, 0.f);
-  gbuffer_pass(cam_view_m, cam_proj_m);
+
+  // geometry buffer pass
+  gbuffer_pass(cam_view_m, cam_proj_m, vlist);
 
   // line pass
 
@@ -407,7 +412,8 @@ void draw_scene(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
   return;
 }
 
-void gbuffer_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m) {
+void gbuffer_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
+                  const ddVisList *vlist) {
   // set up new frame
   ddGPUFrontEnd::bind_framebuffer(ddBufferType::GEOM);
   ddGPUFrontEnd::clear_color_buffer();
@@ -418,7 +424,7 @@ void gbuffer_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m) {
   // clipping (if necessary)
   ddGPUFrontEnd::toggle_clip_plane();
 
-  DD_FOREACH(ddAgent *, ag, _agents) {
+  DD_FOREACH(ddAgent *, ag, vlist->visible_agents) {
     // break on the first null pointer
     ddAgent *agent = *ag.ptr;
     if (!agent) break;

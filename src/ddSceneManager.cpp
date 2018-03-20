@@ -5,6 +5,9 @@ namespace {
 unsigned native_scr_width = 0;
 unsigned native_scr_height = 0;
 
+// visibility list
+dd_array<ddVisList> visibility_lists;
+
 DD_FuncBuff fb;
 }  // namespace
 
@@ -173,84 +176,6 @@ float ddSceneManager::calc_lightvolume_radius(const ddLBulb *blb) {
   return radius * (glm::sqrt(light_max / cutoff) - 1.0);
 }
 
-void ddSceneManager::cull_objects(const FrustumBox fr, const glm::mat4 view_m,
-                                  dd_array<ddAgent *> &_agents) {
-  POW2_VERIFY(_agents.size() == ASSETS_CONTAINER_MAX_SIZE);
-
-  /** \brief Get max corner of AAABB based on frustum face normal
-  auto max_aabb_corner = [](ddBodyFuncs::AABB bbox, const glm::vec3 normal) {
-    glm::vec3 new_max = bbox.min;
-    if (normal.x >= 0) {
-      new_max.x = bbox.max.x;
-    }
-    if (normal.y >= 0) {
-      new_max.y = bbox.max.y;
-    }
-    if (normal.z >= 0) {
-      new_max.z = bbox.max.z;
-    }
-    return new_max;
-  };
-        //*/
-  /** \brief Get min corner of AAABB based on frustum face normal */
-  auto min_aabb_corner = [](ddBodyFuncs::AABB bbox, const glm::vec3 normal) {
-    glm::vec3 new_min = bbox.max;
-    if (normal.x >= 0) {
-      new_min.x = bbox.min.x;
-    }
-    if (normal.y >= 0) {
-      new_min.y = bbox.min.y;
-    }
-    if (normal.z >= 0) {
-      new_min.z = bbox.min.z;
-    }
-    return new_min;
-  };
-  //*/
-  /** \brief Frustum cull function */
-  auto cpu_frustum_cull = [&](ddBodyFuncs::AABB bbox) {
-    for (unsigned i = 0; i < 6; i++) {
-      glm::vec3 fr_norm = fr.normals[i];
-      float fr_dist = fr.d[i];
-      // check if negative vertex is outside (depends on normal of the plane)
-      glm::vec3 min_vert = min_aabb_corner(bbox, fr_norm);
-      // if _dist is positive, point is located behind frustum plane (reject)
-      float _dist = glm::dot(fr_norm, min_vert) + fr_dist;
-      if (_dist > 0.000001f) {
-        return false;  // must not fail any plane test
-      }
-    }
-    return true;
-  };
-
-  // null the array
-  DD_FOREACH(ddAgent *, ag, _agents) { *ag.ptr = nullptr; }
-
-  // can be performed w/ compute shader
-  // delegating to cpu for now
-  unsigned ag_tracker = 0;
-
-  dd_array<ddAgent *> ag_array = get_all_ddAgent();
-  DD_FOREACH(ddAgent *, ag_id, ag_array) {
-    ddAgent *ag = *ag_id.ptr;
-
-    // check if agent has mesh
-    if (ag->mesh.size() > 0 && ag->body.bt_bod) {
-      // get AABB from physics
-      ddBodyFuncs::AABB bbox = ddBodyFuncs::get_aabb(&ag->body);
-      if (cpu_frustum_cull(bbox)) {
-        // add agent to current list
-        _agents[ag_tracker] = ag;
-        ag_tracker++;
-      }
-    } else {
-      // agents w/out models get automatic pass
-      _agents[ag_tracker] = ag;
-      ag_tracker++;
-    }
-  }
-}
-
 void ddSceneManager::get_active_lights(dd_array<ddLBulb *> &_lights) {
   POW2_VERIFY(_lights.size() == ASSETS_CONTAINER_MIN_SIZE);
 
@@ -318,6 +243,128 @@ void ddSceneManager::update_scene_graph() {
       top_ag->body.bt_bod->setWorldTransform(tr);
     }
   }
+}
+
+/** \brief Get min corner of AAABB based on frustum face normal */
+glm::vec3 get_min_corner(ddBodyFuncs::AABB &bbox, const glm::vec3 &normal) {
+  glm::vec3 new_min = bbox.max;
+  if (normal.x >= 0) {
+    new_min.x = bbox.min.x;
+  }
+  if (normal.y >= 0) {
+    new_min.y = bbox.min.y;
+  }
+  if (normal.z >= 0) {
+    new_min.z = bbox.min.z;
+  }
+  return new_min;
+}
+
+/** \brief Get max corner of AAABB based on frustum face normal */
+glm::vec3 get_max_corner(ddBodyFuncs::AABB &bbox, const glm::vec3 &normal) {
+  glm::vec3 new_max = bbox.min;
+  if (normal.x >= 0) {
+    new_max.x = bbox.max.x;
+  }
+  if (normal.y >= 0) {
+    new_max.y = bbox.max.y;
+  }
+  if (normal.z >= 0) {
+    new_max.z = bbox.max.z;
+  }
+  return new_max;
+}
+
+/** \brief Frustum cull function */
+bool frustum_cull(ddBodyFuncs::AABB &bbox, const FrustumBox &fr) {
+  for (unsigned i = 0; i < 6; i++) {
+    glm::vec3 fr_norm = fr.normals[i];
+    float fr_dist = fr.d[i];
+    // check if negative vertex is outside (depends on normal of the plane)
+    glm::vec3 min_vert = get_min_corner(bbox, fr_norm);
+    // if _dist is positive, point is located behind frustum plane (reject)
+    float _dist = glm::dot(fr_norm, min_vert) + fr_dist;
+    if (_dist > 0.000001f) {
+      return false;  // must not fail any plane test
+    }
+  }
+  return true;
+}
+
+bool ddSceneManager::reload_visibility_list(const size_t cam_id,
+                                            const glm::vec3 &cam_pos,
+                                            const FrustumBox &fr) {
+  // check if camera already exists in list
+  ddVisList *vlist = nullptr;
+  DD_FOREACH(ddVisList, item, visibility_lists) {
+    if (item.ptr->cam_id == cam_id) vlist = item.ptr;
+  }
+
+  // create new entry if necessary
+  if (!vlist) {
+    dd_array<ddVisList> temp(visibility_lists.size() + 1);
+    temp = visibility_lists;
+    visibility_lists = std::move(temp);
+    vlist = &visibility_lists[visibility_lists.size() - 1];
+    vlist->cam_id = cam_id;
+  }
+
+  if (vlist) {
+    dd_array<ddAgent *> ag_array = get_all_ddAgent();
+
+    // resize lists (dist from cam & pointers) for worst case
+    vlist->sq_dist.resize(ag_array.size());
+    vlist->visible_agents.resize(ag_array.size());
+
+    // perform frustum check and calculate squared distanced from camera
+    unsigned ag_tracker = 0;
+    DD_FOREACH(ddAgent *, ag_id, ag_array) {
+      ddAgent *ag = *ag_id.ptr;
+
+      // check if agent has mesh
+      if (ag->mesh.size() > 0 && ag->body.bt_bod) {
+        // get agent position (center of bounding box)
+        ddBodyFuncs::AABB bbox = ddBodyFuncs::get_aabb(&ag->body);
+        glm::vec3 ag_pos = (bbox.max + bbox.min) / 2.f;
+
+        if (frustum_cull(bbox, fr)) {
+          // distance vector
+          glm::vec3 dist_vec = cam_pos - ag_pos;
+
+          // add agent to current list
+          vlist->visible_agents[ag_tracker] = ag;
+          vlist->sq_dist[ag_tracker] = glm::dot(dist_vec, dist_vec);
+          ag_tracker++;
+        }
+      } else {  // agents w/out models get automatic pass
+
+        vlist->visible_agents[ag_tracker] = ag;
+        vlist->sq_dist[ag_tracker] = 0.f;
+        ag_tracker++;
+      }
+    }
+
+    // resize lists (dist from cam & pointers) to be compact
+    dd_array<ddAgent *> temp_1(ag_tracker);
+    temp_1 = vlist->visible_agents;
+    dd_array<float> temp_2(ag_tracker);
+    temp_2 = vlist->sq_dist;
+
+    vlist->visible_agents = std::move(temp_1);
+    vlist->sq_dist = std::move(temp_2);
+
+    return true;
+  }
+  return false;
+}
+
+const ddVisList *ddSceneManager::get_visibility_list(const size_t cam_id) {
+  // check if camera has had a visibilty list calculated
+  DD_FOREACH(ddVisList, item, visibility_lists) {
+    if (item.ptr->cam_id == cam_id) return item.ptr;
+  }
+
+  return nullptr;
 }
 
 bool ddSceneManager::ray_bbox_intersect(const glm::vec3 origin,

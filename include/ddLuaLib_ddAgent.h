@@ -194,21 +194,51 @@ static int add_mesh(lua_State *L) {
   return 1;
 }
 
-int set_skeleton(lua_State* L) {
+int set_skeleton(lua_State *L) {
   ddAgent *ag = *(ddAgent **)lua_touserdata(L, 1);
+  int top = lua_gettop(L);
+
+  if (top != 2) {
+    ddTerminal::post("[error]ddAgent::set_skeleton::Must provide skeleton id");
+    lua_pushboolean(L, false);
+    return 1;
+  }
 
   // get skeleton id
+  bool id_flag = lua_type(L, 2) == LUA_TSTRING;
+  if (!id_flag) {
+    ddTerminal::post(
+        "[error]ddAgent::set_skeleton::Invalid 1st arg "
+        "(id : string)");
+    lua_pushboolean(L, false);
+    return 1;
+  }
+  const char *id = lua_tostring(L, 2);
+
+  // Check if skeleton exists
+  ddSkeleton *sk = find_ddSkeleton(getCharHash(id));
+  if (!sk) {
+    ddTerminal::post("[error]ddAgent::set_skeleton::Skeleton not found");
+    lua_pushboolean(L, false);
+    return 1;
+  }
 
   // based on skeleton, allocate ddAnimInfo buffers
+  ag->anim.global_pose.resize(sk->bones.size());
+  ag->anim.inv_bp.resize(sk->bones.size());
+  ag->anim.local_pose.resize(sk->bones.size());
+  ag->anim.sk_id = sk->id;
+  ddTerminal::f_post("agent skeleton:: %llu :: %u(bones)",
+                     (long long unsigned)sk->id,
+                     (unsigned)ag->anim.global_pose.size());
 
   lua_pushboolean(L, true);
   return 1;
 }
 
 // ddAgent library
-static const struct luaL_Reg agent_m2[] = { {"add_mesh", add_mesh}, 
-{"__gc", ddAgent_gc}, 
-{NULL, NULL}};
+static const struct luaL_Reg agent_m2[] = {
+    {"add_mesh", add_mesh}, {"__gc", ddAgent_gc}, {NULL, NULL}};
 
 static const struct luaL_Reg agent_lib[] = {{"new", new_ddAgent}, {NULL, NULL}};
 
