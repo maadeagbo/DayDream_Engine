@@ -6,6 +6,7 @@
 #include "ddTerminal.h"
 
 const unsigned ddAgent_ptr_size = sizeof(ddAgent *);
+const unsigned ddAnimState_ptr_size = sizeof(ddAnimState *);
 
 /**
  * \brief "New" function for ddAgent
@@ -194,6 +195,9 @@ static int add_mesh(lua_State *L) {
   return 1;
 }
 
+/**
+ * \brief Add skeleton to ddAgent
+ */
 int set_skeleton(lua_State *L) {
   ddAgent *ag = *(ddAgent **)lua_touserdata(L, 1);
   int top = lua_gettop(L);
@@ -236,9 +240,86 @@ int set_skeleton(lua_State *L) {
   return 1;
 }
 
+/**
+ * \brief Add animation to ddAgent
+ */
+int add_animation(lua_State *L) {
+  ddAgent *ag = *(ddAgent **)lua_touserdata(L, 1);
+  int top = lua_gettop(L);
+
+  // create userdata for anim state
+  ddAnimState **a_state =
+      (ddAnimState **)lua_newuserdata(L, ddAnimState_ptr_size);
+
+  // log state id & animation clip id
+  if (top != 3) {
+    ddTerminal::post(
+        "[error]ddAnimState::add_animation::Must provide new id & "
+        "existing animation clip id");
+    return 1;
+  }
+
+  int curr_arg = 2;
+  bool id_flag = lua_type(L, curr_arg) == LUA_TSTRING;
+  if (!id_flag) {
+    ddTerminal::post(
+        "[error]ddAnimState::add_animation::Invalid 1st arg (id : "
+        "string)");
+    return 1;
+  }
+  size_t id = getCharHash(lua_tostring(L, curr_arg));
+
+  // get animation clip id
+  curr_arg++;
+  id_flag = lua_type(L, curr_arg) == LUA_TSTRING;
+  if (!id_flag) {
+    ddTerminal::post(
+        "[error]ddAnimState::add_animation::Invalid 2nd arg (clip "
+        "id : string)");
+    return 1;
+  }
+  size_t anim_id = getCharHash(lua_tostring(L, curr_arg));
+
+  // check if animation clip exists
+  ddAnimClip *a_clip = find_ddAnimClip(anim_id);
+  if (!a_clip) {
+    ddTerminal::post("[error]ddAnimState::add_animation::Invalid clip id");
+    return 1;
+  }
+
+  (*a_state) = nullptr;
+  // check if state already exists in agent
+  DD_FOREACH(ddAnimState, state, ag->anim.states) {
+    if (state.ptr->id == id) (*a_state) = state.ptr;
+  }
+
+  // create new state
+  if (!(*a_state)) {
+    dd_array<ddAnimState> temp(ag->anim.states.size() + 1);
+    temp = ag->anim.states;
+    ag->anim.states = std::move(temp);
+    (*a_state) = &ag->anim.states[ag->anim.states.size() - 1];
+    (*a_state)->id = id;
+    (*a_state)->clip_id = a_clip->id;
+  }
+
+  ddTerminal::f_post("agent animation:: %llu :: %llu(clip id)",
+                     (long long unsigned)(*a_state)->id,
+                     (long long unsigned)(*a_state)->clip_id);
+
+  // set metatable
+  luaL_getmetatable(L, ddAnimState_meta_name());
+  lua_setmetatable(L, -2);
+
+  return 1;
+}
+
 // ddAgent library
-static const struct luaL_Reg agent_m2[] = {
-    {"add_mesh", add_mesh}, {"__gc", ddAgent_gc}, {NULL, NULL}};
+static const struct luaL_Reg agent_m2[] = {{"add_mesh", add_mesh},
+                                           {"__gc", ddAgent_gc},
+                                           {"set_skeleton", set_skeleton},
+                                           {"add_animation", add_animation},
+                                           {NULL, NULL}};
 
 static const struct luaL_Reg agent_lib[] = {{"new", new_ddAgent}, {NULL, NULL}};
 

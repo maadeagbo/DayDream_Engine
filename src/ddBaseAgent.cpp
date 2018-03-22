@@ -131,6 +131,120 @@ AABB get_aabb(ddBody* bod) {
 //******************************************************************************
 //******************************************************************************
 
+#define DDANIMSTATE_META_NAME "LuaClass.ddAnimState"
+#define check_ddAnimState(L) \
+  (ddAnimState**)luaL_checkudata(L, 1, DDANIMSTATE_META_NAME)
+
+const char* ddAnimState_meta_name() { return DDANIMSTATE_META_NAME; }
+
+static int set_val(lua_State* L);
+static int get_val(lua_State* L);
+static int anim_to_string(lua_State* L);
+
+static const struct luaL_Reg animstate_methods[] = {
+    {"__index", get_val},
+    {"__newindex", set_val},
+    {"__tostring", anim_to_string},
+    {NULL, NULL}};
+
+void log_meta_ddAnimState(lua_State* L) {
+  luaL_newmetatable(L, DDANIMSTATE_META_NAME);  // create meta table
+  luaL_setfuncs(L, animstate_methods, 0);       /* register metamethods */
+}
+
+int get_val(lua_State* L) {
+  ddAnimState* a_state = *check_ddAnimState(L);
+
+  // match input enum to ddAnimState variable
+  int idx = (int)luaL_checkinteger(L, 2);
+  switch (idx) {
+    case 1:
+      // weight
+      lua_pushnumber(L, a_state->weight);
+      break;
+    case 2:
+      // local time
+      lua_pushnumber(L, a_state->local_time);
+      break;
+    case 3:
+      // play speed
+      lua_pushnumber(L, a_state->play_back);
+      break;
+    case 4:
+      // interpolate
+      lua_pushnumber(L, a_state->interpolate);
+      break;
+    case 5:
+      // active
+      lua_pushboolean(L, a_state->active);
+      break;
+    case 6:
+      // loop
+      lua_pushboolean(L, a_state->flag_loop);
+      break;
+    default:
+      ddTerminal::f_post("[error]ddAnimState::invalid indexing enum (%d)", idx);
+      // couldn't find indexed object/ignoring
+      lua_pushnil(L);
+      break;
+  }
+
+  return 1;
+}
+
+int set_val(lua_State* L) {
+  ddAnimState* a_state = *check_ddAnimState(L);
+
+  // match input enum to ddAnimState variable
+  int idx = (int)luaL_checkinteger(L, 2);
+  switch (idx) {
+    case 1:
+      // weight
+      a_state->weight = (float)luaL_checknumber(L, 3);
+      break;
+    case 2:
+      // local time
+      a_state->local_time = (float)luaL_checknumber(L, 3);
+      break;
+    case 3:
+      // play speed
+      a_state->play_back = (float)luaL_checknumber(L, 3);
+      break;
+    case 4:
+      // interpolate
+      luaL_checktype(L, 3, LUA_TBOOLEAN);
+      a_state->interpolate = (bool)lua_toboolean(L, 3);
+      break;
+    case 5:
+      // active
+      luaL_checktype(L, 3, LUA_TBOOLEAN);
+      a_state->active = (bool)lua_toboolean(L, 3);
+      break;
+    case 6:
+      // loop
+      luaL_checktype(L, 3, LUA_TBOOLEAN);
+      a_state->flag_loop = (bool)lua_toboolean(L, 3);
+      break;
+    default:
+      ddTerminal::f_post("[error]ddAnimState::invalid indexing enum (%d)", idx);
+      break;
+  }
+
+  // couldn't find indexed object/ignoring
+  return 0;
+}
+
+static int anim_to_string(lua_State* L) {
+  ddAnimState* a_state = *check_ddAnimState(L);
+
+  // print ddAnimState information
+
+  return 0;
+}
+
+//******************************************************************************
+//******************************************************************************
+
 #define DDAGENT_META_NAME "LuaClass.ddAgent"
 #define check_ddAgent(L) (ddAgent**)luaL_checkudata(L, 1, DDAGENT_META_NAME)
 
@@ -176,6 +290,8 @@ static const struct luaL_Reg agent_methods[] = {
     {NULL, NULL}};
 
 void log_meta_ddAgent(lua_State* L) {
+  log_meta_ddAnimState(L);  // ddAnimState
+
   luaL_newmetatable(L, DDAGENT_META_NAME);  // create meta table
   lua_pushvalue(L, -1);                     /* duplicate the metatable */
   lua_setfield(L, -2, "__index");           /* mt.__index = mt */

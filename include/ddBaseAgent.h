@@ -174,3 +174,8 @@ struct ddAgent {
 const char *ddAgent_meta_name();
 /** \brief DO NOT USE. ONLY TO BE CALLED BY ddAssetsLuaClass */
 void log_meta_ddAgent(lua_State *L);
+
+/** \brief Lua class instance metatable name */
+const char *ddAnimState_meta_name();
+/** \brief DO NOT USE. ONLY TO BE CALLED BY ddAssetsLuaClass */
+void log_meta_ddAnimState(lua_State *L);
