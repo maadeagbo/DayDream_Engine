@@ -60,7 +60,6 @@ struct ddAnimClip {
   float fps = 30.f;
   float length = 0.f;
   float step_size = 0.f;
-  bool global_calc = false;
   dd_array<ddAnimSample> samples;
 };
 

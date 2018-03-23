@@ -135,6 +135,10 @@ struct ddAnimInfo {
    * \brief ddAnimState container
    */
   dd_array<ddAnimState> states;
+  /**
+   * \brief Marks how to finalize local to global pose data
+   */
+  bool global_calc = false;
 };
 
 /**
