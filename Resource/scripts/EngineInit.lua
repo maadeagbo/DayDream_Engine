@@ -48,6 +48,15 @@ args["path"] = ROOT_DIR.."/Resource/Shaders/GBuffer_F.frag"
 args["type"] = FRAG_SHADER
 add_shader(args)
 
+-- skinned geometry
+args["id"] = "geometry_skinned"
+args["path"] = ROOT_DIR.."/Resource/Shaders/SkinnedGBuffer_V.vert"
+args["type"] = VERT_SHADER
+add_shader(args)
+args["path"] = ROOT_DIR.."/Resource/Shaders/GBuffer_F.frag"
+args["type"] = FRAG_SHADER
+add_shader(args)
+
 -- light
 args["id"] = "light"
 args["path"] = ROOT_DIR.."/Resource/Shaders/Lighting_V.vert"

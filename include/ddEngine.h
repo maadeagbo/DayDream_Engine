@@ -4,6 +4,7 @@
 //#include "SDL.h"
 
 #include "LuaHooks.h"
+#include "ddAnimation.h"
 #include "ddAssetManager.h"
 #include "ddEventQueue.h"
 #include "ddIncludes.h"

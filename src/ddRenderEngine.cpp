@@ -37,6 +37,9 @@ const cbuff<32> light_plane_id = "_dd_light_plane";
 /** \brief Flag for controlling shadows */
 bool shadows_on = true;
 
+/** \brief Buffer for joints of skinned mesh object */
+ddStorageBufferData *joint_ssbo;
+
 /** \brief Load screen texture */
 cbuff<32> load_screen_tex = "load_screen";
 /** \brief Load screen matrices */
@@ -55,6 +58,7 @@ dd_array<ddLBulb *> _lights = dd_array<ddLBulb *>(ASSETS_CONTAINER_MIN_SIZE);
 
 /** \brief Main shader ids */
 cbuff<32> geom_sh = "geometry";
+cbuff<32> geomsk_sh = "geometry_skinned";
 cbuff<32> light_sh = "light";
 cbuff<32> postp_sh = "postprocess";
 cbuff<32> text_sh = "text";
@@ -76,6 +80,9 @@ void gbuffer_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
 /** \brief Static mesh render pass */
 void render_static(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
                    ddAgent *agent, ddLBulb *shadow_light = nullptr);
+/** \brief Skinned mesh render pass */
+void render_skinned(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
+                    ddAgent *agent, ddLBulb *shadow_light = nullptr);
 /** \brief Light buffer pass */
 void light_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
                 const glm::vec3 cam_pos);
@@ -233,7 +240,8 @@ void initialize(const unsigned width, const unsigned height) {
   // ping pong shader textures
   calc_pingpong_textures();
 
-  // load mesh for rendering light volumes
+  // joint storage buffer allocation
+  ddGPUFrontEnd::create_storage_buffer(joint_ssbo, MAX_JOINTS * sizeof(glm::mat4));
 
   // set up load screen texture(s)
   ddTex2D *tex = find_ddTex2D(load_screen_tex.gethash());
@@ -292,6 +300,9 @@ void shutdown() {
     (*sh.ptr)->cleanup();
     destroy_ddShader((*sh.ptr)->id);
   }
+
+  // joint ssbo
+  ddGPUFrontEnd::destroy_storage_buffer(joint_ssbo);
 }
 
 void render_load_screen() {
@@ -435,7 +446,8 @@ void gbuffer_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
       if (agent->inst.m4x4.size() == 1) {
         // render skinned mesh
         if (agent->anim.states.isValid()) {
-          //
+          // render skinned
+          render_skinned(cam_view_m, cam_proj_m, agent);
         } else {
           // render static
           render_static(cam_view_m, cam_proj_m, agent);
@@ -448,18 +460,18 @@ void gbuffer_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
   return;
 }
 
+/** \brief simple utility function for retrieving index of flag */
+size_t get_tex_idx(const TexType t_t) { return (size_t)std::log2((double)t_t); }
+
+/** \brief Get ddTextureData from ddMat && index */
+ddTextureData *get_tex_handle(const ddMat *mat, const size_t idx) {
+  ddTex2D *tex = find_ddTex2D(mat->textures[idx]);
+  POW2_VERIFY_MSG(tex != nullptr, "Texture id provided but not found", 0);
+  return tex->image_info.tex_buff;
+}
+
 void render_static(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
                    ddAgent *agent, ddLBulb *shadow_light) {
-  /** \brief simple utility function for retrieving index of flag */
-  auto get_tex_idx = [](const TexType t_t) {
-    return (size_t)std::log2((double)t_t);
-  };
-  /** \brief Get ddTextureData from ddMat && index */
-  auto get_tex_handle = [](const ddMat *mat, const size_t idx) {
-    ddTex2D *tex = find_ddTex2D(mat->textures[idx]);
-    POW2_VERIFY_MSG(tex != nullptr, "Texture id provided but not found", 0);
-    return tex->image_info.tex_buff;
-  };
   // set up shader
   ddShader *sh = nullptr;
   if (shadow_light) {
@@ -534,6 +546,108 @@ void render_static(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
                                                     &agent->inst.v3[0]);
         // debug flag
         sh->set_uniform((int)RE_GBuffer::useDebug_b, false);
+      }
+      // log stats
+      tris_in_frame += (unsigned)mdata.ptr->indices.size() / 3;
+      draw_calls += 1;
+
+      // bind vao and render
+      ddGPUFrontEnd::draw_instanced_vao(mdl_id.ptr->vao_handles[mdata.i],
+                                        (unsigned)mdata.ptr->indices.size(), 1);
+
+      // update stats
+      objects_in_frame++;
+    }
+  }
+  return;
+}
+
+void render_skinned(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
+                    ddAgent *agent, ddLBulb *shadow_light) {
+  // set up shader
+  ddShader *sh = nullptr;
+  if (shadow_light) {
+    sh = find_ddShader(depth_sh.gethash());
+    POW2_VERIFY_MSG(sh != nullptr, "Couldn't locate depth shader", 0);
+    sh->use();
+  } else {
+    sh = find_ddShader(geomsk_sh.gethash());
+    POW2_VERIFY_MSG(sh != nullptr, "Couldn't locate skinned geometry shader", 0);
+    sh->use();
+  }
+  // sh->set_uniform((int)RE_GBuffer::enable_clip1_b, false);  // always off
+
+  // set pose matrix data
+  ddGPUFrontEnd::set_storage_buffer_contents(joint_ssbo, 
+    agent->anim.global_pose.sizeInBytes(), 0, &agent->anim.global_pose[0]);
+
+  // get mesh information
+  DD_FOREACH(ModelIDs, mdl_id, agent->mesh) {
+    ddModelData *mdl = find_ddModelData(mdl_id.ptr->model);
+    POW2_VERIFY_MSG(mdl != nullptr, "Model id provided but not found", 0);
+
+    // render each mesh in agent
+    DD_FOREACH(DDM_Data, mdata, mdl->mesh_info) {
+      // get material
+      ddMat *mat = find_ddMat(mdl_id.ptr->material[mdata.i]);
+      POW2_VERIFY_MSG(mat != nullptr, "Material provided but not found", 0);
+
+      // bind global pose matrix data
+      ddGPUFrontEnd::bind_storage_buffer(11, joint_ssbo);
+
+      // set shader info
+      if (shadow_light) {
+        //
+      } else {
+        bool albedo = bool(TexType::ALBEDO & mat->texture_flag);
+        sh->set_uniform((int)RE_GBufferSk::albedoFlag_b, albedo);
+
+        if (albedo) {
+          size_t tex_idx = get_tex_idx(TexType::ALBEDO);
+          ddGPUFrontEnd::bind_texture(0, get_tex_handle(mat, tex_idx));
+          sh->set_uniform((int)RE_GBufferSk::tex_albedo_smp2d, 0);
+        }
+
+        bool specular = bool(TexType::SPEC & mat->texture_flag);
+        sh->set_uniform((int)RE_GBufferSk::specFlag_b, specular);
+        if (specular) {
+          size_t tex_idx = get_tex_idx(TexType::SPEC);
+          ddGPUFrontEnd::bind_texture(1, get_tex_handle(mat, tex_idx));
+          sh->set_uniform((int)RE_GBufferSk::tex_specular_smp2d, 1);
+        }
+
+        bool normal = bool(TexType::NORMAL & mat->texture_flag);
+        sh->set_uniform((int)RE_GBufferSk::normalFlag_b, normal);
+        if (normal) {
+          size_t tex_idx = get_tex_idx(TexType::NORMAL);
+          ddGPUFrontEnd::bind_texture(2, get_tex_handle(mat, tex_idx));
+          sh->set_uniform((int)RE_GBufferSk::tex_normal_smp2d, 2);
+        }
+        sh->set_uniform((int)RE_GBufferSk::diffuse_v3,
+                        glm::vec3(mat->base_color));
+        sh->set_uniform((int)RE_GBufferSk::shininess_f, mat->spec_value);
+
+        // matrices
+        agent->inst.m4x4[0] = glm::mat4();  // identity
+        glm::mat4 model_m = ddBodyFuncs::get_model_mat(&agent->body);
+        //glm::mat4 norm_m = glm::transpose(glm::inverse(model_m));
+        //sh->set_uniform((int)RE_GBufferSk::Norm_m4x4, norm_m);
+        sh->set_uniform((int)RE_GBufferSk::Model_m4x4, model_m);
+        sh->set_uniform((int)RE_GBufferSk::VP_m4x4, cam_proj_m * cam_view_m);
+
+        POW2_ASSERT(!ddGPUFrontEnd::spot_check_errors("Spot 6"));
+
+        // bind/fill instance buffer
+        ddGPUFrontEnd::set_instance_buffer_contents(agent->inst.inst_buff,
+                                                    false, sizeof(glm::mat4), 0,
+                                                    &agent->inst.m4x4[0]);
+        // bind & fill color buffer
+        sh->set_uniform((int)RE_GBufferSk::multiplierMat_b, false);  // TODO: flag
+        ddGPUFrontEnd::set_instance_buffer_contents(agent->inst.inst_buff, true,
+                                                    sizeof(glm::vec3), 0,
+                                                    &agent->inst.v3[0]);
+        // debug flag
+        sh->set_uniform((int)RE_GBufferSk::useDebug_b, false);
       }
       // log stats
       tris_in_frame += (unsigned)mdata.ptr->indices.size() / 3;

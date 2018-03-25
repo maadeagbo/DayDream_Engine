@@ -43,6 +43,12 @@ int dd_assets_create_mesh(lua_State *L);
  */
 ddModelData *load_ddm(const char *filename);
 /**
+ * \brief Parse ddg file (multi-mesh ddm files) and load to ram
+ * \param filename Path to .ddg file
+ * \return ddModelData of input ddg file
+ */
+ddModelData *load_ddg(const char *filename);
+/**
  * \brief Read file in io handle and grab vertex data
  * \param _size Number of vertices
  * \param _io file reader handle

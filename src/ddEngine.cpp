@@ -32,6 +32,7 @@ const cbuff<32> process_terminal_hash("process_terminal");
 const cbuff<32> init_screen_hash("init_screen");
 const cbuff<32> reset_lvl_script_hash("reset_lvl");
 const cbuff<32> visibility_hash("update_visibility");
+const cbuff<32> animation_hash("update_animation");
 }  // namespace
 
 static void error_callback_glfw(int error, const char *description) {
@@ -300,67 +301,6 @@ void ddEngine::load() {
   // initialize scene manager
   ddSceneManager::initialize(window_w, window_h);
 
-  // set up math/physics library
-  // DD_MathLib::setResourceBin(&main_res);
-
-  // Load render engine
-  /*
-  main_renderer.m_resourceBin = &main_res;
-  main_renderer.push = push_func;
-  main_renderer.m_time = &main_timer;
-  main_renderer.LoadRendererEngine((GLfloat)window_w, (GLfloat)window_h);
-  main_renderer.m_particleSys->m_resBin = &main_res;
-  // add render engine handler
-  system_id = getCharHash("dd_renderer");
-  _sh = std::bind(&DD_Renderer::render_handler, &main_renderer, arg_1);
-  main_q.register_sys_func(system_id, _sh);
-  main_q.subscribe(getCharHash("render"), system_id);
-  main_q.subscribe(getCharHash("toggle_screenshots"), system_id);
-  main_q.subscribe(getCharHash("rendstat"), system_id);
-
-  // load compute unit and handler
-  main_comp.init();
-  main_comp.res_ptr = &main_res;
-  main_comp.push = push_func;
-  system_id = getCharHash("dd_compute");
-  _sh = std::bind(&DD_Compute::compute, &main_comp, arg_1);
-  main_q.register_sys_func(system_id, _sh);
-  main_q.subscribe(getCharHash("compute_texA"), system_id);
-  //*/
-
-  // initialize Animation system and register handlers
-  /*
-        main_animator.res_ptr = &main_res;
-  main_animator.push = push_func;
-  system_id = getCharHash("dd_animation");
-  _sh = std::bind(&DD_AnimSystem::anim_update, &main_animator, arg_1);
-  main_q.register_sys_func(system_id, _sh);
-  main_q.subscribe(getCharHash("update_animation"), system_id);
-
-  // add particle handler
-  main_renderer.m_particleSys->push = push_func;
-  system_id = getCharHash("dd_particles");
-  _sh = std::bind(&DD_ParticleSys::create, main_renderer.m_particleSys, arg_1);
-  main_q.register_sys_func(system_id, _sh);
-  main_q.subscribe(getCharHash("generate_emitter"), system_id);
-  main_q.subscribe(getCharHash("create_cloth"), system_id);
-  main_q.subscribe(getCharHash("debug"), system_id);
-  main_q.subscribe(getCharHash("system_pause"), system_id);
-  main_q.subscribe(getCharHash("update_cloth"), system_id);
-  //_sh = std::bind(&DD_ParticleSys::add_job, main_renderer.m_particleSys,
-  // arg_1); register_func("particle_jobA");
-        //*/
-
-  // add AI program handler and setup
-  /*
-        main_ai.res_ptr = &main_res;
-  main_ai.push = push_func;
-  system_id = getCharHash("dd_ai");
-  _sh = std::bind(&DD_AISystem::ai_update, &main_ai, arg_1);
-  main_q.register_sys_func(system_id, _sh);
-  main_q.subscribe(getCharHash("update_AI"), system_id);
-        //*/
-
   // terminal input callback
   _sh = std::bind(&ddTerminal::get_input, std::placeholders::_1);
   main_q.register_sys_func(sys_terminal_hash, _sh);
@@ -381,6 +321,7 @@ void ddEngine::load() {
   main_q.subscribe(process_terminal_hash.gethash(), sys_engine_hash);
   main_q.subscribe(reset_lvl_script_hash.gethash(), sys_engine_hash);
   main_q.subscribe(visibility_hash.gethash(), sys_engine_hash);
+  main_q.subscribe(animation_hash.gethash(), sys_engine_hash);
 
   // load terminal history
   ddTerminal::inTerminalHistory();
@@ -588,6 +529,8 @@ void ddEngine::update(DD_LEvent &_event) {
       q_push(new_event);
 
       // send animation update event
+      new_event.handle = animation_hash;
+      q_push(new_event);
 
       // send render event
       new_event.handle = draw_hash;
@@ -639,6 +582,8 @@ void ddEngine::update(DD_LEvent &_event) {
   } else if (e_sig == draw_hash.gethash()) {  // draw call
     // render 3D world
     ddRenderer::draw_world();
+  } else if (e_sig == animation_hash.gethash()) {  // animation
+    ddAnimation::process_animations();
   } else if (e_sig == physics_hash.gethash()) {  // physics update
     // scene graph
     ddSceneManager::update_scene_graph();

@@ -4,8 +4,8 @@ layout (location = 0) in vec3 VertexPosition;
 layout (location = 1) in vec3 VertexNormal;
 layout (location = 2) in vec2 VertexTexCoord;
 layout (location = 3) in vec3 TangentNormal;
-layout (location = 4) in mat4 InstanceMatrix;
-layout (location = 8) in vec3 InstanceColor;
+layout (location = 6) in mat4 InstanceMatrix;
+layout (location = 10) in vec3 InstanceColor;
 
 uniform bool enable_clip1 = false;
 uniform vec4 cplane_01;

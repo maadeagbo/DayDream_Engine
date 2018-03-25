@@ -13,6 +13,11 @@ SDIR=$1
 	-v "$SDIR/Resource/Shaders/GBuffer_V.vert" \
 	-f "$SDIR/Resource/Shaders/GBuffer_F.frag"
 
+# reflect skinned gbuffer shader
+./bin/dd_shader_reflect -o include/ddShaderReflect.h -a -e RE_GBufferSk \
+	-v "$SDIR/Resource/Shaders/SkinnedGBuffer_V.vert" \
+	-f "$SDIR/Resource/Shaders/GBuffer_F.frag"
+
 # reflect post process shader
 ./bin/dd_shader_reflect -o include/ddShaderReflect.h -a -e RE_PostPr \
 	-v "$SDIR/Resource/Shaders/PostProcess_V.vert" \

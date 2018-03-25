@@ -26,13 +26,21 @@ static int new_ddModelData(lua_State *L) {
   int curr_arg = 1;
   bool id_flag = lua_type(L, curr_arg) == LUA_TSTRING;
   if (!id_flag) {
-    ddTerminal::post("[error]ddModelData::Invalid 1st arg (ddm file : string)");
+    ddTerminal::post(
+        "[error]ddModelData::Invalid 1st arg (ddm/ddg file : "
+        "string)");
     return 1;
   }
-  const char *ddm_file = lua_tostring(L, curr_arg);
+  const char *ddmg_file = lua_tostring(L, curr_arg);
 
   // create new model data
-  (*mdl) = load_ddm(ddm_file);
+  cbuff<512> path = ddmg_file;
+  if (path.contains(".ddm")) {
+    (*mdl) = load_ddm(ddmg_file);
+  } else if (path.contains(".ddg")) {
+    (*mdl) = load_ddg(ddmg_file);
+  }
+
   if (!(*mdl)) {
     ddTerminal::post("[error]ddModelData::Failed to allocate new model");
     return 1;

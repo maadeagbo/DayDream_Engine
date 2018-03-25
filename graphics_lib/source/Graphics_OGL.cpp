@@ -518,6 +518,14 @@ bool bind_object(ddVAOData *vbuff_ptr, ddInstBufferData *ibuff_ptr,
     glEnableVertexAttribArray(3);
     glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
                           (GLvoid *)offsetof(Vertex, tangent));
+    // blend weights
+    glEnableVertexAttribArray(4);
+    glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                          (GLvoid *)offsetof(Vertex, blendweight));
+    // joint indices
+    glEnableVertexAttribArray(5);
+    glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                          (GLvoid *)offsetof(Vertex, joints));
     // indices
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mbuff_ptr->index_buffer);
 
@@ -528,29 +536,29 @@ bool bind_object(ddVAOData *vbuff_ptr, ddInstBufferData *ibuff_ptr,
   if (ibuff_ptr) {
     // Set attribute pointers for matrix (4 times vec4)
     glBindBuffer(GL_ARRAY_BUFFER, ibuff_ptr->instance_buffer);
-    glEnableVertexAttribArray(4);
-    glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4),
-                          (GLvoid *)0);
-    glEnableVertexAttribArray(5);
-    glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4),
-                          (GLvoid *)(sizeof(glm::vec4)));
     glEnableVertexAttribArray(6);
     glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4),
-                          (GLvoid *)(2 * sizeof(glm::vec4)));
+                          (GLvoid *)0);
     glEnableVertexAttribArray(7);
     glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4),
+                          (GLvoid *)(sizeof(glm::vec4)));
+    glEnableVertexAttribArray(8);
+    glVertexAttribPointer(8, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4),
+                          (GLvoid *)(2 * sizeof(glm::vec4)));
+    glEnableVertexAttribArray(9);
+    glVertexAttribPointer(9, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4),
                           (GLvoid *)(3 * sizeof(glm::vec4)));
     // colors
     glBindBuffer(GL_ARRAY_BUFFER, ibuff_ptr->color_instance_buffer);
-    glEnableVertexAttribArray(8);
-    glVertexAttribPointer(8, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3),
+    glEnableVertexAttribArray(10);
+    glVertexAttribPointer(10, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3),
                           (GLvoid *)0);
     // set divisors for instanced render (1 means process every index per inst)
-    glVertexAttribDivisor(4, 1);
-    glVertexAttribDivisor(5, 1);
     glVertexAttribDivisor(6, 1);
     glVertexAttribDivisor(7, 1);
     glVertexAttribDivisor(8, 1);
+    glVertexAttribDivisor(9, 1);
+    glVertexAttribDivisor(10, 1);
 
     if (gl_error("bind_object::instance buffers")) return false;
   }

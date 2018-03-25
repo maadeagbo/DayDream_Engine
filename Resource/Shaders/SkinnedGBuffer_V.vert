@@ -11,7 +11,8 @@ layout (location = 6) in mat4 InstanceMatrix;
 layout (location = 10) in vec3 InstanceColor;
 layout ( std430, binding = 11 ) buffer JNT { mat4 Joints[]; };
 
-uniform mat4 MVP;
+uniform mat4 Model;
+uniform mat4 VP;
 uniform mat4 Norm; // for non-uniform scaling
 
 out VS_OUT {
@@ -46,18 +47,15 @@ void main() {
         v_norm = getSkinnedVec4( vec4(VertexNormal, 0.0), i) + v_norm;
         v_tan = getSkinnedVec4( vec4(TangentNormal, 0.0), i) + v_tan;
     }
-	v_pos = InstanceMatrix * v_pos;
-    v_norm = InstanceMatrix * v_norm;
-    v_tan =  InstanceMatrix * v_tan;
 
 	// normalize and create TBN matrix
-	vec3 tanNorm = normalize( v_tan.xyz );
-	vec3 norm = normalize( v_norm.xyz );
+	vec3 tanNorm = normalize( InstanceMatrix * v_tan ).xyz;
+	vec3 norm = normalize( InstanceMatrix * v_norm ).xyz;
 	vec3 bitanNorm = cross(norm, tanNorm);
 
     // output to fragment shader
 	vs_out.Normal = norm;
-	vs_out.FragPos = v_pos.xyz;
+	vs_out.FragPos = (InstanceMatrix * v_pos).xyz;
 	vs_out.TBN = mat3(tanNorm, bitanNorm, norm);
 	if (multiplierMat) { vs_out.InstanceColor = InstanceColor; }
 
@@ -65,5 +63,5 @@ void main() {
 	//vs_out.Debug = VertexTexCoord;
 
     // worldspace position
-	gl_Position =  MVP * v_pos;
+	gl_Position =  VP * Model * v_pos;
 }

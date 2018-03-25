@@ -5,89 +5,189 @@
 #include "stb_image.h"
 #include "stb_image_write.h"
 
-ddModelData *load_ddm(const char *filename) {
+struct DDM_Data_Out {
+  dd_array<DDM_Data> data;
+  cbuff<32> name;
+  dd_array<FbxEData> edata;
+  dd_array<obj_mat> o_mats;
+  FbxVData vdata;
+  ddModelData *duplicate = nullptr;
+};
+
+// parse ddm file and output mesh data
+DDM_Data_Out get_ddm_data(ddIO &io) {
   /// \brief Lambda to get uint from string
   auto getUint = [](const char *str) {
     return (unsigned)strtoul(str, nullptr, 10);
   };
-  ddModelData *mdata = nullptr;
-  ddIO io_handle;
-  dd_array<DDM_Data> out_data;
-  dd_array<FbxEData> edata;
-  dd_array<obj_mat> o_mats;
-  FbxVData vdata;
-  cbuff<32> name;
+
+  DDM_Data_Out out_data;
   unsigned mat_idx = 0;
   unsigned ebo_idx = 0;
   unsigned vdata_size = 0;
 
+  const char *line = io.readNextLine();
+  while (line && *line) {
+    // check tag for information to parse
+    if (strcmp("<name>", line) == 0) {
+      line = io.readNextLine();
+      out_data.name = line;
+
+      // check if Mesh already exists and exit if found
+      out_data.duplicate = find_ddModelData(out_data.name.gethash());
+      if (out_data.duplicate) {
+        ddTerminal::f_post("Duplicate mesh <%s>", out_data.name.str());
+        return out_data;
+      }
+    }
+    if (strcmp("<buffer>", line) == 0) {
+      line = io.readNextLine();
+
+      if (*line == 'v') {  // vertex buffer
+        vdata_size = getUint(&line[2]);
+        line = io.readNextLine();
+      }
+      if (*line == 'e') {  // element buffer
+        out_data.edata.resize(getUint(&line[2]));
+        line = io.readNextLine();
+      }
+      if (*line == 'm') {  // # of materials
+        out_data.o_mats.resize(getUint(&line[2]));
+        line = io.readNextLine();
+      }
+    }
+    if (strcmp("<vertex>", line) == 0) {
+      out_data.vdata = std::move(get_fbx_vdata(vdata_size, io));
+    }
+    if (strcmp("<ebo>", line) == 0) {
+      out_data.edata[ebo_idx] = std::move(get_fbx_edata(io));
+      ebo_idx += 1;
+    }
+    if (strcmp("<material>", line) == 0) {
+      out_data.o_mats[mat_idx] = std::move(get_mat_data(io));
+      mat_idx += 1;
+    }
+    line = io.readNextLine();
+  }
+  out_data.data = get_mesh_data(out_data.vdata, out_data.edata);
+
+  return out_data;
+}
+
+ddModelData *load_ddm(const char *filename) {
+  ddModelData *mdata = nullptr;
+  DDM_Data_Out out_data;
+  ddIO io_handle;
+  cbuff<32> name;
+
   if (io_handle.open(filename, ddIOflag::READ)) {
-    const char *line = io_handle.readNextLine();
+    out_data = get_ddm_data(io_handle);
 
-    while (line) {
-      // check tag for information to parse
-      if (strcmp("<name>", line) == 0) {
-        line = io_handle.readNextLine();
-        name = line;
-
-        // check if Mesh already exists and exit if found
-        mdata = find_ddModelData(name.gethash());
-        if (mdata) {
-          ddTerminal::f_post("Duplicate mesh <%s>", name.str());
-          return mdata;
-        }
-      }
-      if (strcmp("<buffer>", line) == 0) {
-        line = io_handle.readNextLine();
-
-        if (*line == 'v') {  // vertex buffer
-          vdata_size = getUint(&line[2]);
-          line = io_handle.readNextLine();
-        }
-        if (*line == 'e') {  // element buffer
-          edata.resize(getUint(&line[2]));
-          line = io_handle.readNextLine();
-        }
-        if (*line == 'm') {  // # of materials
-          o_mats.resize(getUint(&line[2]));
-          line = io_handle.readNextLine();
-        }
-      }
-      if (strcmp("<vertex>", line) == 0) {
-        vdata = std::move(get_fbx_vdata(vdata_size, io_handle));
-      }
-      if (strcmp("<ebo>", line) == 0) {
-        edata[ebo_idx] = std::move(get_fbx_edata(io_handle));
-        ebo_idx += 1;
-      }
-      if (strcmp("<material>", line) == 0) {
-        o_mats[mat_idx] = std::move(get_mat_data(io_handle));
-        mat_idx += 1;
-      }
-      line = io_handle.readNextLine();
-    }  // end of while
-    // create ddModelData only if file exists
-    mdata = spawn_ddModelData(name.gethash());
+    // check if duplicate exists or else create ddModelData if DDM_Data exists
+    if (out_data.duplicate) {
+      mdata = out_data.duplicate;
+    } else if (out_data.data.size() > 0) {
+      mdata = spawn_ddModelData(out_data.name.gethash());
+    }
   }
   if (!mdata) {  // failed to create object
     ddTerminal::f_post("[error]load_ddm::Failed to create ddModelData object");
     return nullptr;
   }
   // set MeshInfo and material data
-  out_data = get_mesh_data(vdata, edata);
-  mdata->mesh_info = std::move(out_data);
+  mdata->mesh_info = std::move(out_data.data);
   for (size_t i = 0; i < mdata->mesh_info.size(); i++) {  // assign materials
-    uint32_t idx = edata[i].mat_idx;
+    uint32_t idx = out_data.edata[i].mat_idx;
     // set path
     mdata->mesh_info[i].path = filename;
     // create material
-    ddMat *mat = create_material(o_mats[idx]);
+    ddMat *mat = create_material(out_data.o_mats[idx]);
     if (mat) {  // set mesh's material id
       mdata->mesh_info[i].mat_id = mat->id;
     } else {
       mdata->mesh_info[i].mat_id = getCharHash("default");
     }
   }
+  return mdata;
+}
+
+ddModelData *load_ddg(const char *filename) {
+  ddModelData *mdata = nullptr;
+  ddIO io_handle;
+  dd_array<DDM_Data> out_data;
+  cbuff<32> name;
+
+  // open .ddg file
+  if (io_handle.open(filename, ddIOflag::READ)) {
+    cbuff<512> mybuff;
+    unsigned meshes_added = 0;
+    const char *line = io_handle.readNextLine();
+
+    while (line) {
+      mybuff.set(line);
+
+      // name of .ddg object
+      if (mybuff.compare("<name>") == 0) {
+        line = io_handle.readNextLine();
+
+        name = line;
+      }
+
+      // parse each .ddm file to separate DDM_Data_Out
+      if (mybuff.compare("<mesh>") == 0) {
+        line = io_handle.readNextLine();
+
+        ddIO io_handle2;
+        DDM_Data_Out mesh_data;
+        if (io_handle2.open(line, ddIOflag::READ)) {
+          mesh_data = get_ddm_data(io_handle2);
+        }
+
+        // for each ddm data: create material, assign mat id to DDM_Data,
+        // add to out_data buffer
+        if (mesh_data.data.size() != 0) {
+          for (size_t i = 0; i < mesh_data.edata.size(); i++) {
+            uint32_t idx = mesh_data.edata[i].mat_idx;
+            // set path
+            mesh_data.data[i].path = filename;
+            // create material
+            ddMat *mat = create_material(mesh_data.o_mats[idx]);
+            if (mat) {  // set mesh's material id
+              mesh_data.data[i].mat_id = mat->id;
+            } else {
+              mesh_data.data[i].mat_id = getCharHash("default");
+            }
+          }
+
+          // add to ddModelData
+          if (meshes_added == 0) {
+            meshes_added += (unsigned)mesh_data.data.size();
+            out_data = std::move(mesh_data.data);
+          } else {
+            // add to outmesh bin
+            unsigned idx = meshes_added;
+            meshes_added += (unsigned)mesh_data.data.size();
+            dd_array<DDM_Data> temp = std::move(out_data);
+            out_data.resize(meshes_added);
+            out_data = temp;
+            // copy
+            for (unsigned i = 0; idx < meshes_added; idx++, i++) {
+              out_data[idx] = std::move(mesh_data.data[i]);
+            }
+          }
+        }
+      }
+      line = io_handle.readNextLine();
+    }
+    // end of while
+  }
+  // create ddModelData from out_data
+  if (name.compare("") != 0 && out_data.isValid()) {
+    mdata = spawn_ddModelData(name.gethash());
+
+    mdata->mesh_info = std::move(out_data);
+  }
+
   return mdata;
 }
 
