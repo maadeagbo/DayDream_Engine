@@ -40,6 +40,42 @@ bool shadows_on = true;
 /** \brief Buffer for joints of skinned mesh object */
 ddStorageBufferData *joint_ssbo;
 
+/** \brief Buffers for bounding box draw */
+ddVAOData *bbox_vao = nullptr;
+ddStorageBufferData *bbox_ssbo = nullptr;
+ddIndexBufferData *bbox_ebo = nullptr;
+float bbox_buffer[8 * 3];
+unsigned bbox_indices[12 * 2] = {
+    // front
+    // tl_f -> tr_f
+    0, 1,
+    // tr_f -> br_f
+    1, 2,
+    // br_f -> bl_f
+    2, 3,
+    // bl_f -> tl_f
+    3, 0,
+
+    // back
+    // tl_b -> tr_b
+    4, 5,
+    // tr_b -> br_b
+    5, 6,
+    // br_b -> bl_b
+    6, 7,
+    // bl_b -> tl_b
+    7, 4,
+
+    // sides
+    // tl_f -> tl_b
+    0, 4,
+    // tr_f -> tr_b
+    3, 7,
+    // br_f -> br_b
+    2, 6,
+    // bl_f -> bl_b
+    1, 5};
+
 /** \brief Load screen texture */
 cbuff<32> load_screen_tex = "load_screen";
 /** \brief Load screen matrices */
@@ -86,6 +122,9 @@ void render_skinned(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
 /** \brief Light buffer pass */
 void light_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
                 const glm::vec3 cam_pos);
+/** \brief Draw bounding box */
+void draw_bbox(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
+               const BoundingBox &bbox, const glm::vec4 &color);
 
 /**
  * \brief Import shader thru lua script
@@ -241,7 +280,18 @@ void initialize(const unsigned width, const unsigned height) {
   calc_pingpong_textures();
 
   // joint storage buffer allocation
-  ddGPUFrontEnd::create_storage_buffer(joint_ssbo, MAX_JOINTS * sizeof(glm::mat4));
+  ddGPUFrontEnd::create_storage_buffer(joint_ssbo,
+                                       MAX_JOINTS * sizeof(glm::mat4));
+
+  // bounding box (8 vec3 floats & 24 floats) storage buffer allocation
+  ddGPUFrontEnd::create_vao(bbox_vao);
+  ddGPUFrontEnd::create_storage_buffer(bbox_ssbo, 8 * sizeof(glm::vec3));
+  ddGPUFrontEnd::create_index_buffer(bbox_ebo, 8 * 3 * sizeof(unsigned),
+                                     bbox_indices);
+  ddGPUFrontEnd::bind_storage_buffer_atrribute(bbox_vao, bbox_ssbo,
+                                               ddAttribPrimitive::FLOAT, 0, 3,
+                                               3 * sizeof(float), 0);
+  ddGPUFrontEnd::bind_index_buffer(bbox_vao, bbox_ebo);
 
   // set up load screen texture(s)
   ddTex2D *tex = find_ddTex2D(load_screen_tex.gethash());
@@ -295,14 +345,19 @@ void shutdown() {
   // for (auto &idx : map_shaders) {
   //  shaders[idx.second].cleanup();
   //}
-  dd_array<ddShader *> shaders = get_all_ddShader();
-  DD_FOREACH(ddShader *, sh, shaders) {
+  dd_array<ddShader *> sh_s = get_all_ddShader();
+  DD_FOREACH(ddShader *, sh, sh_s) {
     (*sh.ptr)->cleanup();
     destroy_ddShader((*sh.ptr)->id);
   }
 
   // joint ssbo
   ddGPUFrontEnd::destroy_storage_buffer(joint_ssbo);
+
+  // bounding box
+  ddGPUFrontEnd::destroy_vao(bbox_vao);
+  ddGPUFrontEnd::destroy_index_buffer(bbox_ebo);
+  ddGPUFrontEnd::destroy_storage_buffer(bbox_ssbo);
 }
 
 void render_load_screen() {
@@ -559,6 +614,16 @@ void render_static(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
       objects_in_frame++;
     }
   }
+
+	// draw bounding box
+	BoundingBox _bbox;
+	ddBodyFuncs::AABB aabb = ddBodyFuncs::get_aabb(&agent->body);
+	_bbox.min = aabb.min;
+	_bbox.max = aabb.max;
+	_bbox.SetCorners();
+
+	draw_bbox(cam_view_m, cam_proj_m, _bbox, glm::vec4(0.f, 1.f, 1.f, 1.f));
+
   return;
 }
 
@@ -572,14 +637,16 @@ void render_skinned(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
     sh->use();
   } else {
     sh = find_ddShader(geomsk_sh.gethash());
-    POW2_VERIFY_MSG(sh != nullptr, "Couldn't locate skinned geometry shader", 0);
+    POW2_VERIFY_MSG(sh != nullptr, "Couldn't locate skinned geometry shader",
+                    0);
     sh->use();
   }
   // sh->set_uniform((int)RE_GBuffer::enable_clip1_b, false);  // always off
 
   // set pose matrix data
-  ddGPUFrontEnd::set_storage_buffer_contents(joint_ssbo, 
-    agent->anim.global_pose.sizeInBytes(), 0, &agent->anim.global_pose[0]);
+  ddGPUFrontEnd::set_storage_buffer_contents(
+      joint_ssbo, agent->anim.global_pose.sizeInBytes(), 0,
+      &agent->anim.global_pose[0]);
 
   // get mesh information
   DD_FOREACH(ModelIDs, mdl_id, agent->mesh) {
@@ -630,8 +697,8 @@ void render_skinned(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
         // matrices
         agent->inst.m4x4[0] = glm::mat4();  // identity
         glm::mat4 model_m = ddBodyFuncs::get_model_mat(&agent->body);
-        //glm::mat4 norm_m = glm::transpose(glm::inverse(model_m));
-        //sh->set_uniform((int)RE_GBufferSk::Norm_m4x4, norm_m);
+        // glm::mat4 norm_m = glm::transpose(glm::inverse(model_m));
+        // sh->set_uniform((int)RE_GBufferSk::Norm_m4x4, norm_m);
         sh->set_uniform((int)RE_GBufferSk::Model_m4x4, model_m);
         sh->set_uniform((int)RE_GBufferSk::VP_m4x4, cam_proj_m * cam_view_m);
 
@@ -642,7 +709,8 @@ void render_skinned(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
                                                     false, sizeof(glm::mat4), 0,
                                                     &agent->inst.m4x4[0]);
         // bind & fill color buffer
-        sh->set_uniform((int)RE_GBufferSk::multiplierMat_b, false);  // TODO: flag
+        sh->set_uniform((int)RE_GBufferSk::multiplierMat_b,
+                        false);  // TODO: flag
         ddGPUFrontEnd::set_instance_buffer_contents(agent->inst.inst_buff, true,
                                                     sizeof(glm::vec3), 0,
                                                     &agent->inst.v3[0]);
@@ -661,6 +729,74 @@ void render_skinned(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
       objects_in_frame++;
     }
   }
+
+	// draw bounding box
+	BoundingBox _bbox;
+	ddBodyFuncs::AABB aabb = ddBodyFuncs::get_aabb(&agent->body);
+	_bbox.min = aabb.min;
+	_bbox.max = aabb.max;
+	_bbox.SetCorners();
+
+	draw_bbox(cam_view_m, cam_proj_m, _bbox, glm::vec4(0.f, 1.f, 1.f, 1.f));
+
+  return;
+}
+
+void set_bbox_buffer(const BoundingBox &bbox) {
+	auto set_val = [](const unsigned idx, const glm::vec3& corner) {
+		bbox_buffer[idx * 3] = corner.x;
+		bbox_buffer[idx * 3 + 1] = corner.y;
+		bbox_buffer[idx * 3 + 2] = corner.z;
+	};
+
+  for (unsigned i = 0; i < 8; i++) {
+    switch (i) {
+      case 0:
+				set_val(i, bbox.corner1);
+        break;
+			case 1:
+				set_val(i, bbox.corner2);
+				break;
+			case 2:
+				set_val(i, bbox.corner3);
+				break;
+			case 3:
+				set_val(i, bbox.corner4);
+				break;
+			case 4:
+				set_val(i, bbox.corner5);
+				break;
+			case 5:
+				set_val(i, bbox.corner6);
+				break;
+			case 6:
+				set_val(i, bbox.corner7);
+				break;
+			case 7:
+				set_val(i, bbox.corner8);
+				break;
+      default:
+        break;
+    }
+  }
+}
+
+void draw_bbox(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
+               const BoundingBox &bbox, const glm::vec4 &color) {
+  // get line shader
+  ddShader *sh = find_ddShader(line_sh.gethash());
+  sh->use();
+
+  // set uniforms
+  sh->set_uniform((unsigned)RE_Line::MVP_m4x4, cam_proj_m * cam_view_m);
+  sh->set_uniform((unsigned)RE_Line::color_v4, color);
+
+  // set buffer contents then draw lines
+	set_bbox_buffer(bbox);
+	ddGPUFrontEnd::set_storage_buffer_contents(bbox_ssbo, 8 * 3 * sizeof(float),
+																						 0, bbox_buffer);
+	ddGPUFrontEnd::draw_indexed_lines_vao(bbox_vao, 24, 0);
+
   return;
 }
 
