@@ -293,7 +293,7 @@ void push_vec4_to_lua(lua_State *L, const float x, const float y, const float z,
                       const float w);
 
 /**
- * \brief Add glm::vec4 to stack
+ * \brief Read in floats from lua
  */
 template <typename T>
 void read_buffer_from_lua(lua_State *L, dd_array<T> &buffer) {

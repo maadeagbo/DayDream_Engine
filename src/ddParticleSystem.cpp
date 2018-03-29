@@ -51,12 +51,10 @@ void cleanup() {
   // delete storage buffers of tasks still in queue (maybe?)
 }
 
-bool add_task(ddPTask &new_task, const unsigned buffer_size_bytes) {
+bool add_task(ddPTask &new_task) {
   if (num_tasks == PARTICLE_Q_MAX) {
     return false;
   }
-  // assign buffer size
-  ddGPUFrontEnd::create_storage_buffer(new_task.buff, new_task.buff_size);
   push_task(new_task);
 
   return true;

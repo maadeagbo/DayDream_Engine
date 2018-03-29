@@ -123,9 +123,15 @@ void ddTerminal::display(const float scr_width, const float scr_height) {
         if (filter.PassFilter(history[i])) {
           // change color for certain text
           ImColor col = colorCodeOutput(history[i]);
+          unsigned offset = 0;
+          if (col.Value.y < 0.5f) {  // red
+            offset = 11;
+          } else if (col.Value.x < 0.5f) {  // green
+            offset = 12;
+          }
 
           ImGui::PushStyleColor(ImGuiCol_Text, col);
-          ImGui::TextWrapped(history[i]);
+          ImGui::TextWrapped(history[i] + offset);
           ImGui::PopStyleColor();
         }
       }
@@ -136,16 +142,28 @@ void ddTerminal::display(const float scr_width, const float scr_height) {
       for (unsigned i = entry_idx; i < limit; i++) {
         // change color for certain text
         ImColor col = colorCodeOutput(history[logged_input[i]]);
+        unsigned offset = 0;
+        if (col.Value.y < 0.5f) {  // red
+          offset = 11;
+        } else if (col.Value.x < 0.5f) {  // green
+          offset = 12;
+        }
 
         ImGui::PushStyleColor(ImGuiCol_Text, col);
-        ImGui::TextWrapped(history[logged_input[i]]);
+        ImGui::TextWrapped(history[logged_input[i]] + offset);
         ImGui::PopStyleColor();
       }
       for (unsigned i = 0; i < entry_idx; i++) {
         ImColor col = colorCodeOutput(history[logged_input[i]]);
+        unsigned offset = 0;
+        if (col.Value.y < 0.5f) {  // red
+          offset = 11;
+        } else if (col.Value.x < 0.5f) {  // green
+          offset = 12;
+        }
 
         ImGui::PushStyleColor(ImGuiCol_Text, col);
-        ImGui::TextWrapped(history[logged_input[i]]);
+        ImGui::TextWrapped(history[logged_input[i]] + offset);
         ImGui::PopStyleColor();
       }
     }

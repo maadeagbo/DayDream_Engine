@@ -17,8 +17,6 @@ struct ddPTask {
   /** \brief User-implemented shader setup function (called before particle
    * render) */
   RenderFunc rfunc;
-  /** \brief Particle position buffer (vec3 positions) */
-  ddStorageBufferData* buff = nullptr;
 };
 
 /** \brief Particle system interface for ddRenderer */
@@ -37,5 +35,5 @@ void cleanup();
  * \brief Add task to queue
  * \return Newly created particle task (if queue still has space)
  */
-bool add_task(ddPTask& new_task, const unsigned buffer_size_bytes);
+bool add_task(ddPTask& new_task);
 };

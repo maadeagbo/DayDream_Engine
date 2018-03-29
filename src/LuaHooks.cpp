@@ -762,7 +762,7 @@ void read_buffer_from_lua<float>(lua_State *L, dd_array<float> &buffer) {
         break;
       }
       default:
-        printf("%s\n", lua_typename(L, t));
+        //printf("%s\n", lua_typename(L, t));
         break;
     }
   }

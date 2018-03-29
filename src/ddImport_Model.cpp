@@ -1,4 +1,5 @@
 #include "ddImport_Model.h"
+#include "ddAssetManager.h"
 #include <omp.h>
 #include "ddTerminal.h"
 
@@ -522,6 +523,13 @@ ddTex2D *create_tex2D(const char *path, const char *img_id) {
     return new_tex;
   }
   new_tex->image_info = std::move(img_info);
+
+	// skip loading if using opengl api and on separate thread
+	bool skip = DD_GRAPHICS_API == 0 && ddAssets::load_screen_check();
+	if (!skip) {
+		ddGPUFrontEnd::generate_texture2D_RGBA8_LR(new_tex->image_info);
+		new_tex->image_info.image_data[0].resize(0);
+	}
 
   return new_tex;
 }

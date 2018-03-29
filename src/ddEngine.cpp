@@ -33,6 +33,10 @@ const cbuff<32> init_screen_hash("init_screen");
 const cbuff<32> reset_lvl_script_hash("reset_lvl");
 const cbuff<32> visibility_hash("update_visibility");
 const cbuff<32> animation_hash("update_animation");
+const cbuff<32> bbox_hash("toggle_bbox");
+const cbuff<32> wait_hash("wait");
+const cbuff<32> exec_script_hash("exec");
+
 }  // namespace
 
 static void error_callback_glfw(int error, const char *description) {
@@ -322,6 +326,8 @@ void ddEngine::load() {
   main_q.subscribe(reset_lvl_script_hash.gethash(), sys_engine_hash);
   main_q.subscribe(visibility_hash.gethash(), sys_engine_hash);
   main_q.subscribe(animation_hash.gethash(), sys_engine_hash);
+  main_q.subscribe(bbox_hash.gethash(), sys_engine_hash);
+  main_q.subscribe(wait_hash.gethash(), sys_engine_hash);
 
   // load terminal history
   ddTerminal::inTerminalHistory();
@@ -404,7 +410,7 @@ void ddEngine::shutdown() {
 
 bool ddEngine::execTerminal(const char *cmd) {
   if (cmd) {
-    cbuff<32> str_arg;
+    cbuff<256> str_arg;
     bool args_present = false;
 
     // split arguments and tags if possible
@@ -419,18 +425,28 @@ bool ddEngine::execTerminal(const char *cmd) {
       head = buff;
     }
 
-    DD_LEvent _event;
-    _event.handle = head.c_str();
-    // add events after spltting
-    if (args_present) {
-      dd_array<cbuff<32>> args = StrSpace::tokenize1024<32>(str_arg.str(), " ");
-      for (unsigned i = 0; i < args.size() && i < MAX_EVENT_ARGS; ++i) {
-        str_arg.format("%u", i);
-        add_arg_LEvent(&_event, str_arg.str(), args[i].str());
+    // if head == exec, run script
+    if (getCharHash(head.c_str()) == exec_script_hash.gethash()) {
+      bool opened = parse_luafile(main_lstate, str_arg.str());
+      if (!opened) {
+        ddTerminal::f_post("[error]Failed to open: %s", str_arg.str());
+      } else {
+        ddTerminal::f_post("[status]Opened & Executed: %s", str_arg.str());
       }
+    } else {
+      DD_LEvent _event;
+      _event.handle = head.c_str();
+      // add events after spltting
+      if (args_present) {
+        dd_array<cbuff<32>> args =
+            StrSpace::tokenize1024<32>(str_arg.str(), " ");
+        for (unsigned i = 0; i < args.size() && i < MAX_EVENT_ARGS; ++i) {
+          str_arg.format("%u", i);
+          add_arg_LEvent(&_event, str_arg.str(), args[i].str());
+        }
+      }
+      q_push(_event);
     }
-
-    q_push(_event);
     return true;
   } else {
     return false;
@@ -521,23 +537,9 @@ void ddEngine::update(DD_LEvent &_event) {
         new_event.handle = main_q.physics_tick;
         q_push(new_event);
       }
-      new_event.handle = physics_hash;
-      q_push(new_event);
 
-      // send active camera visibility list
-      new_event.handle = visibility_hash;
-      q_push(new_event);
-
-      // send animation update event
-      new_event.handle = animation_hash;
-      q_push(new_event);
-
-      // send render event
-      new_event.handle = draw_hash;
-      q_push(new_event);
-
-      // send frame exit event
-      new_event.handle = frame_exit_hash;
+      // push wait hash (waiting for other events to be processed in lua
+      new_event.handle = wait_hash;
       q_push(new_event);
     }
   } else if (e_sig == frame_exit_hash.gethash()) {  // exit frame
@@ -579,19 +581,48 @@ void ddEngine::update(DD_LEvent &_event) {
     DD_LEvent new_event;
     new_event.handle = main_q.lvl_call_i;
     q_push(new_event);
+
   } else if (e_sig == draw_hash.gethash()) {  // draw call
     // render 3D world
     ddRenderer::draw_world();
+
+    // send frame exit event
+    DD_LEvent new_event;
+    new_event.handle = frame_exit_hash;
+    q_push(new_event);
+
+  } else if (e_sig == wait_hash.gethash()) {  // wait for scripts
+    // waitng done, push physics onto the queue
+    DD_LEvent new_event;
+    new_event.handle = physics_hash;
+    q_push(new_event);
+
+  } else if (e_sig == bbox_hash.gethash()) {  // toggle bbox
+    ddRenderer::toggle_bbox_render();
+
   } else if (e_sig == animation_hash.gethash()) {  // animation
     ddAnimation::process_animations();
+
+    // send render event
+    DD_LEvent new_event;
+    new_event.handle = draw_hash;
+    q_push(new_event);
+
   } else if (e_sig == physics_hash.gethash()) {  // physics update
     // scene graph
     ddSceneManager::update_scene_graph();
     // physics simulation
     main_physics.step_simulate(ddTime::get_avg_frame_time());
+
+    // send active camera visibility list
+    DD_LEvent new_event;
+    new_event.handle = visibility_hash;
+    q_push(new_event);
+
   } else if (e_sig == reset_lvl_script_hash.gethash()) {  // lvl update script
     // reset lua script
     main_q.init_level_scripts(lvls_list[current_lvl], true);
+
   } else if (e_sig == visibility_hash.gethash()) {  // active camera visibility
     // update active camera visibility list
     ddCam *cam = ddSceneManager::get_active_cam();
@@ -603,5 +634,10 @@ void ddEngine::update(DD_LEvent &_event) {
     ddSceneManager::reload_visibility_list(
         cam->id, ddBodyFuncs::pos_ws(&cam_p->body),
         ddSceneManager::get_current_frustum(cam));
+
+    // send animation update event
+    DD_LEvent new_event;
+    new_event.handle = animation_hash;
+    q_push(new_event);
   }
 }

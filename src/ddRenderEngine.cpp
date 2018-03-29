@@ -4,18 +4,31 @@
 #include "ddFileIO.h"
 #include "ddParticleSystem.h"
 #include "ddSceneManager.h"
-#include "ddShader.h"
 #include "ddShaderReflect.h"
 #include "ddTerminal.h"
 
 enum class ShaderType : unsigned { VERT = 0, FRAG, COMP, GEOM };
 
 namespace {
-DD_FuncBuff fb;
 
 ASSET_DECL(ddShader)
 ASSET_CREATE(ddShader, shaders, MAX_SHADERS)
 ASSET_DEF(ddShader, shaders)
+
+/** \brief Main shader ids */
+const cbuff<32> geom_sh = "geometry";
+const cbuff<32> geomsk_sh = "geometry_skinned";
+const cbuff<32> light_sh = "light";
+const cbuff<32> postp_sh = "postprocess";
+const cbuff<32> text_sh = "text";
+const cbuff<32> pingp_sh = "pingpong";
+const cbuff<32> lumin_sh = "luminance";
+const cbuff<32> line_sh = "line";
+const cbuff<32> lstencil_sh = "light_stencil";
+const cbuff<32> depth_sh = "shadow";
+const cbuff<32> depthsk_sh = "shadow_skinned";
+
+DD_FuncBuff fb;
 
 /** \brief Native width & height */
 unsigned scr_width = 0, scr_height = 0;
@@ -31,11 +44,16 @@ dd_array<float> lumin_output;
 /** \brief Luminance shader compute divisor */
 const unsigned lumin_divisor = 8;
 
+/** \brief clear screen color */
+glm::vec4 clear_scr_col = glm::vec4(0.f);
+
 /** \brief Light plane hash */
 const cbuff<32> light_plane_id = "_dd_light_plane";
 
 /** \brief Flag for controlling shadows */
 bool shadows_on = true;
+/** \brief Flag for controlling bbox render */
+bool bbox_on = false;
 
 /** \brief Buffer for joints of skinned mesh object */
 ddStorageBufferData *joint_ssbo;
@@ -91,19 +109,6 @@ unsigned objects_in_frame = 0;
 
 /** \brief active lights buffer */
 dd_array<ddLBulb *> _lights = dd_array<ddLBulb *>(ASSETS_CONTAINER_MIN_SIZE);
-
-/** \brief Main shader ids */
-cbuff<32> geom_sh = "geometry";
-cbuff<32> geomsk_sh = "geometry_skinned";
-cbuff<32> light_sh = "light";
-cbuff<32> postp_sh = "postprocess";
-cbuff<32> text_sh = "text";
-cbuff<32> pingp_sh = "pingpong";
-cbuff<32> lumin_sh = "luminance";
-cbuff<32> line_sh = "line";
-cbuff<32> lstencil_sh = "light_stencil";
-cbuff<32> depth_sh = "shadow";
-cbuff<32> depthsk_sh = "shadow_skinned";
 
 }  // namespace
 
@@ -340,6 +345,8 @@ void initialize(const unsigned width, const unsigned height) {
   lplane->rend.flag_render = false;
 }
 
+void toggle_bbox_render() { bbox_on ^= 1; }
+
 void shutdown() {
   // shaders
   // for (auto &idx : map_shaders) {
@@ -412,6 +419,8 @@ void draw_world() {
   glm::mat4 view_m = ddSceneManager::calc_view_matrix(cam);
   glm::mat4 proj_m = ddSceneManager::calc_p_proj_matrix(cam);
 
+  clear_scr_col = cam->background_color;
+
   // get visibility list from active camera
   const ddVisList *vlist = ddSceneManager::get_visibility_list(cam->id);
 
@@ -443,7 +452,8 @@ void draw_scene(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
   ddParticleSys::render_tasks();
 
   // post processing
-  // ddGPUFrontEnd::clear_screen(1.0);
+  ddGPUFrontEnd::clear_screen(clear_scr_col.r, clear_scr_col.g, clear_scr_col.b,
+                              clear_scr_col.a);
   ddGPUFrontEnd::toggle_depth_test(false);
   ddGPUFrontEnd::toggle_alpha_blend(true);
 
@@ -615,14 +625,16 @@ void render_static(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
     }
   }
 
-	// draw bounding box
-	BoundingBox _bbox;
-	ddBodyFuncs::AABB aabb = ddBodyFuncs::get_aabb(&agent->body);
-	_bbox.min = aabb.min;
-	_bbox.max = aabb.max;
-	_bbox.SetCorners();
+  // draw bounding box
+  if (bbox_on) {
+    BoundingBox _bbox;
+    ddBodyFuncs::AABB aabb = ddBodyFuncs::get_aabb(&agent->body);
+    _bbox.min = aabb.min;
+    _bbox.max = aabb.max;
+    _bbox.SetCorners();
 
-	draw_bbox(cam_view_m, cam_proj_m, _bbox, glm::vec4(0.f, 1.f, 1.f, 1.f));
+    draw_bbox(cam_view_m, cam_proj_m, _bbox, glm::vec4(0.f, 1.f, 1.f, 1.f));
+  }
 
   return;
 }
@@ -730,51 +742,53 @@ void render_skinned(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
     }
   }
 
-	// draw bounding box
-	BoundingBox _bbox;
-	ddBodyFuncs::AABB aabb = ddBodyFuncs::get_aabb(&agent->body);
-	_bbox.min = aabb.min;
-	_bbox.max = aabb.max;
-	_bbox.SetCorners();
+  if (bbox_on) {
+    // draw bounding box
+    BoundingBox _bbox;
+    ddBodyFuncs::AABB aabb = ddBodyFuncs::get_aabb(&agent->body);
+    _bbox.min = aabb.min;
+    _bbox.max = aabb.max;
+    _bbox.SetCorners();
 
-	draw_bbox(cam_view_m, cam_proj_m, _bbox, glm::vec4(0.f, 1.f, 1.f, 1.f));
+    draw_bbox(cam_view_m, cam_proj_m, _bbox, glm::vec4(0.f, 1.f, 1.f, 1.f));
+  }
 
   return;
 }
 
 void set_bbox_buffer(const BoundingBox &bbox) {
-	auto set_val = [](const unsigned idx, const glm::vec3& corner) {
-		bbox_buffer[idx * 3] = corner.x;
-		bbox_buffer[idx * 3 + 1] = corner.y;
-		bbox_buffer[idx * 3 + 2] = corner.z;
-	};
+  auto set_val = [](const unsigned idx, const glm::vec3 &corner) {
+    bbox_buffer[idx * 3] = corner.x;
+    bbox_buffer[idx * 3 + 1] = corner.y;
+    bbox_buffer[idx * 3 + 2] = corner.z;
+  };
 
   for (unsigned i = 0; i < 8; i++) {
     switch (i) {
       case 0:
-				set_val(i, bbox.corner1);
+        set_val(i, bbox.corner1);
         break;
-			case 1:
-				set_val(i, bbox.corner2);
-				break;
-			case 2:
-				set_val(i, bbox.corner3);
-				break;
-			case 3:
-				set_val(i, bbox.corner4);
-				break;
-			case 4:
-				set_val(i, bbox.corner5);
-				break;
-			case 5:
-				set_val(i, bbox.corner6);
-				break;
-			case 6:
-				set_val(i, bbox.corner7);
-				break;
-			case 7:
-				set_val(i, bbox.corner8);
-				break;
+      case 1:
+        set_val(i, bbox.corner2);
+        break;
+      case 2:
+        set_val(i, bbox.corner3);
+        break;
+      case 3:
+        set_val(i, bbox.corner4);
+        break;
+      case 4:
+        set_val(i, bbox.corner5);
+        break;
+      case 5:
+        set_val(i, bbox.corner6);
+        break;
+      case 6:
+        set_val(i, bbox.corner7);
+        break;
+      case 7:
+        set_val(i, bbox.corner8);
+        break;
       default:
         break;
     }
@@ -792,10 +806,10 @@ void draw_bbox(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
   sh->set_uniform((unsigned)RE_Line::color_v4, color);
 
   // set buffer contents then draw lines
-	set_bbox_buffer(bbox);
-	ddGPUFrontEnd::set_storage_buffer_contents(bbox_ssbo, 8 * 3 * sizeof(float),
-																						 0, bbox_buffer);
-	ddGPUFrontEnd::draw_indexed_lines_vao(bbox_vao, 24, 0);
+  set_bbox_buffer(bbox);
+  ddGPUFrontEnd::set_storage_buffer_contents(bbox_ssbo, 8 * 3 * sizeof(float),
+                                             0, bbox_buffer);
+  ddGPUFrontEnd::draw_indexed_lines_vao(bbox_vao, 24, 0);
 
   return;
 }
