@@ -1,0 +1,1 @@
+All exports from BBoxSkinnedMesh are exported here as a ".ddx" file.

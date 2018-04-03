@@ -2,8 +2,8 @@
 
 // Frag output
 layout (location = 0) out vec4 FragColor;
-layout (location = 1) out vec3 PositionData;
-layout (location = 2) out vec3 NormalData;
+layout (location = 1) out vec4 PositionData;
+layout (location = 2) out vec4 NormalData;
 layout (location = 3) out vec4 ColorData;
 
 in VS_OUT {
@@ -31,10 +31,10 @@ uniform bool useDebug = false;
 
 void main() {	
 	// store values to G buffer
-    vec3 color;
-    vec3 spec;
-    vec3 normal;
-    // normal
+  vec4 color;
+  float spec;
+  vec3 normal;
+  // normal
 	if (normalFlag) {
 		normal = texture( tex_normal, fs_in.TexCoord ).rgb;
 		normal = normalize(normal * 2.0 - 1.0);
@@ -42,31 +42,33 @@ void main() {
 	} else {
 		normal = fs_in.Normal;
 	}
-    // albedo
-    if (albedoFlag) {
-	    color = texture( tex_albedo, fs_in.TexCoord ).rgb;
+  // albedo
+  if (albedoFlag) {
+    color = texture( tex_albedo, fs_in.TexCoord );
 		if (multiplierMat) {
-			color = color * fs_in.InstanceColor;
+			color = color * vec4(fs_in.InstanceColor, 1.0);
 		}
-    } else {
-        color = diffuse;
+  } else {
+    color = vec4(diffuse, 1.0);
 		if (multiplierMat) {
-			color = color * fs_in.InstanceColor;
+			color = color * vec4(fs_in.InstanceColor, 1.0);
 		}
-    }
+  }
 	// gamma correction
 	float gamma = 2.2;
-	color = pow(color, vec3(gamma));
+	color = pow(color, vec4(gamma));
 
-    // specular
-    if (specFlag) {
-        spec = texture( tex_specular, fs_in.TexCoord ).rgb; 
-    } else {
-        spec = vec3(shininess);
-    }
-    
-    PositionData = fs_in.FragPos;
-	ColorData = vec4(color, spec.r);
-	if (useDebug) { ColorData = vec4(fs_in.Debug.y, 0.0, 0.0, 1.0); }
-    NormalData = normal;
+  // specular
+  if (specFlag) {
+      spec = texture( tex_specular, fs_in.TexCoord ).r; 
+  } else {
+      spec = shininess;
+  }
+  
+  PositionData = vec4(fs_in.FragPos, 1.0);
+	ColorData = vec4(color);
+	if (useDebug) { 
+		ColorData = vec4(fs_in.Debug.y, 0.0, 0.0, 1.0); 
+	}
+  NormalData = vec4( normal, spec);
 }

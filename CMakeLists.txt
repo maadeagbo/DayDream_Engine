@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.5.1)
 project (DayDream_Engine_alpha)
+set(DayDream_Engine_alpha_VERSION_MAJOR 3)
+set(DayDream_Engine_alpha_VERSION_MINOR 1)
 
 # set release or debug builds
 if(CMAKE_CONFIGURATION_TYPES)
@@ -11,21 +13,20 @@ if(CMAKE_CONFIGURATION_TYPES)
 #SET(CMAKE_BUILD_TYPE "Debug")
 set(CMAKE_CXX_STANDARD 11)
 
-# clang-format
-if (UNIX)
-	add_custom_target(
-		clangformat
-		COMMAND /usr/bin/clang-format
-		-style=google
-		-i
-		${SOURCES}
-	)
-endif()
-
 # set output directories
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
+# for multi-config builds (e.g. msvc)
+foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
+    string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
+		set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} 
+				${PROJECT_SOURCE_DIR}/bin )
+		set( CMAKE_LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} 
+				${PROJECT_SOURCE_DIR}/lib )
+		set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} 
+				${PROJECT_SOURCE_DIR}/lib )
+endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
 
 # set flags for debug and release mode
 include(CheckCXXCompilerFlag)
@@ -56,61 +57,113 @@ if(HAS_MSG)
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fmessage-length=0")
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fmessage-length=0")
 endif()
-if(HAS_CNEW)
-	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -std=c++11")
-	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -std=c++11")
+set (CMAKE_CXX_STANDARD 11)
+
+option(USE_STATIC_LINKAGE "Use static libraries when linking executable"	ON)
+if(USE_STATIC_LINKAGE)
+	# statically link to reduce dependancies
+	foreach(flag_var CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE 
+					CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO CMAKE_C_FLAGS
+					CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE CMAKE_C_FLAGS_MINSIZEREL 
+					CMAKE_C_FLAGS_RELWITHDEBINFO )
+		if(${flag_var} MATCHES "/MD")
+			STRING(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
+		endif(${flag_var} MATCHES "/MD")
+		if(${flag_var} MATCHES "/MDd")
+			STRING(REGEX REPLACE "/MDd" "/MTd" ${flag_var} "${${flag_var}}")
+		endif(${flag_var} MATCHES "/MDd")
+	endforeach(flag_var)
 endif()
 
+# sets module path
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 # add paths to freetype lib and sdl2
 if(NOT UNIX)
-	set(ENV{SDL2DIR} ${CMAKE_CURRENT_SOURCE_DIR}/SDL2-2.0.7)
 	set(ENV{FREETYPE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/freetype-2.7)
+	set(ENV{BULLET_ROOT} ${CMAKE_CURRENT_SOURCE_DIR}/bullet3_287)
 endif()
 
-# includes cmake/FindSDL2.cmake and sets module path
-set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
-find_package(SDL2 REQUIRED)
-include_directories(${SDL2_INCLUDE_DIR})
+# set windowing environment
+set(DD_USE_GLFW ON CACHE BOOL "Sets engine to use GLFW3 instead of SDL2" FORCE)
+
+if(NOT DD_USE_GLFW)
+	if (MSVC)
+		# add path to SDL2
+		set(ENV{SDL2DIR} ${CMAKE_CURRENT_SOURCE_DIR}/SDL2-2.0.7)
+	endif()
+	find_package(SDL2 REQUIRED)
+	include_directories(${SDL2_INCLUDE_DIR})
+else()
+	# GLFW 3
+	# add include directory
+	find_path( GLFW_INCLUDE_DIR 
+    NAMES
+        GLFW/glfw3.h
+    HINTS
+        "${CMAKE_CURRENT_SOURCE_DIR}/glfw/include"
+    PATHS
+        "$ENV{PROGRAMFILES}/GLFW/include"
+        "${OPENGL_INCLUDE_DIR}"
+        /usr/openwin/share/include
+        /usr/openwin/include
+        /usr/X11R6/include
+        /usr/include/X11
+        /opt/graphics/OpenGL/include
+        /opt/graphics/OpenGL/contrib/libglfw
+        /usr/local/include
+        /usr/include/GL
+        /usr/include
+    DOC 
+        "The directory where GLFW/glfw3.h resides"
+	)
+	# check if include where found
+	if (GLFW_INCLUDE_DIR)
+		include_directories(${GLFW_INCLUDE_DIR})
+	else()
+		message(FATAL_ERROR "GLFW include not found")
+	endif()
+	# add project
+	set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+	set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+	set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+	add_subdirectory(${PROJECT_SOURCE_DIR}/glfw)
+endif()
+
+# add bullet library
+if(MSVC)
+	add_subdirectory(${PROJECT_SOURCE_DIR}/bullet3_287)
+endif()
 
 # include directories for project
 find_path(GLM_PATH glm.hpp
 	PATHS
 	${CMAKE_SOURCE_DIR}/glm/glm)
 if(NOT GLM_PATH)
-	message(FATAL_ERROR "GLM includes not found")
+	message(FATAL_ERROR "GLM include not found")
 endif()
-find_path(IMGUI_PATH imgui.h
+find_path(BULLET_PATH 
+	NAMES btBulletCollisionCommon.h btBulletDynamicsCommon.h
 	PATHS
-	${CMAKE_CURRENT_SOURCE_DIR}/imgui)
-if(NOT IMGUI_PATH)
-	message(FATAL_ERROR "IMGUI_PATH IMGUI includes not found")
+	${CMAKE_SOURCE_DIR}/bullet3_287/src)
+if(NOT BULLET_PATH)
+	message(FATAL_ERROR "BULLET3 include not found")
 endif()
 find_path(VRPN_PATH vrpn_Tracker.h
 	PATHS
 	${CMAKE_CURRENT_SOURCE_DIR}/vrpn_lib_files)
 if(NOT VRPN_PATH)
-	message(FATAL_ERROR "VRPN_PATH VRPN includes not found")
+	message(FATAL_ERROR "VRPN_PATH VRPN include not found")
 endif()
 if(NOT UNIX)
-	find_path(SOIL_PATH SOIL.h
-		PATHS
-		${CMAKE_CURRENT_SOURCE_DIR}/SOIL/src)
-	if(NOT SOIL_PATH)
-		message(FATAL_ERROR "SOIL includes not found")
-	endif()
 	find_path(LUA_PATH lua.hpp PATHS ${CMAKE_SOURCE_DIR}/lua53_Win64_lib/include)
 	if(NOT LUA_PATH)
-		message(FATAL_ERROR "Lua includes not found")
+		message(FATAL_ERROR "Lua include not found")
 	endif()
 else()
-	find_path(SOIL_PATH SOIL.h PATHS /usr/include/SOIL)
-	if(NOT SOIL_PATH)
-		message(FATAL_ERROR "SOIL unix includes not found")
-	endif()
 	find_path(LUA_PATH lua.hpp PATHS /usr/include/lua5.3)
 	if(NOT LUA_PATH)
-		message(FATAL_ERROR "Lua includes not found")
+		message(FATAL_ERROR "Lua include not found")
 	endif()
 endif()
 
@@ -129,40 +182,43 @@ endif()
 find_package(Freetype REQUIRED)
 include_directories(${FREETYPE_INCLUDE_DIRS})
 
-# includes zlib (unix)
-#find_package(ZLIB REQUIRED)
-#if(ZLIB_FOUND)
-	#message(STATUS ${ZLIB_LIBRARY})
-	#target_link_libraries(DayDream_Engine ${ZLIB_LIBRARY})
-#endif()
-
 # use the file(GLOB...) or file(GLOB_RECURSE...) to grab wildcard src files
-file(GLOB_RECURSE SOURCES 	"${CMAKE_SOURCE_DIR}/Core/*.cpp"
-							"${CMAKE_SOURCE_DIR}/includes/*.hpp"
-							"${CMAKE_SOURCE_DIR}/includes/*.h"
-							"${CMAKE_SOURCE_DIR}/Core/*.c")
-file(GLOB IMGUI_SRC "${CMAKE_SOURCE_DIR}/imgui/*.cpp")
+file(GLOB_RECURSE SOURCES 	"${CMAKE_SOURCE_DIR}/src/*.cpp"
+							"${CMAKE_SOURCE_DIR}/include/*.hpp"
+							"${CMAKE_SOURCE_DIR}/include/*.h"
+							"${CMAKE_SOURCE_DIR}/src/*.c")
+# file(GLOB IMGUI_SRC "${CMAKE_SOURCE_DIR}/imgui/*.cpp")
 
 # add defines for engine resources
 add_definitions(
-	"-DROOT_DIR=\"${CMAKE_SOURCE_DIR}/\""
-	"-DRESOURCE_DIR=\"${CMAKE_SOURCE_DIR}/Resource/\""
-	"-DSHADER_DIR=\"${CMAKE_SOURCE_DIR}/Resource/Shaders/\""
-	"-DMESH_DIR=\"${CMAKE_SOURCE_DIR}/Resource/Meshes/\""
-	"-DTEX_DIR=\"${CMAKE_SOURCE_DIR}/Resource/Textures/\""
-	"-DPROJECT_DIR=\"${CMAKE_SOURCE_DIR}/Projects/\""
-	"-DFONTS_DIR=\"${CMAKE_SOURCE_DIR}/Resource/Fonts/\""
+	"-DROOT_DIR=\"${CMAKE_SOURCE_DIR}\""
+	"-DRESOURCE_DIR=\"${CMAKE_SOURCE_DIR}/Resource\""
+	"-DSHADER_DIR=\"${CMAKE_SOURCE_DIR}/Resource/Shaders\""
+	"-DMESH_DIR=\"${CMAKE_SOURCE_DIR}/Resource/Meshes\""
+	"-DTEX_DIR=\"${CMAKE_SOURCE_DIR}/Resource/Textures\""
+	"-DPROJECT_DIR=\"${CMAKE_SOURCE_DIR}/Projects\""
+	"-DFONTS_DIR=\"${CMAKE_SOURCE_DIR}/Resource/Fonts\""
 )
+if (MSVC)
+	# warning that pop up for strtok & fopen & std::copy
+	add_definitions("-D_SCL_SECURE_NO_WARNINGS")
+	add_definitions("-D_CRT_SECURE_NO_WARNINGS")
+endif()
+if (DD_GRAPHICS_API_VULKAN)
+	add_definitions("-DDD_GRAPHICS_API=1")
+else()
+	add_definitions("-DDD_GRAPHICS_API=0")
+endif()
 
-# use file(GLOB_RECURSE...), add_library(DayDream_Engine...), and
+# use file(GLOB_RECURSE...), add_library(dd_engine...), and
 # source_group(<group name> FILES...) to create folder structure in project
 # LIST_DIRECTORIES remove directory name from files
 file(GLOB_RECURSE PROJECT_SOURCES
 	LIST_DIRECTORIES false
     "${CMAKE_SOURCE_DIR}/Projects/*.cpp*"
-    "${CMAKE_SOURCE_DIR}/Core/AssetViewer/*.cpp*"
-	"${CMAKE_SOURCE_DIR}/Core/AssetViewer/*.h*"
-	"${CMAKE_SOURCE_DIR}/Projects/*.h*")
+    "${CMAKE_SOURCE_DIR}/src/AssetViewer/*.cpp*"
+		"${CMAKE_SOURCE_DIR}/src/AssetViewer/*.h*"
+		"${CMAKE_SOURCE_DIR}/Projects/*.h*")
 
 foreach(_proj_source IN ITEMS ${PROJECT_SOURCES})
 	get_filename_component(_source_path "${_proj_source}" PATH)
@@ -207,36 +263,54 @@ foreach(_proj_source IN ITEMS ${SCRIPTS})
 	source_group("${_source_path_rel}" FILES "${_proj_source}")
 endforeach()
 
-include_directories(${CMAKE_SOURCE_DIR}/includes
+include_directories(${CMAKE_SOURCE_DIR}/include
+	${PROJECT_SOURCE_DIR}/graphics_lib/include
 	${CMAKE_SOURCE_DIR}/glm/
-	${SOIL_PATH}
 	${PROJ_HEADERS}
-	${IMGUI_PATH}
 	${LUA_PATH}
+	${BULLET_PATH}
 	${VRPN_PATH})
 
-add_executable(DayDream_Engine
-				${SOURCES} ${PROJECT_SOURCES} ${SHADER_SOURCES} ${IMGUI_SRC})
+#  add graphic library and set API
+set(DD_GRAPHICS_API_VULKAN OFF CACHE BOOL "Sets engine to use vulkan api" FORCE)
+add_subdirectory(${PROJECT_SOURCE_DIR}/graphics_lib)
+#include(${PROJECT_SOURCE_DIR}/graphics_lib/CMakeLists.txt)
+
+# clang-format
+if (UNIX)
+	add_custom_target(
+		clangformat
+		COMMAND /usr/bin/clang-format
+		-style=google
+		-i
+		${SOURCES} ${PROJECT_SOURCES}
+	)
+endif()
+
+# Shader reflection executable
+add_executable(dd_shader_reflect 
+	${CMAKE_SOURCE_DIR}/graphics_lib/source/reflect_main.cpp
+	${CMAKE_SOURCE_DIR}/src/Pow2Assert.cpp)
+target_link_libraries(dd_shader_reflect 
+	glfw dd_graphics dd_shader ${OPENGL_gl_LIBRARY})
+
+# Engine executable
+add_executable(dd_engine
+				${SOURCES} ${PROJECT_SOURCES} ${SHADER_SOURCES}
+				${SCRIPTS})
 
 if(MSVC)
 	# set stack size
-	set_property(TARGET DayDream_Engine APPEND PROPERTY LINK_FLAGS /STACK:2000000)
+	set_property(TARGET dd_engine APPEND PROPERTY LINK_FLAGS /STACK:2000000)
 endif()
 
-# set visual studio startup project
-set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-			PROPERTY VS_STARTUP_PROJECT
-			DayDream_Engine)
+
 # add libraries
 find_library(VRPN_LIB vrpn ${CMAKE_CURRENT_SOURCE_DIR}/vrpn_lib_files)
 if(NOT VRPN_LIB)
   message(FATAL_ERROR "VRPN Release library not found")
 endif()
 if(UNIX)
-	find_library(SOIL_LIB SOIL)
-	if(NOT SOIL_LIB)
-		message(FATAL_ERROR "SOIL library not found")
-	endif()
 	find_library(TTF_LIB freetype)
 	if(NOT TTF_LIB)
 		message(FATAL_ERROR "Freetype Release library not found")
@@ -250,10 +324,6 @@ if(UNIX)
 		message(FATAL_ERROR "Lua library not found")
 	endif()
 elseif(MSVC)
-	find_library(SOIL_LIB SOIL ${CMAKE_CURRENT_SOURCE_DIR}/SOIL/lib)
-	if(NOT SOIL_LIB)
-		message(FATAL_ERROR "SOIL library not found")
-	endif()
 	find_library(TTF_LIB freetype ${CMAKE_CURRENT_SOURCE_DIR}/freetype-2.7/lib)
 	if(NOT TTF_LIB)
 		message(FATAL_ERROR "Freetype Release library not found")
@@ -263,34 +333,63 @@ elseif(MSVC)
 		message(FATAL_ERROR "Lua library not found")
 	endif()
 endif()
-if(MINGW)
-	find_library(FS_LIB stdc++fs ${MY_GCC_LIB})
-	if(NOT FS_LIB)
-		message(FATAL_ERROR "C++17 File System library not found")
+
+# bullet physics and graphics libraries
+if(MSVC)
+	set(BULLET_LIB 
+		${PROJECT_SOURCE_DIR}/lib/BulletDynamics.lib
+		${PROJECT_SOURCE_DIR}/lib/BulletCollision.lib
+		${PROJECT_SOURCE_DIR}/lib/LinearMath.lib
+		${PROJECT_SOURCE_DIR}/lib/BulletSoftBody.lib
+	)
+else()
+	set(BULLET_LIB 
+		${PROJECT_SOURCE_DIR}/lib/libBulletDynamics.a
+		${PROJECT_SOURCE_DIR}/lib/libBulletCollision.a
+		${PROJECT_SOURCE_DIR}/lib/libLinearMath.a
+		${PROJECT_SOURCE_DIR}/lib/libBulletSoftBody.a
+	)
+	find_library(BL_1 BulletDynamics)
+	if(NOT BL_1)
+		message(FATAL_ERROR "BulletDynamics library not found")
 	endif()
-# elseif(WIN32)
-# 	find_library(FS_LIB stdc++fs)
-# 	if(NOT FS_LIB)
-# 		message(FATAL_ERROR "C++17 File System library not found")
-# 	endif()
+	find_library(BL_2 BulletCollision)
+	if(NOT BL_2)
+		message(FATAL_ERROR "BulletCollision library not found")
+	endif()
+	find_library(BL_3 LinearMath)
+	if(NOT BL_3)
+		message(FATAL_ERROR "LinearMath library not found")
+	endif()
+	find_library(BL_4 BulletSoftBody)
+	if(NOT BL_4)
+		message(FATAL_ERROR "BulletSoftBody library not found")
+	endif()
+	set(BULLET_LIB ${BL_1} ${BL_2} ${BL_3} ${BL_4})
 endif()
 
-#find_library(SDL2_DYNAMIC SDL2
-#	PATHS
-#	${SDL2_LIBRARY}
-#	${SDL2_LIBRARY_TEMP})
-#if(NOT SDL2_DYNAMIC)
-#	message(FATAL_ERROR "NOOOOOOOO")
-#4endif()
+# set visual studio startup project
+set_property(DIRECTORY ${PROJECT_SOURCE_DIR}
+			PROPERTY VS_STARTUP_PROJECT
+			dd_engine)
 
-# filesystem goes last
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -lstdc++fs")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -lstdc++fs")
+# set windowing library
+if(DD_USE_GLFW)
+	set(WIN_LIB glfw)
+else()
+	set(WIN_LIB ${SDL2_LIBRARY})
+endif()
 
 if(NOT WIN32)
-	target_link_libraries(DayDream_Engine ${SOIL_LIB} ${OPENGL_gl_LIBRARY}
-	${SDL2_LIBRARY} ${VRPN_LIB} ${FREETYPE_LIBRARIES} ${FS_LIB} ${LUA_LIB})
+	# filesystem goes last
+	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -lstdc++fs")
+	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -lstdc++fs")
+
+	target_link_libraries(dd_engine ${WIN_LIB} dd_graphics dd_shader 
+		${OPENGL_gl_LIBRARY} ${BULLET_LIB} ${VRPN_LIB} ${FREETYPE_LIBRARIES} 
+		${FS_LIB} ${DD_GPULIB} ${LUA_LIB})
 else()
-	target_link_libraries(DayDream_Engine ${SOIL_LIB} ${OPENGL_gl_LIBRARY}
-	${SDL2_LIBRARY} ${VRPN_LIB} ${FREETYPE_LIBRARIES} ${LUA_LIB})
+	target_link_libraries(dd_engine ${WIN_LIB} dd_graphics dd_shader 
+		${OPENGL_gl_LIBRARY} ${BULLET_LIB} ${VRPN_LIB} ${FREETYPE_LIBRARIES} 
+		${LUA_LIB} ${DD_GPULIB})
 endif()

@@ -122,7 +122,7 @@ void main() {
 	}
 
 	if(SampleMap) {
-		finalColor = vec4(texture( ColorTex, tex_coord ).rgb, 1.0);
+		finalColor = texture( ColorTex, tex_coord );
 	}
 
 	// replace particle colors if present (remove pure black background)

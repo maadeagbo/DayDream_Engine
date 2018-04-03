@@ -11,6 +11,6 @@ uniform vec4 color;
 
 void main() {
     PositionData = FragPos.xyz;
-	ColorData = color;
+    ColorData = color;
     NormalData = vec3(0.0, 1.0, 0.0);
 }
