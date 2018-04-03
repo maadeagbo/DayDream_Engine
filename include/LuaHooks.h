@@ -293,6 +293,12 @@ void push_vec4_to_lua(lua_State *L, const float x, const float y, const float z,
                       const float w);
 
 /**
+ * \brief Add glm::ivec3 to stack
+ */
+void push_ivec3_to_lua(lua_State *L, const int64_t x, const int64_t y,
+                       const int64_t z);
+
+/**
  * \brief Read in floats from lua
  */
 template <typename T>
@@ -302,3 +308,6 @@ void read_buffer_from_lua(lua_State *L, dd_array<T> &buffer) {
 
 template <>
 void read_buffer_from_lua<float>(lua_State *L, dd_array<float> &buffer);
+
+template <>
+void read_buffer_from_lua<int64_t>(lua_State *L, dd_array<int64_t> &buffer);

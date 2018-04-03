@@ -19,6 +19,7 @@ BBoxGraphics bb_graphics;
 LvlCtrl lvl_ctrl;
 
 dd_array<float> float_buf3(3);
+dd_array<int64_t> int_buf3(3);
 dd_array<float> float_buf6(6);
 
 BoundingBox ref_bbox;
@@ -26,6 +27,8 @@ BoundingBox ref_bbox;
 cbuff<8> pos_str = "pos";
 cbuff<8> rot_str = "rot";
 cbuff<8> scale_str = "scale";
+cbuff<8> mirror_str = "mirror";
+cbuff<8> joint_str = "jnts";
 
 }  // namespace
 
@@ -38,33 +41,48 @@ static int set_val(lua_State *L);
 static int get_val(lua_State *L);
 static int bbox_index_func(lua_State *L);
 static int check_intersect(lua_State *L);
+static int to_string(lua_State *L);
 
 // method list
 static const struct luaL_Reg bbox_methods[] = {{"__index", bbox_index_func},
                                                {"__newindex", set_val},
+                                               {"__tostring", to_string},
                                                {"intersect", check_intersect},
                                                {NULL, NULL}};
 
 int set_val(lua_State *L) {
   BBTransform *bbox = *check_bbox(L);
   const char *arg = (const char *)luaL_checkstring(L, 2);
-  read_buffer_from_lua(L, float_buf3);
 
   // position
   if (pos_str.compare(arg) == 0) {
+    read_buffer_from_lua(L, float_buf3);
     bbox->pos.x = float_buf3[0];
     bbox->pos.y = float_buf3[1];
     bbox->pos.z = float_buf3[2];
   } else if (rot_str.compare(arg) == 0) {
+    read_buffer_from_lua(L, float_buf3);
     // rotation
     bbox->rot.x = float_buf3[0];
     bbox->rot.y = float_buf3[1];
     bbox->rot.z = float_buf3[2];
   } else if (scale_str.compare(arg) == 0) {
+    read_buffer_from_lua(L, float_buf3);
     // scale
     bbox->scale.x = float_buf3[0];
     bbox->scale.y = float_buf3[1];
     bbox->scale.z = float_buf3[2];
+  } else if (mirror_str.compare(arg) == 0) {
+    read_buffer_from_lua(L, int_buf3);
+    // mirror
+    bbox->mirror.x = (unsigned)int_buf3[0];
+    bbox->mirror.y = (unsigned)int_buf3[1];
+    bbox->mirror.z = (unsigned)int_buf3[2];
+  } else if (joint_str.compare(arg) == 0) {
+    read_buffer_from_lua(L, int_buf3);
+    // joint ids
+    bbox->joint_ids.x = int_buf3[0];
+    bbox->joint_ids.y = int_buf3[1];
   }
 
   return 0;
@@ -86,9 +104,35 @@ int get_val(lua_State *L) {
     // scale
     push_vec3_to_lua(L, bbox->scale.x, bbox->scale.y, bbox->scale.z);
     return 1;
+  } else if (mirror_str.compare(arg) == 0) {
+    // mirror
+    push_ivec3_to_lua(L, bbox->mirror.x, bbox->mirror.y, bbox->mirror.z);
+    return 1;
+  } else if (joint_str.compare(arg) == 0) {
+    // joint ids
+    push_ivec3_to_lua(L, bbox->joint_ids.x, bbox->joint_ids.y, 0);
+    return 1;
   }
 
   lua_pushnil(L);
+  return 1;
+}
+
+static int to_string(lua_State *L) {
+  BBTransform *bb = *check_bbox(L);
+  std::string buff;
+
+  cbuff<128> out;
+  out.format("\n  pos: %.3f, %.3f, %.3f", bb->pos.x, bb->pos.y, bb->pos.z);
+  buff += out.str();
+
+  out.format("\n  sc: %.3f, %.3f, %.3f", bb->scale.x, bb->scale.y, bb->scale.z);
+  buff += out.str();
+
+  out.format("\n  rot: %.3f, %.3f, %.3f", bb->rot.x, bb->rot.y, bb->rot.z);
+  buff += out.str();
+
+  lua_pushstring(L, buff.c_str());
   return 1;
 }
 
@@ -101,8 +145,6 @@ static int new_bbox(lua_State *L) {
   // assign new bounding box
   const unsigned new_idx = bb_graphics.bbox_trans.size();
   bb_graphics.bbox_trans[new_idx] = BBTransform();
-  bb_graphics.bbox_mirror[new_idx] = glm::uvec3(0);
-  bb_graphics.bbox_joint_id[new_idx] = -1;
 
   (*bbox) = &bb_graphics.bbox_trans[new_idx];
 
@@ -242,26 +284,20 @@ static int modify_bbox(lua_State *L) {
   bool win_on = bbox_id >= 0;
   if (win_on) {
     BBTransform &bb = bb_graphics.bbox_trans[bbox_id];
-    glm::uvec3 &bb_m = bb_graphics.bbox_mirror[bbox_id];
-    int &bb_j = bb_graphics.bbox_joint_id[bbox_id];
 
     ImColor col(0.f, 0.f, 1.f, 1.f);
     ImGui::PushStyleColor(ImGuiCol_::ImGuiCol_TitleBg, col);
     ImGui::PushStyleColor(ImGuiCol_::ImGuiCol_TitleBgActive, col);
 
-    ImGui::Begin("Modify Bounding Box", &win_on, 0);
+    ImGui::Begin("Modify Bounding Box", &win_on,
+                 ImGuiWindowFlags_AlwaysAutoResize);
 
     ImGui::Text("ID: %d", bbox_id);
     ImGui::Separator();
 
-    // joint index on skeleton
-    ImGui::Text("Joint ID", bbox_id);
-    ImGui::InputInt("Joint", &bb_j);
-    ImGui::Separator();
-
     // mirror along axiz
     ImGui::Text("Mirror (along axis selected)");
-    bool bvec[] = {(bool)bb_m[0], (bool)bb_m[1], (bool)bb_m[2]};
+    bool bvec[] = {(bool)bb.mirror[0], (bool)bb.mirror[1], (bool)bb.mirror[2]};
 
     ImGui::Checkbox("x", &bvec[0]);
     ImGui::SameLine();
@@ -270,16 +306,39 @@ static int modify_bbox(lua_State *L) {
     ImGui::Checkbox("z", &bvec[2]);
 
     // save values
-    bb_m[0] = bvec[0] ? 1 : 0;
-    bb_m[1] = bvec[1] ? 1 : 0;
-    bb_m[2] = bvec[2] ? 1 : 0;
+    bb.mirror[0] = bvec[0] ? 1 : 0;
+    bb.mirror[1] = bvec[1] ? 1 : 0;
+    bb.mirror[2] = bvec[2] ? 1 : 0;
 
     ImGui::Separator();
 
-		// level controls
-		ImGui::Checkbox("Translate", &lvl_ctrl.flags[0]); ImGui::SameLine();
-		ImGui::Checkbox("Rotate", &lvl_ctrl.flags[1]); ImGui::SameLine();
-		ImGui::Checkbox("Scale", &lvl_ctrl.flags[2]);
+    // joint index on skeleton
+    ImGui::Text("Joint ID", bbox_id);
+    ImGui::InputInt("Joint", &bb.joint_ids[0]);
+    if (bvec[0] || bvec[1] || bvec[2]) {
+      ImGui::InputInt("Mirrored Joint", &bb.joint_ids[1]);
+    }
+    ImGui::Separator();
+
+    // level controls
+    ImGui::Checkbox("Scale", &lvl_ctrl.flags[2]);
+    ImGui::SameLine();
+    ImGui::Checkbox("Rotate", &lvl_ctrl.flags[1]);
+    ImGui::SameLine();
+    ImGui::Checkbox("Translate", &lvl_ctrl.flags[0]);
+
+    ImGui::Checkbox("X", &lvl_ctrl.flags[3]);
+    ImGui::SameLine();
+    ImGui::Checkbox("Y", &lvl_ctrl.flags[4]);
+    ImGui::SameLine();
+    ImGui::Checkbox("Z", &lvl_ctrl.flags[5]);
+
+    ImGui::Separator();
+
+    // numerical view & edit
+    ImGui::InputFloat3("Pos", &bb.pos[0]);
+    ImGui::InputFloat3("Rot", &bb.rot[0]);
+    ImGui::InputFloat3("Scale", &bb.scale[0]);
 
     ImGui::End();
 
@@ -312,53 +371,45 @@ int luaopen_bbox(lua_State *L) {
 static int set_ctrl(lua_State *L) {
   LvlCtrl *lc_ptr = *check_lvlctrl(L);
   int idx = (int)luaL_checkinteger(L, 2);
+  luaL_checktype(L, 3, LUA_TBOOLEAN);
+  bool flag = (bool)lua_toboolean(L, 3);
 
-  switch (idx) {
-    case (int)LvlCtrlEnums::TRANSLATE:
-      lc_ptr->flags[idx] ^= 1;
-      if (lc_ptr->flags[idx]) {
-        lc_ptr->flags[(int)LvlCtrlEnums::ROTATE] = false;
-        lc_ptr->flags[(int)LvlCtrlEnums::SCALE] = false;
+  if (idx < (unsigned)LvlCtrlEnums::NUM_FLAGS) {
+    lc_ptr->flags[idx] = flag;
+
+    // turn off other options
+    if (flag) {
+      switch (idx) {
+        case (int)LvlCtrlEnums::TRANSLATE:
+          lc_ptr->flags[(int)LvlCtrlEnums::ROTATE] = false;
+          lc_ptr->flags[(int)LvlCtrlEnums::SCALE] = false;
+          break;
+        case (int)LvlCtrlEnums::ROTATE:
+          lc_ptr->flags[(int)LvlCtrlEnums::TRANSLATE] = false;
+          lc_ptr->flags[(int)LvlCtrlEnums::SCALE] = false;
+          break;
+        case (int)LvlCtrlEnums::SCALE:
+          lc_ptr->flags[(int)LvlCtrlEnums::ROTATE] = false;
+          lc_ptr->flags[(int)LvlCtrlEnums::TRANSLATE] = false;
+          break;
+        case (int)LvlCtrlEnums::X:
+          lc_ptr->flags[(int)LvlCtrlEnums::Y] = false;
+          lc_ptr->flags[(int)LvlCtrlEnums::Z] = false;
+          break;
+        case (int)LvlCtrlEnums::Y:
+          lc_ptr->flags[(int)LvlCtrlEnums::X] = false;
+          lc_ptr->flags[(int)LvlCtrlEnums::Z] = false;
+          break;
+        case (int)LvlCtrlEnums::Z:
+          lc_ptr->flags[(int)LvlCtrlEnums::Y] = false;
+          lc_ptr->flags[(int)LvlCtrlEnums::X] = false;
+          break;
+        default:
+          break;
       }
-      break;
-    case (int)LvlCtrlEnums::ROTATE:
-      lc_ptr->flags[idx] ^= 1;
-      if (lc_ptr->flags[idx]) {
-        lc_ptr->flags[(int)LvlCtrlEnums::TRANSLATE] = false;
-        lc_ptr->flags[(int)LvlCtrlEnums::SCALE] = false;
-      }
-      break;
-    case (int)LvlCtrlEnums::SCALE:
-      lc_ptr->flags[idx] ^= 1;
-      if (lc_ptr->flags[idx]) {
-        lc_ptr->flags[(int)LvlCtrlEnums::ROTATE] = false;
-        lc_ptr->flags[(int)LvlCtrlEnums::TRANSLATE] = false;
-      }
-      break;
-    case (int)LvlCtrlEnums::X:
-      lc_ptr->flags[idx] ^= 1;
-      if (lc_ptr->flags[idx]) {
-        lc_ptr->flags[(int)LvlCtrlEnums::Y] = false;
-        lc_ptr->flags[(int)LvlCtrlEnums::Z] = false;
-      }
-      break;
-    case (int)LvlCtrlEnums::Y:
-      lc_ptr->flags[idx] ^= 1;
-      if (lc_ptr->flags[idx]) {
-        lc_ptr->flags[(int)LvlCtrlEnums::X] = false;
-        lc_ptr->flags[(int)LvlCtrlEnums::Z] = false;
-      }
-      break;
-    case (int)LvlCtrlEnums::Z:
-      lc_ptr->flags[idx] ^= 1;
-      if (lc_ptr->flags[idx]) {
-        lc_ptr->flags[(int)LvlCtrlEnums::Y] = false;
-        lc_ptr->flags[(int)LvlCtrlEnums::X] = false;
-      }
-      break;
-    default:
-      break;
+    }
   }
+
   return 0;
 }
 static int get_ctrl(lua_State *L) {
@@ -444,8 +495,8 @@ void BBoxSkinnedMesh_func_register(lua_State *L) {
   register_callback_lua(L, "init_gpu_stuff", init_gpu_stuff);
 
   // log bounding box libraries
-	luaL_requiref(L, "ddBBox", luaopen_bbox, 1);
-	luaL_requiref(L, "Lvlctrl", luaopen_lvlctrl, 1);
+  luaL_requiref(L, "ddBBox", luaopen_bbox, 1);
+  luaL_requiref(L, "Lvlctrl", luaopen_lvlctrl, 1);
 
   // clear stack
   int top = lua_gettop(L);
@@ -533,7 +584,7 @@ void render_grid() {
     // set uniforms
     bb_graphics.bbox_sh.set_uniform((int)RE_Line::MVP_m4x4, p_mat * v_mat);
     bb_graphics.bbox_sh.set_uniform((int)RE_Line::color_v4,
-                                    glm::vec4(1.f, 1.f, 1.f, 0.5f));
+                                    glm::vec4(1.f, 1.f, 1.f, 0.5));
 
     // draw lines
     ddGPUFrontEnd::draw_indexed_lines_vao(bb_graphics.grid_vao,
@@ -591,46 +642,8 @@ void render_bbox() {
     const glm::mat4 v_mat = ddSceneManager::calc_view_matrix(cam);
     const glm::mat4 p_mat = ddSceneManager::calc_p_proj_matrix(cam);
 
-    // set uniforms
-    // bb_graphics.bbox_sh.set_uniform((int)RE_Line::MVP_m4x4, p_mat * v_mat);
-
-    // draw bounding boxes
     unsigned idx = 0;
-    // for (auto &box : bb_graphics.bbox_container) {
-    //  // color
-    //  bb_graphics.bbox_sh.set_uniform((int)RE_Line::color_v4,
-    //                                  glm::vec4(1.f, 0.f, 0.f, 1.f));
 
-    //  fill_buffer(box.second);
-    //  ddGPUFrontEnd::set_storage_buffer_contents(bb_graphics.bbox_ssbo,
-    //                                             8 * 3 * sizeof(float), 0,
-    //                                             bb_graphics.bbox_buffer);
-    //  ddGPUFrontEnd::draw_indexed_lines_vao(bb_graphics.bbox_vao, 24, 0);
-
-    //  const glm::uvec3 mirror = bb_graphics.bbox_mirror[idx];
-    //  if (mirror.x == 1 || mirror.y == 1 || mirror.z == 1) {
-    //    // color
-    //    bb_graphics.bbox_sh.set_uniform((int)RE_Line::color_v4,
-    //                                    glm::vec4(0.f, 0.f, 1.f, 1.f));
-
-    //    // mirror the bounding box
-    //    BoundingBox m_box;
-    //    glm::vec3 m_vec(1.f);
-    //    m_vec.x = mirror.x == 1 ? -1 : 1;
-    //    m_vec.y = mirror.y == 1 ? -1 : 1;
-    //    m_vec.z = mirror.z == 1 ? -1 : 1;
-
-    //    m_box.min = box.second.min * m_vec;
-    //    m_box.max = box.second.max * m_vec;
-    //    m_box.SetCorners();
-
-    //    fill_buffer(m_box);
-    //    ddGPUFrontEnd::set_storage_buffer_contents(bb_graphics.bbox_ssbo,
-    //                                               8 * 3 * sizeof(float), 0,
-    //                                               bb_graphics.bbox_buffer);
-    //    ddGPUFrontEnd::draw_indexed_lines_vao(bb_graphics.bbox_vao, 24, 0);
-    //  }
-    //}
     // loop thru transforms
     for (auto &box : bb_graphics.bbox_trans) {
       glm::mat4 m_mat =
@@ -643,7 +656,7 @@ void render_bbox() {
       ddGPUFrontEnd::draw_indexed_lines_vao(bb_graphics.bbox_vao, 24, 0);
 
       // mirror
-      const glm::uvec3 mirror = bb_graphics.bbox_mirror[idx];
+      const glm::uvec3 mirror = box.second.mirror;
       if (mirror.x == 1 || mirror.y == 1 || mirror.z == 1) {
         // color
         bb_graphics.bbox_sh.set_uniform((int)RE_Line::color_v4,

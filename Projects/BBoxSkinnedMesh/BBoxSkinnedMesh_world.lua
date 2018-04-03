@@ -27,6 +27,7 @@ do
 		dd_register_callback(assets.bb_m.id, assets.bb_m)
 		dd_subscribe( { key = assets.bb_m.id, event = level_tag } )
 		dd_subscribe( { key = assets.bb_m.id, event = "new_bbox" } )
+		dd_subscribe( { key = assets.bb_m.id, event = "export_bbox" } )
 
 		-- get controller for lvl
 		assets.bb_m.ctrl = Lvlctrl.get()

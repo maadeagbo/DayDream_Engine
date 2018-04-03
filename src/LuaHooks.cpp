@@ -238,25 +238,24 @@ bool parse_luafile(lua_State *L, const char *filename) {
 
 void push_args(lua_State *L, const DD_LEvent &levent, const int idx) {
   // assumes new table is on top of stack before call
-  const int _idx = idx - 1;
 
   luaL_checkstack(L, 2, "too many arguments");
-  switch (levent.args[_idx].val.type) {
+  switch (levent.args[idx].val.type) {
     case VType::BOOL:
-      lua_pushinteger(L, levent.args[_idx].val.v_bool ? 1 : 0);
-      lua_setfield(L, -2, levent.args[_idx].key.str());
+      lua_pushinteger(L, levent.args[idx].val.v_bool ? 1 : 0);
+      lua_setfield(L, -2, levent.args[idx].key.str());
       break;
     case VType::STRING:
-      lua_pushstring(L, levent.args[_idx].val.v_strptr.str());
-      lua_setfield(L, -2, levent.args[_idx].key.str());
+      lua_pushstring(L, levent.args[idx].val.v_strptr.str());
+      lua_setfield(L, -2, levent.args[idx].key.str());
       break;
     case VType::FLOAT:
-      lua_pushnumber(L, levent.args[_idx].val.v_float);
-      lua_setfield(L, -2, levent.args[_idx].key.str());
+      lua_pushnumber(L, levent.args[idx].val.v_float);
+      lua_setfield(L, -2, levent.args[idx].key.str());
       break;
     case VType::INT:
-      lua_pushinteger(L, levent.args[_idx].val.v_int);
-      lua_setfield(L, -2, levent.args[_idx].key.str());
+      lua_pushinteger(L, levent.args[idx].val.v_int);
+      lua_setfield(L, -2, levent.args[idx].key.str());
       break;
     default:
       break;  // set nothing
@@ -310,7 +309,7 @@ void callback_lua(lua_State *L, const DD_LEvent levent, int func_ref,
   lua_newtable(L);  // create new table and put on top of stack
   if (levent.active > 0) {
     for (unsigned i = 0; i < levent.active; i++) {
-      push_args(L, levent, i + 1);  // push arguments
+      push_args(L, levent, i);  // push arguments
     }
   }
   lua_pushinteger(L, (int64_t)levent.active);  // push # of arguments
@@ -685,6 +684,21 @@ void push_vec4_to_lua(lua_State *L, const float x, const float y, const float z,
   lua_setfield(L, -2, "w");
 }
 
+void push_ivec3_to_lua(lua_State *L, const int64_t x, const int64_t y,
+                       const int64_t z) {
+  lua_newtable(L);  // create new table and put on top of stack
+
+  luaL_checkstack(L, 2, "too many arguments");  // check stack size
+
+  // set fields
+  lua_pushinteger(L, x);
+  lua_setfield(L, -2, "x");
+	lua_pushinteger(L, y);
+  lua_setfield(L, -2, "y");
+	lua_pushinteger(L, z);
+  lua_setfield(L, -2, "z");
+}
+
 void append_package_path(lua_State *L, const char *path) {
   cbuff<1024> curr_path, new_path;
   lua_getglobal(L, "package");
@@ -730,7 +744,7 @@ void parse_table_buffer(lua_State *L, dd_array<T> &buffer, unsigned &idx,
         break;
       }
       case LUA_TTABLE: {
-        parse_table_buffer<float>(L, buffer, idx, (unsigned)lua_gettop(L));
+        parse_table_buffer<T>(L, buffer, idx, (unsigned)lua_gettop(L));
         break;
       }
       default:
@@ -762,7 +776,38 @@ void read_buffer_from_lua<float>(lua_State *L, dd_array<float> &buffer) {
         break;
       }
       default:
-        //printf("%s\n", lua_typename(L, t));
+        // printf("%s\n", lua_typename(L, t));
+        break;
+    }
+  }
+  lua_pop(L, top);  // Pop table
+
+  return;
+}
+
+template <>
+void read_buffer_from_lua<int64_t>(lua_State *L, dd_array<int64_t> &buffer) {
+  int top = lua_gettop(L); /* number of arguments */
+  unsigned curr_idx = 0;
+
+  for (int i = 1; i <= top; i++) {
+    int t = lua_type(L, i);
+    switch (t) {
+      case LUA_TTABLE: {
+        parse_table_buffer<int64_t>(L, buffer, curr_idx, i);
+        break;
+      }
+      case LUA_TNUMBER: {
+        // parse_table(L, &fb);
+        if (curr_idx < buffer.size() && lua_isinteger(L, i)) {
+          const int64_t num = (int64_t)lua_tointeger(L, i);
+          buffer[curr_idx] = num;
+          curr_idx++;
+        }
+        break;
+      }
+      default:
+        // printf("%s\n", lua_typename(L, t));
         break;
     }
   }

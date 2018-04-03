@@ -37,14 +37,14 @@ void render_tasks() {
   // setup particle buffer
   ddGPUFrontEnd::bind_framebuffer(ddBufferType::PARTICLE);
   ddGPUFrontEnd::clear_color_buffer();
-  ddGPUFrontEnd::toggle_additive_blend(true);
+  //ddGPUFrontEnd::toggle_additive_blend(true);
 
   // loop thru tasks
   process_queue();
 
   // reset buffer
   ddGPUFrontEnd::bind_framebuffer(ddBufferType::DEFAULT);
-  ddGPUFrontEnd::toggle_additive_blend(false);
+  //ddGPUFrontEnd::toggle_additive_blend(false);
 }
 
 void cleanup() {

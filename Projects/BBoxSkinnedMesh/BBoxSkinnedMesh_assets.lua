@@ -38,7 +38,7 @@ function load()
 
 	-- Empty camera agent
 	BBoxSkinnedMesh_assets.nav_agent = ddAgent.new("BBoxSkinnedMesh_agent", 1.0, "kinematic")
-	BBoxSkinnedMesh_assets.nav_agent:set_pos(0.0, 2.0, 5.0)
+	BBoxSkinnedMesh_assets.nav_agent:set_pos(0.0, 2.0, 3.0)
 	BBoxSkinnedMesh_assets.nav_agent:set_eulerPYR(0.0, 0.0)
 	ddLib.print( "Created agent (BBoxSkinnedMesh_agent): ", BBoxSkinnedMesh_assets.nav_agent:id() )
 

@@ -5,7 +5,7 @@ do
 
 	BBoxSkinnedMesh_actor = {}
 
-	speed = 2.0
+	speed = 1.5
 	pitch = 0
 	yaw = 0
 

@@ -16,6 +16,8 @@ struct BBTransform {
 	glm::vec3 pos = glm::vec3(0.f);
 	glm::vec3 scale = glm::vec3(1.f);
 	glm::vec3 rot = glm::vec3(0.f);
+	glm::uvec3 mirror = glm::uvec3(0.f);
+	glm::ivec2 joint_ids = glm::ivec2(-1);
 };
 
 struct BBoxGraphics {
@@ -38,8 +40,6 @@ struct BBoxGraphics {
   // bbox container
 	std::map<unsigned, BoundingBox> bbox_container;
 	std::map<unsigned, BBTransform> bbox_trans;
-	std::map<unsigned, glm::uvec3> bbox_mirror;
-	std::map<unsigned, int> bbox_joint_id;
 
   // bbox indices
   unsigned bbox_indices[12 * 2] = {
