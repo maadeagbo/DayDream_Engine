@@ -41,6 +41,7 @@ static int set_val(lua_State *L);
 static int get_val(lua_State *L);
 static int bbox_index_func(lua_State *L);
 static int check_intersect(lua_State *L);
+static int get_corners(lua_State *L);
 static int to_string(lua_State *L);
 
 // method list
@@ -48,6 +49,7 @@ static const struct luaL_Reg bbox_methods[] = {{"__index", bbox_index_func},
                                                {"__newindex", set_val},
                                                {"__tostring", to_string},
                                                {"intersect", check_intersect},
+                                               {"get_corners", get_corners},
                                                {NULL, NULL}};
 
 int set_val(lua_State *L) {
@@ -134,6 +136,38 @@ static int to_string(lua_State *L) {
 
   lua_pushstring(L, buff.c_str());
   return 1;
+}
+
+static int get_corners(lua_State *L) {
+  BBTransform *bbox = *check_bbox(L);
+  
+  glm::mat4 model_mat = createMatrix(bbox->pos, bbox->rot, bbox->scale);
+
+  // apply mirror operation if necessary
+  luaL_checktype(L, 2, LUA_TBOOLEAN);
+  bool flag = (bool)lua_toboolean(L, 2);
+  if (flag) {
+    glm::vec3 s_vec = glm::vec3(1.f);
+    s_vec.x = (bbox->mirror.x == 1) ? -1.f : 1.f;
+    s_vec.y = (bbox->mirror.y == 1) ? -1.f : 1.f;
+    s_vec.z = (bbox->mirror.z == 1) ? -1.f : 1.f;
+    model_mat = glm::scale(glm::mat4(), s_vec ) * model_mat;
+  }
+
+  // get vertices
+  BoundingBox _box = ref_bbox.transformCorners(model_mat);
+
+  // push vertices
+  push_vec3_to_lua(L, _box.corner1.x, _box.corner1.y, _box.corner1.z);
+  push_vec3_to_lua(L, _box.corner2.x, _box.corner2.y, _box.corner2.z);
+  push_vec3_to_lua(L, _box.corner3.x, _box.corner3.y, _box.corner3.z);
+  push_vec3_to_lua(L, _box.corner4.x, _box.corner4.y, _box.corner4.z);
+  push_vec3_to_lua(L, _box.corner5.x, _box.corner5.y, _box.corner5.z);
+  push_vec3_to_lua(L, _box.corner6.x, _box.corner6.y, _box.corner6.z);
+  push_vec3_to_lua(L, _box.corner7.x, _box.corner7.y, _box.corner7.z);
+  push_vec3_to_lua(L, _box.corner8.x, _box.corner8.y, _box.corner8.z);
+
+  return 8;
 }
 
 const unsigned bbox_ptr_size = sizeof(BoundingBox *);
@@ -233,8 +267,6 @@ static bb_intersect ray_bb_intersect(const glm::vec3 origin,
 }
 
 int bbox_index_func(lua_State *L) {
-  BBTransform *bbox = *check_bbox(L);
-
   luaL_getmetatable(L, BBOX_META_NAME);  // find meta
   lua_pushvalue(L, 2);  // copy metatable on top of stack for rawget
   lua_rawget(L, -2);    // attempt to call method in table (nil if no method)
@@ -313,7 +345,7 @@ static int modify_bbox(lua_State *L) {
     ImGui::Separator();
 
     // joint index on skeleton
-    ImGui::Text("Joint ID", bbox_id);
+    ImGui::Text("Joint IDs");
     ImGui::InputInt("Joint", &bb.joint_ids[0]);
     if (bvec[0] || bvec[1] || bvec[2]) {
       ImGui::InputInt("Mirrored Joint", &bb.joint_ids[1]);
@@ -374,7 +406,7 @@ static int set_ctrl(lua_State *L) {
   luaL_checktype(L, 3, LUA_TBOOLEAN);
   bool flag = (bool)lua_toboolean(L, 3);
 
-  if (idx < (unsigned)LvlCtrlEnums::NUM_FLAGS) {
+  if (idx < (int)LvlCtrlEnums::NUM_FLAGS) {
     lc_ptr->flags[idx] = flag;
 
     // turn off other options

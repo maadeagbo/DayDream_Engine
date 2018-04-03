@@ -19,7 +19,7 @@ btDiscreteDynamicsWorld *p_world = nullptr;
 unsigned native_scr_width = 0, native_scr_height = 0;
 
 // flag to check if game is in load screen
-bool load_screen_flag = false;
+bool load_screen_flag = true;
 }  // namespace
 
 /// \brief Add agent to physics world

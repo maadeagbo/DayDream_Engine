@@ -39,11 +39,7 @@ do
     out_str[#out_str + 1] = "<bbox>"
 
     -- joint id
-    out_str[#out_str + 1] = "<joint>"
-    out_str[#out_str + 1] = jnt_id
-    out_str[#out_str + 1] = "</joint>"
-
-    out_str[#out_str + 1] = "<verts>"
+    out_str[#out_str + 1] = string.format("j %d", jnt_id)
     -- vert 1
     out_str[#out_str + 1] = string.format("v %.3f %.3f %.3f", c1.x, c1.y, c1.z)
     -- vert 2
@@ -60,10 +56,9 @@ do
     out_str[#out_str + 1] = string.format("v %.3f %.3f %.3f", c7.x, c7.y, c7.z)
     -- vert 8
     out_str[#out_str + 1] = string.format("v %.3f %.3f %.3f", c8.x, c8.y, c8.z)
-    out_str[#out_str + 1] = "</verts>"
 
     -- write end tag
-    out_str[#out_str + 1] = "</bbox>"
+    out_str[#out_str + 1] = "</bbox>\n"
 
     -- return string
     return table.concat( out_str, "\n" )
@@ -86,20 +81,28 @@ do
       end
     end
     ddLib.print("Num boxes out = ", num_boxes)
+    file:write(string.format( "<size>\n%d\n</size>\n", num_boxes ))
     -- for each box:
     for i=1,#created_bboxs do
       -- generate the 8 vertices that make up the box
-      --c1, c2, c3, c4, c5, c6, c7, c8 = created_bboxs[i]:get_corners(false)
+      c1, c2, c3, c4, c5, c6, c7, c8 = created_bboxs[i]:get_corners(false)
 
       -- get generated string
+      str = gen_bbox_string(c1, c2, c3, c4, c5, c6, c7, c8, 
+        created_bboxs[i].jnts.x)
+      file:write(str)
 
       -- repeat if mirrored box
       mirror = created_bboxs[i].mirror
       if mirror.x ~= 0 or mirror.y ~= 0 or mirror.z ~= 0 then
-        --c1, c2, c3, c4, c5, c6, c7, c8 = created_bboxs[i]:get_corners(true)
+        c1, c2, c3, c4, c5, c6, c7, c8 = created_bboxs[i]:get_corners(true)
+        str = gen_bbox_string(c1, c2, c3, c4, c5, c6, c7, c8, 
+          created_bboxs[i].jnts.y)
+        file:write(str)
       end
     end
-      
+
+    file:close()  
   end
   
   function manager:modify_bbox( bbox_idx, trs_idx, xyz_idx, sign )
