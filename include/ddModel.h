@@ -62,6 +62,7 @@ struct DD_LineAgent {
   }
 };
 
+/** \brief Bounding box representation */
 struct BoundingBox {
   glm::vec3 min, max;
   glm::vec3 corner1, corner2, corner3, corner4, corner5, corner6, corner7,

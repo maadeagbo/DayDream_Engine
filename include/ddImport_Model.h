@@ -87,3 +87,11 @@ ddMat *create_material(obj_mat &mat_info);
  * \return Pointer to created texture
  */
 ddTex2D *create_tex2D(const char *path, const char *img_id);
+
+/**
+ * \brief Load pre-defined bounding boxes representing a complex mesh
+ * \param path File path to .ddx file
+ * \param path Agent id to attach bounding box(s)
+ * \return Array of bounding box(s)
+ */
+dd_array<BoundingBox> load_ddx(const char *path, const size_t agent_id);

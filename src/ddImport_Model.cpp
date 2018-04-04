@@ -533,3 +533,40 @@ ddTex2D *create_tex2D(const char *path, const char *img_id) {
 
   return new_tex;
 }
+
+dd_array<BoundingBox> load_ddx(const char *path, const size_t agent_id) {
+  /// \brief Lambda to get int from string
+  auto getInt = [](const char *str) {
+    return (int)strtol(str, nullptr, 10);
+  };
+
+  dd_array<BoundingBox> bboxes;
+
+  // attempt to open file
+  ddIO _io;
+  if (!_io.open(path, ddIOflag::READ)) return bboxes;
+
+  const char *line = _io.readNextLine();
+  while (line && *line) {
+    // check tag for information to parse
+    if (strcmp("<size>", line) == 0) {
+      line = _io.readNextLine();
+
+      // get value & resize output array
+    }
+    if (strcmp("<box>", line) == 0) {
+      // update current box index
+      // reset vertex/corner counter
+    }
+    if (*line == 'j') {  // joint id
+      // set joint index for box 
+    }
+    if (*line == 'v') {  // vertex/corner of box
+      // set vertex/corner
+      // update counter
+    }
+    line = _io.readNextLine();
+  }
+
+  return bboxes;
+}
