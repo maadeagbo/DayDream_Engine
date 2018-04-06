@@ -99,9 +99,11 @@ void rotate(ddBody* bod, const float yaw, const float pitch, const float roll) {
 
 void update_scale(ddBody* bod, const glm::vec3& _scale) {
   bod->scale = _scale;
+
+  glm::vec3 s_val = bod->oobbs.isValid() ? _scale * bod->oobbs_scale : _scale;
   // set scale in collision shape for physics
   bod->bt_bod->getCollisionShape()->setLocalScaling(
-      btVector3((btScalar)_scale.x, (btScalar)_scale.y, (btScalar)_scale.z));
+      btVector3((btScalar)s_val.x, (btScalar)s_val.y, (btScalar)s_val.z));
   // btCollisionShape::setLocalScaling()
   // btCollisionWorld::updateSingleAABB( rigidbody )
 }
@@ -124,6 +126,24 @@ AABB get_aabb(ddBody* bod) {
   bbox.max = glm::vec3(max.x(), max.y(), max.z());
 
   return bbox;
+}
+
+void update_aabb(ddBody* bod, AABB& bbox) {
+  // default box is a 1x1x1 cube centered at (0,0,0)
+  // This method relates the position & scale to that reference box, then sets
+
+  // get the new center position
+  glm::vec3 center = (bbox.min + bbox.max) / 2.f;
+
+  // get the new scale in the x,y,z dimension
+  bod->oobbs_scale = (bbox.max - bbox.min);
+
+  // update bullet's AABB object's position
+  btCompoundShape* _shape =
+      static_cast<btCompoundShape*>(bod->bt_bod->getCollisionShape());
+  btQuaternion q = bod->bt_bod->getWorldTransform().getRotation();
+  _shape->updateChildTransform(
+      0, btTransform(q, btVector3(center.x, center.y, center.z)));
 }
 
 }  // namespace ddBodyFuncs
@@ -235,7 +255,7 @@ int set_val(lua_State* L) {
 }
 
 static int anim_to_string(lua_State* L) {
-  //ddAnimState* a_state = *check_ddAnimState(L);
+  // ddAnimState* a_state = *check_ddAnimState(L);
 
   // print ddAnimState information
 

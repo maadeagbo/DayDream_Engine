@@ -1,6 +1,6 @@
 #include "ddImport_Model.h"
-#include "ddAssetManager.h"
 #include <omp.h>
+#include "ddAssetManager.h"
 #include "ddTerminal.h"
 
 #include "stb_image.h"
@@ -524,21 +524,19 @@ ddTex2D *create_tex2D(const char *path, const char *img_id) {
   }
   new_tex->image_info = std::move(img_info);
 
-	// skip loading if using opengl api and on separate thread
-	bool skip = DD_GRAPHICS_API == 0 && ddAssets::load_screen_check();
-	if (!skip) {
-		ddGPUFrontEnd::generate_texture2D_RGBA8_LR(new_tex->image_info);
-		new_tex->image_info.image_data[0].resize(0);
-	}
+  // skip loading if using opengl api and on separate thread
+  bool skip = DD_GRAPHICS_API == 0 && ddAssets::load_screen_check();
+  if (!skip) {
+    ddGPUFrontEnd::generate_texture2D_RGBA8_LR(new_tex->image_info);
+    new_tex->image_info.image_data[0].resize(0);
+  }
 
   return new_tex;
 }
 
 dd_array<OOBoundingBox> load_ddx(const char *path) {
   /// \brief Lambda to get int from string
-  auto get_int = [](const char *str) {
-    return (int)strtol(str, nullptr, 10);
-  };
+  auto get_int = [](const char *str) { return (int)strtol(str, nullptr, 10); };
 
   dd_array<OOBoundingBox> bboxes;
   int b_idx = -1;

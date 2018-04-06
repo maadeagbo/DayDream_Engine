@@ -70,10 +70,10 @@ struct ddCam {
    * \brief Frustum information. Set up at initialization (position: 0, 0, 0)
    */
   FrustumBox cam_frustum;
-	/**
-	* \brief World background color
-	*/
-	glm::vec4 background_color = glm::vec4(0.f);
+  /**
+  * \brief World background color
+  */
+  glm::vec4 background_color = glm::vec4(0.f);
 
   /**
    * \brief Marks instance as active camera

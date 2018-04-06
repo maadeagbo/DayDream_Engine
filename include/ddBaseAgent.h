@@ -28,6 +28,10 @@ struct ddBody {
    */
   glm::vec3 scale = glm::vec3(1.f);
   /**
+   * \brief Finer bounding box approximation scale
+   */
+  glm::vec3 oobbs_scale = glm::vec3(1.f);
+  /**
    * \brief Finer bounding box approximation structure
    */
   dd_array<OOBoundingBox> oobbs;
@@ -38,6 +42,16 @@ namespace ddBodyFuncs {
 /** \brief Simple axis-alligned bounding box */
 struct AABB {
   glm::vec3 min, max;
+  void update(glm::vec3 v3) {
+    // min
+    this->min.x = (v3.x < this->min.x) ? v3.x : this->min.x;
+    this->min.y = (v3.y < this->min.y) ? v3.y : this->min.y;
+    this->min.z = (v3.z < this->min.z) ? v3.z : this->min.z;
+    // max
+    this->max.x = (v3.x > this->max.x) ? v3.x : this->max.x;
+    this->max.y = (v3.y > this->max.y) ? v3.y : this->max.y;
+    this->max.z = (v3.z > this->max.z) ? v3.z : this->max.z;
+  }
 };
 /**
  * \brief Local-space position
@@ -83,6 +97,10 @@ glm::mat4 get_model_mat(ddBody *bod);
  * \brief Get AABB from btRigidBody
  */
 AABB get_aabb(ddBody *bod);
+/**
+ * \brief Update AABB of btRigidBody
+ */
+void update_aabb(ddBody *bod, AABB &bbox);
 }
 
 /** \brief Container for instance manipulation */

@@ -45,12 +45,10 @@ static int get_corners(lua_State *L);
 static int to_string(lua_State *L);
 
 // method list
-static const struct luaL_Reg bbox_methods[] = {{"__index", bbox_index_func},
-                                               {"__newindex", set_val},
-                                               {"__tostring", to_string},
-                                               {"intersect", check_intersect},
-                                               {"get_corners", get_corners},
-                                               {NULL, NULL}};
+static const struct luaL_Reg bbox_methods[] = {
+    {"__index", bbox_index_func}, {"__newindex", set_val},
+    {"__tostring", to_string},    {"intersect", check_intersect},
+    {"get_corners", get_corners}, {NULL, NULL}};
 
 int set_val(lua_State *L) {
   BBTransform *bbox = *check_bbox(L);
@@ -140,7 +138,7 @@ static int to_string(lua_State *L) {
 
 static int get_corners(lua_State *L) {
   BBTransform *bbox = *check_bbox(L);
-  
+
   glm::mat4 model_mat = createMatrix(bbox->pos, bbox->rot, bbox->scale);
 
   // apply mirror operation if necessary
@@ -151,7 +149,7 @@ static int get_corners(lua_State *L) {
     s_vec.x = (bbox->mirror.x == 1) ? -1.f : 1.f;
     s_vec.y = (bbox->mirror.y == 1) ? -1.f : 1.f;
     s_vec.z = (bbox->mirror.z == 1) ? -1.f : 1.f;
-    model_mat = glm::scale(glm::mat4(), s_vec ) * model_mat;
+    model_mat = glm::scale(glm::mat4(), s_vec) * model_mat;
   }
 
   // get vertices

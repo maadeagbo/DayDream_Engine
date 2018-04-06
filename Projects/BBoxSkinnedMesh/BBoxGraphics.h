@@ -1,8 +1,8 @@
 #pragma once
 
 #include <map>
-#include "ddSceneManager.h"
 #include "ddParticleSystem.h"
+#include "ddSceneManager.h"
 #include "ddShader.h"
 
 #define NUM_GRID_LINES 11
@@ -13,11 +13,11 @@ const unsigned num_grid_points = NUM_GRID_LINES * NUM_GRID_AXIS * 2 * 3;
 const unsigned num_grid_indices = NUM_GRID_LINES * NUM_GRID_AXIS * 2;
 
 struct BBTransform {
-	glm::vec3 pos = glm::vec3(0.f);
-	glm::vec3 scale = glm::vec3(1.f);
-	glm::vec3 rot = glm::vec3(0.f);
-	glm::uvec3 mirror = glm::uvec3(0.f);
-	glm::ivec2 joint_ids = glm::ivec2(-1);
+  glm::vec3 pos = glm::vec3(0.f);
+  glm::vec3 scale = glm::vec3(1.f);
+  glm::vec3 rot = glm::vec3(0.f);
+  glm::uvec3 mirror = glm::uvec3(0.f);
+  glm::ivec2 joint_ids = glm::ivec2(-1);
 };
 
 struct BBoxGraphics {
@@ -38,8 +38,8 @@ struct BBoxGraphics {
   float bbox_buffer[8 * 3];
 
   // bbox container
-	std::map<unsigned, BoundingBox> bbox_container;
-	std::map<unsigned, BBTransform> bbox_trans;
+  std::map<unsigned, BoundingBox> bbox_container;
+  std::map<unsigned, BBTransform> bbox_trans;
 
   // bbox indices
   unsigned bbox_indices[12 * 2] = {

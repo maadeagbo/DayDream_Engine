@@ -1,8 +1,8 @@
 #pragma once
 
 #include "LuaHooks.h"
-#include "ddIncludes.h"
 #include "ddAssets.h"
+#include "ddIncludes.h"
 #include "ddShader.h"
 
 #ifndef MAX_SHADERS

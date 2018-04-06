@@ -2,9 +2,9 @@
 
 #include "LuaHooks.h"
 #include "ddAssetManager.h"
+#include "ddImport_Model.h"
 #include "ddSceneManager.h"
 #include "ddTerminal.h"
-#include "ddImport_Model.h"
 
 const unsigned ddAgent_ptr_size = sizeof(ddAgent *);
 const unsigned ddAnimState_ptr_size = sizeof(ddAnimState *);
@@ -315,6 +315,15 @@ int add_animation(lua_State *L) {
   return 1;
 }
 
+ddBodyFuncs::AABB oobb_to_aabb(dd_array<OOBoundingBox>& boxes) {
+  ddBodyFuncs::AABB out;
+
+  // 1st vertex in 1st oobb gets set to min & max
+  // per oobb: update output aabb
+  
+  return out;
+}
+
 static int add_oobb(lua_State *L) {
   ddAgent *ag = *(ddAgent **)lua_touserdata(L, 1);
   dd_array<OOBoundingBox> boxes;
@@ -333,6 +342,8 @@ static int add_oobb(lua_State *L) {
   // set oobb array in agent ddBody
   if (boxes.isValid()) {
     ag->body.oobbs = std::move(boxes);
+    
+    // update current agent's bounding box
   }
 
   // return bool flag on sucess
@@ -341,12 +352,10 @@ static int add_oobb(lua_State *L) {
 }
 
 // ddAgent library
-static const struct luaL_Reg agent_m2[] = {{"add_mesh", add_mesh},
-                                           {"__gc", ddAgent_gc},
-                                           {"set_skeleton", set_skeleton},
-                                           {"add_animation", add_animation},
-                                           {"add_oobb", add_oobb},
-                                           {NULL, NULL}};
+static const struct luaL_Reg agent_m2[] = {
+    {"add_mesh", add_mesh},         {"__gc", ddAgent_gc},
+    {"set_skeleton", set_skeleton}, {"add_animation", add_animation},
+    {"add_oobb", add_oobb},         {NULL, NULL}};
 
 static const struct luaL_Reg agent_lib[] = {{"new", new_ddAgent}, {NULL, NULL}};
 

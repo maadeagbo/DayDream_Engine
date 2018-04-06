@@ -1249,10 +1249,10 @@ float sample_depth_buffer(const ddBufferType type, const int pos_x,
       POW2_VERIFY_MSG(false, "Invalid out_buffer <%u>", (unsigned)type);
       break;
   }
-	// get depth
-	GLfloat _z = 0.f;
-	glReadPixels(pos_x, pos_y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &_z);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  // get depth
+  GLfloat _z = 0.f;
+  glReadPixels(pos_x, pos_y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &_z);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
   return _z;
 }

@@ -376,24 +376,24 @@ bool ddSceneManager::ray_bbox_intersect(const glm::vec3 origin,
     // get bounding box
     ddBodyFuncs::AABB bbox = ddBodyFuncs::get_aabb(&ag->body);
 
-		const double epsilon = 0.0000000001f;
+    const double epsilon = 0.0000000001f;
 
     // uses slab method of intersection (Kay and Kayjia siggraph)
     // furthest near t vs closest far t (t = time to intersect)
     double t_min = std::numeric_limits<double>::lowest();
     double t_max = std::numeric_limits<double>::max();
 
-		// vectors from origin of ray to bbox corners
-		const glm::vec3 min_d = bbox.min - origin;
-		const glm::vec3 max_d = bbox.max - origin;
+    // vectors from origin of ray to bbox corners
+    const glm::vec3 min_d = bbox.min - origin;
+    const glm::vec3 max_d = bbox.max - origin;
 
-		// inverse of direction and abs direction
-		const glm::vec3 inv_dir = 1.f / dir;
-		const glm::vec3 abs_dir = glm::abs(dir);
+    // inverse of direction and abs direction
+    const glm::vec3 inv_dir = 1.f / dir;
+    const glm::vec3 abs_dir = glm::abs(dir);
 
     // check x (intersection of x-component)
     if (abs_dir.x > epsilon) {
-			const double t1 = (min_d.x) * inv_dir.x;
+      const double t1 = (min_d.x) * inv_dir.x;
       const double t2 = (max_d.x) * inv_dir.x;
 
       t_min = std::max(t_min, std::min(t1, t2));
@@ -401,7 +401,7 @@ bool ddSceneManager::ray_bbox_intersect(const glm::vec3 origin,
     }
     // check y (intersection of y-component)
     if (abs_dir.y > epsilon) {
-			const double t1 = (min_d.y) * inv_dir.y;
+      const double t1 = (min_d.y) * inv_dir.y;
       const double t2 = (max_d.y) * inv_dir.y;
 
       t_min = std::max(t_min, std::min(t1, t2));
@@ -409,7 +409,7 @@ bool ddSceneManager::ray_bbox_intersect(const glm::vec3 origin,
     }
     // check z (intersection of z-component)
     if (abs_dir.z > epsilon) {
-			const double t1 = (min_d.z) * inv_dir.z;
+      const double t1 = (min_d.z) * inv_dir.z;
       const double t2 = (max_d.z) * inv_dir.z;
 
       t_min = std::max(t_min, std::min(t1, t2));

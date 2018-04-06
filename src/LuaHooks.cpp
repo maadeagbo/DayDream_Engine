@@ -693,9 +693,9 @@ void push_ivec3_to_lua(lua_State *L, const int64_t x, const int64_t y,
   // set fields
   lua_pushinteger(L, x);
   lua_setfield(L, -2, "x");
-	lua_pushinteger(L, y);
+  lua_pushinteger(L, y);
   lua_setfield(L, -2, "y");
-	lua_pushinteger(L, z);
+  lua_pushinteger(L, z);
   lua_setfield(L, -2, "z");
 }
 
