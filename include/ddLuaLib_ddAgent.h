@@ -319,8 +319,16 @@ ddBodyFuncs::AABB oobb_to_aabb(dd_array<OOBoundingBox>& boxes) {
   ddBodyFuncs::AABB out;
 
   // 1st vertex in 1st oobb gets set to min & max
-  // per oobb: update output aabb
-  
+  out.min = boxes[0].corners[0];
+  out.max = boxes[0].corners[0];
+
+  // per oobb: update output aabb to set min & max
+  DD_FOREACH(OOBoundingBox, box, boxes) {
+    for(unsigned i = 0; i < 8; i++) {
+      out.update(box.ptr->corners[i]);
+    }
+  }
+
   return out;
 }
 
@@ -344,6 +352,8 @@ static int add_oobb(lua_State *L) {
     ag->body.oobbs = std::move(boxes);
     
     // update current agent's bounding box
+    ddBodyFuncs::AABB new_aabb = oobb_to_aabb(ag->body.oobbs);
+    ddBodyFuncs::update_aabb(&ag->body, new_aabb);
   }
 
   // return bool flag on sucess
