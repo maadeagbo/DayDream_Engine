@@ -36,7 +36,7 @@ do
   function gen_bbox_string( c1, c2, c3, c4, c5, c6, c7, c8, jnt_id )
     out_str = {}
     -- write begin tag
-    out_str[#out_str + 1] = "<bbox>"
+    out_str[#out_str + 1] = "<box>"
 
     -- joint id
     out_str[#out_str + 1] = string.format("j %d", jnt_id)
@@ -58,7 +58,7 @@ do
     out_str[#out_str + 1] = string.format("v %.3f %.3f %.3f", c8.x, c8.y, c8.z)
 
     -- write end tag
-    out_str[#out_str + 1] = "</bbox>\n"
+    out_str[#out_str + 1] = "</box>\n"
 
     -- return string
     return table.concat( out_str, "\n" )

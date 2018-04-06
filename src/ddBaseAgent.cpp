@@ -235,7 +235,7 @@ int set_val(lua_State* L) {
 }
 
 static int anim_to_string(lua_State* L) {
-  ddAnimState* a_state = *check_ddAnimState(L);
+  //ddAnimState* a_state = *check_ddAnimState(L);
 
   // print ddAnimState information
 

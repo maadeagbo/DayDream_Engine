@@ -16,17 +16,21 @@ struct ddBody {
    */
   btGeneric6DofSpring2Constraint *bt_constraint = nullptr;
   /**
-* \brief Parent object
-*/
+   * \brief Parent object
+   */
   size_t parent = 0;
   /**
-* \brief Parent-child object offset
-*/
+   * \brief Parent-child object offset
+   */
   glm::vec3 offset;
   /**
-* \brief Modify object scale (and affect physics using btCollisionShape)
-*/
+   * \brief Modify object scale (and affect physics using btCollisionShape)
+   */
   glm::vec3 scale = glm::vec3(1.f);
+  /**
+   * \brief Finer bounding box approximation structure
+   */
+  dd_array<OOBoundingBox> oobbs;
 };
 
 /** \brief Interace for bullet physics transforms */

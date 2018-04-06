@@ -4,6 +4,7 @@
 #include "ddAssetManager.h"
 #include "ddSceneManager.h"
 #include "ddTerminal.h"
+#include "ddImport_Model.h"
 
 const unsigned ddAgent_ptr_size = sizeof(ddAgent *);
 const unsigned ddAnimState_ptr_size = sizeof(ddAnimState *);
@@ -314,11 +315,37 @@ int add_animation(lua_State *L) {
   return 1;
 }
 
+static int add_oobb(lua_State *L) {
+  ddAgent *ag = *(ddAgent **)lua_touserdata(L, 1);
+  dd_array<OOBoundingBox> boxes;
+
+  // open and parse .ddx file
+  int top = lua_gettop(L);
+  if (top == 2) {
+    const char *str = luaL_checkstring(L, 2);
+    boxes = load_ddx(str);
+  } else {
+    ddTerminal::post("[error]ddAgent::add_oobb::invalid arguments provided");
+    lua_pushboolean(L, false);
+    return 1;
+  }
+
+  // set oobb array in agent ddBody
+  if (boxes.isValid()) {
+    ag->body.oobbs = std::move(boxes);
+  }
+
+  // return bool flag on sucess
+  lua_pushboolean(L, true);
+  return 1;
+}
+
 // ddAgent library
 static const struct luaL_Reg agent_m2[] = {{"add_mesh", add_mesh},
                                            {"__gc", ddAgent_gc},
                                            {"set_skeleton", set_skeleton},
                                            {"add_animation", add_animation},
+                                           {"add_oobb", add_oobb},
                                            {NULL, NULL}};
 
 static const struct luaL_Reg agent_lib[] = {{"new", new_ddAgent}, {NULL, NULL}};

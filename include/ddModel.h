@@ -78,6 +78,12 @@ struct BoundingBox {
   void SetLineBuffer();
 };
 
+/** \brief Object-oriented bounding box */
+struct OOBoundingBox {
+  glm::vec3 corners[8];
+  int joint_idx = -1;
+};
+
 // Useful glm functions
 glm::vec4 getVec4f(const char* str);
 

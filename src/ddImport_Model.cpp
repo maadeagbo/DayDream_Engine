@@ -534,13 +534,22 @@ ddTex2D *create_tex2D(const char *path, const char *img_id) {
   return new_tex;
 }
 
-dd_array<BoundingBox> load_ddx(const char *path, const size_t agent_id) {
+dd_array<OOBoundingBox> load_ddx(const char *path) {
   /// \brief Lambda to get int from string
-  auto getInt = [](const char *str) {
+  auto get_int = [](const char *str) {
     return (int)strtol(str, nullptr, 10);
   };
 
-  dd_array<BoundingBox> bboxes;
+  dd_array<OOBoundingBox> bboxes;
+  int b_idx = -1;
+  unsigned v_idx = 0;
+
+  // check that path is .ddx
+  cbuff<512> path_check(path);
+  if (!path_check.contains(".ddx")) {
+    ddTerminal::f_post("[error]Invalid ddx file: %s", path);
+    return bboxes;
+  }
 
   // attempt to open file
   ddIO _io;
@@ -553,17 +562,23 @@ dd_array<BoundingBox> load_ddx(const char *path, const size_t agent_id) {
       line = _io.readNextLine();
 
       // get value & resize output array
+      bboxes.resize(get_int(line));
     }
     if (strcmp("<box>", line) == 0) {
       // update current box index
+      b_idx++;
       // reset vertex/corner counter
+      v_idx = 0;
     }
     if (*line == 'j') {  // joint id
-      // set joint index for box 
+      // set joint index for box
+      bboxes[b_idx].joint_idx = get_int(&line[2]);
     }
     if (*line == 'v') {  // vertex/corner of box
       // set vertex/corner
+      bboxes[b_idx].corners[v_idx] = getVec3f(&line[2]);
       // update counter
+      v_idx++;
     }
     line = _io.readNextLine();
   }
