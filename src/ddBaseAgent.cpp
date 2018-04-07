@@ -100,7 +100,8 @@ void rotate(ddBody* bod, const float yaw, const float pitch, const float roll) {
 void update_scale(ddBody* bod, const glm::vec3& _scale) {
   bod->scale = _scale;
 
-  glm::vec3 s_val = bod->oobbs.isValid() ? _scale * bod->oobbs_scale : _scale;
+  glm::vec3 s_val = bod->oobb_data.oobbs.isValid() ? 
+		_scale * bod->oobbs_scale : _scale;
   // set scale in collision shape for physics
   bod->bt_bod->getCollisionShape()->setLocalScaling(
       btVector3((btScalar)s_val.x, (btScalar)s_val.y, (btScalar)s_val.z));
@@ -133,7 +134,9 @@ void update_aabb(ddBody* bod, AABB& bbox) {
   // This method relates the position & scale to that reference box, then sets
 
   // get the new center position
-  glm::vec3 center = (bbox.min + bbox.max) / 2.f;
+	glm::vec3 base = (bod->oobb_data.max_vert + bod->oobb_data.min_vert) * 0.5f;
+  glm::vec3 center = ((bbox.max + bbox.min) * 0.5f) - base;
+	center += bod->oobb_offset;
 
   // get the new scale in the x,y,z dimension
   bod->oobbs_scale = (bbox.max - bbox.min);
@@ -142,8 +145,12 @@ void update_aabb(ddBody* bod, AABB& bbox) {
   btCompoundShape* _shape =
       static_cast<btCompoundShape*>(bod->bt_bod->getCollisionShape());
   btQuaternion q = bod->bt_bod->getWorldTransform().getRotation();
+
+	// set position
   _shape->updateChildTransform(
       0, btTransform(q, btVector3(center.x, center.y, center.z)));
+	// set scale
+	update_scale(bod, bod->scale);
 }
 
 }  // namespace ddBodyFuncs

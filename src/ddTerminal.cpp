@@ -93,10 +93,10 @@ void ddTerminal::display(const float scr_width, const float scr_height) {
 
     if (filter_ON) {
       // use filter on history
-      filter.Draw("Filter (\"incl,-excl\")");
+      filter.Draw("Filter mode");
     } else {
       // read in commands
-      if (ImGui::InputText("Input ($<command>)", cmd_input, DEFAULT_ENTRY_SIZE,
+      if (ImGui::InputText("Input mode", cmd_input, DEFAULT_ENTRY_SIZE,
                            ImGuiInputTextFlags_EnterReturnsTrue |
                                ImGuiInputTextFlags_CallbackCompletion |
                                ImGuiInputTextFlags_CallbackHistory,

@@ -349,10 +349,14 @@ static int add_oobb(lua_State *L) {
 
   // set oobb array in agent ddBody
   if (boxes.isValid()) {
-    ag->body.oobbs = std::move(boxes);
+		ag->body.oobb_data.oobbs = std::move(boxes);
     
-    // update current agent's bounding box
-    ddBodyFuncs::AABB new_aabb = oobb_to_aabb(ag->body.oobbs);
+    // calculate current agent's bounding box min and max
+    ddBodyFuncs::AABB new_aabb = oobb_to_aabb(ag->body.oobb_data.oobbs);
+
+		// set
+		ag->body.oobb_data.max_vert = new_aabb.max;
+		ag->body.oobb_data.min_vert = new_aabb.min;
     ddBodyFuncs::update_aabb(&ag->body, new_aabb);
   }
 
