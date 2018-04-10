@@ -133,24 +133,28 @@ void update_aabb(ddBody* bod, AABB& bbox) {
   // default box is a 1x1x1 cube centered at (0,0,0)
   // This method relates the position & scale to that reference box, then sets
 
-  // get the new center position
-	glm::vec3 base = (bod->oobb_data.max_vert + bod->oobb_data.min_vert) * 0.5f;
-  glm::vec3 center = ((bbox.max + bbox.min) * 0.5f) - base;
+	// get the new scale in the x,y,z dimension
+	bod->oobbs_scale = glm::abs(bbox.max - bbox.min);
+
+	// get the new center position
+	glm::vec3 center = (bod->oobbs_scale * 0.5f) + bbox.min;
 	center += bod->oobb_offset;
 
-  // get the new scale in the x,y,z dimension
-  bod->oobbs_scale = (bbox.max - bbox.min);
+	// get compound shape and rotation
+	btCompoundShape* _shape =
+		static_cast<btCompoundShape*>(bod->bt_bod->getCollisionShape());
+	btQuaternion q = bod->bt_bod->getWorldTransform().getRotation();
 
-  // update bullet's AABB object's position
-  btCompoundShape* _shape =
-      static_cast<btCompoundShape*>(bod->bt_bod->getCollisionShape());
-  btQuaternion q = bod->bt_bod->getWorldTransform().getRotation();
+	// un-transform bbox
+	_shape->updateChildTransform(
+		0, btTransform(btQuaternion(0, 0, 0), btVector3(0, 0, 0)));
 
-	// set position
-  _shape->updateChildTransform(
-      0, btTransform(q, btVector3(center.x, center.y, center.z)));
 	// set scale
 	update_scale(bod, bod->scale);
+
+	// set final rotation & translation
+	_shape->updateChildTransform(
+		0, btTransform(q, btVector3(center.x, center.y, center.z)));
 }
 
 }  // namespace ddBodyFuncs
