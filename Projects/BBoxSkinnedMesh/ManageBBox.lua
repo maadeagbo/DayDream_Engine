@@ -64,6 +64,41 @@ do
     return table.concat( out_str, "\n" )
   end
 
+  --- Creates a table of strings for bbox output 
+  function gen_bbox_string2( oobbox, jnt_idx, mr_vec )
+    out_str = {}
+    -- write begin tag
+    out_str[#out_str + 1] = "<box>"
+
+    -- joint id
+    out_str[#out_str + 1] = string.format("j %d", jnt_idx)
+
+    -- mirror flag
+    m_flag = (mr_vec[1] < 0 or mr_vec[2] < 0 or mr_vec[3] < 0) and 1 or 0
+    out_str[#out_str + 1] = string.format("m %d", m_flag)
+    
+    -- pos
+    _p = oobbox.pos
+    out_str[#out_str + 1] = string.format("p %.3f %.3f %.3f", _p.x, _p.y, _p.z)
+    
+    -- rotation
+    _r = oobbox.rot
+    out_str[#out_str + 1] = string.format("r %.3f %.3f %.3f", _r.x, _r.y, _r.z)
+    
+    -- scale
+    _s = oobbox.scale
+    _s.x = mr_vec[1] * _s.x
+    _s.y = mr_vec[2] * _s.y
+    _s.z = mr_vec[3] * _s.z
+    out_str[#out_str + 1] = string.format("s %.3f %.3f %.3f", _s.x, _s.y, _s.z)
+
+    -- write end tag
+    out_str[#out_str + 1] = "</box>\n"
+
+    -- return string
+    return table.concat( out_str, "\n" )
+  end
+
   function write_bbox_file( file_name )
     name = string.format("%s/BBoxSkinnedMesh/output/%s.ddx", PROJECT_DIR, 
                          file_name)
@@ -85,19 +120,25 @@ do
     -- for each box:
     for i=1,#created_bboxs do
       -- generate the 8 vertices that make up the box
-      c1, c2, c3, c4, c5, c6, c7, c8 = created_bboxs[i]:get_corners(false)
+      --c1, c2, c3, c4, c5, c6, c7, c8 = created_bboxs[i]:get_corners(false)
 
       -- get generated string
-      str = gen_bbox_string(c1, c2, c3, c4, c5, c6, c7, c8, 
-        created_bboxs[i].jnts.x)
+      --str = gen_bbox_string(c1, c2, c3, c4, c5, c6, c7, c8, created_bboxs[i].jnts.x)
+      str = gen_bbox_string2(created_bboxs[i], created_bboxs[i].jnts.x, {1,1,1})
       file:write(str)
 
       -- repeat if mirrored box
       mirror = created_bboxs[i].mirror
       if mirror.x ~= 0 or mirror.y ~= 0 or mirror.z ~= 0 then
-        c1, c2, c3, c4, c5, c6, c7, c8 = created_bboxs[i]:get_corners(true)
-        str = gen_bbox_string(c1, c2, c3, c4, c5, c6, c7, c8, 
-          created_bboxs[i].jnts.y)
+        -- create mirror vector
+        m_vec = {
+          mirror.x == 0 and 1 or -1,
+          mirror.y == 0 and 1 or -1,
+          mirror.z == 0 and 1 or -1,
+        }
+        --c1, c2, c3, c4, c5, c6, c7, c8 = created_bboxs[i]:get_corners(true)
+        --str = gen_bbox_string(c1, c2, c3, c4, c5, c6, c7, c8, created_bboxs[i].jnts.y)
+        str = gen_bbox_string2(created_bboxs[i], created_bboxs[i].jnts.y, m_vec)
         file:write(str)
       end
     end
@@ -130,9 +171,8 @@ do
       idx = #created_bboxs + 1
       created_bboxs[idx] = ddBBox.new()
       created_bboxs[idx].pos = {0.0, 0.0, 0.0}
-      created_bboxs[idx].scale = {0.5, 0.5, 0.5}
-      created_bboxs[idx].jnts = {-2, -2}
-
+      created_bboxs[idx].scale = {1.0, 1.0, 1.0}
+      created_bboxs[idx].jnts = {-1, -1}
       --mirror = created_bboxs[idx].mirror
       --ddLib.print("Mirror: ", mirror.x, ", ", mirror.y, ", ", mirror.z)
     elseif event == "export_bbox" then
