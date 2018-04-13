@@ -203,9 +203,9 @@ void render_quad();
 void render_split_quad(bool leftside);
 // Render cube map
 void render_cube();
-// Render line segment
-// TODO: change shader to use SSBO for opengl
-// void render_line_segment(dd_array<glm::vec4>& points3d
+// Render primitive w/ position data (optional UV and Normal data)
+void render_primitive(const unsigned num_verts, const void* p_data,
+	const void* uv_data = nullptr, const void* n_data = nullptr);
 
 //*****************************************************************************
 

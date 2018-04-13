@@ -126,6 +126,10 @@ GLuint vr_vao[2] = {0, 0}, vr_vbo[2] = {0, 0};
 // cube map
 GLuint cube_vao = 0, cube_vbo = 0;
 
+// primitive render buffers
+GLuint prim_vao = 0;
+ddStorageBufferData prim_ssbo;
+
 // line render
 // GLuint line_vao = 0, line_vbo = 0;
 
@@ -856,6 +860,10 @@ void render_cube() {
   glBindVertexArray(cube_vao);
   glDrawArrays(GL_TRIANGLES, 0, 36);
   glBindVertexArray(0);
+}
+
+void render_primitive(const unsigned num_verts, const void * p_data, const void * uv_data, const void * n_data) {
+	//
 }
 
 void create_gbuffer(const int width, const int height) {
