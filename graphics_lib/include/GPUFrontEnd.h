@@ -229,7 +229,7 @@ void bind_framebuffer(const ddBufferType type, const bool color_shadow = true);
 // Bind textures associated w/ framebuffer
 // loc = texture location bound to shader
 // xtra_param -> cube map = CubeMapFaces enum, filter = color(0) or shadow(1),
-// shadow = lighting pass(0) or other(1)
+// shadow = lighting pass(0) or other(1), particle = color(0) or other(1)
 void bind_pass_texture(const ddBufferType type, const unsigned loc = 0,
                        const unsigned xtra_param = 0);
 // Bind framebuffers and copy depth from in -> out

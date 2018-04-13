@@ -3,7 +3,7 @@ load_engine = require "scripts.EngineInit"
 load_enums = require "scripts.EngineEnums"
 
 -- Limit of 10 different projects at once
-local worlds = { "BBoxSkinnedMesh", "camera_tests", "dummy", "kinect" }
+local worlds = { "BBoxSkinnedMesh", "smile_vis", "camera_tests", "dummy", "kinect" }
 
 function generate_levels( event, args, num_args )
 	-- creates a list of found level scripts
