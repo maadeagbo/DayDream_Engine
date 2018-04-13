@@ -7,12 +7,12 @@
 
 /** \brief Container object-oriented bounding boxes */
 struct OOBBData {
-	/** \brief bounding boxes */
-	dd_array<OOBoundingBox> oobbs;
-	/** \brief min vetex */
-	glm::vec3 min_vert;
-	/** \brief max vetex */
-	glm::vec3 max_vert;
+  /** \brief bounding boxes */
+  dd_array<OOBoundingBox> oobbs;
+  /** \brief min vetex */
+  glm::vec3 min_vert;
+  /** \brief max vetex */
+  glm::vec3 max_vert;
 };
 
 /** \brief Container for transform information */
@@ -25,9 +25,9 @@ struct ddBody {
    * \brief Constraint for parenting
    */
   btGeneric6DofSpring2Constraint *bt_constraint = nullptr;
-	/**
-   * \brief Bullet physics shape pointer
-   */
+  /**
+* \brief Bullet physics shape pointer
+*/
   btCompoundShape *bt_shape = nullptr;
   /**
    * \brief Parent object
@@ -45,10 +45,10 @@ struct ddBody {
    * \brief DO NOT TOUCH. Set programmatically by engine
    */
   glm::vec3 oobbs_scale = glm::vec3(1.f);
-	/**
-	* \brief Sets position offset to the bounding box approximation
-	*/
-	glm::vec3 oobb_offset = glm::vec3(0.f);
+  /**
+  * \brief Sets position offset to the bounding box approximation
+  */
+  glm::vec3 oobb_offset = glm::vec3(0.f);
   /**
    * \brief Agent bounding box approximation structure
    */

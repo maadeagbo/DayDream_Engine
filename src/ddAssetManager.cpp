@@ -223,21 +223,20 @@ bool ddAssets::add_body(ddAgent *agent, ddModelData *mdata, glm::vec3 pos,
 
   btCollisionShape *bt_shape = nullptr;
   if (rb_type == RBType::SPHERE) {
-		float diameter = glm::length(glm::vec3(h_width, h_height, h_depth));
-		// bt_shape = new btSphereShape(diameter * 0.5f);
-		btCompoundShape *bt_comp = new btCompoundShape();
-		bt_comp->addChildShape(
-			btTransform(btQuaternion(0, 0, 0), btVector3(0, 0, 0)),
-			new btSphereShape(diameter * 0.5f));
-		bt_shape = bt_comp;
-	}
-	else {
-		btCompoundShape *bt_comp = new btCompoundShape();
-		bt_comp->addChildShape(
-			btTransform(btQuaternion(0, 0, 0), btVector3(0, 0, 0)),
-			new btBoxShape(btVector3(btScalar(h_width), btScalar(h_height),
-															 btScalar(h_depth))));
-		bt_shape = bt_comp;
+    float diameter = glm::length(glm::vec3(h_width, h_height, h_depth));
+    // bt_shape = new btSphereShape(diameter * 0.5f);
+    btCompoundShape *bt_comp = new btCompoundShape();
+    bt_comp->addChildShape(
+        btTransform(btQuaternion(0, 0, 0), btVector3(0, 0, 0)),
+        new btSphereShape(diameter * 0.5f));
+    bt_shape = bt_comp;
+  } else {
+    btCompoundShape *bt_comp = new btCompoundShape();
+    bt_comp->addChildShape(
+        btTransform(btQuaternion(0, 0, 0), btVector3(0, 0, 0)),
+        new btBoxShape(btVector3(btScalar(h_width), btScalar(h_height),
+                                 btScalar(h_depth))));
+    bt_shape = bt_comp;
   }
 
   // set up rigid body constructor

@@ -127,8 +127,11 @@ GLuint vr_vao[2] = {0, 0}, vr_vbo[2] = {0, 0};
 GLuint cube_vao = 0, cube_vbo = 0;
 
 // primitive render buffers
-GLuint prim_vao = 0;
-ddStorageBufferData prim_ssbo;
+unsigned prim_vert_max = 0;
+ddVAOData *prim_vao;
+ddStorageBufferData *prim_pos;
+ddStorageBufferData *prim_uv;
+ddStorageBufferData *prim_norm;
 
 // line render
 // GLuint line_vao = 0, line_vbo = 0;
@@ -681,7 +684,7 @@ void set_instance_buffer_contents(const ddInstBufferData *ibuff_ptr,
 
 void set_storage_buffer_contents(const ddStorageBufferData *sbuff_ptr,
                                  const unsigned byte_size,
-                                 const unsigned offset, void *data) {
+                                 const unsigned offset, const void *data) {
   POW2_VERIFY_MSG(sbuff_ptr != nullptr, "Storage buffer is null", 0);
 
   // Fill in shader storage buffer object
@@ -862,8 +865,53 @@ void render_cube() {
   glBindVertexArray(0);
 }
 
-void render_primitive(const unsigned num_verts, const void * p_data, const void * uv_data, const void * n_data) {
-	//
+void render_primitive(const unsigned num_verts, const void *p_data,
+                      const void *uv_data, const void *n_data) {
+  // create vertex array object if doesn't exist
+  if (!prim_vao) create_vao(prim_vao);
+
+  // check if primitive ssbo is large enough for render
+  if (num_verts > prim_vert_max) {
+    prim_vert_max = num_verts;
+
+    // delete old ssbo buffers
+    destroy_storage_buffer(prim_pos);
+    destroy_storage_buffer(prim_norm);
+    destroy_storage_buffer(prim_uv);
+
+    // create new appropiately-sized ssbo buffers
+    create_storage_buffer(prim_pos, prim_vert_max * sizeof(float) * 3);
+    create_storage_buffer(prim_norm, prim_vert_max * sizeof(float) * 3);
+    create_storage_buffer(prim_uv, prim_vert_max * sizeof(float) * 2);
+
+    // bind position buffer to vao
+    bind_storage_buffer_atrribute(prim_vao, prim_pos, ddAttribPrimitive::FLOAT,
+                                  0, 3, 3 * sizeof(float), 0);
+    // bind normals buffer to vao
+    bind_storage_buffer_atrribute(prim_vao, prim_norm, ddAttribPrimitive::FLOAT,
+                                  1, 3, 3 * sizeof(float), 0);
+    // bind uv buffer to vao
+    bind_storage_buffer_atrribute(prim_vao, prim_uv, ddAttribPrimitive::FLOAT,
+                                  2, 2, 2 * sizeof(float), 0);
+  }
+  // refill position buffer w/ data
+  set_storage_buffer_contents(prim_pos, num_verts * 3 * sizeof(float), 0,
+                              p_data);
+  // refill normal buffer w/ data
+  if (n_data) {
+    set_storage_buffer_contents(prim_norm, num_verts * 3 * sizeof(float), 0,
+                                n_data);
+  }
+  // refill uv texture coordinte buffer w/ data
+  if (uv_data) {
+    set_storage_buffer_contents(prim_uv, num_verts * 2 * sizeof(float), 0,
+                                uv_data);
+  }
+
+  // draw
+  glBindVertexArray(prim_vao->vao_handle);
+  glDrawArrays(GL_TRIANGLES, 0, num_verts / 3);
+  glBindVertexArray(0);
 }
 
 void create_gbuffer(const int width, const int height) {

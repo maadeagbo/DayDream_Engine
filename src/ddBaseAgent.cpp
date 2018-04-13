@@ -100,8 +100,8 @@ void rotate(ddBody* bod, const float yaw, const float pitch, const float roll) {
 void update_scale(ddBody* bod, const glm::vec3& _scale) {
   bod->scale = _scale;
 
-  glm::vec3 s_val = bod->oobb_data.oobbs.isValid() ? 
-		_scale * bod->oobbs_scale : _scale;
+  glm::vec3 s_val =
+      bod->oobb_data.oobbs.isValid() ? _scale * bod->oobbs_scale : _scale;
   // set scale in collision shape for physics
   bod->bt_bod->getCollisionShape()->setLocalScaling(
       btVector3((btScalar)s_val.x, (btScalar)s_val.y, (btScalar)s_val.z));
@@ -133,28 +133,28 @@ void update_aabb(ddBody* bod, AABB& bbox) {
   // default box is a 1x1x1 cube centered at (0,0,0)
   // This method relates the position & scale to that reference box, then sets
 
-	// get the new scale in the x,y,z dimension
-	bod->oobbs_scale = glm::abs(bbox.max - bbox.min);
+  // get the new scale in the x,y,z dimension
+  bod->oobbs_scale = glm::abs(bbox.max - bbox.min);
 
-	// get the new center position
-	glm::vec3 center = (bod->oobbs_scale * 0.5f) + bbox.min;
-	center += bod->oobb_offset;
+  // get the new center position
+  glm::vec3 center = (bod->oobbs_scale * 0.5f) + bbox.min;
+  center += bod->oobb_offset;
 
-	// get compound shape and rotation
-	btCompoundShape* _shape =
-		static_cast<btCompoundShape*>(bod->bt_bod->getCollisionShape());
-	btQuaternion q = bod->bt_bod->getWorldTransform().getRotation();
+  // get compound shape and rotation
+  btCompoundShape* _shape =
+      static_cast<btCompoundShape*>(bod->bt_bod->getCollisionShape());
+  btQuaternion q = bod->bt_bod->getWorldTransform().getRotation();
 
-	// un-transform bbox
-	_shape->updateChildTransform(
-		0, btTransform(btQuaternion(0, 0, 0), btVector3(0, 0, 0)));
+  // un-transform bbox
+  _shape->updateChildTransform(
+      0, btTransform(btQuaternion(0, 0, 0), btVector3(0, 0, 0)));
 
-	// set scale
-	update_scale(bod, bod->scale);
+  // set scale
+  update_scale(bod, bod->scale);
 
-	// set final rotation & translation
-	_shape->updateChildTransform(
-		0, btTransform(q, btVector3(center.x, center.y, center.z)));
+  // set final rotation & translation
+  _shape->updateChildTransform(
+      0, btTransform(q, btVector3(center.x, center.y, center.z)));
 }
 
 }  // namespace ddBodyFuncs

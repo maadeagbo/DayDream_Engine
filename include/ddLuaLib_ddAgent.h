@@ -315,7 +315,7 @@ int add_animation(lua_State *L) {
   return 1;
 }
 
-ddBodyFuncs::AABB oobb_to_aabb(dd_array<OOBoundingBox>& boxes) {
+ddBodyFuncs::AABB oobb_to_aabb(dd_array<OOBoundingBox> &boxes) {
   ddBodyFuncs::AABB out;
 
   // 1st vertex in 1st oobb gets set to min & max
@@ -324,7 +324,7 @@ ddBodyFuncs::AABB oobb_to_aabb(dd_array<OOBoundingBox>& boxes) {
 
   // per oobb: update output aabb to set min & max
   DD_FOREACH(OOBoundingBox, box, boxes) {
-    for(unsigned i = 0; i < 8; i++) {
+    for (unsigned i = 0; i < 8; i++) {
       out.update(box.ptr->corners[i]);
     }
   }
@@ -349,14 +349,14 @@ static int add_oobb(lua_State *L) {
 
   // set oobb array in agent ddBody
   if (boxes.isValid()) {
-		ag->body.oobb_data.oobbs = std::move(boxes);
-    
+    ag->body.oobb_data.oobbs = std::move(boxes);
+
     // calculate current agent's bounding box min and max
     ddBodyFuncs::AABB new_aabb = oobb_to_aabb(ag->body.oobb_data.oobbs);
 
-		// set
-		ag->body.oobb_data.max_vert = new_aabb.max;
-		ag->body.oobb_data.min_vert = new_aabb.min;
+    // set
+    ag->body.oobb_data.max_vert = new_aabb.max;
+    ag->body.oobb_data.min_vert = new_aabb.min;
     ddBodyFuncs::update_aabb(&ag->body, new_aabb);
   }
 

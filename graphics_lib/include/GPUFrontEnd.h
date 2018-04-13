@@ -182,7 +182,7 @@ void set_instance_buffer_contents(const ddInstBufferData *ibuff_ptr,
 // Fill in dynamically allocated (on gpu) shader storage buffer
 void set_storage_buffer_contents(const ddStorageBufferData *sbuff_ptr,
                                  const unsigned byte_size,
-                                 const unsigned offset, void *data);
+                                 const unsigned offset, const void *data);
 // Bind parts of ssbo to VAO object
 void bind_storage_buffer_atrribute(const ddVAOData *vao,
                                    const ddStorageBufferData *sbuff_ptr,
@@ -204,8 +204,9 @@ void render_split_quad(bool leftside);
 // Render cube map
 void render_cube();
 // Render primitive w/ position data (optional UV and Normal data)
-void render_primitive(const unsigned num_verts, const void* p_data,
-	const void* uv_data = nullptr, const void* n_data = nullptr);
+void render_primitive(const unsigned num_verts, const void *p_data,
+                      const void *uv_data = nullptr,
+                      const void *n_data = nullptr);
 
 //*****************************************************************************
 
