@@ -82,16 +82,10 @@ void pop_task(ddPTask *&pt) {
 
 void process_queue() {
   ddPTask *pt = nullptr;
-  unsigned tasks_on_q = 0;
+  const unsigned tasks_on_q = num_tasks;
   const float ftime = ddTime::get_avg_frame_time();
 
   // loop thru available tasks
-  if (tail < head) {
-    tasks_on_q = (PARTICLE_Q_MAX - head) + tail;
-  } else {
-    tasks_on_q = tail - head;
-  }
-
   for (unsigned i = 0; i < tasks_on_q; i++) {
     // get next task
     pop_task(pt);

@@ -910,7 +910,7 @@ void render_primitive(const unsigned num_verts, const void *p_data,
 
   // draw
   glBindVertexArray(prim_vao->vao_handle);
-  glDrawArrays(GL_TRIANGLES, 0, num_verts / 3);
+  glDrawArrays(GL_TRIANGLES, 0, num_verts);
   glBindVertexArray(0);
 }
 
