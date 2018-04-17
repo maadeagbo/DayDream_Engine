@@ -43,7 +43,7 @@ struct ddLightBuffer {
 };
 
 struct ddParticleBuffer {
-  GLuint particle_fbo, depth_buf, color_tex, xtra_tex;
+  GLuint particle_fbo, depth_buf, color_tex, pxtra_tex;
 };
 
 struct ddCubeMapBuffer {
@@ -1022,7 +1022,7 @@ void create_pbuffer(const int width, const int height) {
 
   // color texture2
   create_texture2D(GL_RGBA16F, p_buff.color_tex, width, height);
-  create_texture2D(GL_RGBA16F, p_buff.xtra_tex, width, height);
+  create_texture2D(GL_RGBA16F, p_buff.pxtra_tex, width, height);
 
   // attach image and depth to framebuffer
   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
@@ -1030,7 +1030,7 @@ void create_pbuffer(const int width, const int height) {
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
                          p_buff.color_tex, 0);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D,
-                         p_buff.xtra_tex, 0);
+                         p_buff.pxtra_tex, 0);
 
   GLenum drawBuffers[] = {GL_NONE, GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
   glDrawBuffers(3, drawBuffers);
@@ -1191,7 +1191,7 @@ void bind_pass_texture(const ddBufferType type, const unsigned loc,
       } else {
         // color (shader location 0)
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, p_buff.xtra_tex);
+        glBindTexture(GL_TEXTURE_2D, p_buff.pxtra_tex);
       }
       break;
     case ddBufferType::CUBE:

@@ -137,7 +137,7 @@ void main() {
 			finalColor, particleColor, bgTest * alphaTest * particleColor.a);
 		// additive
 		//FragColor = particleColor;
-		//FragColor = mix(particleColor, finalColor, test);
+		//FragColor = mix(particleColor, finalColor, 0);
 	}
 	else {
 		if (output2D) { // output to FragColor2
