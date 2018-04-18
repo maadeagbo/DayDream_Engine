@@ -276,6 +276,7 @@ void initialize(const unsigned width, const unsigned height) {
   ddGPUFrontEnd::create_gbuffer(scr_width, scr_height);
   ddGPUFrontEnd::create_lbuffer(scr_width, scr_height);
   ddGPUFrontEnd::create_pbuffer(scr_width, scr_height);
+  ddGPUFrontEnd::create_xbuffer(scr_width, scr_height);
   ddGPUFrontEnd::create_sbuffer(shadow_width, shadow_height);
   ddGPUFrontEnd::create_cbuffer(cube_width, cube_height);
   ddGPUFrontEnd::create_fbuffer(scr_width, scr_height, shadow_width,

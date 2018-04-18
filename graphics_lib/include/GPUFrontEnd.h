@@ -27,6 +27,7 @@ enum class ddBufferType : unsigned {
   SHADOW,
   CUBE,
   FILTER,
+  XTRA,
   DEFAULT,
   NUM_TYPES
 };
@@ -36,6 +37,7 @@ struct ddLightBuffer;
 struct ddParticleBuffer;
 struct ddCubeMapBuffer;
 struct ddFilterBuffer;
+struct ddXtraBuffer;
 
 struct Vertex {
   float position[3] = {0, 0, 0};
@@ -220,6 +222,8 @@ void create_sbuffer(const int width, const int height);
 void create_pbuffer(const int width, const int height);
 // Create cube map frame buffer
 void create_cbuffer(const int width, const int height);
+// Create xtra frame buffer
+void create_xbuffer(const int width, const int height);
 // Create filter image frame buffer
 void create_fbuffer(const int c_width, const int c_height, const int s_width,
                     const int s_height);

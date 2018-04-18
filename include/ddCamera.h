@@ -73,7 +73,7 @@ struct ddCam {
   /**
   * \brief World background color
   */
-  glm::vec4 background_color = glm::vec4(0.f);
+  glm::vec4 background_color = glm::vec4(0.f, 0.f, 0.f, 1.f);
 
   /**
    * \brief Marks instance as active camera

@@ -43,7 +43,7 @@ struct ddLightBuffer {
 };
 
 struct ddParticleBuffer {
-  GLuint particle_fbo, depth_buf, color_tex, pxtra_tex;
+  GLuint particle_fbo, depth_buf, color_tex;
 };
 
 struct ddCubeMapBuffer {
@@ -53,6 +53,10 @@ struct ddCubeMapBuffer {
 
 struct ddFilterBuffer {
   GLuint color_fbo, shadow_fbo, color_tex, shadow_tex;
+};
+
+struct ddXtraBuffer {
+  GLuint xtra_fbo, depth_buf, color_tex;
 };
 
 //*****************************************************************************
@@ -145,6 +149,7 @@ ddLightBuffer l_buff;
 ddShadowBuffer s_buff;
 ddParticleBuffer p_buff;
 ddCubeMapBuffer c_buff;
+ddXtraBuffer x_buff;
 ddFilterBuffer f_buff;
 
 }  // namespace
@@ -1022,18 +1027,15 @@ void create_pbuffer(const int width, const int height) {
 
   // color texture2
   create_texture2D(GL_RGBA16F, p_buff.color_tex, width, height);
-  create_texture2D(GL_RGBA16F, p_buff.pxtra_tex, width, height);
 
   // attach image and depth to framebuffer
   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
                             GL_RENDERBUFFER, p_buff.depth_buf);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
                          p_buff.color_tex, 0);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D,
-                         p_buff.pxtra_tex, 0);
 
-  GLenum drawBuffers[] = {GL_NONE, GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
-  glDrawBuffers(3, drawBuffers);
+  GLenum drawBuffers[] = {GL_NONE, GL_COLOR_ATTACHMENT0};
+  glDrawBuffers(2, drawBuffers);
 
   // check for errors
   GLenum success = glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -1067,6 +1069,34 @@ void create_cbuffer(const int width, const int height) {
   GLenum success = glCheckFramebufferStatus(GL_FRAMEBUFFER);
   POW2_VERIFY_MSG(success == GL_FRAMEBUFFER_COMPLETE,
                   "CBuffer creation failure", 0);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void create_xbuffer(const int width, const int height) {
+  // create and bind fbo
+  glGenFramebuffers(1, &x_buff.xtra_fbo);
+  glBindFramebuffer(GL_FRAMEBUFFER, x_buff.xtra_fbo);
+
+  // create depth/stencil buffer
+  glGenRenderbuffers(1, &x_buff.depth_buf);
+  glBindRenderbuffer(GL_RENDERBUFFER, x_buff.depth_buf);
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
+
+  // color texture
+  create_texture2D(GL_RGBA16F, x_buff.color_tex, width, height);
+
+  // attach image and depth to framebuffer
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
+                            GL_RENDERBUFFER, x_buff.depth_buf);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                         x_buff.color_tex, 0);
+  GLenum drawBuffers[] = {GL_NONE, GL_COLOR_ATTACHMENT0};
+  glDrawBuffers(2, drawBuffers);
+
+  // check for errors
+  GLenum success = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+  POW2_VERIFY_MSG(success == GL_FRAMEBUFFER_COMPLETE,
+                  "LBuffer creation failure", 0);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
@@ -1127,6 +1157,9 @@ void bind_framebuffer(const ddBufferType type, const bool color_shadow) {
     case ddBufferType::PARTICLE:
       glBindFramebuffer(GL_FRAMEBUFFER, p_buff.particle_fbo);
       break;
+    case ddBufferType::XTRA:
+      glBindFramebuffer(GL_FRAMEBUFFER, x_buff.xtra_fbo);
+      break;
     case ddBufferType::CUBE:
       glBindFramebuffer(GL_FRAMEBUFFER, c_buff.cube_fbo);
       break;
@@ -1184,15 +1217,14 @@ void bind_pass_texture(const ddBufferType type, const unsigned loc,
       }
       break;
     case ddBufferType::PARTICLE:
-      if (xtra_param == 0) {
-        // color (shader location 1)
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, p_buff.color_tex);
-      } else {
-        // color (shader location 0)
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, p_buff.pxtra_tex);
-      }
+      // color (shader location 1)
+      glActiveTexture(GL_TEXTURE1);
+      glBindTexture(GL_TEXTURE_2D, p_buff.color_tex);
+      break;
+    case ddBufferType::XTRA:
+      // generic pass 
+      glActiveTexture(GL_TEXTURE0 + loc);
+      glBindTexture(GL_TEXTURE_2D, x_buff.color_tex);
       break;
     case ddBufferType::CUBE:
       // bind framebuffer texture before draw
@@ -1251,6 +1283,9 @@ void blit_depth_buffer(const ddBufferType in_type, const ddBufferType out_type,
     case ddBufferType::PARTICLE:
       glBindFramebuffer(GL_READ_FRAMEBUFFER, p_buff.particle_fbo);
       break;
+    case ddBufferType::XTRA:
+      glBindFramebuffer(GL_READ_FRAMEBUFFER, x_buff.xtra_fbo);
+      break;
     case ddBufferType::CUBE:
       glBindFramebuffer(GL_READ_FRAMEBUFFER, c_buff.cube_fbo);
       break;
@@ -1273,6 +1308,9 @@ void blit_depth_buffer(const ddBufferType in_type, const ddBufferType out_type,
       break;
     case ddBufferType::PARTICLE:
       glBindFramebuffer(GL_DRAW_FRAMEBUFFER, p_buff.particle_fbo);
+      break;
+    case ddBufferType::XTRA:
+      glBindFramebuffer(GL_DRAW_FRAMEBUFFER, x_buff.xtra_fbo);
       break;
     case ddBufferType::CUBE:
       glBindFramebuffer(GL_DRAW_FRAMEBUFFER, c_buff.cube_fbo);
@@ -1303,6 +1341,9 @@ float sample_depth_buffer(const ddBufferType type, const int pos_x,
       break;
     case ddBufferType::PARTICLE:
       glBindFramebuffer(GL_DRAW_FRAMEBUFFER, p_buff.particle_fbo);
+      break;
+    case ddBufferType::XTRA:
+      glBindFramebuffer(GL_DRAW_FRAMEBUFFER, x_buff.xtra_fbo);
       break;
     case ddBufferType::CUBE:
       glBindFramebuffer(GL_DRAW_FRAMEBUFFER, c_buff.cube_fbo);
