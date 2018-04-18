@@ -1222,7 +1222,7 @@ void bind_pass_texture(const ddBufferType type, const unsigned loc,
       glBindTexture(GL_TEXTURE_2D, p_buff.color_tex);
       break;
     case ddBufferType::XTRA:
-      // generic pass 
+      // generic pass
       glActiveTexture(GL_TEXTURE0 + loc);
       glBindTexture(GL_TEXTURE_2D, x_buff.color_tex);
       break;
