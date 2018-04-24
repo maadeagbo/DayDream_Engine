@@ -65,6 +65,18 @@ glm::mat4 ddSceneManager::calc_p_proj_matrix(const ddCam *cam) {
                              cam->n_plane, cam->f_plane);
 }
 
+glm::mat4 ddSceneManager::calc_o_proj_matrix(const ddCam * cam, 
+																						 const float l_side, 
+																						 const float r_side, 
+																						 const float top, 
+																						 const float bottom) {
+	if (!cam) {
+		ddTerminal::f_post("[error] calc_o_proj_matrix::Camera is null");
+		return glm::mat4();
+	}
+	return glm::ortho(l_side, r_side, bottom, top, cam->n_plane, cam->f_plane);
+}
+
 FrustumBox ddSceneManager::get_current_frustum(const ddCam *cam) {
   FrustumBox frustum;
   if (!cam) {

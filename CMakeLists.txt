@@ -155,6 +155,16 @@ find_path(VRPN_PATH vrpn_Tracker.h
 if(NOT VRPN_PATH)
 	message(FATAL_ERROR "VRPN_PATH VRPN include not found")
 endif()
+
+find_path(EIGEN_PATH Eigen/Core
+	PATHS
+	${CMAKE_CURRENT_SOURCE_DIR}/)
+if(NOT EIGEN_PATH)
+	message(FATAL_ERROR "EIGEN_PATH Eigen Core include not found")
+else()
+	message(STATUS "EIGEN_PATH Eigen Core include found")
+endif()
+
 if(NOT UNIX)
 	find_path(LUA_PATH lua.hpp PATHS ${CMAKE_SOURCE_DIR}/lua53_Win64_lib/include)
 	if(NOT LUA_PATH)
@@ -269,6 +279,7 @@ include_directories(${CMAKE_SOURCE_DIR}/include
 	${PROJ_HEADERS}
 	${LUA_PATH}
 	${BULLET_PATH}
+	${EIGEN_PATH}
 	${VRPN_PATH})
 
 #  add graphic library and set API

@@ -23,6 +23,7 @@ SDL2-2.0.7
 lua53_Win64_lib
 bullet3_287
 glfw
+Eigen
 
 #**************** General folders to always ignore ************************
 

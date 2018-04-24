@@ -35,6 +35,18 @@ glm::mat4 calc_view_matrix(const ddCam* cam);
 glm::mat4 calc_p_proj_matrix(const ddCam* cam);
 
 /**
+ * \brief Calculate orthographic projection matrix
+ * \param cam Contains near and far plane extents
+ * \param l_side left extent off coordinate plane
+ * \param r_side right extent off coordinate plane
+ * \param top top extent off coordinate plane
+ * \param bottom bottom extent off coordinate plane
+ */
+glm::mat4 calc_o_proj_matrix(const ddCam* cam, const float l_side, 
+														 const float r_side, const float top,
+														 const float bottom);
+
+/**
  * \brief Calculate camera frustum
  */
 FrustumBox get_current_frustum(const ddCam* cam);
