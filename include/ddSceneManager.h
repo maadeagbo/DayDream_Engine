@@ -42,9 +42,9 @@ glm::mat4 calc_p_proj_matrix(const ddCam* cam);
  * \param top top extent off coordinate plane
  * \param bottom bottom extent off coordinate plane
  */
-glm::mat4 calc_o_proj_matrix(const ddCam* cam, const float l_side, 
-														 const float r_side, const float top,
-														 const float bottom);
+glm::mat4 calc_o_proj_matrix(const ddCam* cam, const float l_side,
+                             const float r_side, const float top,
+                             const float bottom);
 
 /**
  * \brief Calculate camera frustum

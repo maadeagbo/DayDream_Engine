@@ -270,7 +270,7 @@ bool ddEngine::level_select(const size_t w, const size_t h) {
         lvl_funcs[key](main_lstate);
       }
     }
-		ImGui::PopItemWidth();
+    ImGui::PopItemWidth();
 
     ImGui::End();
     ImGui::Render();

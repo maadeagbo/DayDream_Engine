@@ -158,7 +158,7 @@ endif()
 
 find_path(EIGEN_PATH Eigen/Core
 	PATHS
-	${CMAKE_CURRENT_SOURCE_DIR}/)
+	${CMAKE_CURRENT_SOURCE_DIR}/eigen)
 if(NOT EIGEN_PATH)
 	message(FATAL_ERROR "EIGEN_PATH Eigen Core include not found")
 else()
