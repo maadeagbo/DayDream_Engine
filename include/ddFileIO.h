@@ -15,7 +15,7 @@ struct ddIO {
   inline dd_array<cbuff<512>> get_directory_files() { return dir_files; }
 
  private:
-  char m_line[1024];
+  char m_line[10000];
   std::fstream m_file;
   dd_array<cbuff<512>> dir_files;
 };
