@@ -24,6 +24,7 @@ lua53_Win64_lib
 bullet3_287
 glfw
 Eigen
+vulkan_1*
 
 #**************** General folders to always ignore ************************
 
