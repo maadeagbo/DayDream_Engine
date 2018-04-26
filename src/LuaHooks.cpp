@@ -699,6 +699,23 @@ void push_ivec3_to_lua(lua_State *L, const int64_t x, const int64_t y,
   lua_setfield(L, -2, "z");
 }
 
+void push_ivec4_to_lua(lua_State *L, const int64_t x, const int64_t y,
+                       const int64_t z, const int64_t w) {
+  lua_newtable(L);  // create new table and put on top of stack
+
+  luaL_checkstack(L, 2, "too many arguments");  // check stack size
+
+  // set fields
+  lua_pushinteger(L, x);
+  lua_setfield(L, -2, "x");
+  lua_pushinteger(L, y);
+  lua_setfield(L, -2, "y");
+  lua_pushinteger(L, z);
+  lua_setfield(L, -2, "z");
+  lua_pushinteger(L, w);
+  lua_setfield(L, -2, "w");
+}
+
 void append_package_path(lua_State *L, const char *path) {
   cbuff<1024> curr_path, new_path;
   lua_getglobal(L, "package");
@@ -735,11 +752,9 @@ void parse_table_buffer(lua_State *L, dd_array<T> &buffer, unsigned &idx,
             idx++;
           }
         } else {
-          if (typeid(T) == typeid(float)) {
-            const float num = (float)lua_tonumber(L, -1);
-            buffer[idx] = num;
-            idx++;
-          }
+          const float num = (float)lua_tonumber(L, -1);
+          buffer[idx] = num;
+          idx++;
         }
         break;
       }
