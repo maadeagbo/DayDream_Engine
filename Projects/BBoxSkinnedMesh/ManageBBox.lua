@@ -74,8 +74,10 @@ do
     out_str[#out_str + 1] = string.format("j %d", jnt_idx)
 
     -- mirror flag
-    m_flag = (mr_vec[1] < 0 or mr_vec[2] < 0 or mr_vec[3] < 0) and 1 or 0
-    out_str[#out_str + 1] = string.format("m %d", m_flag)
+    --m_flag = (mr_vec[1] < 0 or mr_vec[2] < 0 or mr_vec[3] < 0) and 1 or 0
+    --out_str[#out_str + 1] = string.format("m %d", m_flag)
+    out_str[#out_str + 1] = 
+      string.format("m %.3f %.3f %.3f", mr_vec[1], mr_vec[2], mr_vec[3])
     
     -- pos
     _p = oobbox.pos
@@ -87,9 +89,9 @@ do
     
     -- scale
     _s = oobbox.scale
-    _s.x = mr_vec[1] * _s.x
-    _s.y = mr_vec[2] * _s.y
-    _s.z = mr_vec[3] * _s.z
+    --_s.x = mr_vec[1] * _s.x
+    --_s.y = mr_vec[2] * _s.y
+    --_s.z = mr_vec[3] * _s.z
     out_str[#out_str + 1] = string.format("s %.3f %.3f %.3f", _s.x, _s.y, _s.z)
 
     -- write end tag

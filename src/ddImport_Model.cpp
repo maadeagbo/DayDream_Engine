@@ -540,7 +540,6 @@ dd_array<OOBoundingBox> load_ddx(const char *path) {
 
   dd_array<OOBoundingBox> bboxes;
   int b_idx = -1;
-  unsigned v_idx = 0;
 
   // check that path is .ddx
   cbuff<512> path_check(path);
@@ -558,26 +557,29 @@ dd_array<OOBoundingBox> load_ddx(const char *path) {
     // check tag for information to parse
     if (strcmp("<size>", line) == 0) {
       line = _io.readNextLine();
-
-      // get value & resize output array
-      bboxes.resize(get_int(line));
+      bboxes.resize(get_int(line)); // get value & resize output array
     }
     if (strcmp("<box>", line) == 0) {
-      // update current box index
-      b_idx++;
-      // reset vertex/corner counter
-      v_idx = 0;
+      b_idx++; // update current box index
     }
     if (*line == 'j') {  // joint id
-      // set joint index for box
-      bboxes[b_idx].joint_idx = get_int(&line[2]);
+      bboxes[b_idx].joint_idx = get_int(&line[2]); // set joint index for box
     }
-    if (*line == 'v') {  // vertex/corner of box
-      // set vertex/corner
-      bboxes[b_idx].corners[v_idx] = getVec3f(&line[2]);
-      // update counter
-      v_idx++;
+		if (*line == 'm') {  // mirror vector and flag
+			bboxes[b_idx].mirror = getVec3f(&line[2]);
+			bboxes[b_idx].mirror_flag = (bboxes[b_idx].mirror.x < 0.f ||
+																	 bboxes[b_idx].mirror.y < 0.f ||
+																	 bboxes[b_idx].mirror.z < 0.f);
+		}
+    if (*line == 'p') {  // position
+      bboxes[b_idx].pos = getVec3f(&line[2]);
     }
+		if (*line == 'r') {  // rotation
+			bboxes[b_idx].rot = getQuat(&line[2]);
+		}
+		if (*line == 's') {  // scale
+			bboxes[b_idx].scale = getVec3f(&line[2]);
+		}
     line = _io.readNextLine();
   }
 

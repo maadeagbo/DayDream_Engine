@@ -317,16 +317,23 @@ int add_animation(lua_State *L) {
 
 ddBodyFuncs::AABB oobb_to_aabb(dd_array<OOBoundingBox> &boxes) {
   ddBodyFuncs::AABB out;
+	const glm::mat4 iden = glm::mat4();
 
-  // 1st vertex in 1st oobb gets set to min & max
-  out.min = boxes[0].corners[0];
-  out.max = boxes[0].corners[0];
+  // 1st oobb initializes min & max
+	BoundingBox temp = dd_ref_bbox.transformCorners(boxes[0].get_tranform());
+  out.min = temp.min;
+  out.max = temp.max;
 
   // per oobb: update output aabb to set min & max
   DD_FOREACH(OOBoundingBox, box, boxes) {
-    for (unsigned i = 0; i < 8; i++) {
-      out.update(box.ptr->corners[i]);
-    }
+		temp = dd_ref_bbox.transformCorners(box.ptr->get_tranform());
+		if (box.ptr->mirror_flag) {
+			const glm::mat3 s_mat = glm::mat3(glm::scale(iden, box.ptr->mirror));
+			temp.min = s_mat * temp.min;
+			temp.max = s_mat * temp.max;
+		}
+		out.update(temp.min);
+		out.update(temp.max);
   }
 
   return out;

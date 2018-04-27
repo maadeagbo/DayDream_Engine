@@ -319,6 +319,12 @@ static int modify_bbox(lua_State *L) {
     ImGui::PushStyleColor(ImGuiCol_::ImGuiCol_TitleBg, col);
     ImGui::PushStyleColor(ImGuiCol_::ImGuiCol_TitleBgActive, col);
 
+		const InputData inp = ddInput::get_input();
+		if (inp.keys[DD_Keys::MOUSE_RIGHT].active) {
+			ImGui::SetNextWindowPos(ImVec2(inp.keys[DD_Keys::MOUSE_X].order,
+																		 inp.keys[DD_Keys::MOUSE_Y].order));
+		}
+
     ImGui::Begin("Modify Bounding Box", &win_on,
                  ImGuiWindowFlags_AlwaysAutoResize);
 

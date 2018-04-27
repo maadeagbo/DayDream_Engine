@@ -1,9 +1,9 @@
 #pragma once
 
 /*
-* Copyright (c) 2016, Moses Adeagbo
-* All rights reserved.
-*/
+ * Copyright (c) 2016, Moses Adeagbo
+ * All rights reserved.
+ */
 
 /*-----------------------------------------------------------------------------
 *
@@ -64,13 +64,19 @@ struct DD_LineAgent {
 
 /** \brief Bounding box representation */
 struct BoundingBox {
+  BoundingBox() {}
+  BoundingBox(const glm::vec3 _min, const glm::vec3 _max)
+      : min(_min), max(_max) {
+    SetCorners();
+  }
+
   glm::vec3 min, max;
   glm::vec3 corner1, corner2, corner3, corner4, corner5, corner6, corner7,
       corner8;
   dd_array<glm::vec4> buffer = dd_array<glm::vec4>(12 * 2);
 
   void SetCorners();
-  BoundingBox transformCorners(const glm::mat4 transMat);
+  BoundingBox transformCorners(const glm::mat4 transMat) const;
   glm::vec3 UpdateAABB_min();
   glm::vec3 UpdateAABB_max();
   glm::vec3 GetFrustumPlaneMin(glm::vec3 norm);
@@ -78,10 +84,18 @@ struct BoundingBox {
   void SetLineBuffer();
 };
 
+/** \brief Reference bounding box for all OOBB */
+const BoundingBox dd_ref_bbox = BoundingBox(glm::vec3(-0.5f), glm::vec3(0.5f));
+
 /** \brief Object-oriented bounding box */
 struct OOBoundingBox {
-  glm::vec3 corners[8];
-  int joint_idx = -1;
+	glm::quat rot;
+	glm::vec3 pos;
+  glm::vec3 scale;
+	glm::vec3 mirror;
+	int joint_idx = -1;
+	bool mirror_flag = false;
+	const glm::mat4 get_tranform();
 };
 
 // Useful glm functions

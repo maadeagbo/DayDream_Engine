@@ -34,7 +34,7 @@ void BoundingBox::SetCorners() {
 }
 
 /// \brief Apply transformation to bounding box (translate/rotate/scale)
-BoundingBox BoundingBox::transformCorners(const glm::mat4 transMat) {
+BoundingBox BoundingBox::transformCorners(const glm::mat4 transMat) const {
   BoundingBox bbox;
 
   bbox.corner1 = glm::vec3(transMat * glm::vec4(this->corner1, 1.0f));
@@ -228,7 +228,7 @@ glm::mat4 createMatrix(const glm::vec3& pos, const glm::vec3& rot,
       glm::rotate(glm::mat4(), glm::radians(rot.y), glm::vec3(0.f, 1.f, 0.f));
   glm::mat4 mrz =
       glm::rotate(glm::mat4(), glm::radians(rot.z), glm::vec3(0.f, 0.f, 1.f));
-  glm::mat4 ms = glm::scale(glm::mat4(), glm::vec3(scale));
+  glm::mat4 ms = glm::scale(glm::mat4(), scale);
   return mt * mrz * mry * mrx * ms;
 }
 
@@ -255,6 +255,13 @@ void printGlmMat(glm::mat4 mat) {
   line = Vec4f_Str(temp_vec);
   // ddTerminal::post(line);
   printf("%s\n", line.c_str());
+}
+
+const glm::mat4 OOBoundingBox::get_tranform() {
+	glm::mat4 mt = glm::translate(glm::mat4(), pos);
+	glm::mat4 mr = glm::mat4_cast(rot);
+	glm::mat4 ms = glm::scale(glm::mat4(), scale);
+	return mt * mr * ms;
 }
 
 //****************************************************************************
