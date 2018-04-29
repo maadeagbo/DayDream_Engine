@@ -319,19 +319,10 @@ ddBodyFuncs::AABB oobb_to_aabb(dd_array<OOBoundingBox> &boxes) {
   ddBodyFuncs::AABB out;
 	const glm::mat4 iden = glm::mat4();
 
-  // 1st oobb initializes min & max
-	BoundingBox temp = dd_ref_bbox.transformCorners(boxes[0].get_tranform());
-  out.min = temp.min;
-  out.max = temp.max;
-
+	BoundingBox temp;
   // per oobb: update output aabb to set min & max
   DD_FOREACH(OOBoundingBox, box, boxes) {
-		temp = dd_ref_bbox.transformCorners(box.ptr->get_tranform());
-		if (box.ptr->mirror_flag) {
-			const glm::mat3 s_mat = glm::mat3(glm::scale(iden, box.ptr->mirror));
-			temp.min = s_mat * temp.min;
-			temp.max = s_mat * temp.max;
-		}
+		temp = box.ptr->get_bbox();
 		out.update(temp.min);
 		out.update(temp.max);
   }

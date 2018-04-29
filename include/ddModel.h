@@ -84,9 +84,6 @@ struct BoundingBox {
   void SetLineBuffer();
 };
 
-/** \brief Reference bounding box for all OOBB */
-const BoundingBox dd_ref_bbox = BoundingBox(glm::vec3(-0.5f), glm::vec3(0.5f));
-
 /** \brief Object-oriented bounding box */
 struct OOBoundingBox {
 	glm::quat rot;
@@ -95,7 +92,7 @@ struct OOBoundingBox {
 	glm::vec3 mirror;
 	int joint_idx = -1;
 	bool mirror_flag = false;
-	const glm::mat4 get_tranform();
+	const BoundingBox get_bbox() const;
 };
 
 // Useful glm functions

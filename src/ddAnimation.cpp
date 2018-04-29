@@ -57,6 +57,28 @@ void ddAnimation::process_animations() {
               ag->anim.global_pose[i] * sk->bones[i].inv_bp;
         }
       }
+
+      // update bounding box if necessary
+      if (ag->body.oobb_data.oobbs.isValid()) {
+        ddBodyFuncs::AABB aabb;
+        DD_FOREACH(OOBoundingBox, oobb, ag->body.oobb_data.oobbs) {
+          // get oobb and tranform it using final delta pose for joint
+          BoundingBox bbox = oobb.ptr->get_bbox();
+          const unsigned j_idx = (oobb.ptr->joint_idx >= 0 &&
+                                  oobb.ptr->joint_idx < sk->bones.size())
+                                     ? oobb.ptr->joint_idx
+                                     : 0;
+
+          // works best w/ an inverse bind pose present
+          bbox = bbox.transformCorners(ag->anim.global_pose[j_idx]);
+          aabb.update(bbox.min);
+          aabb.update(bbox.max);
+        }
+        // log min and max vertex then update
+        ag->body.oobb_data.max_vert = aabb.max;
+        ag->body.oobb_data.min_vert = aabb.min;
+        ddBodyFuncs::update_aabb(&ag->body, aabb);
+      }
     }
   }
 }
@@ -73,18 +95,18 @@ void state_to_local_pose(ddAnimInfo& a_info, ddAnimState* a_state,
   // correct local time (if looped, use modulus to get corrected time)
   if (a_state->local_time >= a_clip->length) {  // loop forwards
     if (a_state->flag_loop) {
-      const float x = a_state->local_time / a_clip->length;
-      const unsigned x_int = (unsigned)x;
-      a_state->local_time = x - (float)x_int;
+      a_state->local_time = std::fmodf(a_state->local_time, a_clip->length);
     } else {
       a_state->local_time = 0.f;
       a_state->active = false;
     }
   } else if (a_state->local_time < 0) {  // loop backwards
     if (a_state->flag_loop) {
-      const float x = (a_state->local_time * -1) / a_clip->length;
+      /*const float x = (a_state->local_time * -1) / a_clip->length;
       const unsigned x_int = (unsigned)x;
-      a_state->local_time = a_clip->length - (x - (float)x_int);
+      a_state->local_time = a_clip->length - (x - (float)x_int);*/
+			const float x = std::fmodf(a_state->local_time, a_clip->length);
+			a_state->local_time = a_clip->length + x;
     } else {
       a_state->local_time = 0.f;
       a_state->active = false;

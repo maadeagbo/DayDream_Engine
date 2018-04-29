@@ -59,7 +59,8 @@ struct ddBody {
 namespace ddBodyFuncs {
 /** \brief Simple axis-alligned bounding box */
 struct AABB {
-  glm::vec3 min, max;
+	glm::vec3 min = glm::vec3(std::numeric_limits<float>::infinity());
+	glm::vec3 max = glm::vec3(-std::numeric_limits<float>::infinity());
   void update(glm::vec3 v3) {
     // min
     this->min.x = (v3.x < this->min.x) ? v3.x : this->min.x;

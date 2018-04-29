@@ -148,7 +148,7 @@ do
     file:close()  
   end
   
-  function manager:modify_bbox( bbox_idx, trs_idx, xyz_idx, sign )
+  function manager:edit_bbox( bbox_idx, trs_idx, xyz_idx, sign )
     --[[]]
     -- bbox
     bbox = created_bboxs[current_bbox]
@@ -168,30 +168,22 @@ do
   end
 
   function manager:update( event, args, num_args )
-    if event == "new_bbox" then
-      -- create new bounding box
-      idx = #created_bboxs + 1
-      created_bboxs[idx] = ddBBox.new()
-      created_bboxs[idx].pos = {0.0, 0.0, 0.0}
-      created_bboxs[idx].scale = {1.0, 1.0, 1.0}
-      created_bboxs[idx].jnts = {-1, -1}
-      --mirror = created_bboxs[idx].mirror
-      --ddLib.print("Mirror: ", mirror.x, ", ", mirror.y, ", ", mirror.z)
-    elseif event == "export_bbox" then
-      if num_args == 1 then
-        write_bbox_file(args["0"])
-      end
-    else
-      -- regular update
-      assets = BBoxSkinnedMesh_assets
-      input = ddInput
+    new_box = false
+    out_box = false
+    -- regular update
+    assets = BBoxSkinnedMesh_assets
+    input = ddInput
+    
+    if event == assets.level_tag then
+      -- controls
+      new_box, out_box = check_controls()
       
       gap_click = gap_click + ddLib.ftime()
       gap_tap = gap_tap + ddLib.ftime()
 
       -- show modification window
       if bbox_select then
-        ddBBox.modify_bbox(current_bbox - 1)
+        ddBBox.modify_bbox(created_bboxs[current_bbox], self.ctrl)
       end
 
       -- select a box
@@ -251,6 +243,22 @@ do
       end
     end
 
+    if new_box then
+      -- create new bounding box
+      idx = #created_bboxs + 1
+      created_bboxs[idx] = ddBBox.new()
+      created_bboxs[idx].pos = {0.0, 0.0, 0.0}
+      created_bboxs[idx].scale = {1.0, 1.0, 1.0}
+      created_bboxs[idx].jnts = {-1, -1}
+      --mirror = created_bboxs[idx].mirror
+      --ddLib.print("Mirror: ", mirror.x, ", ", mirror.y, ", ", mirror.z)
+    end
+    if out_box then
+      if num_args == 1 then
+        write_bbox_file(args["0"])
+      end
+    end
+
     -- modifying the box
     --[[]]
     if not ddLib.mouse_over_UI() and bbox_select and input.mouse_b_m then
@@ -284,7 +292,7 @@ do
       end
 
       if trs_index > -1 and xyz_index > -1 then
-        self:modify_bbox(current_bbox, trs_index, xyz_index, sign)
+        self:edit_bbox(current_bbox, trs_index, xyz_index, sign)
       end
       
     end

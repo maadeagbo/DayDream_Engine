@@ -1,6 +1,11 @@
 #include "ddModel.h"
 #include <string>
 
+namespace {
+	/** \brief Reference bounding box for all OOBB */
+	const BoundingBox dd_ref_bbox = BoundingBox(glm::vec3(-0.5f), glm::vec3(0.5f));
+}
+
 /// \brief Set the 8 corners of bounding box
 void BoundingBox::SetCorners() {
   if (min.x == max.x) {
@@ -257,11 +262,15 @@ void printGlmMat(glm::mat4 mat) {
   printf("%s\n", line.c_str());
 }
 
-const glm::mat4 OOBoundingBox::get_tranform() {
-	glm::mat4 mt = glm::translate(glm::mat4(), pos);
+const BoundingBox OOBoundingBox::get_bbox() const {
+	glm::mat4 identity = glm::mat4();
+	glm::mat4 mt = glm::translate(identity, pos);
 	glm::mat4 mr = glm::mat4_cast(rot);
-	glm::mat4 ms = glm::scale(glm::mat4(), scale);
-	return mt * mr * ms;
+	glm::mat4 ms = glm::scale(identity, scale);
+	glm::mat4 mm = glm::scale(identity, mirror);
+
+	BoundingBox temp = dd_ref_bbox.transformCorners(mt * mr * ms);
+	return temp.transformCorners(mm);
 }
 
 //****************************************************************************
