@@ -36,7 +36,7 @@ void main() {
 	vs_out.TexCoord = VertexTexCoord;
 	// cannot be used with instancing (normally used w/ non-uniform scaling)
     // leads to incorrect/flickering normals
-	//vs_out.Normal = normalize(vec3(Norm * vec4(VertexNormal, 0.0)));
+	// vs_out.Normal = normalize(vec3(Norm * vec4(VertexNormal, 0.0))); 
 
     // calculate and apply skinning transformations
     vec4 v_pos = vec4(0.0);
@@ -49,13 +49,13 @@ void main() {
     }
 
 	// normalize and create TBN matrix
-	vec3 tanNorm = normalize( InstanceMatrix * v_tan ).xyz;
-	vec3 norm = normalize( InstanceMatrix * v_norm ).xyz;
+	vec3 tanNorm = normalize(InstanceMatrix * Model * v_tan ).xyz;
+	vec3 norm = normalize(InstanceMatrix * Model * v_norm ).xyz;
 	vec3 bitanNorm = cross(norm, tanNorm);
 
     // output to fragment shader
 	vs_out.Normal = norm;
-	vs_out.FragPos = (InstanceMatrix * v_pos).xyz;
+	vs_out.FragPos = (InstanceMatrix * Model * v_pos).xyz;
 	vs_out.TBN = mat3(tanNorm, bitanNorm, norm);
 	if (multiplierMat) { vs_out.InstanceColor = InstanceColor; }
 
@@ -63,5 +63,5 @@ void main() {
 	//vs_out.Debug = VertexTexCoord;
 
     // worldspace position
-	gl_Position =  VP * Model * v_pos;
+	gl_Position = InstanceMatrix * VP * Model * v_pos;
 }

@@ -212,6 +212,7 @@ void main() {
 	}
 	
 	if ( Debug ) {
-		OutColor = Debug_Color;
+		//OutColor = Debug_Color;
+		OutColor = vec4(norm, 1.0);
 	}
 }

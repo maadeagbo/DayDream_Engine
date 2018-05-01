@@ -93,7 +93,8 @@ void state_to_local_pose(ddAnimInfo& a_info, ddAnimState* a_state,
   }
 
   // correct local time (if looped, use modulus to get corrected time)
-  if (a_state->local_time >= a_clip->length) {  // loop forwards
+  if (a_state->local_time >= (a_clip->length)) {
+    // loop forwards
     if (a_state->flag_loop) {
       a_state->local_time = std::fmodf(a_state->local_time, a_clip->length);
     } else {
@@ -105,8 +106,8 @@ void state_to_local_pose(ddAnimInfo& a_info, ddAnimState* a_state,
       /*const float x = (a_state->local_time * -1) / a_clip->length;
       const unsigned x_int = (unsigned)x;
       a_state->local_time = a_clip->length - (x - (float)x_int);*/
-			const float x = std::fmodf(a_state->local_time, a_clip->length);
-			a_state->local_time = a_clip->length + x;
+      const float x = std::fmodf(a_state->local_time, a_clip->length);
+      a_state->local_time = a_clip->length + x;
     } else {
       a_state->local_time = 0.f;
       a_state->active = false;
@@ -117,18 +118,18 @@ void state_to_local_pose(ddAnimInfo& a_info, ddAnimState* a_state,
   const unsigned idx_a = (unsigned)(a_state->local_time / a_clip->step_size);
 
   // get interpolating frame (i.e. next frame of animation)
-  const unsigned idx_b =
+  unsigned idx_b =
       (idx_a + 1) < a_clip->num_frames ? (idx_a + 1) : a_clip->num_frames - 1;
+  idx_b = (idx_b == (a_clip->num_frames - 1)) && a_state->flag_loop ? 0 : idx_b;
+
   const float alpha =
       (a_state->local_time - (idx_a * a_clip->step_size)) / a_clip->step_size;
 
   // set local pose for each joint (compound succesive frames after first pass)
   for (unsigned j = 0; j < a_info.local_pose.size(); j++) {
     glm::quat iden;
-    const glm::quat qa =
-        glm::slerp(iden, a_clip->samples[idx_a].pose[j].rot, a_state->weight);
-    const glm::quat qb =
-        glm::slerp(iden, a_clip->samples[idx_b].pose[j].rot, a_state->weight);
+    const glm::quat qa = a_clip->samples[idx_a].pose[j].rot;
+    const glm::quat qb = a_clip->samples[idx_b].pose[j].rot;
 
     const glm::vec3 ta = a_clip->samples[idx_a].pose[j].trans * a_state->weight;
     const glm::vec3 tb = a_clip->samples[idx_b].pose[j].trans * a_state->weight;
@@ -136,7 +137,10 @@ void state_to_local_pose(ddAnimInfo& a_info, ddAnimState* a_state,
     if (first_pass) {
       // reset local pose to new animation
       if (a_state->interpolate) {
-        a_info.local_pose[j].rot = glm::slerp(qa, qb, alpha);
+        const glm::quat temp = glm::slerp(qa, qb, alpha);
+        // apply weight
+        a_info.local_pose[j].rot = glm::slerp(iden, temp, a_state->weight);
+
         a_info.local_pose[j].trans = ta * (1 - alpha) + (tb * alpha);
       } else {
         a_info.local_pose[j].rot = qa;
@@ -145,8 +149,11 @@ void state_to_local_pose(ddAnimInfo& a_info, ddAnimState* a_state,
     } else {
       // compounded animations
       if (a_state->interpolate) {
-        a_info.local_pose[j].rot =
-            glm::lerp(qa, qb, alpha) * a_info.local_pose[j].rot;
+        glm::quat temp = glm::slerp(qa, qb, alpha);
+        // apply weight
+        temp = glm::slerp(iden, temp, a_state->weight);
+        a_info.local_pose[j].rot = temp * a_info.local_pose[j].rot;
+
         a_info.local_pose[j].trans =
             (ta * (1 - alpha) + (tb * alpha)) + a_info.local_pose[j].trans;
       } else {

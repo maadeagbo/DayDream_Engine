@@ -36,8 +36,8 @@ void main() {
 	}
 
 	// normalize and create TBN matrix
-	vec3 tanNorm = normalize(vec3( InstanceMatrix * Model * vec4(TangentNormal, 0.0)));
-	vec3 norm = normalize( vec3( InstanceMatrix * Model * vec4(VertexNormal, 0.0)));
+	vec3 tanNorm = normalize(vec3(InstanceMatrix * Model * vec4(TangentNormal, 0.0)));
+	vec3 norm = normalize( vec3(InstanceMatrix * Model * vec4(VertexNormal, 0.0)));
 	vec3 bitanNorm = cross(norm, tanNorm);
 	vs_out.TBN = mat3(tanNorm, bitanNorm, norm);
 	

@@ -710,8 +710,8 @@ void render_skinned(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
         // matrices
         agent->inst.m4x4[0] = glm::mat4();  // identity
         glm::mat4 model_m = ddBodyFuncs::get_model_mat(&agent->body);
-        // glm::mat4 norm_m = glm::transpose(glm::inverse(model_m));
-        // sh->set_uniform((int)RE_GBufferSk::Norm_m4x4, norm_m);
+        //glm::mat4 norm_m = glm::transpose(glm::inverse(model_m));
+        //sh->set_uniform((int)RE_GBufferSk::Norm_m4x4, norm_m);
         sh->set_uniform((int)RE_GBufferSk::Model_m4x4, model_m);
         sh->set_uniform((int)RE_GBufferSk::VP_m4x4, cam_proj_m * cam_view_m);
 
@@ -1007,13 +1007,13 @@ void light_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
           ddGPUFrontEnd::toggle_depth_test(false);
         }
 
-        sh->set_uniform((int)RE_Light::Debug_b, true);
+        /*sh->set_uniform((int)RE_Light::Debug_b, true);
         sh->set_uniform((int)RE_Light::Debug_Color_v4,
-                        glm::vec4(1.f, 1.f, 1.f, 0.5f));
+                        glm::vec4(1.f, 1.f, 1.f, 0.5f));*/
 
         ddGPUFrontEnd::render_cube();
 
-        sh->set_uniform((int)RE_Light::Debug_b, false);
+        //sh->set_uniform((int)RE_Light::Debug_b, false);
 
         if (in_vol) {
           ddGPUFrontEnd::toggle_depth_test(true);
@@ -1039,13 +1039,13 @@ void light_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
           ddGPUFrontEnd::toggle_depth_test(false);
         }
 
-        sh->set_uniform((int)RE_Light::Debug_b, true);
+        /*sh->set_uniform((int)RE_Light::Debug_b, true);
         sh->set_uniform((int)RE_Light::Debug_Color_v4,
-                        glm::vec4(1.f, 0.f, 0.f, 0.5f));
+                        glm::vec4(1.f, 0.f, 0.f, 0.5f));*/
 
         ddGPUFrontEnd::render_cube();
 
-        sh->set_uniform((int)RE_Light::Debug_b, false);
+        //sh->set_uniform((int)RE_Light::Debug_b, false);
 
         if (in_vol) {
           ddGPUFrontEnd::toggle_depth_test(true);

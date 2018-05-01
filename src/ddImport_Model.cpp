@@ -488,6 +488,29 @@ ddMat *create_material(obj_mat &mat_info) {
   return mat;
 }
 
+void flip_im(unsigned char *image, const int width, const int height,
+								const int channels) {
+	// validate parameters
+	if (width < 0 || height < 0 || channels < 0) {
+		fprintf(stderr, "flip_image::Invalid paramters <%d::%d::%d>", width, height,
+						channels);
+		return;
+	}
+	// flip
+	for (int j = 0; j * 2 < height; j++) {
+		int idx_1 = width * channels * j;
+		int idx_2 = width * channels * (height - 1 - j);
+		for (int i = width * channels; i > 0; i--) {
+			unsigned char temp = image[idx_1];
+			image[idx_1] = image[idx_2];
+			image[idx_2] = temp;
+			// img_ptr.get()[idx_2] = image[idx_1];
+			idx_1++;
+			idx_2++;
+		}
+	}
+}
+
 ddTex2D *create_tex2D(const char *path, const char *img_id) {
   // check if texture already exists
   size_t tex_id = getCharHash(img_id);
@@ -506,6 +529,7 @@ ddTex2D *create_tex2D(const char *path, const char *img_id) {
   temp =
       stbi_load(path, &img_info.width, &img_info.height, &img_info.channels, 4);
   POW2_VERIFY_MSG(temp != nullptr, "stbi failed to read image: %s", path);
+	flip_im(temp, img_info.width, img_info.height, img_info.channels);
 
   // copy to dd_array and free stbi data
   img_info.image_data[0].resize(img_info.width * img_info.height * 4);
