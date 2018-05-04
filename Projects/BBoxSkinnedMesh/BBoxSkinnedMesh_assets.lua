@@ -13,7 +13,7 @@ function load()
 	BBoxSkinnedMesh_assets.light_1 = ddLight.new("light_1")
 	BBoxSkinnedMesh_assets.light_1:set_active(true)
 	--BBoxSkinnedMesh_assets.light_1:set_type("point")
-	BBoxSkinnedMesh_assets.light_1:set_pos({1.0, -1.0, -1.0})
+	BBoxSkinnedMesh_assets.light_1:set_pos({1.0, 1.0, 1.0})
 	ddLib.print( "Created light: ", BBoxSkinnedMesh_assets.light_1:id() )
 
 	-- Floor agent

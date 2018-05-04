@@ -2,6 +2,7 @@
 #include "ddAssetManager.h"
 #include "ddSceneManager.h"
 #include "ddTerminal.h"
+#include <cmath>
 
 namespace {
 bool flag_bin[MAX_JOINTS];
@@ -93,10 +94,10 @@ void state_to_local_pose(ddAnimInfo& a_info, ddAnimState* a_state,
   }
 
   // correct local time (if looped, use modulus to get corrected time)
-  if (a_state->local_time >= (a_clip->length)) {
+  if (a_state->local_time >= (a_clip->length - a_clip->step_size)) {
     // loop forwards
     if (a_state->flag_loop) {
-      a_state->local_time = std::fmodf(a_state->local_time, a_clip->length);
+      a_state->local_time = fmodf(a_state->local_time, a_clip->length);
     } else {
       a_state->local_time = 0.f;
       a_state->active = false;
@@ -106,7 +107,7 @@ void state_to_local_pose(ddAnimInfo& a_info, ddAnimState* a_state,
       /*const float x = (a_state->local_time * -1) / a_clip->length;
       const unsigned x_int = (unsigned)x;
       a_state->local_time = a_clip->length - (x - (float)x_int);*/
-      const float x = std::fmodf(a_state->local_time, a_clip->length);
+      const float x = fmodf(a_state->local_time, a_clip->length);
       a_state->local_time = a_clip->length + x;
     } else {
       a_state->local_time = 0.f;

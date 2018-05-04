@@ -529,7 +529,7 @@ ddTex2D *create_tex2D(const char *path, const char *img_id) {
   temp =
       stbi_load(path, &img_info.width, &img_info.height, &img_info.channels, 4);
   POW2_VERIFY_MSG(temp != nullptr, "stbi failed to read image: %s", path);
-	flip_im(temp, img_info.width, img_info.height, img_info.channels);
+	//flip_im(temp, img_info.width, img_info.height, img_info.channels);
 
   // copy to dd_array and free stbi data
   img_info.image_data[0].resize(img_info.width * img_info.height * 4);

@@ -20,9 +20,8 @@ bool ddIO::open(const char *fileName, const ddIOflag flags) {
     ios_flag = std::ios::in;
   } else if ((unsigned)(flags & ddIOflag::WRITE)) {
     ios_flag = std::ios::out;
-    if ((unsigned)(flags & ddIOflag::APPEND)) {
-      ios_flag |= std::ios::app;
-    }
+  } else if ((unsigned)(flags & ddIOflag::APPEND)) {
+    ios_flag = std::ios::app;
   } else if ((unsigned)(flags & ddIOflag::DIRECTORY)) {
     fs_dir directory = fs_dir(fileName);
     if (directory != fs::end(directory)) {
