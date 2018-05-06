@@ -1,82 +1,87 @@
 // Enums for managing shader uniforms
 
 enum class RE_Light : int {
-  ColorTex_smp2d = 0,
-  Debug_b = 1,
-  Debug_Color_v4 = 2,
-  DepthTex_smp2d = 3,
-  DrawSky_b = 4,
-  LSM_m4x4 = 5,
-  Light_color_v3 = 6,
-  Light_cutoff_i_f = 7,
-  Light_cutoff_o_f = 8,
-  Light_direction_v3 = 9,
-  Light_lumin_cutoff_f = 10,
-  Light_position_v3 = 11,
+  Model_m4x4 = 0,
+  View_m4x4 = 1,
+  Proj_m4x4 = 2,
+  DrawSky_b = 3,
+  PositionTex_smp2d = 4,
+  ColorTex_smp2d = 5,
+  NormalTex_smp2d = 6,
+  DepthTex_smp2d = 7,
+  skybox_smpCube = 8,
+  Light_position_v3 = 9,
+  Light_direction_v3 = 10,
+  Light_color_v3 = 11,
   Light_type_i = 12,
-  Model_m4x4 = 13,
-  NormalTex_smp2d = 14,
-  PositionTex_smp2d = 15,
-  Proj_m4x4 = 16,
-  ShadowMap_b = 17,
-  View_m4x4 = 18,
-  screenDimension_v2 = 19,
-  skybox_smpCube = 20,
-  viewPos_v3 = 21
+  Light_cutoff_i_f = 13,
+  Light_cutoff_o_f = 14,
+  Light_spotExponent_f = 15,
+  Light_lumin_cutoff_f = 16,
+  Light_linear_f = 17,
+  Light_quadratic_f = 18,
+  Light_lumin_r709_f = 19,
+  LSM_m4x4 = 20,
+  viewPos_v3 = 21,
+  screenDimension_v2 = 22,
+  ShadowMap_b = 23,
+  Debug_b = 24
 };
 
 enum class RE_GBuffer : int {
-  Model_m4x4 = 0,
-  Norm_m4x4 = 1,
+  enable_clip1_b = 0,
+  Model_m4x4 = 1,
   VP_m4x4 = 2,
-  albedoFlag_b = 3,
-  diffuse_v3 = 4,
-  multiplierMat_b = 5,
-  normalFlag_b = 6,
-  shininess_f = 7,
-  specFlag_b = 8,
-  tex_albedo_smp2d = 9,
-  tex_normal_smp2d = 10,
-  tex_specular_smp2d = 11,
-  useDebug_b = 12
+  Norm_m4x4 = 3,
+  multiplierMat_b = 4,
+  tex_albedo_smp2d = 5,
+  tex_specular_smp2d = 6,
+  tex_normal_smp2d = 7,
+  diffuse_v3 = 8,
+  shininess_f = 9,
+  albedoFlag_b = 10,
+  specFlag_b = 11,
+  normalFlag_b = 12,
+  useDebug_b = 13
 };
 
 enum class RE_GBufferSk : int {
   Model_m4x4 = 0,
   VP_m4x4 = 1,
-  albedoFlag_b = 2,
-  diffuse_v3 = 3,
-  multiplierMat_b = 4,
-  normalFlag_b = 5,
-  shininess_f = 6,
-  specFlag_b = 7,
-  tex_albedo_smp2d = 8,
-  tex_normal_smp2d = 9,
-  tex_specular_smp2d = 10,
-  useDebug_b = 11
+  Norm_m4x4 = 2,
+  multiplierMat_b = 3,
+  tex_albedo_smp2d = 4,
+  tex_specular_smp2d = 5,
+  tex_normal_smp2d = 6,
+  diffuse_v3 = 7,
+  shininess_f = 8,
+  albedoFlag_b = 9,
+  specFlag_b = 10,
+  normalFlag_b = 11,
+  useDebug_b = 12
 };
 
 enum class RE_PostPr : int {
-  AveLum_f = 0,
-  BlendParticle_b = 1,
-  Blur_b = 2,
-  ColorTex_smp2d = 3,
-  DoToneMap_b = 4,
-  Exposure_f = 5,
-  GammaCorrect_b = 6,
-  MVP_m4x4 = 7,
-  ParticleTex_smp2d = 8,
-  SampleMap_b = 9,
-  SampleShadow_b = 10,
-  White_f = 11,
-  direction_flag_v2 = 12,
-  flip_x_coord_b = 13,
-  flip_y_coord_b = 14,
-  output2D_b = 15,
-  rgb2xyz_m3x3 = 16,
-  rotate_uv_mat_m4x4 = 17,
-  uv_rotate_b = 18,
-  xyz2rgb_m3x3 = 19
+  MVP_m4x4 = 0,
+  SampleShadow_b = 1,
+  flip_y_coord_b = 2,
+  flip_x_coord_b = 3,
+  uv_rotate_b = 4,
+  rotate_uv_mat_m4x4 = 5,
+  ColorTex_smp2d = 6,
+  ParticleTex_smp2d = 7,
+  rgb2xyz_m3x3 = 8,
+  xyz2rgb_m3x3 = 9,
+  AveLum_f = 10,
+  Exposure_f = 11,
+  White_f = 12,
+  DoToneMap_b = 13,
+  SampleMap_b = 14,
+  Blur_b = 15,
+  GammaCorrect_b = 16,
+  BlendParticle_b = 17,
+  output2D_b = 18,
+  direction_flag_v2 = 19
 };
 
 enum class RE_Text : int {
@@ -90,9 +95,9 @@ enum class RE_PingP : int {
 };
 
 enum class RE_Lumin : int {
-  computeLum_b = 0,
-  img_input_img2D = 1,
-  img_output_img2D = 2
+  img_input_img2D = 0,
+  img_output_img2D = 1,
+  computeLum_b = 2
 };
 
 enum class RE_Line : int {
@@ -105,12 +110,12 @@ enum class RE_LightSt : int {
 };
 
 enum class RE_Shadow : int {
-  LightSpace_m4x4 = 0,
-  MVP_m4x4 = 1
+  MVP_m4x4 = 0,
+  LightSpace_m4x4 = 1
 };
 
 enum class RE_ShadowSk : int {
-  LightSpace_m4x4 = 0,
-  MVP_m4x4 = 1
+  MVP_m4x4 = 0,
+  LightSpace_m4x4 = 1
 };
 

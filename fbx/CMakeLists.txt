@@ -11,14 +11,30 @@ include_directories(${CMAKE_SOURCE_DIR}/fbx/fbx_include
 
 # move dll to bin and use
 add_definitions("-DFBXSDK_SHARED")
-configure_file(${CMAKE_SOURCE_DIR}/fbx/lib/libfbxsdk.dll 
-               ${CMAKE_SOURCE_DIR}/bin/libfbxsdk.dll COPYONLY)
-find_library(FBX_LIB libfbxsdk ${CMAKE_SOURCE_DIR}/fbx/lib)
-if(NOT FBX_LIB)
-  message(FATAL_ERROR "FBX static library not found")
-endif()               
+if (WIN32)
+  configure_file(${CMAKE_SOURCE_DIR}/fbx/lib/libfbxsdk.dll 
+                ${CMAKE_SOURCE_DIR}/bin/libfbxsdk.dll COPYONLY)
+  find_library(FBX_LIB libfbxsdk ${CMAKE_SOURCE_DIR}/fbx/lib)
+  if(NOT FBX_LIB)
+    message(FATAL_ERROR "FBX static library not found")
+  endif() 
+else()
+  configure_file(${CMAKE_SOURCE_DIR}/fbx/lib/libfbxsdk.so
+                ${CMAKE_SOURCE_DIR}/bin/libfbxsdk.so COPYONLY)
+  set(FBX_LIB ${CMAKE_SOURCE_DIR}/bin/libfbxsdk.so)
+
+  check_cxx_compiler_flag(-ldl HAS_LDL)
+  if(NOT HAS_LDL)
+      message(FATAL_ERROR "-ldl not found in system")
+  endif()
+endif()              
 
 # add executable               
 add_executable(fbx_converter ${DD_FBX_HEADERS} ${DD_FBX_SOURCES} 
                ${CMAKE_SOURCE_DIR}/src/Pow2Assert.cpp)
-target_link_libraries(fbx_to_dd ${FBX_LIB})
+
+if (WIN32)               
+  target_link_libraries(fbx_converter ${FBX_LIB})
+else()
+target_link_libraries(fbx_converter ${FBX_LIB} "-ldl")
+endif()
