@@ -224,7 +224,8 @@ std::ofstream create_file(const char *name, const bool append) {
   }
   std::ofstream out_file(name, ios_flag);
 
-  POW2_VERIFY_MSG(out_file.is_open(), "create_file::Failed to create file", 0);
+  POW2_VERIFY_MSG(out_file.is_open(), "create_file::Failed to create file: %s", 
+                  name);
 
   if (!append) out_file << "// Enums for managing shader uniforms\n\n";
 
