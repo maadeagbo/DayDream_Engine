@@ -447,40 +447,41 @@ ddMat *create_material(obj_mat &mat_info) {
   // set size of texture id container
   mat->textures.resize(get_tex_idx(TexType::NULL_T));
   mat->base_color = mat_info.diff_raw;
-  cbuff<32> tex_id;
+  cbuff<32> tex_id, tex_name;
 
   if (mat_info.albedo_flag) {
-    ddTex2D *tex =
-        create_tex2D(mat_info.albedo_tex.str(), mat_info.mat_id.str());
+    tex_name.format("%s_diff", mat_info.mat_id.str());
+    ddTex2D *tex = create_tex2D(mat_info.albedo_tex.str(), tex_name.str());
     if (tex) set_texture(mat, tex->id, TexType::ALBEDO);
   }
   if (mat_info.spec_flag) {
-    ddTex2D *tex =
-        create_tex2D(mat_info.specular_tex.str(), mat_info.mat_id.str());
+    tex_name.format("%s_spec", mat_info.mat_id.str());
+    ddTex2D *tex = create_tex2D(mat_info.specular_tex.str(), tex_name.str());
     if (tex) set_texture(mat, tex->id, TexType::SPEC);
   }
   if (mat_info.ao_flag) {
-    ddTex2D *tex = create_tex2D(mat_info.ao_tex.str(), mat_info.mat_id.str());
+    tex_name.format("%s_ao", mat_info.mat_id.str());
+    ddTex2D *tex = create_tex2D(mat_info.ao_tex.str(), tex_name.str());
     if (tex) set_texture(mat, tex->id, TexType::AMBIENT);
   }
   if (mat_info.norm_flag) {
-    ddTex2D *tex =
-        create_tex2D(mat_info.normal_tex.str(), mat_info.mat_id.str());
+    tex_name.format("%s_norm", mat_info.mat_id.str());
+    ddTex2D *tex = create_tex2D(mat_info.normal_tex.str(), tex_name.str());
     if (tex) set_texture(mat, tex->id, TexType::NORMAL);
   }
   if (mat_info.rough_flag) {
-    ddTex2D *tex =
-        create_tex2D(mat_info.roughness_tex.str(), mat_info.mat_id.str());
+    tex_name.format("%s_rgh", mat_info.mat_id.str());
+    ddTex2D *tex = create_tex2D(mat_info.roughness_tex.str(), tex_name.str());
     if (tex) set_texture(mat, tex->id, TexType::ROUGH);
   }
   if (mat_info.metal_flag) {
-    ddTex2D *tex =
-        create_tex2D(mat_info.metalness_tex.str(), mat_info.mat_id.str());
+    tex_name.format("%s_met", mat_info.mat_id.str());
+    ddTex2D *tex = create_tex2D(mat_info.metalness_tex.str(), tex_name.str());
     if (tex) set_texture(mat, tex->id, TexType::METAL);
   }
   if (mat_info.emit_flag) {
-    ddTex2D *tex =
-        create_tex2D(mat_info.emissive_tex.str(), mat_info.mat_id.str());
+    tex_name.format("%s_emit", mat_info.mat_id.str());
+    ddTex2D *tex = create_tex2D(mat_info.emissive_tex.str(), tex_name.str());
     if (tex) set_texture(mat, tex->id, TexType::EMISSIVE);
   }
   // set multiplier material
@@ -489,26 +490,26 @@ ddMat *create_material(obj_mat &mat_info) {
 }
 
 void flip_im(unsigned char *image, const int width, const int height,
-								const int channels) {
-	// validate parameters
-	if (width < 0 || height < 0 || channels < 0) {
-		fprintf(stderr, "flip_image::Invalid paramters <%d::%d::%d>", width, height,
-						channels);
-		return;
-	}
-	// flip
-	for (int j = 0; j * 2 < height; j++) {
-		int idx_1 = width * channels * j;
-		int idx_2 = width * channels * (height - 1 - j);
-		for (int i = width * channels; i > 0; i--) {
-			unsigned char temp = image[idx_1];
-			image[idx_1] = image[idx_2];
-			image[idx_2] = temp;
-			// img_ptr.get()[idx_2] = image[idx_1];
-			idx_1++;
-			idx_2++;
-		}
-	}
+             const int channels) {
+  // validate parameters
+  if (width < 0 || height < 0 || channels < 0) {
+    fprintf(stderr, "flip_image::Invalid paramters <%d::%d::%d>", width, height,
+            channels);
+    return;
+  }
+  // flip
+  for (int j = 0; j * 2 < height; j++) {
+    int idx_1 = width * channels * j;
+    int idx_2 = width * channels * (height - 1 - j);
+    for (int i = width * channels; i > 0; i--) {
+      unsigned char temp = image[idx_1];
+      image[idx_1] = image[idx_2];
+      image[idx_2] = temp;
+      // img_ptr.get()[idx_2] = image[idx_1];
+      idx_1++;
+      idx_2++;
+    }
+  }
 }
 
 ddTex2D *create_tex2D(const char *path, const char *img_id) {
@@ -526,10 +527,10 @@ ddTex2D *create_tex2D(const char *path, const char *img_id) {
   // find and load image to RAM
   img_info.path[0] = path;
   unsigned char *temp = nullptr;
-  temp =
-      stbi_load(path, &img_info.width, &img_info.height, &img_info.channels, 4);
+  temp = stbi_load(path, &img_info.width, &img_info.height, &img_info.channels,
+                   STBI_rgb_alpha);
   POW2_VERIFY_MSG(temp != nullptr, "stbi failed to read image: %s", path);
-	//flip_im(temp, img_info.width, img_info.height, img_info.channels);
+  flip_im(temp, img_info.width, img_info.height, 4);
 
   // copy to dd_array and free stbi data
   img_info.image_data[0].resize(img_info.width * img_info.height * 4);
@@ -581,29 +582,29 @@ dd_array<OOBoundingBox> load_ddx(const char *path) {
     // check tag for information to parse
     if (strcmp("<size>", line) == 0) {
       line = _io.readNextLine();
-      bboxes.resize(get_int(line)); // get value & resize output array
+      bboxes.resize(get_int(line));  // get value & resize output array
     }
     if (strcmp("<box>", line) == 0) {
-      b_idx++; // update current box index
+      b_idx++;  // update current box index
     }
-    if (*line == 'j') {  // joint id
-      bboxes[b_idx].joint_idx = get_int(&line[2]); // set joint index for box
+    if (*line == 'j') {                             // joint id
+      bboxes[b_idx].joint_idx = get_int(&line[2]);  // set joint index for box
     }
-		if (*line == 'm') {  // mirror vector and flag
-			bboxes[b_idx].mirror = getVec3f(&line[2]);
-			bboxes[b_idx].mirror_flag = (bboxes[b_idx].mirror.x < 0.f ||
-																	 bboxes[b_idx].mirror.y < 0.f ||
-																	 bboxes[b_idx].mirror.z < 0.f);
-		}
+    if (*line == 'm') {  // mirror vector and flag
+      bboxes[b_idx].mirror = getVec3f(&line[2]);
+      bboxes[b_idx].mirror_flag =
+          (bboxes[b_idx].mirror.x < 0.f || bboxes[b_idx].mirror.y < 0.f ||
+           bboxes[b_idx].mirror.z < 0.f);
+    }
     if (*line == 'p') {  // position
       bboxes[b_idx].pos = getVec3f(&line[2]);
     }
-		if (*line == 'r') {  // rotation
-			bboxes[b_idx].rot = getQuat(&line[2]);
-		}
-		if (*line == 's') {  // scale
-			bboxes[b_idx].scale = getVec3f(&line[2]);
-		}
+    if (*line == 'r') {  // rotation
+      bboxes[b_idx].rot = getQuat(&line[2]);
+    }
+    if (*line == 's') {  // scale
+      bboxes[b_idx].scale = getVec3f(&line[2]);
+    }
     line = _io.readNextLine();
   }
 

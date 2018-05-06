@@ -50,6 +50,7 @@ function load()
 	args["parent"] = cam_agent_id
 	BBoxSkinnedMesh_assets.cam_01 = ddCam.new("cam_01", BBoxSkinnedMesh_assets.nav_agent:id())
 	BBoxSkinnedMesh_assets.cam_01:set_active(true)
+	BBoxSkinnedMesh_assets.cam_01:set_near(0.1)
 	BBoxSkinnedMesh_assets.cam_01:set_far(200.0)
 	ddLib.print( "Created camera: ", BBoxSkinnedMesh_assets.cam_01:id() )
 

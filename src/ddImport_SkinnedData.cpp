@@ -157,8 +157,9 @@ ddAnimClip* load_animation(const char* dda_file, const char* id) {
           a_clip->samples.resize(a_clip->num_frames);
 
           // calculate clip length
-          a_clip->length = (float)a_clip->num_frames / a_clip->fps;
-          a_clip->step_size = a_clip->length / a_clip->num_frames;
+          a_clip->step_size = 1.f / a_clip->fps;
+					a_clip->length = (float)a_clip->num_frames / a_clip->fps;
+					a_clip->length -= a_clip->step_size;
           for (unsigned i = 0; i < tf; i++) {  // resize storage bin
             a_clip->samples[i].pose.resize(a_clip->num_joints);
           }

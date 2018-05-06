@@ -64,29 +64,30 @@ do
   
 		-- load skeleton
 		ddAnimation.load_skeleton("sk_1", 
-			PROJECT_DIR.."/BBoxSkinnedMesh/sample/arissa.ddb")
+			PROJECT_DIR.."/BBoxSkinnedMesh/sample/vanguard_t_choonyung.ddb")
 		
 		-- load animation clip
 		ddAnimation.load_clip("sample01", 
-			PROJECT_DIR.."/BBoxSkinnedMesh/sample/Walking_0.dda")
+			PROJECT_DIR.."/BBoxSkinnedMesh/sample/Walking2_0.dda")
 		
 		-- load mesh
 		assets.sample_mesh = ddModel.new(
-			PROJECT_DIR.."/BBoxSkinnedMesh/sample/arissa.ddg")
+			PROJECT_DIR.."/BBoxSkinnedMesh/sample/vanguard.ddg")
 		
 		-- load agent
 		assets.sample = ddAgent.new("sample_agent", 0.0, "box")
-		assets.sample:set_pos(1.0, 0.0, 0.0)
+		assets.sample:set_pos(0.0, 0.0, 0.0)
 	
 		-- add mesh to agent
 		assets.sample:add_mesh(assets.sample_mesh:id(), 0.1, 100.0)
 		
 		-- add skeleton to agent
 		assets.sample:set_skeleton("sk_1")
+		
 		-- add clip to agent
 		assets.sample_clip = assets.sample:add_animation("sample_walk", "sample01")
 		assets.sample_clip[ddEnums.ACTIVE] = true
-		assets.sample_clip[ddEnums.PLAY_SPEED] = 0.0
+		assets.sample_clip[ddEnums.PLAY_SPEED] = 1.2
 		assets.sample_clip[ddEnums.LOCAL_TIME] = 0.01
 		--assets.sample_clip[ddEnums.INTERPOLATE] = false
 		assets.sample_clip[ddEnums.LOOP] = true

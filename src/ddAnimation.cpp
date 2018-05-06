@@ -94,7 +94,7 @@ void state_to_local_pose(ddAnimInfo& a_info, ddAnimState* a_state,
   }
 
   // correct local time (if looped, use modulus to get corrected time)
-  if (a_state->local_time >= (a_clip->length - a_clip->step_size)) {
+  if (a_state->local_time > (a_clip->length)) {
     // loop forwards
     if (a_state->flag_loop) {
       a_state->local_time = fmodf(a_state->local_time, a_clip->length);
@@ -117,11 +117,8 @@ void state_to_local_pose(ddAnimInfo& a_info, ddAnimState* a_state,
 
   // use local time and step-size to get frame of animation
   const unsigned idx_a = (unsigned)(a_state->local_time / a_clip->step_size);
-
   // get interpolating frame (i.e. next frame of animation)
-  unsigned idx_b =
-      (idx_a + 1) < a_clip->num_frames ? (idx_a + 1) : a_clip->num_frames - 1;
-  idx_b = (idx_b == (a_clip->num_frames - 1)) && a_state->flag_loop ? 0 : idx_b;
+  unsigned idx_b = idx_a + 1;
 
   const float alpha =
       (a_state->local_time - (idx_a * a_clip->step_size)) / a_clip->step_size;

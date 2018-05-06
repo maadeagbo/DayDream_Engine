@@ -50,7 +50,7 @@ void main() {
 
 	// normalize and create TBN matrix
 	vec3 tanNorm = normalize( v_tan ).xyz;
-	vec3 norm = normalize( v_norm ).xyz;
+	vec3 norm = normalize( Norm * v_norm ).xyz;
 	vec3 bitanNorm = cross(norm, tanNorm);
 
     // output to fragment shader
