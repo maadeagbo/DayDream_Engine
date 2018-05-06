@@ -48,5 +48,11 @@ if (NOT DD_GRAPHICS_API_VULKAN)
 							${CMAKE_SOURCE_DIR}/graphics_lib/source/imgui.cpp
 							${CMAKE_SOURCE_DIR}/graphics_lib/source/imgui_draw.cpp
 							${IMGUI_INC})
+							
+	# Shader reflection executable
+	add_executable(shader_reflect 
+		${CMAKE_SOURCE_DIR}/graphics_lib/source/reflect_main.cpp
+		${CMAKE_SOURCE_DIR}/src/Pow2Assert.cpp)
+	target_link_libraries(shader_reflect glfw dd_graphics dd_shader 
+												${OPENGL_gl_LIBRARY})
 endif()
-#install(TARGETS dd_graphics DESTINATION lib)

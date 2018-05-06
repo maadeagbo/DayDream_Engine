@@ -1,0 +1,60 @@
+comments are denoted by '#' sign
+'<> </>' (open and close respectively) denotes sections. Sections are defined as:
+DDM extension: (3D Mesh)
+    name: 		name of asset
+    buffer:		buffer size data:
+    	v:		vertex structure buffer size
+    	e:		element buffer size
+    	m:		material buffer size
+    material:	material data:
+        n:      name
+        D:      diffuse texture
+        N:      normal texture
+        S:      specular texture
+        R:      roughness texture
+        M:      metalness texture
+        E:      emit texture
+        A:      ambient occlusion texture
+        a:      (float) ambient->           x, y, z
+        d:      (float) diffuse->           x, y, z
+        s:      (float) specular->          x, y, z
+        e:      (float) emission->          x, y, z
+        x:      (float) translucency->      x
+        y:      (float) reflectivity->      x
+        z:      (float) specular factor->   x
+    vertex:		vertex data:
+    	v:		(float) vertex-> 			x, y, z
+    	n:		(float) normal->			x, y, z
+    	t:		(float) tangent->			x, y, z
+    	u:		(float) uv coord->			x, y
+    	j:		(32-bit uint) joint index->	x, y, z, w
+    	b:		(float) joint blending->	x, y, z, w
+    ebo:		triangle indices data
+        s:      (unsigned int) size->       x
+        m:      material index->            x
+    	-:		(32-bit uint) indices->		x, y, z
+
+DDB extension: (Skeleton heirarchy)
+    size:       (8-bit uint) # of joints    x
+    global:     joint to world space
+        p:      (float) position            x, y, z
+        r:      (float) rotation            x, y, z
+        s:      (float) scale               x, y, z
+    joints:     skeletal joint information
+        -:      (uint)name, index, parent   x, y, z
+        p:      (float) position            x, y, z
+        r:      (float) rotation            x, y, z
+        s:      (float) scale               x, y, z
+
+DDA extension: (Animation clip)
+    framerate:  (float) base animation framerate
+	repeat:		(uint) 0 or 1 (false or true)
+    buffer:		buffer size data:
+	    j:      (8-bit uint) # of joints    x
+	    f:      (uint) # of frames          x
+    animation:  per joint animation information
+        -:      (uint) index                x
+        r:      (float) rotation            x, y, z
+        p:      (float) position            x, y, z
+
+End file may be compressed w/ gz extension to save on size

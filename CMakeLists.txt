@@ -298,12 +298,15 @@ if (UNIX)
 	)
 endif()
 
-# Shader reflection executable
-add_executable(dd_shader_reflect 
-	${CMAKE_SOURCE_DIR}/graphics_lib/source/reflect_main.cpp
-	${CMAKE_SOURCE_DIR}/src/Pow2Assert.cpp)
-target_link_libraries(dd_shader_reflect 
-	glfw dd_graphics dd_shader ${OPENGL_gl_LIBRARY})
+# add fbx library
+add_subdirectory(${PROJECT_SOURCE_DIR}/fbx)
+
+# # Shader reflection executable
+# add_executable(dd_shader_reflect 
+# 	${CMAKE_SOURCE_DIR}/graphics_lib/source/reflect_main.cpp
+# 	${CMAKE_SOURCE_DIR}/src/Pow2Assert.cpp)
+# target_link_libraries(dd_shader_reflect 
+# 	glfw dd_graphics dd_shader ${OPENGL_gl_LIBRARY})
 
 # Engine executable
 add_executable(dd_engine
