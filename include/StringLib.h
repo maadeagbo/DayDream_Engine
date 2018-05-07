@@ -4,13 +4,13 @@
 */
 #pragma once
 
-#include <string.h>
+#include "Container.h"
 #include <cstdio>
 #include <cstdlib>
-#include "Container.h"
+#include <string.h>
 
 /** \brief Hashes const char* strings */
-static size_t getCharHash(const char* s) {
+static size_t getCharHash(const char *s) {
   size_t h = 5381;
   int c;
   while ((c = *s++)) h = ((h << 5) + h) + c;
@@ -22,40 +22,40 @@ static size_t getCharHash(const char* s) {
 template <const int T>
 struct cbuff {
   cbuff() { set(""); }
-  cbuff(const char* in_str) { set(in_str); }
+  cbuff(const char *in_str) { set(in_str); }
   /** \brief Performs strcmp(cstr, in_str) (0 means equal) */
-  int compare(const char* in_str) { return strcmp(cstr, in_str); }
+  int compare(const char *in_str) { return strcmp(cstr, in_str); }
 
   /** \brief Returns true if cstr contains in_str */
-  bool contains(const char* in_str) { return strstr(cstr, in_str) != nullptr; }
+  bool contains(const char *in_str) { return strstr(cstr, in_str) != nullptr; }
 
   /** \brief Compares the hashed value of the two cbuff's (fast) */
-  bool operator==(const cbuff& other) const { return hash == other.hash; }
+  bool operator==(const cbuff &other) const { return hash == other.hash; }
 
   /** \brief Sets and hashes internal cstr to in_str */
-  cbuff& operator=(const char* in_str) {
+  cbuff &operator=(const char *in_str) {
     set(in_str);
     return *this;
   }
 
   /** \brief Performs fast less-than coparison (this->hash < other->hash) */
-  bool operator<(const cbuff& other) const { return hash < other.hash; }
+  bool operator<(const cbuff &other) const { return hash < other.hash; }
 
   /** \brief Sets and hashes internal cstr to in_str */
-  void set(const char* in_str) {
+  void set(const char *in_str) {
     snprintf(cstr, T, "%s", in_str);
     hash = getCharHash(cstr);
   }
 
   /** \brief Sets and hashes internal cstr using format string */
   template <typename... Args>
-  void format(const char* format_str, const Args&... args) {
+  void format(const char *format_str, const Args &... args) {
     snprintf(cstr, T, format_str, args...);
     hash = getCharHash(cstr);
   }
 
   /** \brief Returns const char* internal representation */
-  const char* str() const { return cstr; }
+  const char *str() const { return cstr; }
   /** \brief Returns hashed string internal representation */
   size_t gethash() const { return hash; }
 
@@ -71,13 +71,13 @@ namespace StrSpace {
  * WARNING: strToSplit will be cut off if greater than 1024 chars
  */
 template <const unsigned T>
-dd_array<cbuff<T>> tokenize1024(const char* strToSplit, const char* delim) {
+dd_array<cbuff<T>> tokenize1024(const char *strToSplit, const char *delim) {
   char buff[1024];
   snprintf(buff, 1024, "%s", strToSplit);
   dd_array<cbuff<T>> output;
 
   // count number of delims
-  const char* str_ptr = strToSplit;
+  const char *str_ptr = strToSplit;
   unsigned numTkns = 0, iter = 0;
   while (*str_ptr) {
     if (*str_ptr == *delim) {
@@ -88,7 +88,7 @@ dd_array<cbuff<T>> tokenize1024(const char* strToSplit, const char* delim) {
   numTkns += 1;
   output.resize(numTkns);
   // copy to array
-  char* nxt = strtok(buff, delim);
+  char *nxt = strtok(buff, delim);
 
   while (nxt && iter < output.size()) {
     output[iter].set(nxt);

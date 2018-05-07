@@ -3,6 +3,7 @@
 #include "ddModel.h"
 #include "ddTimer.h"
 #include "imgui.h"
+#include "imgui_tabs.h"
 
 namespace {
 // bbox container
@@ -14,6 +15,8 @@ cbuff<8> scale_str = "scale";
 cbuff<8> mirror_str = "mirror";
 cbuff<8> joint_str = "jnts";
 
+cbuff<8> output_str = "output";
+
 dd_array<float> float_buf3(3);
 dd_array<int64_t> int_buf3(3);
 dd_array<float> float_buf6(6);
@@ -21,10 +24,15 @@ dd_array<float> float_buf6(6);
 BoundingBox ref_bbox = BoundingBox(glm::vec3(-0.5), glm::vec3(0.5));
 
 // text buffer
-char txt_in[512];
+char export_name[32];
+char skeleton_in[512];
 
 // time tracker
 float check_time = 0.f;
+
+// tab bar controls
+const char *tab_name[2] = {"Create", "Import"};
+bool tab_open[2] = {true, true};
 }  // namespace
 
 //*****************************************************************************
@@ -312,7 +320,7 @@ static int modify_bbox(lua_State *L) {
 
   bool win_on = bb_t && l_ctrl;
   if (win_on) {
-    ImColor col(0.f, 0.f, 1.f, 1.f);
+    ImVec4 col(0.f, 0.f, 1.f, 1.f);
     ImGui::PushStyleColor(ImGuiCol_::ImGuiCol_TitleBg, col);
     ImGui::PushStyleColor(ImGuiCol_::ImGuiCol_TitleBgActive, col);
 
@@ -452,11 +460,20 @@ static int set_ctrl(lua_State *L) {
 
 static int get_ctrl(lua_State *L) {
   LvlCtrl *lc_ptr = *check_lvlctrl(L);
-  unsigned idx = (unsigned)luaL_checkinteger(L, 2);
+  if ((bool)lua_isinteger(L, 2)) {
+    unsigned idx = (unsigned)luaL_checkinteger(L, 2);
 
-  if (idx < (unsigned)LvlCtrlEnums::NUM_FLAGS) {
-    lua_pushboolean(L, lc_ptr->flags[idx]);
-    return 1;
+    if (idx < (unsigned)LvlCtrlEnums::NUM_FLAGS) {
+      lua_pushboolean(L, lc_ptr->flags[idx]);
+      return 1;
+    } 
+  } else if ((bool)lua_isstring(L, 2)) {
+    cbuff<8> id = (const char*)luaL_checkstring(L, 2);
+
+    if (id == output_str) {
+      lua_pushstring(L, lc_ptr->output.str());
+      return 1;
+    }
   }
   lua_pushnil(L);
   return 1;
@@ -515,28 +532,55 @@ int render_sk_controls(lua_State *L) {
   bool win_on = true;
   bool output[2] = {false, false};
   check_time += ddTime::get_frame_time();
+  
+  LvlCtrl *lc_ptr = *check_lvlctrl(L);
 
   ImGui::Begin("Bounding Box Controls", &win_on,
                ImGuiWindowFlags_AlwaysAutoResize);
 
-  // button for creating new bounding box
-  if (ImGui::Button("New Box") && check_time > 0.5f) {
-    output[0] = true;
-    check_time = 0.f;
-  }
-  ImGui::SameLine();
+  // tab bar "Creation"
+  ImGui::BeginTabBar("Box Creation", ImGuiTabBarFlags_SizingPolicyDefault_);
 
-  // button for exporting
-  if (ImGui::Button("Export") && check_time > 0.5f) {
-    output[1] = true;
-    check_time = 0.f;
+  for (unsigned i = 0; i < 2; i++) {
+    //const bool selected = ImGui::TabItem(tab_name[i], &tab_open[i]);
+    const bool selected = ImGui::TabItem(tab_name[i]);
+    if (!selected) continue;
+
+    switch (i) {
+      case 0:
+        // button for creating new bounding box
+        if (ImGui::Button("New Box") && check_time > 0.5f) {
+          output[0] = true;
+          check_time = 0.f;
+        }
+        ImGui::SameLine();
+
+        // button for exporting
+        if (ImGui::Button("Export") && check_time > 0.5f) {
+          output[1] = true;
+          check_time = 0.f;
+        }
+
+        // text input box for export
+        if (ImGui::InputText("Export ID", export_name, 32,
+                              ImGuiInputTextFlags_EnterReturnsTrue)) {
+          lc_ptr->output = export_name;
+        }
+        break;
+      case 1:
+        // text input box for loading skeleton
+        if (ImGui::InputText("Skeleton Path", skeleton_in, 512,
+                              ImGuiInputTextFlags_EnterReturnsTrue)) {
+          //
+        }
+        break;
+      default:
+        break;
+    }
   }
 
-  // text input box for loading skeleton
-  if (ImGui::InputText("Skeleton Path", txt_in, 512,
-                       ImGuiMouseCursor_TextInput)) {
-		// load up skeleton
-  }
+  // tab bar "Creation"
+  ImGui::EndTabBar();
 
   ImGui::End();
 

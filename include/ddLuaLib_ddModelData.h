@@ -12,7 +12,6 @@ const unsigned ddModelData_ptr_size = sizeof(ddModelData *);
  * \brief "New" function for ddModelData
  */
 static int new_ddModelData(lua_State *L) {
-
   int num_args = lua_gettop(L);
   if (num_args == 0) {
     ddTerminal::post(
@@ -32,7 +31,7 @@ static int new_ddModelData(lua_State *L) {
   const char *ddmg_file = lua_tostring(L, curr_arg);
 
   // create new model data
-	ddModelData *temp = nullptr;
+  ddModelData *temp = nullptr;
   cbuff<512> path = ddmg_file;
   if (path.contains(".ddm")) {
     temp = load_ddm(ddmg_file);
@@ -42,13 +41,13 @@ static int new_ddModelData(lua_State *L) {
 
   if (!temp) {
     ddTerminal::post("[error]ddModelData::Failed to allocate new model");
-		lua_pushnil(L);
+    lua_pushnil(L);
     return 1;
   }
 
-	// create userdata for instance
-	ddModelData **mdl = (ddModelData **)lua_newuserdata(L, ddModelData_ptr_size);
-	(*mdl) = temp;
+  // create userdata for instance
+  ddModelData **mdl = (ddModelData **)lua_newuserdata(L, ddModelData_ptr_size);
+  (*mdl) = temp;
   // skip loading if using opengl api and on separate thread
   bool skip = DD_GRAPHICS_API == 0 && ddAssets::load_screen_check();
   if (!skip) {

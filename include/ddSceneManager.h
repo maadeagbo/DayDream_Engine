@@ -7,7 +7,7 @@
 /** \brief List off agents visible from a selected camera's frustum */
 struct ddVisList {
   size_t cam_id = 0;
-  dd_array<ddAgent*> visible_agents;
+  dd_array<ddAgent *> visible_agents;
   dd_array<float> sq_dist;
 };
 
@@ -22,17 +22,17 @@ glm::uvec2 get_screen_dimensions();
 /**
  * \brief Get currently active camera (selects to 1st active camera it finds)
  */
-ddCam* get_active_cam();
+ddCam *get_active_cam();
 
 /**
  * \brief Calculate camera view matrix
  */
-glm::mat4 calc_view_matrix(const ddCam* cam);
+glm::mat4 calc_view_matrix(const ddCam *cam);
 
 /**
  * \brief Calculate perspective projection matrix
  */
-glm::mat4 calc_p_proj_matrix(const ddCam* cam);
+glm::mat4 calc_p_proj_matrix(const ddCam *cam);
 
 /**
  * \brief Calculate orthographic projection matrix
@@ -42,35 +42,35 @@ glm::mat4 calc_p_proj_matrix(const ddCam* cam);
  * \param top top extent off coordinate plane
  * \param bottom bottom extent off coordinate plane
  */
-glm::mat4 calc_o_proj_matrix(const ddCam* cam, const float l_side,
+glm::mat4 calc_o_proj_matrix(const ddCam *cam, const float l_side,
                              const float r_side, const float top,
                              const float bottom);
 
 /**
  * \brief Calculate camera frustum
  */
-FrustumBox get_current_frustum(const ddCam* cam);
+FrustumBox get_current_frustum(const ddCam *cam);
 
 /**
  * \brief Calculate light volume radius
  */
-float calc_lightvolume_radius(const ddLBulb* blb);
+float calc_lightvolume_radius(const ddLBulb *blb);
 
 /**
  * \brief Get all active lights in scene
  * \param _lights must be allocated to size ASSETS_CONTAINER_MIN_SIZE
  */
-void get_active_lights(dd_array<ddLBulb*>& _lights);
+void get_active_lights(dd_array<ddLBulb *> &_lights);
 
 /**
  * \brief Get currently active directional light
  */
-ddLBulb* get_shadow_light();
+ddLBulb *get_shadow_light();
 
 /**
  * \brief Get camera's forward direction
  */
-glm::vec3 cam_forward_dir(const ddCam* cam, const ddBody* cam_parent_body);
+glm::vec3 cam_forward_dir(const ddCam *cam, const ddBody *cam_parent_body);
 
 /**
  * \brief Update positions of constraints in bullet physics
@@ -80,13 +80,13 @@ void update_scene_graph();
 /**
  * \brief Create list of visible objects in the scene w/ dist from camera
  */
-bool reload_visibility_list(const size_t cam_id, const glm::vec3& cam_pos,
-                            const FrustumBox& fr);
+bool reload_visibility_list(const size_t cam_id, const glm::vec3 &cam_pos,
+                            const FrustumBox &fr);
 
 /**
  * \brief Returns list of visible objects in the scene
  */
-const ddVisList* get_visibility_list(const size_t cam_id);
+const ddVisList *get_visibility_list(const size_t cam_id);
 
 /**
  * \brief Check if ray intersects agent

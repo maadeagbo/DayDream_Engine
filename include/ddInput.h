@@ -107,24 +107,24 @@ void update_mouse_wheel(SDL_MouseWheelEvent& key);
  * \brief Retrieve input for current frame
  * \return InputData containing key press information
  */
-const InputData& get_input();
+const InputData &get_input();
 
 /**
  * \brief Make available input data to lua script
  */
-void send_upstream_to_lua(lua_State* L);
+void send_upstream_to_lua(lua_State *L);
 }  // namespace ddInput
 
 /** \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine */
-void dd_key_callback(GLFWwindow* window, int key, int scancode, int action,
+void dd_key_callback(GLFWwindow *window, int key, int scancode, int action,
                      int mods);
 
 /** \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine */
-void dd_mouse_pos_callback(GLFWwindow* window, double xpos, double ypos);
+void dd_mouse_pos_callback(GLFWwindow *window, double xpos, double ypos);
 
 /** \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine */
-void dd_mouse_click_callback(GLFWwindow* window, int button, int action,
+void dd_mouse_click_callback(GLFWwindow *window, int button, int action,
                              int mods);
 
 /** \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine */
-void dd_scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+void dd_scroll_callback(GLFWwindow *window, double xoffset, double yoffset);

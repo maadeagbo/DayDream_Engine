@@ -2,8 +2,8 @@
 #include <string>
 
 namespace {
-	/** \brief Reference bounding box for all OOBB */
-	const BoundingBox dd_ref_bbox = BoundingBox(glm::vec3(-0.5f), glm::vec3(0.5f));
+/** \brief Reference bounding box for all OOBB */
+const BoundingBox dd_ref_bbox = BoundingBox(glm::vec3(-0.5f), glm::vec3(0.5f));
 }
 
 /// \brief Set the 8 corners of bounding box
@@ -157,9 +157,9 @@ void BoundingBox::SetLineBuffer() {
   buffer[23] = glm::vec4(corner1, 1.f);
 }
 
-glm::vec4 getVec4f(const char* str) {
+glm::vec4 getVec4f(const char *str) {
   glm::vec4 v4;
-  char* nxt;
+  char *nxt;
   v4[0] = strtof(str, &nxt);
   nxt++;
   v4[1] = strtof(nxt, &nxt);
@@ -170,9 +170,9 @@ glm::vec4 getVec4f(const char* str) {
   return v4;
 }
 
-glm::uvec4 getVec4u(const char* str) {
+glm::uvec4 getVec4u(const char *str) {
   glm::uvec4 v4;
-  char* nxt;
+  char *nxt;
   v4[0] = strtoul(str, &nxt, 10);
   nxt++;
   v4[1] = strtoul(nxt, &nxt, 10);
@@ -183,18 +183,18 @@ glm::uvec4 getVec4u(const char* str) {
   return v4;
 };
 
-glm::vec3 getVec3f(const char* str) {
+glm::vec3 getVec3f(const char *str) {
   glm::vec3 v3;
-  char* nxt;
+  char *nxt;
   v3[0] = strtof(str, &nxt);
   v3[1] = strtof(nxt, &nxt);
   v3[2] = strtof(nxt, nullptr);
   return v3;
 };
 
-glm::vec2 getVec2f(const char* str) {
+glm::vec2 getVec2f(const char *str) {
   glm::vec2 v2;
-  char* nxt;
+  char *nxt;
   v2[0] = strtof(str, &nxt);
   nxt++;
   v2[1] = strtof(nxt, nullptr);
@@ -202,8 +202,8 @@ glm::vec2 getVec2f(const char* str) {
 }
 
 /// \brief Translate 3-component vector to quaternion
-glm::quat getQuat(const char* str) {
-  char* nxt;
+glm::quat getQuat(const char *str) {
+  char *nxt;
   float x, y, z;
   x = strtof(str, &nxt);
   nxt++;
@@ -224,8 +224,8 @@ std::string Vec4f_Str(const glm::vec4 vIn) {
   return std::string(buff);
 }
 
-glm::mat4 createMatrix(const glm::vec3& pos, const glm::vec3& rot,
-                       const glm::vec3& scale) {
+glm::mat4 createMatrix(const glm::vec3 &pos, const glm::vec3 &rot,
+                       const glm::vec3 &scale) {
   glm::mat4 mt = glm::translate(glm::mat4(), pos);
   glm::mat4 mrx =
       glm::rotate(glm::mat4(), glm::radians(rot.x), glm::vec3(1.f, 0.f, 0.f));
@@ -263,14 +263,14 @@ void printGlmMat(glm::mat4 mat) {
 }
 
 const BoundingBox OOBoundingBox::get_bbox() const {
-	glm::mat4 identity = glm::mat4();
-	glm::mat4 mt = glm::translate(identity, pos);
-	glm::mat4 mr = glm::mat4_cast(rot);
-	glm::mat4 ms = glm::scale(identity, scale);
-	glm::mat4 mm = glm::scale(identity, mirror);
+  glm::mat4 identity = glm::mat4();
+  glm::mat4 mt = glm::translate(identity, pos);
+  glm::mat4 mr = glm::mat4_cast(rot);
+  glm::mat4 ms = glm::scale(identity, scale);
+  glm::mat4 mm = glm::scale(identity, mirror);
 
-	BoundingBox temp = dd_ref_bbox.transformCorners(mt * mr * ms);
-	return temp.transformCorners(mm);
+  BoundingBox temp = dd_ref_bbox.transformCorners(mt * mr * ms);
+  return temp.transformCorners(mm);
 }
 
 //****************************************************************************
@@ -278,32 +278,33 @@ const BoundingBox OOBoundingBox::get_bbox() const {
 //****************************************************************************
 
 #define DDMODEL_META_NAME "LuaClass.ddModel"
-#define check_ddModel(L) (ddModelData**)luaL_checkudata(L, 1, DDMODEL_META_NAME)
+#define check_ddModel(L) \
+  (ddModelData **)luaL_checkudata(L, 1, DDMODEL_META_NAME)
 
-const char* ddModelData_meta_name() { return DDMODEL_META_NAME; }
+const char *ddModelData_meta_name() { return DDMODEL_META_NAME; }
 
-static int get_id(lua_State* L);
+static int get_id(lua_State *L);
 
-static int to_string(lua_State* L);
+static int to_string(lua_State *L);
 
 static const struct luaL_Reg mdl_methods[] = {
     {"id", get_id}, {"__tostring", to_string}, {NULL, NULL}};
 
-void log_meta_ddModelData(lua_State* L) {
+void log_meta_ddModelData(lua_State *L) {
   luaL_newmetatable(L, DDMODEL_META_NAME);  // create meta table
   lua_pushvalue(L, -1);                     /* duplicate the metatable */
   lua_setfield(L, -2, "__index");           /* mt.__index = mt */
   luaL_setfuncs(L, mdl_methods, 0);         /* register metamethods */
 }
 
-static int get_id(lua_State* L) {
-  ddModelData* mdl = *check_ddModel(L);
+static int get_id(lua_State *L) {
+  ddModelData *mdl = *check_ddModel(L);
   lua_pushinteger(L, mdl->id);
   return 1;
 }
 
-static int to_string(lua_State* L) {
-  ddModelData* mdl = *check_ddModel(L);
+static int to_string(lua_State *L) {
+  ddModelData *mdl = *check_ddModel(L);
   std::string buff;
 
   cbuff<128> out;

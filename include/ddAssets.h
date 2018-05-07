@@ -18,18 +18,18 @@
 #endif  // !ASSETS_CONTAINER_MIN_SIZE
 
 #define ASSET_DECL(TYPE)                \
-  TYPE* spawn_##TYPE(const size_t id);  \
+  TYPE *spawn_##TYPE(const size_t id);  \
   bool destroy_##TYPE(const size_t id); \
-  dd_array<TYPE*> get_all_##TYPE();     \
-  TYPE* find_##TYPE(const size_t id);
+  dd_array<TYPE *> get_all_##TYPE();    \
+  TYPE *find_##TYPE(const size_t id);
 
 #define ASSET_DECL_PTR(TYPE)            \
-  TYPE* spawn_##TYPE(const size_t id);  \
+  TYPE *spawn_##TYPE(const size_t id);  \
   bool destroy_##TYPE(const size_t id); \
-  TYPE* find_##TYPE(const size_t id);
+  TYPE *find_##TYPE(const size_t id);
 
 #define ASSET_DEF(TYPE, CONTAINER)                 \
-  TYPE* spawn_##TYPE(const size_t id) {            \
+  TYPE *spawn_##TYPE(const size_t id) {            \
     uint32_t free_idx = 0;                         \
     if (!fl_##CONTAINER.nxt_free_slot(free_idx)) { \
       return nullptr;                              \
@@ -51,16 +51,16 @@
       return true;                                 \
     }                                              \
   }                                                \
-  dd_array<TYPE*> get_all_##TYPE() {               \
-    dd_array<TYPE*> ids(map_##CONTAINER.size());   \
+  dd_array<TYPE *> get_all_##TYPE() {              \
+    dd_array<TYPE *> ids(map_##CONTAINER.size());  \
     unsigned i = 0;                                \
-    for (auto& idx : map_##CONTAINER) {            \
+    for (auto &idx : map_##CONTAINER) {            \
       ids[i] = &CONTAINER[idx.second];             \
       i++;                                         \
     }                                              \
     return ids;                                    \
   }                                                \
-  TYPE* find_##TYPE(const size_t id) {             \
+  TYPE *find_##TYPE(const size_t id) {             \
     if (map_##CONTAINER.count(id) == 0) {          \
       return nullptr;                              \
     } else {                                       \
@@ -69,7 +69,7 @@
   }
 
 #define ASSET_DEF_PTR(TYPE, CONTAINER)             \
-  TYPE* spawn_##TYPE(const size_t id) {            \
+  TYPE *spawn_##TYPE(const size_t id) {            \
     uint32_t free_idx = 0;                         \
     if (!fl_##CONTAINER.nxt_free_slot(free_idx)) { \
       return nullptr;                              \
@@ -91,7 +91,7 @@
       return true;                                 \
     }                                              \
   }                                                \
-  TYPE* find_##TYPE(const size_t id) {             \
+  TYPE *find_##TYPE(const size_t id) {             \
     if (map_##CONTAINER.count(id) == 0) {          \
       return nullptr;                              \
     } else {                                       \

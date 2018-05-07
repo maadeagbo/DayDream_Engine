@@ -35,5 +35,5 @@ void cleanup();
  * \brief Add task to queue
  * \return Newly created particle task (if queue still has space)
  */
-bool add_task(ddPTask& new_task);
+bool add_task(ddPTask &new_task);
 };

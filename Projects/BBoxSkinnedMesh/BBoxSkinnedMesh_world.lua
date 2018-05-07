@@ -64,7 +64,7 @@ do
   
 		-- load skeleton
 		ddAnimation.load_skeleton("sk_1", 
-			PROJECT_DIR.."/BBoxSkinnedMesh/sample/arissa.ddb")
+			PROJECT_DIR.."/BBoxSkinnedMesh/sample/vanguard_t_choonyung.ddb")
 		
 		-- load animation clip
 		ddAnimation.load_clip("sample01", 
@@ -72,28 +72,30 @@ do
 		
 		-- load mesh
 		assets.sample_mesh = ddModel.new(
-			PROJECT_DIR.."/BBoxSkinnedMesh/sample/arissa.ddg")
+			PROJECT_DIR.."/BBoxSkinnedMesh/sample/vg.ddg")
 		
 		-- load agent
 		assets.sample = ddAgent.new("sample_agent", 0.0, "box")
 		assets.sample:set_pos(0.0, 0.0, 0.0)
 	
 		-- add mesh to agent
-		assets.sample:add_mesh(assets.sample_mesh:id(), 0.1, 100.0)
+		success_0 = assets.sample:add_mesh(assets.sample_mesh:id(), 0.1, 100.0)
 		
 		-- add skeleton to agent
-		assets.sample:set_skeleton("sk_1")
+		success_1 = assets.sample:set_skeleton("sk_1")
 		
-		-- add clip to agent
-		assets.sample_clip = assets.sample:add_animation("sample_walk", "sample01")
-		assets.sample_clip[ddEnums.ACTIVE] = true
-		assets.sample_clip[ddEnums.PLAY_SPEED] = 0.2
-		assets.sample_clip[ddEnums.LOCAL_TIME] = 0.01
-		--assets.sample_clip[ddEnums.INTERPOLATE] = false
-		assets.sample_clip[ddEnums.LOOP] = true
-	
-		-- add specialized bounding box to agent
-		assets.sample:add_oobb(PROJECT_DIR.."/BBoxSkinnedMesh/output/first.ddx")
+		if success_0 and success_1 then
+			-- add clip to agent
+			assets.sample_clip = assets.sample:add_animation("sample_walk", "sample01")
+			assets.sample_clip[ddEnums.ACTIVE] = true
+			assets.sample_clip[ddEnums.PLAY_SPEED] = 0.2
+			assets.sample_clip[ddEnums.LOCAL_TIME] = 0.01
+			--assets.sample_clip[ddEnums.INTERPOLATE] = false
+			assets.sample_clip[ddEnums.LOOP] = true
+		
+			-- add specialized bounding box to agent
+			assets.sample:add_oobb(PROJECT_DIR.."/BBoxSkinnedMesh/output/first.ddx")
+		end
 		
 		ddLib.print("sample: ", tostring(assets.sample))
 	end

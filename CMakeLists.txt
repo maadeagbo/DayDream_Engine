@@ -274,8 +274,10 @@ foreach(_proj_source IN ITEMS ${SCRIPTS})
 endforeach()
 
 include_directories(${CMAKE_SOURCE_DIR}/include
-	${PROJECT_SOURCE_DIR}/graphics_lib/include
-	${CMAKE_SOURCE_DIR}/glm/
+	${CMAKE_SOURCE_DIR}/glm
+	${CMAKE_SOURCE_DIR}/graphics_lib/include
+	${CMAKE_SOURCE_DIR}/graphics_lib/gui_lib
+	${CMAKE_SOURCE_DIR}/imgui
 	${PROJ_HEADERS}
 	${LUA_PATH}
 	${BULLET_PATH}
@@ -292,9 +294,9 @@ if (UNIX)
 	add_custom_target(
 		clangformat
 		COMMAND /usr/bin/clang-format
-		-style=google
+		-style=file
 		-i
-		${SOURCES} ${PROJECT_SOURCES}
+		${SOURCES} ${PROJECT_SOURCES} ${DD_GRAPHICS_SRC} ${DD_GRAPHICS_INC}
 	)
 endif()
 

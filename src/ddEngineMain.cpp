@@ -1,6 +1,6 @@
 #include "ddEngine.h"
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
   ddEngine engine;
   engine.load();
   engine.startup_lua();

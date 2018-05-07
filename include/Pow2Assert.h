@@ -37,14 +37,14 @@ enum FailBehavior {
   Continue,
 };
 
-typedef FailBehavior (*Handler)(const char* condition, const char* msg,
-                                const char* file, int line);
+typedef FailBehavior (*Handler)(const char *condition, const char *msg,
+                                const char *file, int line);
 
 Handler GetHandler();
 void SetHandler(Handler newHandler);
 
-FailBehavior ReportFailure(const char* condition, const char* file, int line,
-                           const char* msg, ...);
+FailBehavior ReportFailure(const char *condition, const char *file, int line,
+                           const char *msg, ...);
 }
 }
 

@@ -1,9 +1,9 @@
 #include "ddImport_SkinnedData.h"
 #include "ddTerminal.h"
 
-ddSkeleton* load_skeleton(const char* ddb_file, const char* id) {
+ddSkeleton *load_skeleton(const char *ddb_file, const char *id) {
   ddIO io_handle;
-  ddSkeleton* skele = nullptr;
+  ddSkeleton *skele = nullptr;
 
   // check if already exists
   size_t hashed_id = getCharHash(id);
@@ -23,7 +23,7 @@ ddSkeleton* load_skeleton(const char* ddb_file, const char* id) {
   if (io_handle.open(ddb_file, ddIOflag::READ)) {
     skele = spawn_ddSkeleton(hashed_id);
     cbuff<64> mybuff;
-    const char* nxtLine = io_handle.readNextLine();
+    const char *nxtLine = io_handle.readNextLine();
     while (nxtLine && *nxtLine) {
       mybuff.set(nxtLine);
       // number of bones
@@ -87,11 +87,11 @@ ddSkeleton* load_skeleton(const char* ddb_file, const char* id) {
   return skele;
 }
 
-void calc_delta_bone_trans(ddSkeleton* sk, bool visited[], const unsigned idx) {
+void calc_delta_bone_trans(ddSkeleton *sk, bool visited[], const unsigned idx) {
   if (!visited[idx]) {
     visited[idx] = true;
 
-    ddJoint& jnt = sk->bones[idx];
+    ddJoint &jnt = sk->bones[idx];
     const unsigned p_idx = jnt.parent;
     // check parent bone
     if (!visited[p_idx]) {
@@ -105,9 +105,9 @@ void calc_delta_bone_trans(ddSkeleton* sk, bool visited[], const unsigned idx) {
   }
 }
 
-ddAnimClip* load_animation(const char* dda_file, const char* id) {
+ddAnimClip *load_animation(const char *dda_file, const char *id) {
   ddIO io_handle;
-  ddAnimClip* a_clip = nullptr;
+  ddAnimClip *a_clip = nullptr;
 
   // check if already exists
   size_t hashed_id = getCharHash(id);
@@ -127,9 +127,9 @@ ddAnimClip* load_animation(const char* dda_file, const char* id) {
   if (io_handle.open(dda_file, ddIOflag::READ)) {
     a_clip = spawn_ddAnimClip(hashed_id);
     cbuff<128> mybuff;
-    const char* val = nullptr;
+    const char *val = nullptr;
 
-    const char* nxtLine = io_handle.readNextLine();
+    const char *nxtLine = io_handle.readNextLine();
     while (nxtLine) {
       mybuff.set(nxtLine);
 
@@ -158,8 +158,8 @@ ddAnimClip* load_animation(const char* dda_file, const char* id) {
 
           // calculate clip length
           a_clip->step_size = 1.f / a_clip->fps;
-					a_clip->length = (float)a_clip->num_frames / a_clip->fps;
-					a_clip->length -= a_clip->step_size;
+          a_clip->length = (float)a_clip->num_frames / a_clip->fps;
+          a_clip->length -= a_clip->step_size;
           for (unsigned i = 0; i < tf; i++) {  // resize storage bin
             a_clip->samples[i].pose.resize(a_clip->num_joints);
           }

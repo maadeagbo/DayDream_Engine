@@ -2,15 +2,15 @@
 #include <string>
 
 #define DDMAT_META_NAME "LuaClass.ddMat"
-#define check_ddMat(L) (ddMat**)luaL_checkudata(L, 1, DDMAT_META_NAME)
+#define check_ddMat(L) (ddMat **)luaL_checkudata(L, 1, DDMAT_META_NAME)
 
-const char* ddMat_meta_name() { return DDMAT_META_NAME; }
+const char *ddMat_meta_name() { return DDMAT_META_NAME; }
 
-static int get_id(lua_State* L);
-static int set_base_col(lua_State* L);
-static int set_spec(lua_State* L);
+static int get_id(lua_State *L);
+static int set_base_col(lua_State *L);
+static int set_spec(lua_State *L);
 
-static int to_string(lua_State* L);
+static int to_string(lua_State *L);
 
 static const struct luaL_Reg mat_methods[] = {{"id", get_id},
                                               {"set_base_color", set_base_col},
@@ -18,21 +18,21 @@ static const struct luaL_Reg mat_methods[] = {{"id", get_id},
                                               {"__tostring", to_string},
                                               {NULL, NULL}};
 
-void log_meta_ddMat(lua_State* L) {
+void log_meta_ddMat(lua_State *L) {
   luaL_newmetatable(L, DDMAT_META_NAME);  // create meta table
   lua_pushvalue(L, -1);                   /* duplicate the metatable */
   lua_setfield(L, -2, "__index");         /* mt.__index = mt */
   luaL_setfuncs(L, mat_methods, 0);       /* register metamethods */
 }
 
-int get_id(lua_State* L) {
-  ddMat* mat = *check_ddMat(L);
+int get_id(lua_State *L) {
+  ddMat *mat = *check_ddMat(L);
   lua_pushinteger(L, mat->id);
   return 1;
 }
 
-int to_string(lua_State* L) {
-  ddMat* mat = *check_ddMat(L);
+int to_string(lua_State *L) {
+  ddMat *mat = *check_ddMat(L);
   std::string buff;
 
   cbuff<128> out;
@@ -52,7 +52,7 @@ int to_string(lua_State* L) {
   return 1;
 }
 
-static void get_v4_lua(lua_State* L, glm::vec4& in) {
+static void get_v4_lua(lua_State *L, glm::vec4 &in) {
   int top = lua_gettop(L);
   for (unsigned i = 2; i <= (unsigned)top; i++) {
     if (lua_isnumber(L, i)) {
@@ -76,14 +76,14 @@ static void get_v4_lua(lua_State* L, glm::vec4& in) {
   }
 }
 
-int set_base_col(lua_State* L) {
-  ddMat* mat = *check_ddMat(L);
+int set_base_col(lua_State *L) {
+  ddMat *mat = *check_ddMat(L);
   get_v4_lua(L, mat->base_color);
   return 0;
 }
 
-int set_spec(lua_State* L) {
-  ddMat* mat = *check_ddMat(L);
+int set_spec(lua_State *L) {
+  ddMat *mat = *check_ddMat(L);
 
   glm::vec4 spec(0.5f);
   get_v4_lua(L, spec);

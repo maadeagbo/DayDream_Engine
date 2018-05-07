@@ -86,6 +86,6 @@ struct ddCam {
 };
 
 /** \brief Lua class instance metatable name */
-const char* ddCam_meta_name();
+const char *ddCam_meta_name();
 /** \brief DO NOT USE. ONLY TO BE CALLED BY ddAssetsLuaClass */
-void log_meta_ddCam(lua_State* L);
+void log_meta_ddCam(lua_State *L);

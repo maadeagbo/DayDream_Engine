@@ -11,7 +11,7 @@
  * \param id String id name
  * \return ddSkeleton pointer
  */
-ddSkeleton* load_skeleton(const char* ddb_file, const char* id);
+ddSkeleton *load_skeleton(const char *ddb_file, const char *id);
 
 /**
  * \brief Recursively calculate delta transform between bone joints
@@ -19,7 +19,7 @@ ddSkeleton* load_skeleton(const char* ddb_file, const char* id);
  * \param visited Flag container to mark if tree node has been calculated
  * \param idx Node/bone position to calucaulate
  */
-void calc_delta_bone_trans(ddSkeleton* sk, bool visited[], const unsigned idx);
+void calc_delta_bone_trans(ddSkeleton *sk, bool visited[], const unsigned idx);
 
 /**
  * \brief Load animation from a dda file
@@ -27,4 +27,4 @@ void calc_delta_bone_trans(ddSkeleton* sk, bool visited[], const unsigned idx);
  * \param id String id name
  * \return ddSkeleton pointer
  */
-ddAnimClip* load_animation(const char* dda_file, const char* id);
+ddAnimClip *load_animation(const char *dda_file, const char *id);

@@ -50,29 +50,29 @@ struct ddEngine {
   void register_lfuncs();
   bool level_select(const size_t w = 600, const size_t h = 600);
   void run();
-  void update(DD_LEvent& _event);
-  bool execTerminal(const char* cmd);
+  void update(DD_LEvent &_event);
+  bool execTerminal(const char *cmd);
   void dd_open_window(const size_t width, const size_t height,
                       EngineMode mode = EngineMode::DD_NOT_SET);
   void window_load_GLFW(EngineMode mode);
   void update_GLFW();
   void shutdown();
 
-  void get_GLFW_native_res(GLFWmonitor** monitors, int& _w, int& _h,
+  void get_GLFW_native_res(GLFWmonitor **monitors, int &_w, int &_h,
                            const unsigned win_idx);
 
   int window_w, window_h;
   GameState main_state;
   EngineState init_flag;
-  GLFWwindow* main_window_glfw;
-  lua_State* main_lstate;
+  GLFWwindow *main_window_glfw;
+  lua_State *main_lstate;
 
   ddQueue main_q;
   ddPhysics main_physics;
 
   PushFunc q_push;
   DD_FuncBuff main_fb;
-  dd_array<const char*> lvls_list;
+  dd_array<const char *> lvls_list;
   int current_lvl;
   bool load_screen;
   bool flag_debug;

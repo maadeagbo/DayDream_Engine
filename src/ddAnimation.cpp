@@ -9,31 +9,31 @@ bool flag_bin[MAX_JOINTS];
 }
 
 /** \brief Translate animation state to current frame's local pose data */
-void state_to_local_pose(ddAnimInfo& a_info, ddAnimState* a_state,
+void state_to_local_pose(ddAnimInfo &a_info, ddAnimState *a_state,
                          const bool first_pass);
 
 /** \brief Calculate the global pose matrix from local pose data */
-void local_to_global_pose(ddAnimInfo& a_info, const ddSkeleton* sk,
-                          bool* visited, const unsigned idx);
+void local_to_global_pose(ddAnimInfo &a_info, const ddSkeleton *sk,
+                          bool *visited, const unsigned idx);
 
 void ddAnimation::process_animations() {
   // Get list of visible agents from active camera
-  ddCam* cam = ddSceneManager::get_active_cam();
+  ddCam *cam = ddSceneManager::get_active_cam();
   POW2_VERIFY_MSG(cam != nullptr, "No active camera", 0);
 
-  ddAgent* cam_p = find_ddAgent(cam->parent);
+  ddAgent *cam_p = find_ddAgent(cam->parent);
   POW2_VERIFY_MSG(cam_p != nullptr, "Active camera has no parent", 0);
 
-  const ddVisList* vlist = ddSceneManager::get_visibility_list(cam->id);
+  const ddVisList *vlist = ddSceneManager::get_visibility_list(cam->id);
 
   // for agents w/ animation states, build up final local & global pose
-  DD_FOREACH(ddAgent*, item, vlist->visible_agents) {
-    ddAgent* ag = *item.ptr;
+  DD_FOREACH(ddAgent *, item, vlist->visible_agents) {
+    ddAgent *ag = *item.ptr;
 
     // determine if agent has all pieces necessary for animation
     if (!ag->anim.states.isValid()) continue;
 
-    ddSkeleton* sk = find_ddSkeleton(ag->anim.sk_id);
+    ddSkeleton *sk = find_ddSkeleton(ag->anim.sk_id);
     if (!sk) continue;
 
     // loop thru animations and perform recursize build up of joint pose data
@@ -84,10 +84,10 @@ void ddAnimation::process_animations() {
   }
 }
 
-void state_to_local_pose(ddAnimInfo& a_info, ddAnimState* a_state,
+void state_to_local_pose(ddAnimInfo &a_info, ddAnimState *a_state,
                          const bool first_pass) {
   // get clip
-  ddAnimClip* a_clip = find_ddAnimClip(a_state->clip_id);
+  ddAnimClip *a_clip = find_ddAnimClip(a_state->clip_id);
   if (!a_clip) {
     ddTerminal::f_post("state_to_local_pose::Invalid ddAnimClip %llu",
                        (long long unsigned)a_state->clip_id);
@@ -162,12 +162,12 @@ void state_to_local_pose(ddAnimInfo& a_info, ddAnimState* a_state,
   }
 }
 
-void local_to_global_pose(ddAnimInfo& a_info, const ddSkeleton* sk,
-                          bool* visited, const unsigned idx) {
+void local_to_global_pose(ddAnimInfo &a_info, const ddSkeleton *sk,
+                          bool *visited, const unsigned idx) {
   if (!visited[idx]) {
     visited[idx] = true;
 
-    ddJointPose& jntp = a_info.local_pose[idx];
+    ddJointPose &jntp = a_info.local_pose[idx];
     const unsigned p_idx = sk->bones[idx].parent;
 
     // check parent node before calculating matrix

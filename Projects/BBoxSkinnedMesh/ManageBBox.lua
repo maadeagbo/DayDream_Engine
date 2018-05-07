@@ -176,7 +176,7 @@ do
     
     if event == assets.level_tag then
       -- controls
-      new_box, out_box = check_controls()
+      new_box, out_box = check_controls(self.ctrl)
       
       gap_click = gap_click + ddLib.ftime()
       gap_tap = gap_tap + ddLib.ftime()
@@ -254,9 +254,8 @@ do
       --ddLib.print("Mirror: ", mirror.x, ", ", mirror.y, ", ", mirror.z)
     end
     if out_box then
-      if num_args == 1 then
-        write_bbox_file(args["0"])
-      end
+      write_bbox_file(self.ctrl.output)
+      ddLib.print("adsasdasda")
     end
 
     -- modifying the box

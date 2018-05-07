@@ -983,7 +983,7 @@ void light_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
         // sh->set_uniform((int)RE_Light::half_width_f, 1.f);
         // sh->set_uniform((int)RE_Light::half_height_f, 1.f);
 
-				sh->set_uniform((int)RE_Light::Debug_b, false);
+        sh->set_uniform((int)RE_Light::Debug_b, false);
 
         ddGPUFrontEnd::render_quad();
 
@@ -1015,7 +1015,7 @@ void light_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
 
         ddGPUFrontEnd::render_cube();
 
-        //sh->set_uniform((int)RE_Light::Debug_b, false);
+        // sh->set_uniform((int)RE_Light::Debug_b, false);
 
         if (in_vol) {
           ddGPUFrontEnd::toggle_depth_test(true);
@@ -1047,7 +1047,7 @@ void light_pass(const glm::mat4 cam_view_m, const glm::mat4 cam_proj_m,
 
         ddGPUFrontEnd::render_cube();
 
-        //sh->set_uniform((int)RE_Light::Debug_b, false);
+        // sh->set_uniform((int)RE_Light::Debug_b, false);
 
         if (in_vol) {
           ddGPUFrontEnd::toggle_depth_test(true);

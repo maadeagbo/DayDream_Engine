@@ -317,14 +317,14 @@ int add_animation(lua_State *L) {
 
 ddBodyFuncs::AABB oobb_to_aabb(dd_array<OOBoundingBox> &boxes) {
   ddBodyFuncs::AABB out;
-	const glm::mat4 iden = glm::mat4();
+  const glm::mat4 iden = glm::mat4();
 
-	BoundingBox temp;
+  BoundingBox temp;
   // per oobb: update output aabb to set min & max
   DD_FOREACH(OOBoundingBox, box, boxes) {
-		temp = box.ptr->get_bbox();
-		out.update(temp.min);
-		out.update(temp.max);
+    temp = box.ptr->get_bbox();
+    out.update(temp.min);
+    out.update(temp.max);
   }
 
   return out;

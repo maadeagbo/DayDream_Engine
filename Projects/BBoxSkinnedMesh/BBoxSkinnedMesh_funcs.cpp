@@ -30,8 +30,8 @@ struct BBoxSkinnedMesh_reflect : public ddLvlPrototype {
 
 void BBoxSkinnedMesh_func_register(lua_State *L) {
   // log functions using register_callback_lua
-	register_callback_lua(L, "init_gpu_stuff", init_gpu_stuff);
-	register_callback_lua(L, "check_controls", render_sk_controls);
+  register_callback_lua(L, "init_gpu_stuff", init_gpu_stuff);
+  register_callback_lua(L, "check_controls", render_sk_controls);
 
   // log bounding box libraries
   luaL_requiref(L, "ddBBox", luaopen_bbox, 1);

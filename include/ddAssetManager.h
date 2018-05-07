@@ -21,7 +21,7 @@ namespace ddAssets {
 /**
  * \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine
  */
-void initialize(btDiscreteDynamicsWorld* physics_world);
+void initialize(btDiscreteDynamicsWorld *physics_world);
 /**
  * \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine
  */
@@ -37,7 +37,7 @@ void default_params(const unsigned scr_width, const unsigned scr_height);
 /**
  * \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine
  */
-void log_lua_func(lua_State* L);
+void log_lua_func(lua_State *L);
 
 /**
  * \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine
@@ -47,22 +47,22 @@ void load_to_gpu();
 /**
 * \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddLuaLib_ddAgent
 */
-void load_agent_to_gpu(ddAgent* ag);
+void load_agent_to_gpu(ddAgent *ag);
 
 /**
 * \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddLuaLib_ddModelData
 */
-void load_model_to_gpu(ddModelData* mdl);
+void load_model_to_gpu(ddModelData *mdl);
 
 /**
  * \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddEngine
  */
-void remove_rigid_body(ddAgent* ag);
+void remove_rigid_body(ddAgent *ag);
 
 /**
  * \brief DO NOT CALL. ONLY TO BE USED INTERNALLY BY ddLuaLib_ddAgent
  */
-bool add_body(ddAgent* agent, ddModelData* mdata, glm::vec3 pos, glm::vec3 rot,
+bool add_body(ddAgent *agent, ddModelData *mdata, glm::vec3 pos, glm::vec3 rot,
               const float mass, RBType rb_type);
 
 /**

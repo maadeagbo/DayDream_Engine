@@ -1,9 +1,9 @@
 #pragma once
 
-#include <map>
 #include "ddParticleSystem.h"
 #include "ddSceneManager.h"
 #include "ddShader.h"
+#include <map>
 
 // generate grid line points and indices
 void generate_grid();
@@ -17,5 +17,5 @@ void fill_buffer(const BoundingBox &bbox);
 // render bbox
 void render_bbox();
 
-// gpu 
+// gpu
 int init_gpu_stuff(lua_State *L);

@@ -73,6 +73,6 @@ struct ddMat {
 };
 
 /** \brief Lua class instance metatable name */
-const char* ddMat_meta_name();
+const char *ddMat_meta_name();
 /** \brief DO NOT USE. ONLY TO BE CALLED BY ddAssetsLuaClass */
-void log_meta_ddMat(lua_State* L);
+void log_meta_ddMat(lua_State *L);

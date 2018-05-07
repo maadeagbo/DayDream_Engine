@@ -1,6 +1,6 @@
 #include "ddTerminal.h"
-#include <regex>
 #include "ddFileIO.h"
+#include <regex>
 
 #define TOTAL_ENTRIES 1000
 #define VISIBLE_ENTRIES 500
@@ -9,9 +9,9 @@
 #define CMD_HIST_SIZE 100
 typedef char buffEntry[DEFAULT_ENTRY_SIZE];
 
-ImColor colorCodeOutput(const char* entry);
-void execTerminalCommand(const char* command);
-int terminalCallback(ImGuiTextEditCallbackData* data);
+ImVec4 colorCodeOutput(const char *entry);
+void execTerminalCommand(const char *command);
+int terminalCallback(ImGuiTextEditCallbackData *data);
 
 namespace {
 bool filter_ON = false;
@@ -52,7 +52,7 @@ DD_FuncBuff fb;
 void ddTerminal::flipDebugFlag() { RENDER_ON ^= 1; }
 
 /// \brief Post to terminal (currently not thread safe)
-void ddTerminal::post(const char* message) {
+void ddTerminal::post(const char *message) {
   snprintf(history[terminal_idx], DEFAULT_ENTRY_SIZE, ">>: %s", message);
   logged_input[entry_idx] = terminal_idx;
   terminal_idx = (terminal_idx + 1) % TOTAL_ENTRIES;
@@ -84,7 +84,7 @@ void ddTerminal::display(const float scr_width, const float scr_height) {
 
     // commandline
     ImGui::Separator();
-    const char* msg = (!filter_ON) ? "Filter history" : "Enter commands";
+    const char *msg = (!filter_ON) ? "Filter history" : "Enter commands";
     if (ImGui::Button(msg)) {
       filter_ON ^= 1;
       set_buffer_pos = !filter_ON;
@@ -122,11 +122,11 @@ void ddTerminal::display(const float scr_width, const float scr_height) {
       for (unsigned i = terminal_idx - limit; i < limit; i++) {
         if (filter.PassFilter(history[i])) {
           // change color for certain text
-          ImColor col = colorCodeOutput(history[i]);
+          ImVec4 col = colorCodeOutput(history[i]);
           unsigned offset = 0;
-          if (col.Value.y < 0.5f) {  // red
+          if (col.y < 0.5f) {  // red
             offset = 11;
-          } else if (col.Value.x < 0.5f) {  // green
+          } else if (col.x < 0.5f) {  // green
             offset = 12;
           }
 
@@ -141,11 +141,11 @@ void ddTerminal::display(const float scr_width, const float scr_height) {
           (terminal_idx < VISIBLE_ENTRIES) ? entry_idx : VISIBLE_ENTRIES;
       for (unsigned i = entry_idx; i < limit; i++) {
         // change color for certain text
-        ImColor col = colorCodeOutput(history[logged_input[i]]);
+        ImVec4 col = colorCodeOutput(history[logged_input[i]]);
         unsigned offset = 0;
-        if (col.Value.y < 0.5f) {  // red
+        if (col.y < 0.5f) {  // red
           offset = 11;
-        } else if (col.Value.x < 0.5f) {  // green
+        } else if (col.x < 0.5f) {  // green
           offset = 12;
         }
 
@@ -154,11 +154,11 @@ void ddTerminal::display(const float scr_width, const float scr_height) {
         ImGui::PopStyleColor();
       }
       for (unsigned i = 0; i < entry_idx; i++) {
-        ImColor col = colorCodeOutput(history[logged_input[i]]);
+        ImVec4 col = colorCodeOutput(history[logged_input[i]]);
         unsigned offset = 0;
-        if (col.Value.y < 0.5f) {  // red
+        if (col.y < 0.5f) {  // red
           offset = 11;
-        } else if (col.Value.x < 0.5f) {  // green
+        } else if (col.x < 0.5f) {  // green
           offset = 12;
         }
 
@@ -190,7 +190,7 @@ void ddTerminal::dumpTerminalToImGuiText() {
   }
 }
 
-const char* ddTerminal::pollBuffer() {
+const char *ddTerminal::pollBuffer() {
   if (cmd_buff_count == 0) {
     return nullptr;
   }
@@ -223,7 +223,7 @@ DD_Event ddTerminal::getInput(DD_Event& event) {
 }
 //*/
 
-void ddTerminal::get_input(DD_LEvent& _event) {
+void ddTerminal::get_input(DD_LEvent &_event) {
   InputData idata = ddInput::get_input();
 
   last_button_press += ddTime::get_frame_time();
@@ -254,7 +254,7 @@ void ddTerminal::inTerminalHistory() {
   if (!io_handle.open(infile.str(), ddIOflag::READ)) {
     return;
   }
-  const char* line = io_handle.readNextLine();
+  const char *line = io_handle.readNextLine();
 
   // save commands, update head and tail
   while (line && total_cmds_entered < CMD_HIST_SIZE) {
@@ -311,17 +311,17 @@ void ddTerminal::outTerminalHistory() {
   }
 }
 
-ImColor colorCodeOutput(const char* entry) {
-  ImColor col = ImColor(1.0f, 1.0f, 1.0f, 1.0f);
+ImVec4 colorCodeOutput(const char *entry) {
+  ImVec4 col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
   if (strstr(entry, "[error]")) {
-    col = ImColor(1.0f, 0.4f, 0.4f, 1.0f);
+    col = ImVec4(1.0f, 0.4f, 0.4f, 1.0f);
   } else if (strstr(entry, "[status]")) {
-    col = ImColor(0.4f, 1.0f, 0.4f, 1.0f);
+    col = ImVec4(0.4f, 1.0f, 0.4f, 1.0f);
   }
   return col;
 }
 
-void execTerminalCommand(const char* command) {
+void execTerminalCommand(const char *command) {
   // separate commands and add to buffer
   dd_array<cbuff<DEFAULT_ENTRY_SIZE>> cmds =
       StrSpace::tokenize1024<DEFAULT_ENTRY_SIZE>(command, "$");
@@ -329,7 +329,7 @@ void execTerminalCommand(const char* command) {
   for (int i = ((int)cmds.size() - 1); i >= 0; i--) {
     if (*cmds[i].str()) {
       if (cmd_buff_count < CMD_BUFFER_SIZE) {
-        char* cmd_arg = cmdBuffer[cmd_buff_count];
+        char *cmd_arg = cmdBuffer[cmd_buff_count];
 
         snprintf(cmd_arg, DEFAULT_ENTRY_SIZE, "%s", cmds[i].str());
         cmd_buff_count += 1;
@@ -351,7 +351,7 @@ void execTerminalCommand(const char* command) {
   restart_reg_search = true;  // restart tab completion
 }
 
-int terminalCallback(ImGuiTextEditCallbackData* data) {
+int terminalCallback(ImGuiTextEditCallbackData *data) {
   bool end_of_history = false;
   if (up_pressed) {
     if (total_cmds_entered >= CMD_HIST_SIZE) {  // loop back to end
@@ -413,7 +413,7 @@ int terminalCallback(ImGuiTextEditCallbackData* data) {
     return 0;  // exit after setting text
   }
   // set scrolled to text
-  const char* text_ = (end_of_history) ? "" : cmd_history[cmd_scroll_idx];
+  const char *text_ = (end_of_history) ? "" : cmd_history[cmd_scroll_idx];
   data->BufTextLen = (int)snprintf(data->Buf, data->BufSize, "%s", text_);
   data->CursorPos = data->SelectionStart = data->SelectionEnd =
       data->BufTextLen;

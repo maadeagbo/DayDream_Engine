@@ -1,7 +1,7 @@
 #include "ddImport_Model.h"
-#include <omp.h>
 #include "ddAssetManager.h"
 #include "ddTerminal.h"
+#include <omp.h>
 
 #include "stb_image.h"
 #include "stb_image_write.h"

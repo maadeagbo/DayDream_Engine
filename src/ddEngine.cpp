@@ -115,11 +115,9 @@ void ddEngine::window_load_GLFW(EngineMode mode) {
   glfwSetErrorCallback(error_callback_glfw);
   glfwSetMouseButtonCallback(main_window_glfw, dd_mouse_click_callback);
   glfwSetScrollCallback(main_window_glfw, dd_scroll_callback);
-  glfwSetCharCallback(main_window_glfw, ImGui_ImplGlfwGL3_CharCallback);
+  glfwSetCharCallback(main_window_glfw, ImGui_ImplGlfw_CharCallback);
 
   // initialize GLFW3
-  ImGui_ImplGlfwGL3_Init(main_window_glfw, false);
-
   glfwMakeContextCurrent(main_window_glfw);
   /* Set vsync */
   const int vsyncflag = bool(mode & EngineMode::DD_VSYNC) ? 1 : 0;
@@ -129,6 +127,15 @@ void ddEngine::window_load_GLFW(EngineMode mode) {
     fprintf(stderr, "Failed to load graphics api library\n");
     std::exit(EXIT_FAILURE);
   }
+
+  // initialize imgui
+  ImGui::CreateContext();
+  ImGui::StyleColorsDark();
+  ImGuiIO &io = ImGui::GetIO();
+  // io.NavFlags |= ImGuiNavFlags_EnableKeyboard;
+  // io.KeyMap[ImGuiKey_Space] = GLFW_KEY_SPACE;
+
+  ImGui_ImplGlfwGL3_Init(main_window_glfw, false);
 }
 
 /// \brief Get native monitor resolution
@@ -143,6 +150,7 @@ void ddEngine::get_GLFW_native_res(GLFWmonitor **monitors, int &_w, int &_h,
 void ddEngine::clean_up() {
   // ImGui_ImplSdlGL3_Shutdown();
   ImGui_ImplGlfwGL3_Shutdown();
+  ImGui::DestroyContext();
   // clean_up_SDL();
   clean_up_GLFW();
 }
@@ -201,11 +209,11 @@ bool ddEngine::level_select(const size_t w, const size_t h) {
 
   while (!windowShouldClose && !launch) {
     ddGPUFrontEnd::clear_screen(0.3f, 0.3f, 0.3f, 1.0f);
-    // start imgui window processing
-    ImGui_ImplGlfwGL3_NewFrame();
-
     // poll GLFW events
     update_GLFW();
+
+    // start imgui window processing
+    ImGui_ImplGlfwGL3_NewFrame();
 
     // Query for level to load
     float scrW = (float)w / 1.25f;
@@ -274,6 +282,7 @@ bool ddEngine::level_select(const size_t w, const size_t h) {
 
     ImGui::End();
     ImGui::Render();
+    ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
     // swap buffers
     // SDL_GL_SwapWindow(main_window);
     glfwSwapBuffers(main_window_glfw);
@@ -492,10 +501,11 @@ void ddEngine::update(DD_LEvent &_event) {
     ddTime::update();
     PHYSICS_TICK += ddTime::get_avg_frame_time();
 
-    // start imgui window processing
-    ImGui_ImplGlfwGL3_NewFrame();
     // poll GLFW events
     update_GLFW();
+
+    // start imgui window processing
+    ImGui_ImplGlfwGL3_NewFrame();
 
     // run scene graph
     // ResSpace::updateSceneGraph(&main_res, main_timer.getTimeFloat());
@@ -548,6 +558,7 @@ void ddEngine::update(DD_LEvent &_event) {
     ddTerminal::display((float)window_w, (float)window_h);
     // render IMGUI ui
     ImGui::Render();
+    ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
     // swap buffers
     glfwSwapBuffers(main_window_glfw);
 

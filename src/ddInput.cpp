@@ -27,12 +27,12 @@ void new_frame() {
   global_input.keys[(unsigned)DD_Keys::MOUSE_SCROLL].order = 0;
 }
 
-const InputData& get_input() { return global_input; }
+const InputData &get_input() { return global_input; }
 
-void send_upstream_to_lua(lua_State* L) {
+void send_upstream_to_lua(lua_State *L) {
   /** \brief Each key in the table will be another 2-item table. This sets it*/
-  auto set_table_field = [&](const char* id, const bool* flag,
-                             const float* val) {
+  auto set_table_field = [&](const char *id, const bool *flag,
+                             const float *val) {
     if (flag) {
       lua_pushboolean(L, *flag);
       lua_setfield(L, -2, id);
@@ -295,7 +295,7 @@ void edit_key(int key, const bool b_flag, const float i_flag) {
 }
 //*/
 
-void dd_key_callback(GLFWwindow* window, int key, int scancode, int action,
+void dd_key_callback(GLFWwindow *window, int key, int scancode, int action,
                      int mods) {
   if (action == GLFW_PRESS) {
     edit_key(key, true, global_input.order_tracker);  // key down
@@ -303,10 +303,10 @@ void dd_key_callback(GLFWwindow* window, int key, int scancode, int action,
   if (action == GLFW_RELEASE) {
     edit_key(key, false, global_input.order_tracker);  // key up
   }
-  ImGui_ImplGlfwGL3_KeyCallback(window, key, scancode, action, mods);
+  ImGui_ImplGlfw_KeyCallback(window, key, scancode, action, mods);
 }
 
-void dd_mouse_pos_callback(GLFWwindow* window, double xpos, double ypos) {
+void dd_mouse_pos_callback(GLFWwindow *window, double xpos, double ypos) {
   if (flag_first_mouse) {
     // set up for 1st movement
     mouse_lastx = (float)xpos;
@@ -323,7 +323,7 @@ void dd_mouse_pos_callback(GLFWwindow* window, double xpos, double ypos) {
   global_input.keys[(unsigned)DD_Keys::MOUSE_X].order = mouse_x;
 }
 
-void dd_mouse_click_callback(GLFWwindow* window, int button, int action,
+void dd_mouse_click_callback(GLFWwindow *window, int button, int action,
                              int mods) {
   switch (button) {
     case GLFW_MOUSE_BUTTON_RIGHT:
@@ -353,11 +353,11 @@ void dd_mouse_click_callback(GLFWwindow* window, int button, int action,
     default:
       break;
   }
-  ImGui_ImplGlfwGL3_MouseButtonCallback(window, button, action, mods);
+  ImGui_ImplGlfw_MouseButtonCallback(window, button, action, mods);
 }
 
-void dd_scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
+void dd_scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
   global_input.keys[(unsigned)DD_Keys::MOUSE_SCROLL].order = (float)yoffset;
 
-  ImGui_ImplGlfwGL3_ScrollCallback(window, xoffset, yoffset);
+  ImGui_ImplGlfw_ScrollCallback(window, xoffset, yoffset);
 }

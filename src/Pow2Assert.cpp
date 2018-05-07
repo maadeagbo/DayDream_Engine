@@ -33,8 +33,8 @@
 namespace pow2 {
 namespace {
 
-Assert::FailBehavior DefaultHandler(const char* condition, const char* msg,
-                                    const char* file, const int line) {
+Assert::FailBehavior DefaultHandler(const char *condition, const char *msg,
+                                    const char *file, const int line) {
   std::printf("%s(%d): Assert Failure: ", file, line);
 
   if (condition != NULL) std::printf("'%s' ", condition);
@@ -46,7 +46,7 @@ Assert::FailBehavior DefaultHandler(const char* condition, const char* msg,
   return Assert::Halt;
 }
 
-Assert::Handler& GetAssertHandlerInstance() {
+Assert::Handler &GetAssertHandlerInstance() {
   static Assert::Handler s_handler = &DefaultHandler;
   return s_handler;
 }
@@ -58,10 +58,10 @@ void Assert::SetHandler(Assert::Handler newHandler) {
   GetAssertHandlerInstance() = newHandler;
 }
 
-Assert::FailBehavior Assert::ReportFailure(const char* condition,
-                                           const char* file, const int line,
-                                           const char* msg, ...) {
-  const char* message = NULL;
+Assert::FailBehavior Assert::ReportFailure(const char *condition,
+                                           const char *file, const int line,
+                                           const char *msg, ...) {
+  const char *message = NULL;
   if (msg != NULL) {
     char messageBuffer[1024];
     {

@@ -86,30 +86,30 @@ struct BoundingBox {
 
 /** \brief Object-oriented bounding box */
 struct OOBoundingBox {
-	glm::quat rot;
-	glm::vec3 pos;
+  glm::quat rot;
+  glm::vec3 pos;
   glm::vec3 scale;
-	glm::vec3 mirror;
-	int joint_idx = -1;
-	bool mirror_flag = false;
-	const BoundingBox get_bbox() const;
+  glm::vec3 mirror;
+  int joint_idx = -1;
+  bool mirror_flag = false;
+  const BoundingBox get_bbox() const;
 };
 
 // Useful glm functions
-glm::vec4 getVec4f(const char* str);
+glm::vec4 getVec4f(const char *str);
 
-glm::uvec4 getVec4u(const char* str);
+glm::uvec4 getVec4u(const char *str);
 
-glm::vec3 getVec3f(const char* str);
+glm::vec3 getVec3f(const char *str);
 
-glm::vec2 getVec2f(const char* str);
+glm::vec2 getVec2f(const char *str);
 
-glm::quat getQuat(const char* str);
+glm::quat getQuat(const char *str);
 
 std::string Vec4f_Str(const glm::vec4 vIn);
 
-glm::mat4 createMatrix(const glm::vec3& pos, const glm::vec3& rot,
-                       const glm::vec3& scale);
+glm::mat4 createMatrix(const glm::vec3 &pos, const glm::vec3 &rot,
+                       const glm::vec3 &scale);
 
 void printGlmMat(glm::mat4 mat);
 
@@ -122,7 +122,7 @@ struct ModelIDs {
   /// \brief Material id
   dd_array<size_t> material;
   /// \brief Handles for gpu object data
-  dd_array<ddVAOData*> vao_handles;
+  dd_array<ddVAOData *> vao_handles;
   /// \brief Marks whether the mesh is skinned for animation
   bool sk_flag = false;
   /// \brief Marks if model should cast shadow
@@ -136,10 +136,10 @@ struct ddModelData {
   /// \brief Mesh information
   dd_array<DDM_Data> mesh_info;
   /// \brief GPU buffer handles
-  dd_array<ddMeshBufferData*> buffers;
+  dd_array<ddMeshBufferData *> buffers;
 };
 
 /** \brief Lua class instance metatable name */
-const char* ddModelData_meta_name();
+const char *ddModelData_meta_name();
 /** \brief DO NOT USE. ONLY TO BE CALLED BY ddAssetsLuaClass */
-void log_meta_ddModelData(lua_State* L);
+void log_meta_ddModelData(lua_State *L);

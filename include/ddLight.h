@@ -46,7 +46,7 @@ struct DD_Light {
         light_obj(false),
         _flag_parent(false) {}
 
-  DD_Light(const char* ID)
+  DD_Light(const char *ID)
       : m_ID(ID),
         m_type(LightType::DIRECTION_L),
         m_direction(glm::vec3(-1.0f)),
@@ -60,7 +60,7 @@ struct DD_Light {
         light_obj(false),
         _flag_parent(false) {}
 
-  inline void SetParent(const char* parentID) {
+  inline void SetParent(const char *parentID) {
     _parent_id = parentID;
     _parent_idx = -1;
     _flag_parent = true;
@@ -85,8 +85,8 @@ struct DD_Light {
 };
 
 namespace LightSpace {
-float CalculateLightVolumeRadius(const DD_Light* lght);
-void PrintInfo(const DD_Light& lght);
+float CalculateLightVolumeRadius(const DD_Light *lght);
+void PrintInfo(const DD_Light &lght);
 }
 
 struct ddLBulb {
@@ -153,6 +153,6 @@ struct ddLBulb {
 };
 
 /** \brief Lua class instance metatable name */
-const char* ddLBulb_meta_name();
+const char *ddLBulb_meta_name();
 /** \brief DO NOT USE. ONLY TO BE CALLED BY ddAssetsLuaClass */
-void log_meta_ddLBulb(lua_State* L);
+void log_meta_ddLBulb(lua_State *L);

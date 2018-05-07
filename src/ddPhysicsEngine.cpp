@@ -35,8 +35,8 @@ void ddPhysics::cleanup_world() {
 void ddPhysics::clear_all_rigidbodies() {
   // remove any remaining rigid bodies from world and delete
   for (int i = world->getNumCollisionObjects() - 1; i >= 0; i--) {
-    btCollisionObject* obj = world->getCollisionObjectArray()[i];
-    btRigidBody* body = btRigidBody::upcast(obj);
+    btCollisionObject *obj = world->getCollisionObjectArray()[i];
+    btRigidBody *body = btRigidBody::upcast(obj);
     if (body && body->getMotionState()) {
       delete body->getMotionState();
     }
@@ -46,7 +46,7 @@ void ddPhysics::clear_all_rigidbodies() {
   }
   // delete constraints attached to rigid bodies
   for (int i = world->getNumConstraints() - 1; i >= 0; i--) {
-    btTypedConstraint* constraint = world->getConstraint(i);
+    btTypedConstraint *constraint = world->getConstraint(i);
     world->removeConstraint(constraint);
     delete constraint;
   }

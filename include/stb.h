@@ -6266,7 +6266,8 @@ void stb_sha1_readable(char display[27], unsigned char sha[20]) {
 #if defined(_WIN32)
 
 STB_EXTERN void *stb_reg_open(
-    char *mode, char *where);  // mode: "rHKLM" or "rHKCU" or "w.."
+    char *mode,
+    char *where);  // mode: "rHKLM" or "rHKCU" or "w.."
 STB_EXTERN void stb_reg_close(void *reg);
 STB_EXTERN int stb_reg_read(void *zreg, char *str, void *data,
                             unsigned long len);

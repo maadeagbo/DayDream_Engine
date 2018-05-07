@@ -8,7 +8,6 @@
  * All rights reserved.
  */
 
-#include <inttypes.h>
 #include <algorithm>
 #include <chrono>
 #include <cmath>
@@ -16,6 +15,7 @@
 #include <functional>
 #include <future>
 #include <initializer_list>
+#include <inttypes.h>
 #include <map>
 #include <string>
 #include <thread>

@@ -3,9 +3,9 @@
 #define DAYDREAM_CONTAINERS
 #ifdef DAYDREAM_CONTAINERS
 
+#include "Pow2Assert.h"
 #include <algorithm>
 #include <memory>
-#include "Pow2Assert.h"
 
 /*
 * Copyright (c) 2016, Moses Adeagbo
@@ -34,7 +34,7 @@ class dd_array {
     }
   }
   // copy ctor
-  dd_array(const dd_array& other)
+  dd_array(const dd_array &other)
       : _size(other._size), m_data(new T[other._size]()) {
     std::copy(other.m_data, other.m_data + _size, m_data);
   }
@@ -53,19 +53,19 @@ class dd_array {
   }
 
   // returns T from 1D array
-  T& operator[](const size_t FirstIndex) {
+  T &operator[](const size_t FirstIndex) {
     POW2_VERIFY_MSG(FirstIndex < _size, "Index out of bounds :: 1D", 0);
     return m_data[FirstIndex];
   }
 
   // returns const T from 1D array
-  T& operator[](const size_t FirstIndex) const {
+  T &operator[](const size_t FirstIndex) const {
     POW2_VERIFY_MSG(FirstIndex < _size, "Index out of bounds :: 1D", 0);
     return m_data[FirstIndex];
   }
 
   // copying
-  void operator=(const dd_array& other) {
+  void operator=(const dd_array &other) {
     if (other._size == 0) {
       return;  // nothing in the second array
     }
@@ -82,7 +82,7 @@ class dd_array {
   }
 
   // move ctor
-  dd_array(dd_array&& other) : _size(0), m_data(nullptr) {
+  dd_array(dd_array &&other) : _size(0), m_data(nullptr) {
     m_data = other.m_data;
     _size = other._size;
 
@@ -91,7 +91,7 @@ class dd_array {
   }
 
   // move assignment
-  dd_array& operator=(dd_array&& other) {
+  dd_array &operator=(dd_array &&other) {
     if (this != &other) {
       if (m_data != nullptr) {
         delete[] m_data;
@@ -114,7 +114,7 @@ class dd_array {
 
  private:
   size_t _size;
-  T* m_data;
+  T *m_data;
 };
 
 /** \brief Simple 2D-array container used for DayDream engine */
@@ -125,15 +125,15 @@ class dd_2Darray {
   template <class R>
   class OperatorBracketHelper {
    public:
-    OperatorBracketHelper(dd_2Darray<R>& Parent, size_t FirstIndex)
+    OperatorBracketHelper(dd_2Darray<R> &Parent, size_t FirstIndex)
         : m_parent(Parent), m_firstIndex(FirstIndex) {}
     // method called for "second brackets"
-    R& operator[](size_t SecondIndex) {
+    R &operator[](size_t SecondIndex) {
       return m_parent.GetElement(m_firstIndex, SecondIndex);
     }
 
    private:
-    dd_2Darray<R>& m_parent;
+    dd_2Darray<R> &m_parent;
     size_t m_firstIndex;
   };
 
@@ -177,20 +177,20 @@ class dd_2Darray {
   }
 
   // return 2D data
-  T& GetElement(size_t FirstIndex, size_t SecondIndex) {
+  T &GetElement(size_t FirstIndex, size_t SecondIndex) {
     POW2_VERIFY_MSG((FirstIndex * m_column + SecondIndex) < (m_column * m_row),
                     "Index out of bounds :: 2D", 0);
     return m_data[(FirstIndex * m_column) + SecondIndex];
   }
   // return const 2D data
-  T& GetElement(size_t FirstIndex, size_t SecondIndex) const {
+  T &GetElement(size_t FirstIndex, size_t SecondIndex) const {
     POW2_VERIFY_MSG((FirstIndex * m_column + SecondIndex) < (m_column * m_row),
                     "Index out of bounds :: 2D", 0);
     return m_data[(FirstIndex * m_column) + SecondIndex];
   }
 
   // copying
-  void operator=(const dd_2Darray& other) {
+  void operator=(const dd_2Darray &other) {
     if (other.m_column == 0 && other.m_row == 0) {
       return;  // nothing in the second array
     }
@@ -216,7 +216,7 @@ class dd_2Darray {
   }
 
   // move ctor
-  dd_2Darray(dd_2Darray&& other) : m_data(nullptr), m_row(0), m_column(0) {
+  dd_2Darray(dd_2Darray &&other) : m_data(nullptr), m_row(0), m_column(0) {
     m_data = other.m_data;
     m_row = other.m_row;
     m_column = other.m_column;
@@ -227,7 +227,7 @@ class dd_2Darray {
   }
 
   // move assignment
-  dd_2Darray& operator=(dd_2Darray&& other) {
+  dd_2Darray &operator=(dd_2Darray &&other) {
     if (this != &other) {
       if (m_data != nullptr) {
         delete[] m_data;
@@ -254,13 +254,13 @@ class dd_2Darray {
 
  private:
   size_t m_row, m_column;
-  T* m_data;
+  T *m_data;
 };
 
 template <typename T>
 struct _dd_iter {
   size_t i;
-  T* ptr;
+  T *ptr;
 };
 
 /** A for-each implementation for dd_array objects */
