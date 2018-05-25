@@ -12,10 +12,10 @@ struct ddIO {
   bool open(const char *fileName, const ddIOflag flags);
   const char *readNextLine();
   void writeLine(const char *output);
-  inline dd_array<cbuff<512>> get_directory_files() { return dir_files; }
+  inline dd_array<string512> get_directory_files() { return dir_files; }
 
  private:
   char m_line[10000];
   std::fstream m_file;
-  dd_array<cbuff<512>> dir_files;
+  dd_array<string512> dir_files;
 };

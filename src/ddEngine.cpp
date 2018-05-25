@@ -19,23 +19,23 @@ unsigned num_monitors = 0;
 int display_select = 0;
 bool engine_mode_flags[] = {true, false, true, false};
 
-const cbuff<32> exit_hash("sys_exit");
-const cbuff<32> frame_enter_hash("frame_init");
-const cbuff<32> frame_exit_hash("frame_exit");
-const cbuff<32> load_hash("load_screen");
-const cbuff<32> draw_hash("draw_world");
-const cbuff<32> physics_hash("physics_step");
-const cbuff<32> lvl_init_hash("_lvl_init_done");
-const cbuff<32> lvl_asset_hash("_load_resource_done");
-const cbuff<32> terminal_hash("poll_terminal");
-const cbuff<32> process_terminal_hash("process_terminal");
-const cbuff<32> init_screen_hash("init_screen");
-const cbuff<32> reset_lvl_script_hash("reset_lvl");
-const cbuff<32> visibility_hash("update_visibility");
-const cbuff<32> animation_hash("update_animation");
-const cbuff<32> bbox_hash("toggle_bbox");
-const cbuff<32> wait_hash("wait");
-const cbuff<32> exec_script_hash("exec");
+const string32 exit_hash("sys_exit");
+const string32 frame_enter_hash("frame_init");
+const string32 frame_exit_hash("frame_exit");
+const string32 load_hash("load_screen");
+const string32 draw_hash("draw_world");
+const string32 physics_hash("physics_step");
+const string32 lvl_init_hash("_lvl_init_done");
+const string32 lvl_asset_hash("_load_resource_done");
+const string32 terminal_hash("poll_terminal");
+const string32 process_terminal_hash("process_terminal");
+const string32 init_screen_hash("init_screen");
+const string32 reset_lvl_script_hash("reset_lvl");
+const string32 visibility_hash("update_visibility");
+const string32 animation_hash("update_animation");
+const string32 bbox_hash("toggle_bbox");
+const string32 wait_hash("wait");
+const string32 exec_script_hash("exec");
 
 }  // namespace
 
@@ -180,7 +180,7 @@ void ddEngine::launch() {
 bool ddEngine::level_select(const size_t w, const size_t h) {
   dd_open_window(w, h, EngineMode::DD_GPU_INFO | EngineMode::DD_VSYNC);
   // grab levels from startup script
-  cbuff<512> startup_script;
+  string512 startup_script;
   startup_script.format("%s/scripts/startup.lua", RESOURCE_DIR);
   bool file_loaded = parse_luafile(main_lstate, startup_script.str());
 
@@ -195,7 +195,7 @@ bool ddEngine::level_select(const size_t w, const size_t h) {
     if (num_levels) {
       // printf("Found # of levels: %d\n", *num_levels);
       lvls_list.resize((unsigned)(*num_levels));
-      cbuff<4> _lvl;
+      string8 _lvl;
       for (unsigned i = 0; i < (unsigned)lvls_list.size(); i++) {
         _lvl.format("%u", i + 1);
         lvls_list[i] = main_fb.get_func_val<const char>(_lvl.str());
@@ -271,8 +271,8 @@ bool ddEngine::level_select(const size_t w, const size_t h) {
         // set up queue handlers
         main_q.init_level_scripts(lvls_list[current_lvl]);
         // cpp lua functions for the level
-        cbuff<64> key = lvls_list[current_lvl];
-        std::map<cbuff<64>, std::function<void(lua_State *)>> lvl_funcs =
+        string64 key = lvls_list[current_lvl];
+        std::map<string64, std::function<void(lua_State *)>> lvl_funcs =
             get_reflections();
         POW2_VERIFY(lvl_funcs.size() != 0);
         lvl_funcs[key](main_lstate);
@@ -420,23 +420,23 @@ void ddEngine::shutdown() {
 
 bool ddEngine::execTerminal(const char *cmd) {
   if (cmd) {
-    cbuff<256> str_arg;
+    string256 str_arg;
     bool args_present = false;
 
     // split arguments and tags if possible
-    std::string head;
-    std::string buff = cmd;
-    size_t head_idx = buff.find_first_of(" ");
-    if (head_idx != std::string::npos) {
+    string32 head;
+    string512 buff = cmd;
+    int head_idx = buff.find(" ");
+    if (head_idx >= 0) {
       args_present = true;
-      head = buff.substr(0, head_idx);
-      str_arg = buff.substr(head_idx + 1).c_str();
+      head = buff.trim(0, head_idx).str();
+      str_arg = buff.trim(head_idx + 1).str();
     } else {
       head = buff;
     }
 
     // if head == exec, run script
-    if (getCharHash(head.c_str()) == exec_script_hash.gethash()) {
+    if (StrLib::get_char_hash(head.str()) == exec_script_hash.gethash()) {
       bool opened = parse_luafile(main_lstate, str_arg.str());
       if (!opened) {
         ddTerminal::f_post("[error]Failed to open: %s", str_arg.str());
@@ -445,11 +445,11 @@ bool ddEngine::execTerminal(const char *cmd) {
       }
     } else {
       DD_LEvent _event;
-      _event.handle = head.c_str();
+      _event.handle = head.str();
       // add events after spltting
       if (args_present) {
-        dd_array<cbuff<32>> args =
-            StrSpace::tokenize1024<32>(str_arg.str(), " ");
+        dd_array<string32> args =
+            StrLib::tokenize2<32>(str_arg.str(), " ");
         for (unsigned i = 0; i < args.size() && i < MAX_EVENT_ARGS; ++i) {
           str_arg.format("%u", i);
           add_arg_LEvent(&_event, str_arg.str(), args[i].str());

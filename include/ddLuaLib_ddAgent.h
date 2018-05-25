@@ -52,14 +52,14 @@ static int new_ddAgent(lua_State *L) {
     if (!type_flag) {
       ddTerminal::post("[error]ddAgent::Ignoring 3rd arg (AABB type : string)");
     } else {
-      cbuff<64> t = lua_tostring(L, curr_arg);
-      if (t.compare("box") == 0)
+      string64 t = lua_tostring(L, curr_arg);
+      if (t.compare("box"))
         type = RBType::BOX;
-      else if (t.compare("sphere") == 0)
+      else if (t.compare("sphere"))
         type = RBType::SPHERE;
-      else if (t.compare("free") == 0)
+      else if (t.compare("free"))
         type = RBType::FREE_FORM;
-      else if (t.compare("kinematic") == 0)
+      else if (t.compare("kinematic"))
         type = RBType::KIN;
     }
   }
@@ -80,14 +80,14 @@ static int new_ddAgent(lua_State *L) {
   }
 
   // check if already exists
-  (*ag) = find_ddAgent(getCharHash(id));
+  (*ag) = find_ddAgent(StrLib::get_char_hash(id));
   if (*ag) {
     ddTerminal::post("[error]ddAgent::Returning already allocated agent");
     return 1;
   }
 
   // create new
-  (*ag) = spawn_ddAgent(getCharHash(id));
+  (*ag) = spawn_ddAgent(StrLib::get_char_hash(id));
   if (!(*ag)) {
     ddTerminal::post("[error]ddAgent::Failed to allocate new agent");
     return 1;
@@ -221,7 +221,7 @@ int set_skeleton(lua_State *L) {
   const char *id = lua_tostring(L, 2);
 
   // Check if skeleton exists
-  ddSkeleton *sk = find_ddSkeleton(getCharHash(id));
+  ddSkeleton *sk = find_ddSkeleton(StrLib::get_char_hash(id));
   if (!sk) {
     ddTerminal::post("[error]ddAgent::set_skeleton::Skeleton not found");
     lua_pushboolean(L, false);
@@ -268,7 +268,7 @@ int add_animation(lua_State *L) {
         "string)");
     return 1;
   }
-  size_t id = getCharHash(lua_tostring(L, curr_arg));
+  size_t id = StrLib::get_char_hash(lua_tostring(L, curr_arg));
 
   // get animation clip id
   curr_arg++;
@@ -279,7 +279,7 @@ int add_animation(lua_State *L) {
         "id : string)");
     return 1;
   }
-  size_t anim_id = getCharHash(lua_tostring(L, curr_arg));
+  size_t anim_id = StrLib::get_char_hash(lua_tostring(L, curr_arg));
 
   // check if animation clip exists
   ddAnimClip *a_clip = find_ddAnimClip(anim_id);

@@ -11,6 +11,7 @@ GTAGS
 terminal_history.txt
 imgui.ini
 logfile.out
+ddShaderReflect.h
 
 #**************** Folders to ignore if unzipped ***************************
 

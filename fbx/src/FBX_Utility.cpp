@@ -53,7 +53,7 @@ void AssetFBX::addMesh(MeshFBX & _mesh, dd_array<size_t> &ebo_data)
 /// \brief Export skeleton to format specified by dd_entity_map.txt
 void AssetFBX::exportSkeleton()
 {
-	cbuff<512> buff512;
+	string512 buff512;
 	buff512.format("%s%s.ddb", m_fbxPath.str(), m_fbxName.str());
 	std::fstream outfile;
 	outfile.open(buff512.str(), std::ofstream::out);

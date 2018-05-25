@@ -44,7 +44,7 @@ static int new_ddCam(lua_State *L) {
     }
   }
 
-  (*cam) = spawn_ddCam(getCharHash(id));
+  (*cam) = spawn_ddCam(StrLib::get_char_hash(id));
   if (!(*cam)) {
     ddTerminal::post("[error]ddCam::Failed to allocate new camera");
     return 1;

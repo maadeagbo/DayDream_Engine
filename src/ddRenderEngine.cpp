@@ -16,17 +16,17 @@ ASSET_CREATE(ddShader, shaders, MAX_SHADERS)
 ASSET_DEF(ddShader, shaders)
 
 /** \brief Main shader ids */
-const cbuff<32> geom_sh = "geometry";
-const cbuff<32> geomsk_sh = "geometry_skinned";
-const cbuff<32> light_sh = "light";
-const cbuff<32> postp_sh = "postprocess";
-const cbuff<32> text_sh = "text";
-const cbuff<32> pingp_sh = "pingpong";
-const cbuff<32> lumin_sh = "luminance";
-const cbuff<32> line_sh = "line";
-const cbuff<32> lstencil_sh = "light_stencil";
-const cbuff<32> depth_sh = "shadow";
-const cbuff<32> depthsk_sh = "shadow_skinned";
+const string32 geom_sh = "geometry";
+const string32 geomsk_sh = "geometry_skinned";
+const string32 light_sh = "light";
+const string32 postp_sh = "postprocess";
+const string32 text_sh = "text";
+const string32 pingp_sh = "pingpong";
+const string32 lumin_sh = "luminance";
+const string32 line_sh = "line";
+const string32 lstencil_sh = "light_stencil";
+const string32 depth_sh = "shadow";
+const string32 depthsk_sh = "shadow_skinned";
 
 DD_FuncBuff fb;
 
@@ -48,7 +48,7 @@ const unsigned lumin_divisor = 8;
 glm::vec4 clear_scr_col = glm::vec4(0.f);
 
 /** \brief Light plane hash */
-const cbuff<32> light_plane_id = "_dd_light_plane";
+const string32 light_plane_id = "_dd_light_plane";
 
 /** \brief Flag for controlling shadows */
 bool shadows_on = true;
@@ -95,7 +95,7 @@ unsigned bbox_indices[12 * 2] = {
     1, 5};
 
 /** \brief Load screen texture */
-cbuff<32> load_screen_tex = "load_screen";
+string32 load_screen_tex = "load_screen";
 /** \brief Load screen matrices */
 glm::mat4 load_scale_mat, load_trans_mat, load_rot_mat;
 /** \brief Load screen time counter */
@@ -148,7 +148,7 @@ int import_shader(lua_State *L) {
     ddIO check;
     if (check.open(path, ddIOflag::READ)) {
       // check if shader already exists
-      size_t new_id = getCharHash(s_id);
+      size_t new_id = StrLib::get_char_hash(s_id);
       sh = find_ddShader(new_id);
       if (!sh) sh = spawn_ddShader(new_id);
 
@@ -321,19 +321,19 @@ void initialize(const unsigned width, const unsigned height) {
     sh->init();
 
     // compute
-    if (sh->cs.compare("") != 0) {
+    if (!sh->cs.compare("")) {
       sh->create_comp_shader(sh->cs.str());
     } else {
       // vertex
-      if (sh->vs.compare("") != 0) {
+      if (!sh->vs.compare("")) {
         sh->create_vert_shader(sh->vs.str());
       }
       // geomtry
-      if (sh->gs.compare("") != 0) {
+      if (!sh->gs.compare("")) {
         sh->create_geom_shader(sh->gs.str());
       }
       // fragment
-      if (sh->fs.compare("") != 0) {
+      if (!sh->fs.compare("")) {
         sh->create_frag_shader(sh->fs.str());
       }
     }

@@ -10,7 +10,7 @@ struct ddJoint {
   glm::mat4 inv_bp;
   /** \brief transform from parent to this joint */
   glm::mat4 p_delta;
-  cbuff<64> id;
+  string64 id;
   uint8_t parent;
 };
 

@@ -5,96 +5,82 @@
 #pragma once
 
 #include "Container.h"
-#include <cstdio>
-#include <cstdlib>
-#include <string.h>
 
-/** \brief Hashes const char* strings */
-static size_t getCharHash(const char *s) {
-  size_t h = 5381;
-  int c;
-  while ((c = *s++)) h = ((h << 5) + h) + c;
-  return h;
-}
-
-// small container (8 bytes + T)
-/** \brief A small string manipulation class for char[T] */
+/** \brief A small string manipulation class for char[T], small container (8 bytes + T)*/
 template <const int T>
 struct cbuff {
-  cbuff() { set(""); }
-  cbuff(const char *in_str) { set(in_str); }
-  /** \brief Performs strcmp(cstr, in_str) (0 means equal) */
-  int compare(const char *in_str) { return strcmp(cstr, in_str); }
+  cbuff();
+  
+  cbuff(const char *in_string);
+  
+  bool compare(const char *in_string) const;
 
-  /** \brief Returns true if cstr contains in_str */
-  bool contains(const char *in_str) { return strstr(cstr, in_str) != nullptr; }
+  bool contains(const char *in_string) const;
 
-  /** \brief Compares the hashed value of the two cbuff's (fast) */
-  bool operator==(const cbuff &other) const { return hash == other.hash; }
+	bool is_empty() const;
 
-  /** \brief Sets and hashes internal cstr to in_str */
-  cbuff &operator=(const char *in_str) {
-    set(in_str);
-    return *this;
-  }
+  bool operator==(const cbuff &other) const;
 
-  /** \brief Performs fast less-than coparison (this->hash < other->hash) */
-  bool operator<(const cbuff &other) const { return hash < other.hash; }
+  cbuff &operator=(const char *in_string);
 
-  /** \brief Sets and hashes internal cstr to in_str */
-  void set(const char *in_str) {
-    snprintf(cstr, T, "%s", in_str);
-    hash = getCharHash(cstr);
-  }
+	template <const int U, const int V = ((U > T) ? U : T) >
+	cbuff<V> operator+(const cbuff<U> &other) const;
 
-  /** \brief Sets and hashes internal cstr using format string */
+	template <const int U>
+	cbuff &operator+=(const cbuff<U> &other);
+
+	cbuff operator+(const char* in_string) const;
+
+	cbuff &operator+=(const char* in_string);
+
+  template <const int U> cbuff<T>(const cbuff<U> &other);
+
+  template <const int U> cbuff<T> &operator=(const cbuff<U> &in_cbuff);
+
+  bool operator<(const cbuff &other) const;
+
+  void set(const char *in_string);
+
   template <typename... Args>
-  void format(const char *format_str, const Args &... args) {
-    snprintf(cstr, T, format_str, args...);
-    hash = getCharHash(cstr);
-  }
+  void format(const char *format_str, const Args &... args)
+	{
+		char bin[T];
+		snprintf(bin, T, format_str, args...);
+		snprintf(char_bin, T, "%s", bin);
+		hash = StrLib::get_char_hash(char_bin);
+	}
 
-  /** \brief Returns const char* internal representation */
-  const char *str() const { return cstr; }
-  /** \brief Returns hashed string internal representation */
-  size_t gethash() const { return hash; }
+  int find(const char *in_string) const;
+
+  void replace(const char search_token, const char replace_token);
+
+  const char *str(const unsigned index = 0) const;
+
+  cbuff trim(const unsigned index, const unsigned length = 0) const;
+
+  size_t gethash() const;
 
  private:
-  char cstr[T];
+  char char_bin[T];
   size_t hash;
 };
 
-/** \brief Simple operations on cbuff containers */
-namespace StrSpace {
-/**
- * \brief Take a string buffer and return a tokenized cbuff array
- * WARNING: strToSplit will be cut off if greater than 1024 chars
- */
-template <const unsigned T>
-dd_array<cbuff<T>> tokenize1024(const char *strToSplit, const char *delim) {
-  char buff[1024];
-  snprintf(buff, 1024, "%s", strToSplit);
-  dd_array<cbuff<T>> output;
+typedef cbuff<8> string8;
+typedef cbuff<16> string16;
+typedef cbuff<32> string32;
+typedef cbuff<64> string64;
+typedef cbuff<128> string128;
+typedef cbuff<256> string256;
+typedef cbuff<512> string512;
+typedef cbuff<1024> string1024;
 
-  // count number of delims
-  const char *str_ptr = strToSplit;
-  unsigned numTkns = 0, iter = 0;
-  while (*str_ptr) {
-    if (*str_ptr == *delim) {
-      numTkns += 1;
-    }
-    str_ptr++;
-  }
-  numTkns += 1;
-  output.resize(numTkns);
-  // copy to array
-  char *nxt = strtok(buff, delim);
+namespace StrLib
+{
+  size_t get_char_hash(const char *input);
 
-  while (nxt && iter < output.size()) {
-    output[iter].set(nxt);
-    iter += 1;
-    nxt = strtok(nullptr, delim);
-  }
-  return output;
-}
-}
+  dd_array<unsigned> tokenize(const char *input, const char *delimeters);
+
+  template <const unsigned T>
+  dd_array<cbuff<T>> tokenize2(const char *input, const char *delimeters);
+} // StrLib
+

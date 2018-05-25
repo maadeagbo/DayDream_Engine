@@ -72,7 +72,7 @@ do
 		
 		-- load mesh
 		assets.sample_mesh = ddModel.new(
-			PROJECT_DIR.."/BBoxSkinnedMesh/sample/vg.ddg")
+			PROJECT_DIR.."/BBoxSkinnedMesh/sample/vanguard.ddg")
 		
 		-- load agent
 		assets.sample = ddAgent.new("sample_agent", 0.0, "box")
@@ -95,6 +95,8 @@ do
 		
 			-- add specialized bounding box to agent
 			assets.sample:add_oobb(PROJECT_DIR.."/BBoxSkinnedMesh/output/first.ddx")
+		else
+			ddLib.print("Mesh: ", tostring(success_0), ", Skeleton: ", tostring(success_1))
 		end
 		
 		ddLib.print("sample: ", tostring(assets.sample))

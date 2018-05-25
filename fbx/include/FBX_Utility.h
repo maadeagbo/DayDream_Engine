@@ -5,7 +5,6 @@
 #include <map>
 #include <functional>
 #include <fbxsdk.h>
-#include "Container.h"
 #include "StringLib.h"
 
 #define MAX_JOINTS ((uint8_t)-1)

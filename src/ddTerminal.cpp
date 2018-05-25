@@ -249,7 +249,7 @@ void ddTerminal::inTerminalHistory() {
   write_out_history = true;  // prevents wiping terminal history on exit
   // read saved terminal history
   ddIO io_handle;
-  cbuff<256> infile;
+  string256 infile;
   infile.format("%s/%s", RESOURCE_DIR, "terminal_history.txt");
   if (!io_handle.open(infile.str(), ddIOflag::READ)) {
     return;
@@ -280,7 +280,7 @@ void ddTerminal::outTerminalHistory() {
 
   // write out terminal history
   ddIO io_handle;
-  cbuff<256> outfile;
+  string256 outfile;
   outfile.format("%s/%s", RESOURCE_DIR, "terminal_history.txt");
   if (!io_handle.open(outfile.str(), ddIOflag::WRITE)) {
     return;
@@ -323,15 +323,14 @@ ImVec4 colorCodeOutput(const char *entry) {
 
 void execTerminalCommand(const char *command) {
   // separate commands and add to buffer
-  dd_array<cbuff<DEFAULT_ENTRY_SIZE>> cmds =
-      StrSpace::tokenize1024<DEFAULT_ENTRY_SIZE>(command, "$");
+  dd_array<string32> commands = StrLib::tokenize2<32>(command, "$");
 
-  for (int i = ((int)cmds.size() - 1); i >= 0; i--) {
-    if (*cmds[i].str()) {
+  for (int i = 0; i < commands.size(); i++) {
+    if (!commands[i].is_empty()) {
       if (cmd_buff_count < CMD_BUFFER_SIZE) {
         char *cmd_arg = cmdBuffer[cmd_buff_count];
 
-        snprintf(cmd_arg, DEFAULT_ENTRY_SIZE, "%s", cmds[i].str());
+        snprintf(cmd_arg, DEFAULT_ENTRY_SIZE, "%s", commands[i].str());
         cmd_buff_count += 1;
         ddTerminal::post(cmd_arg);
       }

@@ -6,14 +6,14 @@ ddSkeleton *load_skeleton(const char *ddb_file, const char *id) {
   ddSkeleton *skele = nullptr;
 
   // check if already exists
-  size_t hashed_id = getCharHash(id);
+  size_t hashed_id = StrLib::get_char_hash(id);
   skele = find_ddSkeleton(hashed_id);
   if (skele) {
     ddTerminal::f_post("load_skeleton::<%s> already exists", id);
     return skele;
   }
   // check that path is .ddb
-  cbuff<512> path_check(ddb_file);
+  string512 path_check(ddb_file);
   if (!path_check.contains(".ddb")) {
     ddTerminal::f_post("[error] Invalid ddb file: %s", ddb_file);
     return skele;
@@ -22,18 +22,18 @@ ddSkeleton *load_skeleton(const char *ddb_file, const char *id) {
   // parse file
   if (io_handle.open(ddb_file, ddIOflag::READ)) {
     skele = spawn_ddSkeleton(hashed_id);
-    cbuff<64> mybuff;
+    string64 mybuff;
     const char *nxtLine = io_handle.readNextLine();
     while (nxtLine && *nxtLine) {
       mybuff.set(nxtLine);
       // number of bones
-      if (mybuff.compare("<size>") == 0) {
+      if (mybuff.compare("<size>")) {
         nxtLine = io_handle.readNextLine();
         unsigned size = std::strtoul(nxtLine, nullptr, 10);
         skele->bones.resize(size);
       }
       // global array
-      if (mybuff.compare("<global>") == 0) {
+      if (mybuff.compare("<global>")) {
         nxtLine = io_handle.readNextLine();
         nxtLine += 2;  // position
         glm::vec3 pos = getVec3f(nxtLine);
@@ -49,9 +49,9 @@ ddSkeleton *load_skeleton(const char *ddb_file, const char *id) {
         // printGlmMat(global_mat);
       }
       // joints
-      if (mybuff.compare("<joint>") == 0) {
+      if (mybuff.compare("<joint>")) {
         nxtLine = io_handle.readNextLine();
-        auto tkns = StrSpace::tokenize1024<64>(nxtLine, " ");
+        auto tkns = StrLib::tokenize2<64>(nxtLine, " ");
 
         // set id and parent index
         unsigned idx = strtoul(tkns[1].str(), nullptr, 10);
@@ -110,14 +110,14 @@ ddAnimClip *load_animation(const char *dda_file, const char *id) {
   ddAnimClip *a_clip = nullptr;
 
   // check if already exists
-  size_t hashed_id = getCharHash(id);
+  size_t hashed_id = StrLib::get_char_hash(id);
   a_clip = find_ddAnimClip(hashed_id);
   if (a_clip) {
     ddTerminal::f_post("load_animation::<%s> already exists", id);
     return a_clip;
   }
   // make sure file is .dda
-  cbuff<512> path_check(dda_file);
+  string512 path_check(dda_file);
   if (!path_check.contains(".dda")) {
     ddTerminal::f_post("[error] Not valid dda file: %s", dda_file);
     return a_clip;
@@ -126,7 +126,7 @@ ddAnimClip *load_animation(const char *dda_file, const char *id) {
   // parse animation from file
   if (io_handle.open(dda_file, ddIOflag::READ)) {
     a_clip = spawn_ddAnimClip(hashed_id);
-    cbuff<128> mybuff;
+    string128 mybuff;
     const char *val = nullptr;
 
     const char *nxtLine = io_handle.readNextLine();
@@ -134,14 +134,14 @@ ddAnimClip *load_animation(const char *dda_file, const char *id) {
       mybuff.set(nxtLine);
 
       // framerate of clip
-      if (mybuff.compare("<framerate>") == 0) {
+      if (mybuff.compare("<framerate>")) {
         nxtLine = io_handle.readNextLine();
         float fr = std::strtof(nxtLine, nullptr);
         a_clip->fps = fr;
       }
 
       // buffer sizes
-      if (mybuff.compare("<buffer>") == 0) {
+      if (mybuff.compare("<buffer>")) {
         nxtLine = io_handle.readNextLine();
 
         if (*nxtLine == 'j') {  // total joints
@@ -168,7 +168,7 @@ ddAnimClip *load_animation(const char *dda_file, const char *id) {
       }
 
       // animation data
-      if (mybuff.compare("<animation>") == 0) {
+      if (mybuff.compare("<animation>")) {
         nxtLine = io_handle.readNextLine();
         unsigned idx = 0;
         unsigned f_idx = 0;

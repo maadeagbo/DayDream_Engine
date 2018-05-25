@@ -7,7 +7,7 @@ enum class LvlCtrlEnums { TRANSLATE, ROTATE, SCALE, X, Y, Z, NUM_FLAGS };
 /// \brief level controls
 struct LvlCtrl {
   bool flags[(unsigned)LvlCtrlEnums::NUM_FLAGS];
-  cbuff<32> output = "default";
+  string32 output = "default";
 };
 
 /** \brief Transforms */

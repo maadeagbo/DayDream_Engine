@@ -138,7 +138,7 @@ void ddAssets::log_lua_func(lua_State *L) {
 
 void ddAssets::load_to_gpu() {
   // load textures (skip load_screen id)
-  size_t load_screen_tex = getCharHash("load_screen");
+  size_t load_screen_tex = StrLib::get_char_hash("load_screen");
 
   dd_array<ddTex2D *> t_array = get_all_ddTex2D();
   DD_FOREACH(ddTex2D *, t_id, t_array) {
@@ -340,7 +340,7 @@ int dd_assets_create_agent(lua_State *L) {
 
   ddAgent *new_agent = nullptr;
   if (agent_id) {
-    size_t out_id = getCharHash(agent_id);
+    size_t out_id = StrLib::get_char_hash(agent_id);
 
     // check if agent already exists
     new_agent = find_ddAgent(out_id);
@@ -444,7 +444,7 @@ int dd_assets_create_mesh(lua_State *L) {
   // get arguments and use them to create ddModelData
   const char *file = fb.get_func_val<const char>("path");
   if (file) {
-    cbuff<256> f = file;
+    string256 f = file;
     // check file extension
     if (f.contains(".ddm")) {
       new_mdata = load_ddm(file);
@@ -470,7 +470,7 @@ int dd_assets_create_cam(lua_State *L) {
 
   if (id && parent) {
     // check if camera already exists otherwise allocate
-    size_t cam_id = getCharHash(id);
+    size_t cam_id = StrLib::get_char_hash(id);
     new_cam = find_ddCam(cam_id);
     ddAgent *ag = find_ddAgent((size_t)(*parent));
     if (new_cam && ag) {
@@ -509,7 +509,7 @@ int dd_assets_create_light(lua_State *L) {
   const char *id = fb.get_func_val<const char>("id");
   if (id) {
     // check if light already exist otherwise create new light
-    size_t light_id = getCharHash(id);
+    size_t light_id = StrLib::get_char_hash(id);
     new_bulb = find_ddLBulb(light_id);
     if (new_bulb) {
       ddTerminal::f_post("Duplicate light <%s>", id);

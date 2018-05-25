@@ -238,7 +238,7 @@ void render_bbox() {
 
 int init_gpu_stuff(lua_State *L) {
   // shader init
-  cbuff<256> fname;
+  string256 fname;
   bbox_sh.init();
 
   fname.format("%s/BBoxSkinnedMesh/%s", PROJECT_DIR, "LineRend_V.vert");

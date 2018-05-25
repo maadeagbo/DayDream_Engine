@@ -2,8 +2,8 @@
 #include "ddTerminal.h"
 
 namespace {
-cbuff<32> event_id_hash("event_id");
-cbuff<32> delay_hash("delay");
+string32 event_id_hash("event_id");
+string32 delay_hash("delay");
 }  // namespace
 
 bool ddQueue::push(const DD_LEvent &_event) {
@@ -65,7 +65,7 @@ int ddQueue::push_lua(lua_State *_L) {
 }
 
 int ddQueue::register_lua_func(lua_State *_L) {
-  cbuff<32> key;
+  string32 key;
   int global_ref = LUA_REFNIL, func_ref = LUA_REFNIL;
 
   int top = lua_gettop(_L); /* number of events */
@@ -107,7 +107,7 @@ int ddQueue::subscribe_lua_func(lua_State *_L) {
   const char *e_val = fb.get_func_val<const char>("event");
 
   if (e_val && k_val) {
-    subscribe(getCharHash(e_val), getCharHash(k_val));
+    subscribe(StrLib::get_char_hash(e_val), StrLib::get_char_hash(k_val));
   }
   return 0;
 }
@@ -203,7 +203,7 @@ void ddQueue::unsubscribe(const size_t event_sig, const size_t _sig) {
   }
 }
 
-const cbuff<32> frame_enter_hash("frame_init");
+const string32 frame_enter_hash("frame_init");
 
 void ddQueue::process_queue() {
   while (!shutdown) {
@@ -318,7 +318,7 @@ void ddQueue::setup_lua(lua_State *_L) {
 
 void ddQueue::init_level_scripts(const char *script_id, const bool runtime) {
   // find level functions
-  cbuff<256> file_name;
+  string256 file_name;
   file_name.format("%s/%s/%s_world.lua", PROJECT_DIR, script_id, script_id);
   bool file_found = parse_luafile(L, file_name.str());
   if (file_found) {
@@ -341,7 +341,7 @@ void ddQueue::init_level_scripts(const char *script_id, const bool runtime) {
 
         // subscribe for certain callback events
         handler_sig _sig = {global_ref, func_ref};
-        size_t curr_lvl_id = getCharHash("lvl_update");
+        size_t curr_lvl_id = StrLib::get_char_hash("lvl_update");
         register_handler(curr_lvl_id, _sig);
 
         subscribe(lvl_call.gethash(), curr_lvl_id);

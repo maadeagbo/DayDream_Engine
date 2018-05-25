@@ -28,40 +28,6 @@
 #include "LuaHooks.h"
 #include "ddIncludes.h"
 
-// struct DD_Model {
-//   std::string m_ID;
-//   dd_array<DDM_Data> meshes;
-//   dd_array<GLuint> VAO, VBO, EBO, instVBO, instColorVBO;
-//   dd_array<size_t> materials;  // index
-//   std::string directory;
-//   bool m_loaded_to_GPU = false;
-// };
-
-// namespace ModelSpace {
-// // BoundingBox CalculateBBox(const DD_Model& model);
-// void OpenGLBindMesh(const int index, DD_Model& model, const size_t inst_size,
-//                     const size_t inst_c_size);
-// void OpenGLUnBindMesh(const int index, DD_Model& model);
-// // void PrintInfo(const DD_Model& mod);
-// }
-
-struct LinePoint {
-  glm::vec4 pos01, pos02;
-};
-
-struct DD_LineAgent {
-  dd_array<LinePoint> lines;
-  dd_array<glm::vec4> m_buffer;
-  glm::vec4 color = glm::vec4(0.2f, 0.2f, 0.2f, 1.f);
-  std::string m_ID = "";
-  bool flag_render = true, m_flagXZ = true;
-  DD_LineAgent(const size_t size = 0) : lines(size) {}
-  inline void FlushLines() {
-    lines.resize(0);
-    m_buffer.resize(0);
-  }
-};
-
 /** \brief Bounding box representation */
 struct BoundingBox {
   BoundingBox() {}
@@ -106,7 +72,7 @@ glm::vec2 getVec2f(const char *str);
 
 glm::quat getQuat(const char *str);
 
-std::string Vec4f_Str(const glm::vec4 vIn);
+string32 Vec4f_Str(const glm::vec4 vIn);
 
 glm::mat4 createMatrix(const glm::vec3 &pos, const glm::vec3 &rot,
                        const glm::vec3 &scale);

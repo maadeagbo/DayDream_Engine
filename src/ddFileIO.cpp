@@ -5,7 +5,7 @@ namespace fs = std::experimental::filesystem;
 typedef std::experimental::filesystem::directory_iterator fs_dir;
 
 /** \brief Parse directory and store in dd_array */
-dd_array<cbuff<512>> parse_directory(fs_dir &dir_handle);
+dd_array<string512> parse_directory(fs_dir &dir_handle);
 
 ddIO::~ddIO() {
   if (m_file.is_open()) {
@@ -51,15 +51,13 @@ void ddIO::writeLine(const char *output) {
   }
 }
 
-dd_array<cbuff<512>> parse_directory(fs_dir &dir_handle) {
-  dd_array<cbuff<512>> files;
-  cbuff<512> fname;
+dd_array<string512> parse_directory(fs_dir &dir_handle) {
+  dd_array<string512> files;
   std::vector<std::string> vec_files;
   // count the number of files
   unsigned num_files = 0;
   for (auto &p : fs::directory_iterator(dir_handle)) {
-    fname.format("%s", p.path().string().c_str());
-    vec_files.push_back(p.path().string());
+    vec_files.push_back( p.path().string() );
     num_files++;
   }
 
@@ -69,8 +67,7 @@ dd_array<cbuff<512>> parse_directory(fs_dir &dir_handle) {
 
   unsigned file_idx = 0;
   for (auto &p : vec_files) {
-    fname.format("%s", p.c_str());
-    files[file_idx] = fname;
+    files[file_idx] = p.c_str();
     file_idx++;
   }
 

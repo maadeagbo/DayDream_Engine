@@ -8,7 +8,7 @@
 
 struct DDM_Data_Out {
   dd_array<DDM_Data> data;
-  cbuff<32> name;
+  string32 name;
   dd_array<FbxEData> edata;
   dd_array<obj_mat> o_mats;
   FbxVData vdata;
@@ -79,7 +79,7 @@ ddModelData *load_ddm(const char *filename) {
   ddModelData *mdata = nullptr;
   DDM_Data_Out out_data;
   ddIO io_handle;
-  cbuff<32> name;
+  string32 name;
 
   if (io_handle.open(filename, ddIOflag::READ)) {
     out_data = get_ddm_data(io_handle);
@@ -106,7 +106,7 @@ ddModelData *load_ddm(const char *filename) {
     if (mat) {  // set mesh's material id
       mdata->mesh_info[i].mat_id = mat->id;
     } else {
-      mdata->mesh_info[i].mat_id = getCharHash("default");
+      mdata->mesh_info[i].mat_id = StrLib::get_char_hash("default");
     }
   }
   return mdata;
@@ -116,11 +116,11 @@ ddModelData *load_ddg(const char *filename) {
   ddModelData *mdata = nullptr;
   ddIO io_handle;
   dd_array<DDM_Data> out_data;
-  cbuff<32> name;
+  string32 name;
 
   // open .ddg file
   if (io_handle.open(filename, ddIOflag::READ)) {
-    cbuff<512> mybuff;
+    string512 mybuff;
     unsigned meshes_added = 0;
     const char *line = io_handle.readNextLine();
 
@@ -128,14 +128,14 @@ ddModelData *load_ddg(const char *filename) {
       mybuff.set(line);
 
       // name of .ddg object
-      if (mybuff.compare("<name>") == 0) {
+      if (mybuff.compare("<name>")) {
         line = io_handle.readNextLine();
 
         name = line;
       }
 
       // parse each .ddm file to separate DDM_Data_Out
-      if (mybuff.compare("<mesh>") == 0) {
+      if (mybuff.compare("<mesh>")) {
         line = io_handle.readNextLine();
 
         ddIO io_handle2;
@@ -156,7 +156,7 @@ ddModelData *load_ddg(const char *filename) {
             if (mat) {  // set mesh's material id
               mesh_data.data[i].mat_id = mat->id;
             } else {
-              mesh_data.data[i].mat_id = getCharHash("default");
+              mesh_data.data[i].mat_id = StrLib::get_char_hash("default");
             }
           }
 
@@ -183,7 +183,7 @@ ddModelData *load_ddg(const char *filename) {
     // end of while
   }
   // create ddModelData from out_data
-  if (name.compare("") != 0 && out_data.isValid()) {
+  if (!name.compare("") && out_data.isValid()) {
     mdata = spawn_ddModelData(name.gethash());
 
     mdata->mesh_info = std::move(out_data);
@@ -447,7 +447,7 @@ ddMat *create_material(obj_mat &mat_info) {
   // set size of texture id container
   mat->textures.resize(get_tex_idx(TexType::NULL_T));
   mat->base_color = mat_info.diff_raw;
-  cbuff<32> tex_id, tex_name;
+  string32 tex_id, tex_name;
 
   if (mat_info.albedo_flag) {
     tex_name.format("%s_diff", mat_info.mat_id.str());
@@ -514,7 +514,7 @@ void flip_im(unsigned char *image, const int width, const int height,
 
 ddTex2D *create_tex2D(const char *path, const char *img_id) {
   // check if texture already exists
-  size_t tex_id = getCharHash(img_id);
+  size_t tex_id = StrLib::get_char_hash(img_id);
   ddTex2D *new_tex = find_ddTex2D(tex_id);
   if (new_tex) {
     ddTerminal::f_post("Duplicate texture <%s>", img_id);
@@ -567,7 +567,7 @@ dd_array<OOBoundingBox> load_ddx(const char *path) {
   int b_idx = -1;
 
   // check that path is .ddx
-  cbuff<512> path_check(path);
+  string512 path_check(path);
   if (!path_check.contains(".ddx")) {
     ddTerminal::f_post("[error]Invalid ddx file: %s", path);
     return bboxes;

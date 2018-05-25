@@ -40,11 +40,14 @@ DD_FuncBuff fb;
 /** \brief Print string to terminal */
 static int ddprint(lua_State *L) {
   int top = lua_gettop(L); /* arguments */
-  std::string out = "";
+  string1024 out, old_string;
+	string512 new_string;
   for (int i = 1; i <= top; i++) {
-    out += lua_tostring(L, i);
+		old_string = out.str();
+    new_string = lua_tostring(L, i);
+		out.format("%s%s", old_string.str(), new_string.str());
   }
-  ddTerminal::post(out.c_str());
+  ddTerminal::post(out.str());
 
   return 0;
 }
@@ -71,7 +74,7 @@ static int dd_high_res_time(lua_State *L) {
 static int dd_hash(lua_State *L) {
   int top = lua_gettop(L);
   if (top == 1 && lua_isstring(L, -1)) {
-    lua_pushinteger(L, getCharHash(lua_tostring(L, -1)));
+    lua_pushinteger(L, StrLib::get_char_hash(lua_tostring(L, -1)));
   } else {
     lua_pushnil(L);
   }

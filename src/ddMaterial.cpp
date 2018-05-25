@@ -1,5 +1,4 @@
 #include "ddMaterial.h"
-#include <string>
 
 #define DDMAT_META_NAME "LuaClass.ddMat"
 #define check_ddMat(L) (ddMat **)luaL_checkudata(L, 1, DDMAT_META_NAME)
@@ -33,22 +32,22 @@ int get_id(lua_State *L) {
 
 int to_string(lua_State *L) {
   ddMat *mat = *check_ddMat(L);
-  std::string buff;
 
-  cbuff<128> out;
-  out.format("ddMat(%llu):", (unsigned long long)mat->id);
-  buff += out.str();
+  string512 out;
+	string64 format_string;
+	format_string.format("ddMat(%llu):", (unsigned long long)mat->id);
+  out += format_string;
 
   // color
-  out.format("\n  Base color: %.3f, %.3f, %.3f, %.3f", mat->base_color.r,
+	format_string.format("\n  Base color: %.3f, %.3f, %.3f, %.3f", mat->base_color.r,
              mat->base_color.g, mat->base_color.b, mat->base_color.a);
-  buff += out.str();
+  out += format_string;
 
   // color
-  out.format("\n  Specularity: %.3f", mat->spec_value);
-  buff += out.str();
+	format_string.format("\n  Specularity: %.3f", mat->spec_value);
+  out += format_string;
 
-  lua_pushstring(L, buff.c_str());
+  lua_pushstring(L, out.str());
   return 1;
 }
 

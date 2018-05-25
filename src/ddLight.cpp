@@ -50,13 +50,13 @@ static int set_type(lua_State *L) {
 
   int top = lua_gettop(L);
   if (top >= 2 && lua_isstring(L, 2)) {
-    cbuff<64> type = lua_tostring(L, 2);
+    string64 type = lua_tostring(L, 2);
 
-    if (type.compare("directional") == 0) {
+    if (type.compare("directional")) {
       blb->type = LightType::DIRECTION_L;
-    } else if (type.compare("point") == 0) {
+    } else if (type.compare("point")) {
       blb->type = LightType::POINT_L;
-    } else if (type.compare("spot") == 0) {
+    } else if (type.compare("spot")) {
       blb->type = LightType::SPOT_L;
     }
   } else {
@@ -98,11 +98,10 @@ static int set_pos(lua_State *L) {
 
 int tostring(lua_State *L) {
   ddLBulb *blb = *check_ddLBulb(L);
-  std::string buff;
 
-  cbuff<128> out;
+  string128 out;
   out.format("ddLBulb(%llu):", (unsigned long long)blb->id);
-  buff += out.str();
-
-  return 0;
+  
+	lua_pushfstring(L, out.str());
+  return 1;
 }

@@ -8,4 +8,4 @@ struct ddLvlPrototype {
 };
 
 /** \brief Retrieve reflection container */
-const std::map<cbuff<64>, std::function<void(lua_State *)>> &get_reflections();
+const std::map<string64, std::function<void(lua_State *)>> &get_reflections();

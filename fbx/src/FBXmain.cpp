@@ -1,6 +1,4 @@
-#include <cstdlib>
 #include <cstdio>
-#include <string>
 
 #include "FBX_Utility.h"
 #include "FBX_MeshFuncs.h"
@@ -61,7 +59,7 @@ int main(const int argc, const char** argv)
 		"\n\t-s\tskeleton"
 		"\n\t~<float>\tadjust export scale"
 		"\n\t-v\tvicon\n";
-	ExportArg exportFlags = ExportArg::NONE;
+	ExportArg export_flags = ExportArg::NONE;
 	float scale_factor = 1.f;
 
 	std::string fbx_to_read;
@@ -72,15 +70,12 @@ int main(const int argc, const char** argv)
 	else {
 		for (int i = 1; i < argc; i++) {
 			if (*argv[i] == '-') {					// parse args		
-				exportFlags |= checkArgs(argv[i]);
+				export_flags |= checkArgs(argv[i]);
 			}
-			else if (*argv[i] == '~') {				// scale skeleton and animations		
-				dd_array<cbuff<8>> sc = StrSpace::tokenize1024<8>(argv[i], "~");
-				for (size_t j = 0; j < sc.size(); j++) {
-					if (*sc[j].str() && *sc[j].str() != ' ') {
-						scale_factor = strtof(sc[j].str(), nullptr);
-					}
-				}
+			else if (*argv[i] == '~') {				// scale skeleton and animations
+				string8 scale_arg = argv[i] + 1;
+				if (!scale_arg.is_empty()) 
+					scale_factor = strtof(scale_arg.str(), nullptr);
 			}
 			else {									// grab fbx file
 				fbx_to_read = argv[i];
@@ -154,7 +149,7 @@ int main(const int argc, const char** argv)
 		asset.scale_factor = scale_factor;
 		asset.m_fbxName.set(fbx_name.c_str());
 		asset.m_fbxPath.set(fbx_path.c_str());
-		if (bool(exportFlags & ExportArg::VICON)) {
+		if (bool(export_flags & ExportArg::VICON)) {
 			asset.m_viconFormat = true;
 		}
 		printf("\n\n---------\nSkeleton\n---------\n\n");
@@ -171,7 +166,7 @@ int main(const int argc, const char** argv)
 			processAnimation(rootNode, lAnimStack, asset, fr_rate,
 							 lOutputString.Buffer());
 			// export DDA (animations)
-			if (bool(exportFlags & ExportArg::ANIMATION)) {
+			if (bool(export_flags & ExportArg::ANIMATION)) {
 				asset.exportAnimation();
 			}
 		}
@@ -187,8 +182,8 @@ int main(const int argc, const char** argv)
 					if (type == fbxsdk::FbxNodeAttribute::eMesh) {
 						processAsset(_node, 
 									asset, 
-									bool(exportFlags & ExportArg::SKELETON),
-									bool(exportFlags & ExportArg::MESH));
+									bool(export_flags & ExportArg::SKELETON),
+									bool(export_flags & ExportArg::MESH));
 					}
 				}
 			}

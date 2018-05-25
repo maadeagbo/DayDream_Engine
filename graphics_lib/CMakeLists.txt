@@ -57,7 +57,8 @@ if (DD_USE_GLFW)
 	# Shader reflection executable
 	add_executable(shader_reflect 
 		${CMAKE_SOURCE_DIR}/graphics_lib/source/reflect_main.cpp
-		${CMAKE_SOURCE_DIR}/src/Pow2Assert.cpp)
+		${CMAKE_SOURCE_DIR}/src/Pow2Assert.cpp
+		${CMAKE_SOURCE_DIR}/src/StringLib.cpp)
 	target_link_libraries(shader_reflect glfw dd_graphics dd_shader 
 												${OPENGL_gl_LIBRARY})
 else()

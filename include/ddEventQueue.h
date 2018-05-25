@@ -112,13 +112,13 @@ struct ddQueue {
    */
   void init_level_scripts(const char *script_id, const bool runtime = false);
 
-  cbuff<32> physics_tick;
-  cbuff<32> lvl_call;
-  cbuff<32> lvl_call_i;
-  cbuff<32> res_call;
-  cbuff<32> check_future;
-  cbuff<32> check_lvl_async;
-  cbuff<32> check_res_async;
+  string32 physics_tick;
+  string32 lvl_call;
+  string32 lvl_call_i;
+  string32 res_call;
+  string32 check_future;
+  string32 check_lvl_async;
+  string32 check_res_async;
 
  private:
   /**
@@ -180,5 +180,5 @@ struct ddQueue {
 typedef std::function<bool(DD_LEvent &)> PushFunc;
 
 // System handles
-const size_t sys_engine_hash = getCharHash("ddEngine");
-const size_t sys_terminal_hash = getCharHash("ddTerminal");
+const size_t sys_engine_hash = StrLib::get_char_hash("ddEngine");
+const size_t sys_terminal_hash = StrLib::get_char_hash("ddTerminal");

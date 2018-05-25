@@ -2,8 +2,8 @@
 #include <typeinfo>
 
 namespace {
-cbuff<64> _key;
-cbuff<256> _val;
+string64 _key;
+string256 _val;
 }  // namespace
 
 // ********************************************************************
@@ -66,11 +66,11 @@ int64_t *get_arg_LEvent<int64_t>(DD_LEvent *levent, const char *key) {
   }
 
   Varying<32> *v = nullptr;
-  cbuff<32> *k = nullptr;
+  string32 *k = nullptr;
   for (unsigned i = 0; i < levent->active; i++) {
     k = &levent->args[i].key;
     v = &levent->args[i].val;
-    if (k->compare(key) == 0 && v->type == VType::INT) {
+    if (k->compare(key) && v->type == VType::INT) {
       return &v->v_int;
     }
   }
@@ -84,11 +84,11 @@ float *get_arg_LEvent<float>(DD_LEvent *levent, const char *key) {
   }
 
   Varying<32> *v = nullptr;
-  cbuff<32> *k = nullptr;
+  string32 *k = nullptr;
   for (unsigned i = 0; i < levent->active; i++) {
     k = &levent->args[i].key;
     v = &levent->args[i].val;
-    if (k->compare(key) == 0 && v->type == VType::FLOAT) {
+    if (k->compare(key) && v->type == VType::FLOAT) {
       return &v->v_float;
     }
   }
@@ -102,11 +102,11 @@ bool *get_arg_LEvent<bool>(DD_LEvent *levent, const char *key) {
   }
 
   Varying<32> *v = nullptr;
-  cbuff<32> *k = nullptr;
+  string32 *k = nullptr;
   for (unsigned i = 0; i < levent->active; i++) {
     k = &levent->args[i].key;
     v = &levent->args[i].val;
-    if (k->compare(key) == 0 && v->type == VType::BOOL) {
+    if (k->compare(key) && v->type == VType::BOOL) {
       return &v->v_bool;
     }
   }
@@ -120,11 +120,11 @@ const char *get_arg_LEvent<const char>(DD_LEvent *levent, const char *key) {
   }
 
   Varying<32> *v = nullptr;
-  cbuff<32> *k = nullptr;
+  string32 *k = nullptr;
   for (unsigned i = 0; i < levent->active; i++) {
     k = &levent->args[i].key;
     v = &levent->args[i].val;
-    if (k->compare(key) == 0 && v->type == VType::STRING) {
+    if (k->compare(key) && v->type == VType::STRING) {
       return v->v_strptr.str();
     }
   }
@@ -134,7 +134,7 @@ const char *get_arg_LEvent<const char>(DD_LEvent *levent, const char *key) {
 template <>
 int64_t *DD_FuncBuff::get_func_val<int64_t>(const char *ckey) {
   for (unsigned i = 0; i < num_args; i++) {
-    bool param_check = buffer[i].arg_name.compare(ckey) == 0;
+    bool param_check = buffer[i].arg_name.compare(ckey);
     if (param_check && buffer[i].arg.type == VType::INT) {
       return &buffer[i].arg.v_int;
     }
@@ -145,7 +145,7 @@ int64_t *DD_FuncBuff::get_func_val<int64_t>(const char *ckey) {
 template <>
 float *DD_FuncBuff::get_func_val<float>(const char *ckey) {
   for (unsigned i = 0; i < num_args; i++) {
-    bool param_check = buffer[i].arg_name.compare(ckey) == 0;
+    bool param_check = buffer[i].arg_name.compare(ckey);
     if (param_check && buffer[i].arg.type == VType::FLOAT) {
       return &buffer[i].arg.v_float;
     }
@@ -156,7 +156,7 @@ float *DD_FuncBuff::get_func_val<float>(const char *ckey) {
 template <>
 bool *DD_FuncBuff::get_func_val<bool>(const char *ckey) {
   for (unsigned i = 0; i < num_args; i++) {
-    bool param_check = buffer[i].arg_name.compare(ckey) == 0;
+    bool param_check = buffer[i].arg_name.compare(ckey);
     if (param_check && buffer[i].arg.type == VType::BOOL) {
       return &buffer[i].arg.v_bool;
     }
@@ -167,7 +167,7 @@ bool *DD_FuncBuff::get_func_val<bool>(const char *ckey) {
 template <>
 const char *DD_FuncBuff::get_func_val<const char>(const char *ckey) {
   for (unsigned i = 0; i < num_args; i++) {
-    bool param_check = buffer[i].arg_name.compare(ckey) == 0;
+    bool param_check = buffer[i].arg_name.compare(ckey);
     if (param_check && buffer[i].arg.type == VType::STRING) {
       return buffer[i].arg.v_strptr.str();
     }
@@ -195,7 +195,7 @@ lua_State *init_lua_state() {
 
     // Add global variables for use in scripts
     set_lua_global(L, "ROOT_DIR", ROOT_DIR);
-    cbuff<256> s_dir;
+    string256 s_dir;
     s_dir.format("%s/%s", RESOURCE_DIR, "scripts");
     set_lua_global(L, "SCRIPTS_DIR", s_dir.str());
     set_lua_global(L, "PROJECT_DIR", PROJECT_DIR);
@@ -219,7 +219,7 @@ bool parse_luafile(lua_State *L, const char *filename) {
     lua_pop(L, 1);
   };
 
-  cbuff<256> file = filename;
+  string256 file = filename;
   if (!file.contains(".lua")) {
     printf("Invalid file type <%s>\n", file.str());
   }
@@ -386,7 +386,7 @@ void parse_table(lua_State *L, DD_LEvent *levent, const int tabs) {
         _key.format("%s", lua_tostring(L, -1));
         lua_pop(L, 1);  // remove copy key
 
-        if (_key.compare("event_id") == 0) {
+        if (_key.compare("event_id")) {
           levent->handle = _val.str();
         } else {
           bool arg_set = add_arg_LEvent(levent, _key.str(), _val.str());
@@ -557,7 +557,7 @@ void print_table(lua_State *L, const int tabs) {
 
 void print_buffer(DD_FuncBuff &fb) {
   for (unsigned i = 0; i < fb.num_args; i++) {
-    cbuff<32> &k = fb.buffer[i].arg_name;
+    string32 &k = fb.buffer[i].arg_name;
     Varying<256> &v = fb.buffer[i].arg;
     switch (v.type) {
       case VType::BOOL:
@@ -717,7 +717,7 @@ void push_ivec4_to_lua(lua_State *L, const int64_t x, const int64_t y,
 }
 
 void append_package_path(lua_State *L, const char *path) {
-  cbuff<1024> curr_path, new_path;
+  string1024 curr_path, new_path;
   lua_getglobal(L, "package");
   lua_getfield(L, -1, "path");
   curr_path = lua_tostring(L, -1);  // grab path string from top of stack

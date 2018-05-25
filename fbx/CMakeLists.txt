@@ -31,10 +31,11 @@ endif()
 
 # add executable               
 add_executable(fbx_converter ${DD_FBX_HEADERS} ${DD_FBX_SOURCES} 
-               ${CMAKE_SOURCE_DIR}/src/Pow2Assert.cpp)
+               ${CMAKE_SOURCE_DIR}/src/Pow2Assert.cpp
+               ${CMAKE_SOURCE_DIR}/src/StringLib.cpp)
 
 if (WIN32)               
   target_link_libraries(fbx_converter ${FBX_LIB})
 else()
-target_link_libraries(fbx_converter ${FBX_LIB} "-ldl")
+  target_link_libraries(fbx_converter ${FBX_LIB} "-ldl")
 endif()

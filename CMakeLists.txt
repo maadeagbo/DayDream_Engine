@@ -310,19 +310,28 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/fbx)
 # target_link_libraries(dd_shader_reflect 
 # 	glfw dd_graphics dd_shader ${OPENGL_gl_LIBRARY})
 
-add_custom_target(
-	build_reflection
-	COMMAND ${PROJECT_SOURCE_DIR}/create_shader_enums.sh 
-		${PROJECT_SOURCE_DIR}/ ${PROJECT_SOURCE_DIR}/
-	DEPENDS shader_reflect
-)
+if(MSVC)
+	add_custom_target(
+		build_reflection
+		COMMAND ${PROJECT_SOURCE_DIR}/create_shader_enums.cmd 
+		DEPENDS shader_reflect
+	)
+	add_dependencies(build_reflection shader_reflect)
+else()
+	add_custom_target(
+		build_reflection
+		COMMAND ${PROJECT_SOURCE_DIR}/create_shader_enums.sh 
+			${PROJECT_SOURCE_DIR}/ ${PROJECT_SOURCE_DIR}/
+		DEPENDS shader_reflect
+	)
+endif()
 
 # Engine executable
 add_executable(dd_engine 
 				${SOURCES} ${PROJECT_SOURCES} ${SHADER_SOURCES}
 				${SCRIPTS})
 # make sure every other executable and .h file is built before the engine
-add_dependencies(dd_engine shader_reflect fbx_converter build_reflection)
+add_dependencies(dd_engine shader_reflect fbx_converter)
 
 
 if(MSVC)

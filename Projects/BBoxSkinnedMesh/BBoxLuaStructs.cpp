@@ -9,13 +9,13 @@ namespace {
 // bbox container
 std::map<unsigned, BBTransform> bbox_trans;
 
-cbuff<8> pos_str = "pos";
-cbuff<8> rot_str = "rot";
-cbuff<8> scale_str = "scale";
-cbuff<8> mirror_str = "mirror";
-cbuff<8> joint_str = "jnts";
+string8 pos_str = "pos";
+string8 rot_str = "rot";
+string8 scale_str = "scale";
+string8 mirror_str = "mirror";
+string8 joint_str = "jnts";
 
-cbuff<8> output_str = "output";
+string8 output_str = "output";
 
 dd_array<float> float_buf3(3);
 dd_array<int64_t> int_buf3(3);
@@ -59,30 +59,30 @@ int set_val(lua_State *L) {
   const char *arg = (const char *)luaL_checkstring(L, 2);
 
   // position
-  if (pos_str.compare(arg) == 0) {
+  if (pos_str.compare(arg)) {
     read_buffer_from_lua(L, float_buf3);
     bbox->pos.x = float_buf3[0];
     bbox->pos.y = float_buf3[1];
     bbox->pos.z = float_buf3[2];
-  } else if (rot_str.compare(arg) == 0) {
+  } else if (rot_str.compare(arg)) {
     read_buffer_from_lua(L, float_buf3);
     // rotation
     bbox->rot.x = float_buf3[0];
     bbox->rot.y = float_buf3[1];
     bbox->rot.z = float_buf3[2];
-  } else if (scale_str.compare(arg) == 0) {
+  } else if (scale_str.compare(arg)) {
     read_buffer_from_lua(L, float_buf3);
     // scale
     bbox->scale.x = float_buf3[0];
     bbox->scale.y = float_buf3[1];
     bbox->scale.z = float_buf3[2];
-  } else if (mirror_str.compare(arg) == 0) {
+  } else if (mirror_str.compare(arg)) {
     read_buffer_from_lua(L, int_buf3);
     // mirror
     bbox->mirror.x = (unsigned)int_buf3[0];
     bbox->mirror.y = (unsigned)int_buf3[1];
     bbox->mirror.z = (unsigned)int_buf3[2];
-  } else if (joint_str.compare(arg) == 0) {
+  } else if (joint_str.compare(arg)) {
     read_buffer_from_lua(L, int_buf3);
     // joint ids
     bbox->joint_ids.x = int_buf3[0];
@@ -97,22 +97,22 @@ int get_val(lua_State *L) {
   const char *arg = (const char *)luaL_checkstring(L, 2);
 
   // position
-  if (pos_str.compare(arg) == 0) {
+  if (pos_str.compare(arg)) {
     push_vec3_to_lua(L, bbox->pos.x, bbox->pos.y, bbox->pos.z);
     return 1;
-  } else if (rot_str.compare(arg) == 0) {
+  } else if (rot_str.compare(arg)) {
     // rotation
     push_vec3_to_lua(L, bbox->rot.x, bbox->rot.y, bbox->rot.z);
     return 1;
-  } else if (scale_str.compare(arg) == 0) {
+  } else if (scale_str.compare(arg)) {
     // scale
     push_vec3_to_lua(L, bbox->scale.x, bbox->scale.y, bbox->scale.z);
     return 1;
-  } else if (mirror_str.compare(arg) == 0) {
+  } else if (mirror_str.compare(arg)) {
     // mirror
     push_ivec3_to_lua(L, bbox->mirror.x, bbox->mirror.y, bbox->mirror.z);
     return 1;
-  } else if (joint_str.compare(arg) == 0) {
+  } else if (joint_str.compare(arg)) {
     // joint ids
     push_ivec3_to_lua(L, bbox->joint_ids.x, bbox->joint_ids.y, 0);
     return 1;
@@ -124,19 +124,16 @@ int get_val(lua_State *L) {
 
 static int to_string(lua_State *L) {
   BBTransform *bb = *check_bbox(L);
-  std::string buff;
+  
+	string128 out;
+	out.format("\n  pos: %.3f, %.3f, %.3f"
+						 "\n  sc: %.3f, %.3f, %.3f"
+						 "\n  rot: %.3f, %.3f, %.3f",
+						 bb->pos.x, bb->pos.y, bb->pos.z,
+						 bb->scale.x, bb->scale.y, bb->scale.z,
+						 bb->rot.x, bb->rot.y, bb->rot.z);
 
-  cbuff<128> out;
-  out.format("\n  pos: %.3f, %.3f, %.3f", bb->pos.x, bb->pos.y, bb->pos.z);
-  buff += out.str();
-
-  out.format("\n  sc: %.3f, %.3f, %.3f", bb->scale.x, bb->scale.y, bb->scale.z);
-  buff += out.str();
-
-  out.format("\n  rot: %.3f, %.3f, %.3f", bb->rot.x, bb->rot.y, bb->rot.z);
-  buff += out.str();
-
-  lua_pushstring(L, buff.c_str());
+  lua_pushstring(L, out.str());
   return 1;
 }
 
@@ -468,7 +465,7 @@ static int get_ctrl(lua_State *L) {
       return 1;
     } 
   } else if ((bool)lua_isstring(L, 2)) {
-    cbuff<8> id = (const char*)luaL_checkstring(L, 2);
+    string8 id = (const char*)luaL_checkstring(L, 2);
 
     if (id == output_str) {
       lua_pushstring(L, lc_ptr->output.str());

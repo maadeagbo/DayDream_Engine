@@ -32,7 +32,7 @@ static int new_ddModelData(lua_State *L) {
 
   // create new model data
   ddModelData *temp = nullptr;
-  cbuff<512> path = ddmg_file;
+  string512 path = ddmg_file;
   if (path.contains(".ddm")) {
     temp = load_ddm(ddmg_file);
   } else if (path.contains(".ddg")) {

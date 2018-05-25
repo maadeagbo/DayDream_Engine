@@ -30,14 +30,14 @@ static int new_ddMat(lua_State *L) {
   const char *id = lua_tostring(L, curr_arg);
 
   // check if already exists
-  (*mat) = find_ddMat(getCharHash(id));
+  (*mat) = find_ddMat(StrLib::get_char_hash(id));
   if (*mat) {
     ddTerminal::post("[error]ddMat::Returning already allocated material");
     return 1;
   }
 
   // create new
-  (*mat) = spawn_ddMat(getCharHash(id));
+  (*mat) = spawn_ddMat(StrLib::get_char_hash(id));
   if (!(*mat)) {
     ddTerminal::post("[error]ddMat::Failed to allocate new material");
     return 1;

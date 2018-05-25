@@ -356,7 +356,7 @@ bool generate_textureCube_RGBA8_LR(ImageInfo &img, const bool empty) {
     glTexStorage2D(GL_TEXTURE_CUBE_MAP, 1, img.internal_format, img.width,
                    img.height);
 
-    cbuff<100> err_msg;
+    string128 err_msg;
     // candidate for omp multi-threading
     for (int i = 0; i < 6; i++) {
       // transfer image to GPU then delete from RAM

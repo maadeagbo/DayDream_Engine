@@ -1,6 +1,5 @@
 #include "ddBaseAgent.h"
 #include "ddTerminal.h"
-#include <string>
 
 ddAgent::ddAgent() {}
 
@@ -579,30 +578,33 @@ int set_mat_at_idx(lua_State *L) {
 
 static int to_string(lua_State *L) {
   ddAgent *ag = *check_ddAgent(L);
-  std::string buff;
 
-  cbuff<128> out;
-  out.format("ddAgent(%llu):", (unsigned long long)ag->id);
-  buff += out.str();
+  string512 out;
+	string64 format_string;
+	format_string.format("ddAgent(%llu):", (unsigned long long)ag->id);
+  out = format_string.str();
 
-  out.format("\n  Mesh: %d", (int)ag->mesh.size());
-  buff += out.str();
+	format_string.format("\n  Mesh: %d", (int)ag->mesh.size());
+  out += format_string;
 
   DD_FOREACH(ModelIDs, mdl, ag->mesh) {
-    out.format("\n    %u:: near %.3f, far %.3f, model %llu", mdl.i,
-               mdl.ptr->_near, mdl.ptr->_far,
-               (unsigned long long)mdl.ptr->model);
-    buff += out.str();
+		format_string.format(
+			"\n    %u:: near %.3f, far %.3f, model %llu",
+			mdl.i,
+      mdl.ptr->_near, 
+			mdl.ptr->_far,
+      (unsigned long long)mdl.ptr->model);
+    out += format_string;
 
-    out.format("\n    Materials: %d", (int)mdl.ptr->material.size());
-    buff += out.str();
+		format_string.format("\n    Materials: %d", (int)mdl.ptr->material.size());
+    out += format_string;
     DD_FOREACH(size_t, mat_id, mdl.ptr->material) {
-      out.format("\n      %u:: id %llu", mat_id.i,
-                 (unsigned long long)(*mat_id.ptr));
-      buff += out.str();
+			format_string.format("\n      %u:: id %llu", mat_id.i,
+													(unsigned long long)(*mat_id.ptr));
+      out += format_string;
     }
   }
 
-  lua_pushstring(L, buff.c_str());
+  lua_pushstring(L, out.str());
   return 1;
 }

@@ -40,11 +40,11 @@ struct Varying {
  */
 struct DD_LEvent {
   struct KeyVal {
-    cbuff<32> key;
+    string32 key;
     Varying<32> val;
   };
 
-  cbuff<32> handle;
+  string32 handle;
   KeyVal args[MAX_EVENT_ARGS];
   unsigned active = 0;
   unsigned delay = 0;
@@ -93,7 +93,7 @@ const char *get_arg_LEvent<const char>(DD_LEvent *levent, const char *key);
  * \brief Data type for passing information between C++ and Lua
  */
 struct DD_LFuncArg {
-  cbuff<32> arg_name;
+  string32 arg_name;
   Varying<256> arg;
 };
 

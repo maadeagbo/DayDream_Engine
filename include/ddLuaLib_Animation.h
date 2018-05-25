@@ -39,7 +39,7 @@ static int new_ddAnimClip(lua_State *L) {
   const char *dda_file = lua_tostring(L, curr_arg);
 
   // check if already exists (locked to ddAgent)
-  ddAnimClip *a_clip = find_ddAnimClip(getCharHash(id));
+  ddAnimClip *a_clip = find_ddAnimClip(StrLib::get_char_hash(id));
   if (a_clip) {
     ddTerminal::post("[error]ddAnimClip::Clip already allocated");
     lua_pushboolean(L, true);
@@ -93,7 +93,7 @@ static int new_ddSkeleton(lua_State *L) {
   const char *ddb_file = lua_tostring(L, curr_arg);
 
   // check if already exists (locked to ddAgent)
-  ddSkeleton *sk = find_ddSkeleton(getCharHash(id));
+  ddSkeleton *sk = find_ddSkeleton(StrLib::get_char_hash(id));
   if (sk) {
     ddTerminal::post("[error]ddSkeleton::Skeleton already allocated");
     lua_pushboolean(L, true);

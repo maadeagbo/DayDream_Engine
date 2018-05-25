@@ -196,7 +196,7 @@ int set_p_y_r(lua_State *L) {
 
 int to_string(lua_State *L) {
   ddCam *cam = *check_ddCam(L);
-  cbuff<64> out;
+  string64 out;
   out.format("ddCam(%llu): %s, %.3f, %.3f::%.3f::%.3f",
              (unsigned long long)cam->id, cam->active ? "active" : "inactive",
              glm::degrees(cam->fovh), cam->pitch, cam->yaw, cam->roll);

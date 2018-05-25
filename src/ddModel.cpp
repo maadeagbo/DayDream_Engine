@@ -1,5 +1,4 @@
 #include "ddModel.h"
-#include <string>
 
 namespace {
 /** \brief Reference bounding box for all OOBB */
@@ -217,11 +216,10 @@ glm::quat getQuat(const char *str) {
   return qz * qy * qx;
 }
 
-std::string Vec4f_Str(const glm::vec4 vIn) {
-  char buff[32];
-  snprintf(buff, sizeof(buff), "%.3f %.3f %.3f %.3f\n", vIn.x, vIn.y, vIn.z,
-           vIn.w);
-  return std::string(buff);
+string32 Vec4f_Str(const glm::vec4 vIn) {
+	string32 buff;
+  buff.format("%.3f %.3f %.3f %.3f\n", vIn.x, vIn.y, vIn.z, vIn.w);
+  return buff;
 }
 
 glm::mat4 createMatrix(const glm::vec3 &pos, const glm::vec3 &rot,
@@ -239,27 +237,27 @@ glm::mat4 createMatrix(const glm::vec3 &pos, const glm::vec3 &rot,
 
 void printGlmMat(glm::mat4 mat) {
   glm::vec4 temp_vec;
-  std::string line;
+  string32 line;
 
   temp_vec = glm::vec4(mat[0][0], mat[1][0], mat[2][0], mat[3][0]);
   line = Vec4f_Str(temp_vec);
   // ddTerminal::post(line);
-  printf("%s\n", line.c_str());
+  printf("%s\n", line.str());
 
   temp_vec = glm::vec4(mat[0][1], mat[1][1], mat[2][1], mat[3][1]);
   line = Vec4f_Str(temp_vec);
   // ddTerminal::post(line);
-  printf("%s\n", line.c_str());
+  printf("%s\n", line.str());
 
   temp_vec = glm::vec4(mat[0][2], mat[1][2], mat[2][2], mat[3][2]);
   line = Vec4f_Str(temp_vec);
   // ddTerminal::post(line);
-  printf("%s\n", line.c_str());
+  printf("%s\n", line.str());
 
   temp_vec = glm::vec4(mat[0][3], mat[1][3], mat[2][3], mat[3][3]);
   line = Vec4f_Str(temp_vec);
   // ddTerminal::post(line);
-  printf("%s\n", line.c_str());
+  printf("%s\n", line.str());
 }
 
 const BoundingBox OOBoundingBox::get_bbox() const {
@@ -305,20 +303,21 @@ static int get_id(lua_State *L) {
 
 static int to_string(lua_State *L) {
   ddModelData *mdl = *check_ddModel(L);
-  std::string buff;
 
-  cbuff<128> out;
-  out.format("ddModelData(%llu):", (unsigned long long)mdl->id);
-  buff += out.str();
+	string512 out;
+	string64 format_string;
+	format_string.format("ddModelData(%llu):", (unsigned long long)mdl->id);
+  out += format_string;
 
   DD_FOREACH(DDM_Data, data, mdl->mesh_info) {
-    out.format("\n  Path: %s", data.ptr->path);
-    buff += out.str();
-    out.format("\n  Num indices: %llu",
-               (unsigned long long)data.ptr->indices.size());
-    buff += out.str();
+		format_string.format("\n  Path: %s", data.ptr->path);
+    out += format_string;
+    
+		format_string.format("\n  Num indices: %llu",
+												(unsigned long long)data.ptr->indices.size());
+    out += format_string;
   }
 
-  lua_pushstring(L, buff.c_str());
+  lua_pushstring(L, out.str());
   return 1;
 }

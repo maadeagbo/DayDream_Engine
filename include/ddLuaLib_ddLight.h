@@ -30,14 +30,14 @@ static int new_ddLBulb(lua_State *L) {
   const char *id = lua_tostring(L, curr_arg);
 
   // check if already exists
-  (*blb) = find_ddLBulb(getCharHash(id));
+  (*blb) = find_ddLBulb(StrLib::get_char_hash(id));
   if (*blb) {
     ddTerminal::post("[error]ddLBulb::Returning already allocated material");
     return 1;
   }
 
   // create new
-  (*blb) = spawn_ddLBulb(getCharHash(id));
+  (*blb) = spawn_ddLBulb(StrLib::get_char_hash(id));
   if (!(*blb)) {
     ddTerminal::post("[error]ddLBulb::Failed to allocate new material");
     return 1;
