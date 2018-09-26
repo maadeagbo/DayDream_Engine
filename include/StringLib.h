@@ -46,8 +46,7 @@ struct cbuff {
 	{
 		char bin[T];
 		snprintf(bin, T, format_str, args...);
-		snprintf(char_bin, T, "%s", bin);
-		hash = StrLib::get_char_hash(char_bin);
+		set(bin);
 	}
 
   int find(const char *in_string) const;
